@@ -111,7 +111,8 @@
     <div class="sheet-wrapper">
         <div id="sheet-controls" class="no-print space-x-2">
             <button id="edit-char-btn" class="icon-button" title="Toggle Edit Mode" disabled><i data-feather="edit-2"></i></button>
-            <button id="export-json-btn" class="icon-button" title="Save & Export JSON" disabled><i data-feather="save"></i></button>
+            <button id="save-library-btn" class="icon-button" title="Save to Browser Library" disabled><i data-feather="save"></i></button>
+            <button id="export-json-btn" class="icon-button" title="Export as JSON file" disabled><i data-feather="download"></i></button>
             <button id="print-btn" class="icon-button" title="Print Sheet"><i data-feather="printer"></i></button>
         </div>
         <!-- Page Containers -->
@@ -153,11 +154,27 @@
         const newCharBtn = document.getElementById('new-char-btn');
         const welcomeNewCharBtn = document.getElementById('welcome-new-char-btn');
         const editCharBtn = document.getElementById('edit-char-btn');
+        const saveLibraryBtn = document.getElementById('save-library-btn');
         const exportJsonBtn = document.getElementById('export-json-btn');
         const sheetControls = document.getElementById('sheet-controls');
 
         const getMod = (score) => Math.floor((score - 10) / 2);
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
+
+        const calculateMaxHp = (level, className, conScore) => {
+            console.log(level, className, conScore);
+            const classData = DND_RULES.CLASSES[className];
+            if (!classData) return 1;
+
+            const conMod = getMod(conScore);
+            let maxHp = classData.hitDice + conMod;
+
+            if (level > 1) {
+                const hpGainPerLevel = classData.hitDiceAverage + conMod;
+                maxHp += (level - 1) * Math.max(1, hpGainPerLevel);
+            }
+            return maxHp;
+        };
 
         const getLibrary = () => JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         const saveLibrary = (library) => localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
@@ -168,6 +185,7 @@
             sheetBack.classList.add('sheet-visible');
             sheetControls.style.display = 'flex';
             editCharBtn.disabled = false;
+            saveLibraryBtn.disabled = false;
             exportJsonBtn.disabled = false;
         };
 
@@ -198,9 +216,7 @@
                     currentCharacterData = data;
                     isEditing = false;
                     renderCharacterSheet();
-                    saveCurrentCharacterToLibrary();
-                    populateCharacterSelect();
-                    characterSelect.value = `${sessionNameInput.value.trim() || 'Uncategorized'}|${data.name}`;
+                    handleSaveToLibrary(); // Auto-save on load
                 } catch (error) {
                     alert(`Error loading file: ${error.message}`);
                 }
@@ -209,7 +225,8 @@
             fileInput.value = '';
         };
         
-        const saveCurrentCharacterToLibrary = () => {
+        const handleSaveToLibrary = () => {
+            if (isEditing) gatherDataFromForm();
             if (!currentCharacterData) return;
             const sessionName = sessionNameInput.value.trim() || 'Uncategorized';
             const library = getLibrary();
@@ -221,6 +238,8 @@
                 library[sessionName].push(currentCharacterData);
             }
             saveLibrary(library);
+            populateCharacterSelect();
+            characterSelect.value = `${sessionName}|${currentCharacterData.name}`;
         };
 
         const loadFromSelect = () => {
@@ -264,18 +283,16 @@
             const a = document.createElement('a');
             a.href = url;
             a.download = `${currentCharacterData.name.toLowerCase().replace(/\s+/g, '_')}.json`;
-            a.click();
+            document.body.appendChild(a);
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            saveCurrentCharacterToLibrary();
-            populateCharacterSelect();
-            characterSelect.value = `${sessionNameInput.value.trim() || 'Uncategorized'}|${currentCharacterData.name}`;
         };
 
         const handleClassChange = (event) => {
             const newClassName = event.target.value;
             const classData = DND_RULES.CLASSES[newClassName];
             if (classData) {
-                gatherDataFromForm(); // Capture current state before changing
+                gatherDataFromForm();
                 currentCharacterData.class = newClassName;
                 currentCharacterData.proficiencies.savingThrows = [...classData.savingThrows];
                 renderCharacterSheet();
@@ -300,46 +317,8 @@
              }
         };
 
-        const handleLevelChange = (event) => {
-            const newLevel = parseInt(event.target.value);
-            if (newLevel < 1 || isNaN(newLevel) || newLevel > 20) {
-                event.target.value = currentCharacterData.level; // Revert if invalid
-                return;
-            }
-
-            const oldLevel = currentCharacterData.level;
-            const levelDiff = newLevel - oldLevel;
-            
+        const handleStatChange = (event) => {
             gatherDataFromForm();
-            const char = currentCharacterData;
-            const classData = DND_RULES.CLASSES[char.class];
-            if (!classData) return;
-
-            // Update Level
-            char.level = newLevel;
-
-            // Update Proficiency Bonus
-            let currentProf = char.profBonus;
-            for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
-                if (char.level >= parseInt(levelThreshold)) {
-                    currentProf = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold];
-                }
-            }
-            char.profBonus = currentProf;
-
-            // Update HP
-            const conMod = getMod(char.abilityScores.con);
-            const avgHpGain = classData.hitDiceAverage + conMod;
-            char.combat.hp_max += levelDiff * Math.max(1, avgHpGain);
-
-            // Update Spell Slots
-            if (char.spellcasting && classData.casterType) {
-                const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
-                if (progression && progression[char.level]) {
-                    char.spellcasting.spellSlots = { ...progression[char.level] };
-                }
-            }
-            
             renderCharacterSheet();
         };
 
@@ -350,6 +329,7 @@
         newCharBtn.addEventListener('click', handleNewCharacter);
         welcomeNewCharBtn.addEventListener('click', handleNewCharacter);
         editCharBtn.addEventListener('click', handleEditToggle);
+        saveLibraryBtn.addEventListener('click', handleSaveToLibrary);
         exportJsonBtn.addEventListener('click', handleExport);
         
         populateCharacterSelect();
@@ -366,9 +346,8 @@
             Object.keys(data.abilityScores).forEach(key => {
                 data.abilityScores[key] = parseInt(document.getElementById(`edit-ability-${key}`).value) || 10;
             });
-            data.profBonus = parseInt(document.getElementById('edit-prof-bonus').value) || 2;
+            
             data.combat.ac = parseInt(document.getElementById('edit-combat-ac').value) || 10;
-            data.combat.hp_max = parseInt(document.getElementById('edit-combat-hp_max').value) || 1;
             data.combat.speed = document.getElementById('edit-combat-speed').value;
             data.personality.traits = document.getElementById('edit-personality-traits').value;
             data.personality.ideal = document.getElementById('edit-personality-ideal').value;
@@ -412,6 +391,26 @@
                     if(originalFeature && originalFeature.uses) f.uses = originalFeature.uses;
                 });
             }
+
+            // --- Auto-calculate derived stats ---
+            let currentProf = 2;
+            for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
+                if (data.level >= parseInt(levelThreshold)) {
+                    currentProf = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold];
+                }
+            }
+            data.profBonus = currentProf;
+            
+            data.combat.hp_max = calculateMaxHp(data.level, data.class, data.abilityScores.con);
+            
+            const classData = DND_RULES.CLASSES[data.class];
+            if (data.spellcasting && classData && classData.casterType) {
+                const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
+                if (progression && progression[data.level]) {
+                    data.spellcasting.spellSlots = { ...progression[data.level] };
+                }
+            }
+
             currentCharacterData = data;
         }
 
@@ -480,7 +479,7 @@
                             `).join('')}
                         </section>
                         <div class="text-center">
-                            ${isEditing ? `<input type="number" id="edit-prof-bonus" class="font-bold text-lg edit-stat" value="${data.profBonus}">` : `<span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span>`}
+                            ${isEditing ? `<input type="number" id="edit-prof-bonus" readonly class="font-bold text-lg edit-stat bg-gray-200" value="${data.profBonus}">` : `<span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span>`}
                             <label class="font-fell text-lg">Proficiency Bonus</label>
                         </div>
                         <section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">
@@ -493,19 +492,13 @@
                     <!-- COL 2: Combat -->
                     <div class="col-span-1 space-y-3 flex flex-col">
                          <section class="grid grid-cols-3 gap-3 text-center">
-                            ${isEditing ? `
-                                <div class="stat-box"><input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}"><div class="font-fell text-xs">ARMOR CLASS</div></div>
-                                <div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div>
-                                <div class="stat-box"><input id="edit-combat-speed" class="ability-score edit-stat w-full" value="${data.combat.speed}"><div class="font-fell text-xs">SPEED</div></div>
-                            ` : `
-                                <div class="stat-box"><div class="ability-score">${data.combat.ac}</div><div class="font-fell text-xs">ARMOR CLASS</div></div>
-                                <div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div>
-                                <div class="stat-box"><div class="ability-score">${data.combat.speed.replace('ft','<span class="text-base">ft</span>')}</div><div class="font-fell text-xs">SPEED</div></div>
-                            `}
+                            <div class="stat-box">${isEditing ? `<input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}">` : `<div class="ability-score">${data.combat.ac}</div>`}<div class="font-fell text-xs">ARMOR CLASS</div></div>
+                            <div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div>
+                            <div class="stat-box">${isEditing ? `<input id="edit-combat-speed" class="ability-score edit-stat w-full" value="${data.combat.speed}">` : `<div class="ability-score">${data.combat.speed.replace('ft','<span class="text-base">ft</span>')}</div>`}<div class="font-fell text-xs">SPEED</div></div>
                         </section>
                         <section class="bordered-section text-center">
                             <label class="font-fell text-lg">Hit Points</label>
-                            ${isEditing ? `<input type="number" id="edit-combat-hp_max" class="text-3xl font-bold tracking-wider edit-stat" value="${data.combat.hp_max}">` : `<div class="text-3xl font-bold tracking-wider">${data.combat.hp_max} / ${data.combat.hp_max}</div>`}
+                            <div class="text-3xl font-bold tracking-wider">${data.combat.hp_max} / ${data.combat.hp_max}</div>
                             <div class="mt-2"><label class="font-fell">Hit Dice</label><div class="text-lg font-bold">${data.level}d${(DND_RULES.CLASSES[data.class] || {}).hitDice || 8}</div></div>
                         </section>
                         <section class="bordered-section text-center"><h3 class="font-fell text-lg mb-2">Death Saves</h3><div class="flex justify-around items-center"><div><span class="text-sm">Successes</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div><div><span class="text-sm">Failures</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div></div></section>
@@ -569,7 +562,10 @@
                 if (Object.keys(DND_RULES.SPECIES).length > 0) {
                     document.getElementById('edit-char-species').addEventListener('change', handleSpeciesChange);
                 }
-                document.getElementById('edit-char-level')?.addEventListener('change', handleLevelChange);
+                document.getElementById('edit-char-level')?.addEventListener('change', handleStatChange);
+                Object.keys(data.abilityScores).forEach(key => {
+                    document.getElementById(`edit-ability-${key}`).addEventListener('change', handleStatChange);
+                });
             }
             feather.replace();
         }
@@ -732,4 +728,5 @@
 </script>
 </body>
 </html>
+
 

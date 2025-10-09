@@ -18,19 +18,34 @@ export const SKILLS = {
     "Sleight of Hand": "dex", "Stealth": "dex", "Survival": "wis"
 };
 
+export const PROFICIENCY_BONUS_PROGRESSION = {
+    1: 2, 5: 3, 9: 4, 13: 5, 17: 6
+};
+
+export const SPELL_SLOT_PROGRESSION = {
+    "full": {
+        1: { "level1": 2 },
+        2: { "level1": 3 },
+        3: { "level1": 4, "level2": 2 },
+        4: { "level1": 4, "level2": 3 },
+        5: { "level1": 4, "level2": 3, "level3": 2 }
+    }
+    // Other caster types (half, third) can be added here
+};
+
 export const CLASSES = {
-    "Barbarian": { hitDice: 12, savingThrows: ["str", "con"], skillChoices: 2 },
-    "Bard": { hitDice: 8, savingThrows: ["dex", "cha"], skillChoices: 3 },
-    "Cleric": { hitDice: 8, savingThrows: ["wis", "cha"], skillChoices: 2 },
-    "Druid": { hitDice: 8, savingThrows: ["int", "wis"], skillChoices: 2 },
-    "Fighter": { hitDice: 10, savingThrows: ["str", "con"], skillChoices: 2 },
-    "Monk": { hitDice: 8, savingThrows: ["str", "dex"], skillChoices: 2 },
-    "Paladin": { hitDice: 10, savingThrows: ["wis", "cha"], skillChoices: 2 },
-    "Ranger": { hitDice: 10, savingThrows: ["str", "dex"], skillChoices: 3 },
-    "Rogue": { hitDice: 8, savingThrows: ["dex", "int"], skillChoices: 4 },
-    "Sorcerer": { hitDice: 6, savingThrows: ["con", "cha"], skillChoices: 2 },
-    "Warlock": { hitDice: 8, savingThrows: ["wis", "cha"], skillChoices: 2 },
-    "Wizard": { hitDice: 6, savingThrows: ["int", "wis"], skillChoices: 2 }
+    "Barbarian": { hitDice: 12, hitDiceAverage: 7, savingThrows: ["str", "con"], skillChoices: 2, casterType: null },
+    "Bard": { hitDice: 8, hitDiceAverage: 5, savingThrows: ["dex", "cha"], skillChoices: 3, casterType: "full" },
+    "Cleric": { hitDice: 8, hitDiceAverage: 5, savingThrows: ["wis", "cha"], skillChoices: 2, casterType: "full" },
+    "Druid": { hitDice: 8, hitDiceAverage: 5, savingThrows: ["int", "wis"], skillChoices: 2, casterType: "full" },
+    "Fighter": { hitDice: 10, hitDiceAverage: 6, savingThrows: ["str", "con"], skillChoices: 2, casterType: null },
+    "Monk": { hitDice: 8, hitDiceAverage: 5, savingThrows: ["str", "dex"], skillChoices: 2, casterType: null },
+    "Paladin": { hitDice: 10, hitDiceAverage: 6, savingThrows: ["wis", "cha"], skillChoices: 2, casterType: "half" },
+    "Ranger": { hitDice: 10, hitDiceAverage: 6, savingThrows: ["str", "dex"], skillChoices: 3, casterType: "half" },
+    "Rogue": { hitDice: 8, hitDiceAverage: 5, savingThrows: ["dex", "int"], skillChoices: 4, casterType: null },
+    "Sorcerer": { hitDice: 6, hitDiceAverage: 4, savingThrows: ["con", "cha"], skillChoices: 2, casterType: "full" },
+    "Warlock": { hitDice: 8, hitDiceAverage: 5, savingThrows: ["wis", "cha"], skillChoices: 2, casterType: "pact" },
+    "Wizard": { hitDice: 6, hitDiceAverage: 4, savingThrows: ["int", "wis"], skillChoices: 2, casterType: "full" }
 };
 
 export const SPECIES = {
@@ -113,3 +128,4 @@ export const SPECIES = {
         ]
     }
 };
+
