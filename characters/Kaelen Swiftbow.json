@@ -1,0 +1,96 @@
+{
+  "name": "Kaelen Swiftbow",
+  "title": "The Silent Arrow",
+  "class": "Ranger (Hunter)",
+  "level": 3,
+  "species": "Elf",
+  "background": "Outlander",
+  "abilityScores": {
+    "str": 12,
+    "dex": 17,
+    "con": 14,
+    "int": 10,
+    "wis": 14,
+    "cha": 8
+  },
+  "profBonus": 2,
+  "proficiencies": {
+    "savingThrows": ["str", "dex"],
+    "skills": ["Stealth", "Survival", "Perception", "Athletics"],
+    "weapons": ["Simple Weapons", "Martial Weapons"],
+    "armor": ["Light Armor", "Medium Armor", "Shields"],
+    "tools": ["Flute"]
+  },
+  "combat": {
+    "ac": 14,
+    "hp_max": 25,
+    "speed": "30ft"
+  },
+  "attacks": [
+    {
+      "name": "Longbow",
+      "atkStat": "dex",
+      "dmgStat": "dex",
+      "dmgDie": "1d8",
+      "dmgBonus": 0,
+      "type": "Piercing",
+      "notes": "Range (150/600)",
+      "weaponMastery": "Push"
+    },
+    {
+      "name": "Scimitar",
+      "atkStat": "dex",
+      "dmgStat": "dex",
+      "dmgDie": "1d6",
+      "dmgBonus": 0,
+      "type": "Slashing",
+      "notes": "Finesse",
+      "weaponMastery": "Nick"
+    }
+  ],
+  "features": [
+    {
+      "title": "Favored Enemy",
+      "desc": "You have advantage on Wisdom (Survival) checks to track constructs, as well as on Intelligence checks to recall information about them.",
+      "key": true
+    },
+    {
+      "title": "Hunter's Prey: Colossus Slayer",
+      "desc": "When you hit a creature with a weapon attack, the creature takes an extra 1d8 damage if it's below its hit point maximum.",
+      "key": true
+    },
+    {
+      "title": "Fey Ancestry",
+      "desc": "You have advantage on saving throws against being charmed, and magic can't put you to sleep.",
+      "key": false
+    }
+  ],
+  "equipment": "Leather armor, a longbow with 20 arrows, two scimitars, an explorer's pack, a hunting trap, and a pouch with 10 gp.",
+  "personality": {
+    "traits": "I'm driven by a wanderlust that led me away from home. I watch over my friends as if they were a litter of newborn pups.",
+    "ideal": "Nature. The natural world is more important than all the constructs of civilization.",
+    "bond": "I am the last of my tribe, and it is up to me to ensure their traditions are not forgotten.",
+    "flaw": "I am slow to trust. Those who seem friendly are the ones I trust least."
+  },
+  "spellcasting": {
+    "ability": "wis",
+    "spellSlots": { "level1": 3 }
+  },
+  "spells": [
+    {
+      "name": "Hunter's Mark",
+      "level": 1,
+      "desc": "As a bonus action, choose a creature. You deal an extra 1d6 damage to the target whenever you hit it with a weapon attack, and you have advantage on any Wisdom (Perception) or Wisdom (Survival) check you make to find it."
+    },
+    {
+      "name": "Cure Wounds",
+      "level": 1,
+      "desc": "A creature you touch regains 1d8 + WIS modifier hit points."
+    },
+    {
+      "name": "Entangle",
+      "level": 1,
+      "desc": "Grasping weeds and vines sprout from the ground in a 20-foot square, making it difficult terrain. Creatures in the area must succeed a STR save or be restrained."
+    }
+  ]
+}

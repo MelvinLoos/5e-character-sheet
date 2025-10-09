@@ -1,0 +1,102 @@
+{
+  "name": "Merek Crowhand",
+  "title": "The Grave Warden",
+  "class": "Cleric (War Domain)",
+  "level": 3,
+  "species": "Human",
+  "background": "Acolyte",
+  "abilityScores": {
+    "str": 16,
+    "dex": 10,
+    "con": 14,
+    "int": 10,
+    "wis": 16,
+    "cha": 12
+  },
+  "profBonus": 2,
+  "proficiencies": {
+    "savingThrows": ["wis", "cha"],
+    "skills": ["Insight", "Medicine", "Religion", "Athletics"],
+    "weapons": ["Simple Weapons", "Martial Weapons"],
+    "armor": ["Light Armor", "Medium Armor", "Heavy Armor", "Shields"],
+    "tools": []
+  },
+  "combat": {
+    "ac": 18,
+    "hp_max": 25,
+    "speed": "30ft"
+  },
+  "attacks": [
+    {
+      "name": "Warhammer",
+      "atkStat": "str",
+      "dmgStat": "str",
+      "dmgDie": "1d8",
+      "dmgBonus": 0,
+      "type": "Bludgeoning",
+      "weaponMastery": "Sap"
+    }
+  ],
+  "features": [
+    {
+      "title": "War Priest",
+      "desc": "As a bonus action, you can make one weapon attack. You can use this feature a number of times equal to your Wisdom modifier per long rest.",
+      "key": true,
+      "uses": { "total": 3, "per": "long rest" }
+    },
+    {
+      "title": "Channel Divinity: Guided Strike",
+      "desc": "When you make an attack roll, you can use your Channel Divinity to gain a +10 bonus to the roll.",
+      "key": true,
+      "uses": { "total": 1, "per": "short rest" }
+    },
+    {
+      "title": "Shelter of the Faithful",
+      "desc": "You can perform religious ceremonies and command the respect of those who share your faith. You and your party can expect to receive free healing and care at a temple of your faith.",
+      "key": false
+    }
+  ],
+  "equipment": "Chain mail, a shield, a warhammer, a holy symbol (raven skull), an explorer's pack, and a pouch with 15 gp.",
+  "personality": {
+    "traits": "I am tolerant of other faiths and respect the worship of other gods. I see omens in every event and action—the gods try to speak to us, we just need to listen.",
+    "ideal": "Aspiration. I seek to prove myself worthy of my god's favor by matching my actions against their teachings.",
+    "bond": "I will do anything to protect the temple where I served.",
+    "flaw": "Once I pick a goal, I become obsessed with it to the detriment of everything else in my life."
+  },
+  "spellcasting": {
+    "ability": "wis",
+    "spellSlots": { "level1": 4, "level2": 2 }
+  },
+  "spells": [
+    {
+      "name": "Guidance",
+      "level": 0,
+      "desc": "Touch one creature. Once before the spell ends, the target can roll a d4 and add it to one ability check of its choice."
+    },
+    {
+      "name": "Sacred Flame",
+      "level": 0,
+      "desc": "Flame-like radiance descends on a creature. It must succeed on a DEX save or take 1d8 radiant damage."
+    },
+    {
+      "name": "Bless",
+      "level": 1,
+      "desc": "Up to three creatures gain a +d4 bonus to attack rolls and saving throws."
+    },
+    {
+      "name": "Cure Wounds",
+      "level": 1,
+      "desc": "A creature you touch regains 1d8 + WIS modifier hit points."
+    },
+    {
+      "name": "Guiding Bolt",
+      "level": 1,
+      "desc": "Ranged spell attack deals 4d6 radiant damage, and the next attack roll against the target has advantage."
+    },
+    {
+      "name": "Spiritual Weapon",
+      "level": 2,
+      "desc": "Create a floating, spectral weapon that attacks as a bonus action."
+    }
+  ]
+}
