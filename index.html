@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         data.title = document.getElementById('edit-char-title').value;
         data.class = document.getElementById('edit-char-class').value;
         data.level = parseInt(document.getElementById('edit-char-level').value) || 1;
-        data.race = document.getElementById('edit-char-race').value;
+        data.species = document.getElementById('edit-char-species').value;
         data.background = document.getElementById('edit-char-background').value;
         Object.keys(data.abilityScores).forEach(key => {
             data.abilityScores[key] = parseInt(document.getElementById(`edit-ability-${key}`).value) || 10;
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.edit-spell-item').forEach(item => {
             data.spells.push({
                 name: item.querySelector('.edit-spell-name').value,
-                level: item.querySelector('.edit-spell-level').value,
+                level: parseInt(item.querySelector('.edit-spell-level').value) || 0,
                 desc: item.querySelector('.edit-spell-desc').value
             });
         });
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const createBlankCharacter = () => ({
-        "name": "New Character", "title": "", "class": "", "level": 1, "race": "", "background": "",
+        "name": "New Character", "title": "", "class": "", "level": 1, "species": "", "background": "",
         "abilityScores": {"str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10},
         "profBonus": 2, "proficiencies": {"savingThrows": [], "skills": []},
         "combat": {"ac": 10, "hp_max": 1, "speed": "30ft"},
@@ -359,10 +359,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${isEditing ? `
                         <p><strong>Class:</strong> <input id="edit-char-class" class="edit-mode-input" value="${data.class}"></p>
                         <p><strong>Level:</strong> <input id="edit-char-level" type="number" class="edit-stat" value="${data.level}"></p>
-                        <p><strong>Race:</strong> <input id="edit-char-race" class="edit-mode-input" value="${data.race}"></p>
+                        <p><strong>Species:</strong> <input id="edit-char-species" class="edit-mode-input" value="${data.species}"></p>
                         <p><strong>Background:</strong> <input id="edit-char-background" class="edit-mode-input" value="${data.background}"></p>
                     ` : `
-                        <p><strong>Class:</strong> ${data.class} ${data.level}</p><p><strong>Race:</strong> ${data.race}</p><p><strong>Background:</strong> ${data.background}</p>
+                        <p><strong>Class:</strong> ${data.class} ${data.level}</p><p><strong>Species:</strong> ${data.species}</p><p><strong>Background:</strong> ${data.background}</p>
                     `}
                 </div>
             </header>
@@ -415,41 +415,45 @@ document.addEventListener('DOMContentLoaded', () => {
                         }).join('')}
                     </ul></section>
                     <section><h2 class="section-header">Attacks</h2><div class="space-y-3">
-                        ${data.attacks.map(attack => `<div class="attack-box"><p><strong>${attack.name}:</strong> <span class="float-right"><strong>Atk:</strong> ${formatMod(abilityMods[attack.atkStat] + data.profBonus)} | <strong>Dmg:</strong> ${attack.dmgDie}${formatMod(abilityMods[attack.dmgStat] + (attack.dmgBonus || 0))} ${attack.type}</span></p><p class="text-xs text-gray-600 italic mt-1">${attack.notes || ''}</p></div>`).join('')}
+                        ${data.attacks.map(attack => `<div class="attack-box">
+                            <p><strong>${attack.name}:</strong> <span class="float-right"><strong>Atk:</strong> ${formatMod(abilityMods[attack.atkStat] + data.profBonus)} | <strong>Dmg:</strong> ${attack.dmgDie}${formatMod(abilityMods[attack.dmgStat] + (attack.dmgBonus || 0))} ${attack.type}</span></p>
+                            <p class="text-xs text-gray-600 italic mt-1">${attack.weaponMastery ? `<span class="font-bold not-italic text-red-800">${attack.weaponMastery}:</span> ` : ''}${attack.notes || ''}</p>
+                        </div>`).join('')}
                     </div></section>
                 </div>
                 <!-- COL 3: Actions -->
                  <div class="col-span-1 space-y-4">
-                    <section class="bordered-section text-sm mb-4">
-                        <h2 class="section-header">Personality</h2>
-                        ${isEditing ? `
-                            <p class="mb-2"><strong>Traits:</strong> <textarea id="edit-personality-traits" class="edit-mode-textarea">${data.personality.traits}</textarea></p>
-                            <p class="mb-2"><strong>Ideal:</strong> <textarea id="edit-personality-ideal" class="edit-mode-textarea">${data.personality.ideal}</textarea></p>
-                            <p class="mb-2"><strong>Bond:</strong> <textarea id="edit-personality-bond" class="edit-mode-textarea">${data.personality.bond}</textarea></p>
-                            <p><strong>Flaw:</strong> <textarea id="edit-personality-flaw" class="edit-mode-textarea">${data.personality.flaw}</textarea></p>
-                        ` : `
-                            <p class="mb-2"><strong>Traits:</strong> <span class="italic">${data.personality.traits}</span></p>
-                            <p class="mb-2"><strong>Ideal:</strong> <span class="italic">${data.personality.ideal}</span></p>
-                            <p class="mb-2"><strong>Bond:</strong> <span class="italic">${data.personality.bond}</span></p>
-                            <p><strong>Flaw:</strong> <span class="italic">${data.personality.flaw}</span></p>
-                        `}
-                    </section>
                     <section id="key-features-section" class="text-sm"></section>
                 </div>
             </main>
         `;
         renderKeyFeatures(keyFeatures);
         
-        let backPageHTML = `<main class="flex-grow flowing-columns">`;
+        let backPageHTML = `<header class="flex justify-between items-baseline border-b-2 border-black pb-3 mb-4"><h1 class="text-3xl font-fell">${data.name}</h1><p class="text-sm italic">Character Details</p></header>
+                            <main class="flex-grow flowing-columns">`;
+
+        backPageHTML += `
+            <section class="bordered-section text-sm mb-4">
+                <h2 class="section-header">Personality</h2>
+                ${isEditing ? `
+                    <p class="mb-2"><strong>Traits:</strong> <textarea id="edit-personality-traits" class="edit-mode-textarea">${data.personality.traits}</textarea></p>
+                    <p class="mb-2"><strong>Ideal:</strong> <textarea id="edit-personality-ideal" class="edit-mode-textarea">${data.personality.ideal}</textarea></p>
+                    <p class="mb-2"><strong>Bond:</strong> <textarea id="edit-personality-bond" class="edit-mode-textarea">${data.personality.bond}</textarea></p>
+                    <p><strong>Flaw:</strong> <textarea id="edit-personality-flaw" class="edit-mode-textarea">${data.personality.flaw}</textarea></p>
+                ` : `
+                    <p class="mb-2"><strong>Traits:</strong> <span class="italic">${data.personality.traits}</span></p>
+                    <p class="mb-2"><strong>Ideal:</strong> <span class="italic">${data.personality.ideal}</span></p>
+                    <p class="mb-2"><strong>Bond:</strong> <span class="italic">${data.personality.bond}</span></p>
+                    <p><strong>Flaw:</strong> <span class="italic">${data.personality.flaw}</span></p>
+                `}
+            </section>
+            <section class="mb-4"><h2 class="section-header">Features & Traits</h2><div id="features-list-render" class="space-y-3 text-sm"></div></section>
+            <section><h2 class="section-header">Equipment</h2>${isEditing ? `<textarea id="edit-equipment-list" class="edit-mode-textarea">${data.equipment}</textarea>`: `<p class="text-sm italic">${data.equipment}</p>`}</section>
+        `;
 
         if (data.spellcasting) {
             backPageHTML += `<section id="spellcasting-section-render" class="mt-4 flex-grow flex flex-col"></section>`;
         }
-
-        backPageHTML += `
-            <section class="mb-4"><h2 class="section-header">Features & Traits</h2><div id="features-list-render" class="space-y-3 text-sm"></div></section>
-            <section><h2 class="section-header">Equipment</h2>${isEditing ? `<textarea id="edit-equipment-list" class="edit-mode-textarea">${data.equipment}</textarea>`: `<p class="text-sm italic">${data.equipment}</p>`}</section>
-        `;
 
         backPageHTML += `</main>`;
         sheetBack.innerHTML = backPageHTML;

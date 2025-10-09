@@ -1,0 +1,178 @@
+{
+  "schema": "http://json-schema.org/draft-07/schema#",
+  "title": "D&D 2024 Character Sheet",
+  "description": "A JSON schema for a Dungeons & Dragons character sheet based on the 2024 ruleset.",
+  "type": "object",
+  "properties": {
+    "name": { "description": "The character's full name.", "type": "string" },
+    "title": {
+      "description": "A descriptive title or epithet for the character.",
+      "type": "string"
+    },
+    "class": {
+      "description": "The character's primary class and subclass (e.g., 'Fighter (Battle Master)').",
+      "type": "string"
+    },
+    "level": {
+      "description": "The character's current level.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "species": {
+      "description": "The character's species (formerly race), e.g., 'Human', 'Elf', 'Orc'.",
+      "type": "string"
+    },
+    "background": {
+      "description": "The character's background, which now determines ability score improvements and an origin feat.",
+      "type": "string"
+    },
+    "abilityScores": {
+      "description": "The character's six core ability scores.",
+      "type": "object",
+      "properties": {
+        "str": { "type": "integer" },
+        "dex": { "type": "integer" },
+        "con": { "type": "integer" },
+        "int": { "type": "integer" },
+        "wis": { "type": "integer" },
+        "cha": { "type": "integer" }
+      },
+      "required": ["str", "dex", "con", "int", "wis", "cha"]
+    },
+    "profBonus": {
+      "description": "The character's proficiency bonus.",
+      "type": "integer"
+    },
+    "proficiencies": {
+      "description": "A list of all the character's proficiencies.",
+      "type": "object",
+      "properties": {
+        "savingThrows": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["str", "dex", "con", "int", "wis", "cha"]
+          }
+        },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "weapons": { "type": "array", "items": { "type": "string" } },
+        "armor": { "type": "array", "items": { "type": "string" } },
+        "tools": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "combat": {
+      "description": "Core combat statistics.",
+      "type": "object",
+      "properties": {
+        "ac": { "type": "integer" },
+        "hp_max": { "type": "integer" },
+        "speed": { "type": "string", "pattern": "^\\d+ft" }
+      }
+    },
+    "attacks": {
+      "description": "A list of the character's available attacks.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "atkStat": {
+            "type": "string",
+            "enum": ["str", "dex", "con", "int", "wis", "cha"]
+          },
+          "dmgStat": {
+            "type": "string",
+            "enum": ["str", "dex", "con", "int", "wis", "cha"]
+          },
+          "dmgDie": { "type": "string" },
+          "dmgBonus": { "type": "integer" },
+          "type": { "type": "string" },
+          "notes": { "type": "string" },
+          "weaponMastery": {
+            "description": "The weapon mastery property for this attack (2024 rule).",
+            "type": "string"
+          }
+        },
+        "required": ["name", "atkStat", "dmgStat", "dmgDie", "type"]
+      }
+    },
+    "features": {
+      "description": "A list of all class features, species traits, and feats.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "desc": { "type": "string" },
+          "key": {
+            "description": "If true, this feature appears on the front page.",
+            "type": "boolean"
+          },
+          "uses": {
+            "type": ["object", "null"],
+            "properties": {
+              "total": { "type": "integer" },
+              "per": {
+                "type": "string",
+                "enum": ["short rest", "long rest", "day", "charge"]
+              }
+            }
+          }
+        },
+        "required": ["title", "desc", "key"]
+      }
+    },
+    "equipment": {
+      "description": "A summary of the character's carried equipment and currency.",
+      "type": "string"
+    },
+    "personality": {
+      "description": "The character's roleplaying traits.",
+      "type": "object",
+      "properties": {
+        "traits": { "type": "string" },
+        "ideal": { "type": "string" },
+        "bond": { "type": "string" },
+        "flaw": { "type": "string" }
+      }
+    },
+    "spellcasting": {
+      "description": "Spellcasting abilities and slots. Null if not a spellcaster.",
+      "type": ["object", "null"],
+      "properties": {
+        "ability": { "type": "string", "enum": ["int", "wis", "cha"] },
+        "spellSlots": {
+          "type": "object",
+          "patternProperties": {
+            "^level[1-9]$": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "spells": {
+      "description": "A list of known or prepared spells.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "level": { "type": "integer", "minimum": 0, "maximum": 9 },
+          "desc": { "type": "string" }
+        },
+        "required": ["name", "level", "desc"]
+      }
+    }
+  },
+  "required": [
+    "name",
+    "class",
+    "level",
+    "species",
+    "background",
+    "abilityScores",
+    "profBonus",
+    "proficiencies",
+    "combat"
+  ]
+}
