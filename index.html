@@ -162,7 +162,6 @@
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
 
         const calculateMaxHp = (level, className, conScore) => {
-            console.log(level, className, conScore);
             const classData = DND_RULES.CLASSES[className];
             if (!classData) return 1;
 
@@ -284,6 +283,7 @@
             a.href = url;
             a.download = `${currentCharacterData.name.toLowerCase().replace(/\s+/g, '_')}.json`;
             document.body.appendChild(a);
+            a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         };
@@ -344,7 +344,10 @@
             data.species = document.getElementById('edit-char-species').value;
             data.background = document.getElementById('edit-char-background').value;
             Object.keys(data.abilityScores).forEach(key => {
-                data.abilityScores[key] = parseInt(document.getElementById(`edit-ability-${key}`).value) || 10;
+                let score = parseInt(document.getElementById(`edit-ability-${key}`).value) || 10;
+                if (score > 20) score = 20;
+                if (score < 1) score = 1;
+                data.abilityScores[key] = score;
             });
             
             data.combat.ac = parseInt(document.getElementById('edit-combat-ac').value) || 10;
@@ -473,7 +476,7 @@
                             ${Object.entries(data.abilityScores).map(([key, value]) => `
                                 <div class="stat-box">
                                     <label class="font-fell text-sm">${key.toUpperCase()}</label>
-                                    ${isEditing ? `<input type="number" id="edit-ability-${key}" class="ability-score edit-stat" value="${value}">` : `<div class="ability-score">${value}</div>`}
+                                    ${isEditing ? `<input type="number" id="edit-ability-${key}" class="ability-score edit-stat" value="${value}" min="1" max="20">` : `<div class="ability-score">${value}</div>`}
                                     <div class="ability-modifier">${formatMod(abilityMods[key])}</div>
                                 </div>
                             `).join('')}
@@ -557,7 +560,7 @@
             
             if (isEditing) {
                 if (Object.keys(DND_RULES.CLASSES).length > 0) {
-                    document.getElementById('edit-char-class').addEventListener('change', handleClassChange);
+                    document.getElementById('edit-char-class').addEventListener('change', handleStatChange);
                 }
                 if (Object.keys(DND_RULES.SPECIES).length > 0) {
                     document.getElementById('edit-char-species').addEventListener('change', handleSpeciesChange);
@@ -728,5 +731,4 @@
 </script>
 </body>
 </html>
-
 
