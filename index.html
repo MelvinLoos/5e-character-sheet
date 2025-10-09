@@ -130,7 +130,9 @@
                 ABILITIES: { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" },
                 SKILLS: { "Acrobatics": "dex", "Animal Handling": "wis", "Arcana": "int", "Athletics": "str", "Deception": "cha", "History": "int", "Insight": "wis", "Intimidation": "cha", "Investigation": "int", "Medicine": "wis", "Nature": "int", "Perception": "wis", "Performance": "cha", "Persuasion": "cha", "Religion": "int", "Sleight of Hand": "dex", "Stealth": "dex", "Survival": "wis" },
                 CLASSES: {},
-                SPECIES: {}
+                SPECIES: {},
+                PROFICIENCY_BONUS_PROGRESSION: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
+                SPELL_SLOT_PROGRESSION: {}
             };
             runApp(fallbackRules);
         });
@@ -273,9 +275,9 @@
             const newClassName = event.target.value;
             const classData = DND_RULES.CLASSES[newClassName];
             if (classData) {
-                gatherDataFromForm();
+                gatherDataFromForm(); // Capture current state before changing
                 currentCharacterData.class = newClassName;
-                currentCharacterData.proficiencies.savingThrows = classData.savingThrows;
+                currentCharacterData.proficiencies.savingThrows = [...classData.savingThrows];
                 renderCharacterSheet();
             }
         };
@@ -296,6 +298,49 @@
 
                 renderCharacterSheet();
              }
+        };
+
+        const handleLevelChange = (event) => {
+            const newLevel = parseInt(event.target.value);
+            if (newLevel < 1 || isNaN(newLevel) || newLevel > 20) {
+                event.target.value = currentCharacterData.level; // Revert if invalid
+                return;
+            }
+
+            const oldLevel = currentCharacterData.level;
+            const levelDiff = newLevel - oldLevel;
+            
+            gatherDataFromForm();
+            const char = currentCharacterData;
+            const classData = DND_RULES.CLASSES[char.class];
+            if (!classData) return;
+
+            // Update Level
+            char.level = newLevel;
+
+            // Update Proficiency Bonus
+            let currentProf = char.profBonus;
+            for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
+                if (char.level >= parseInt(levelThreshold)) {
+                    currentProf = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold];
+                }
+            }
+            char.profBonus = currentProf;
+
+            // Update HP
+            const conMod = getMod(char.abilityScores.con);
+            const avgHpGain = classData.hitDiceAverage + conMod;
+            char.combat.hp_max += levelDiff * Math.max(1, avgHpGain);
+
+            // Update Spell Slots
+            if (char.spellcasting && classData.casterType) {
+                const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
+                if (progression && progression[char.level]) {
+                    char.spellcasting.spellSlots = { ...progression[char.level] };
+                }
+            }
+            
+            renderCharacterSheet();
         };
 
         fileInput.addEventListener('change', handleFileLoad);
@@ -409,7 +454,6 @@
                 speciesInputHTML = isEditing ? `<input id="edit-char-species" class="edit-mode-input" value="${data.species}">` : data.species;
             }
 
-
             sheetFront.innerHTML = `
                 <header class="grid grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3">
                     <div class="col-span-2 header-main">
@@ -417,8 +461,8 @@
                         ${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}
                     </div>
                     <div class="text-right text-sm">
-                        <p><strong>Class:</strong> ${isEditing ? classInputHTML : `${data.class} ${data.level}`}</p>
-                        ${isEditing ? `<p><strong>Level:</strong> <input id="edit-char-level" type="number" class="edit-stat" value="${data.level}"></p>` : ''}
+                        <p><strong>Class:</strong> ${isEditing ? classInputHTML : `${data.class}`}</p>
+                        <p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p>
                         <p><strong>Species:</strong> ${isEditing ? speciesInputHTML : data.species}</p>
                         ${isEditing ? `<p><strong>Background:</strong> <input id="edit-char-background" class="edit-mode-input" value="${data.background}"></p>` : `<p><strong>Background:</strong> ${data.background}</p>`}
                     </div>
@@ -525,6 +569,7 @@
                 if (Object.keys(DND_RULES.SPECIES).length > 0) {
                     document.getElementById('edit-char-species').addEventListener('change', handleSpeciesChange);
                 }
+                document.getElementById('edit-char-level')?.addEventListener('change', handleLevelChange);
             }
             feather.replace();
         }
