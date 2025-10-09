@@ -1,0 +1,83 @@
+{
+  "name": "Valerius Calderon",
+  "title": "The Valiant Blade",
+  "class": "Fighter (Battle Master)",
+  "level": 3,
+  "race": "Human (Variant)",
+  "background": "Soldier",
+  "abilityScores": {
+    "str": 16,
+    "dex": 13,
+    "con": 15,
+    "int": 10,
+    "wis": 12,
+    "cha": 8
+  },
+  "profBonus": 2,
+  "proficiencies": {
+    "savingThrows": ["str", "con"],
+    "skills": ["athletics", "intimidation", "perception", "survival"]
+  },
+  "combat": {
+    "ac": 18,
+    "hp_max": 28,
+    "speed": "30ft"
+  },
+  "attacks": [
+    {
+      "name": "Longsword",
+      "atkStat": "str",
+      "dmgDie": "1d8",
+      "dmgStat": "str",
+      "type": "Slashing",
+      "notes": "Versatile (1d10)"
+    },
+    {
+      "name": "Light Crossbow",
+      "atkStat": "dex",
+      "dmgDie": "1d8",
+      "dmgStat": "dex",
+      "type": "Piercing",
+      "notes": "Ammunition (range 80/320), loading, two-handed"
+    }
+  ],
+  "features": [
+    {
+      "title": "Feat: Sentinel",
+      "desc": "You have mastered techniques to take advantage of every drop in any enemy's guard, gaining the following benefits: <ul><li>When you hit a creature with an opportunity attack, the creature's speed becomes 0 for the rest of the turn.</li><li>Creatures provoke opportunity attacks from you even if they take the Disengage action before leaving your reach.</li><li>When a creature within 5 feet of you makes an attack against a target other than you, you can use your reaction to make a melee weapon attack against the attacking creature.</li></ul>",
+      "key": false
+    },
+    {
+      "title": "Second Wind",
+      "desc": "On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level.",
+      "uses": { "total": 1, "per": "short rest" },
+      "key": true
+    },
+    {
+      "title": "Action Surge",
+      "desc": "On your turn, you can take one additional action. Once you use this feature, you must finish a short or long rest before you can use it again.",
+      "uses": { "total": 1, "per": "short rest" },
+      "key": true
+    },
+    {
+      "title": "Maneuvers (Superiority Dice: 4d8)",
+      "desc": "You know three maneuvers. You can use only one maneuver per attack. You regain all expended dice on a short or long rest.<ul><li>**Riposte:** When a creature misses you with a melee attack, you can use your reaction and expend one die to make a melee weapon attack. If you hit, add the die to damage.</li><li>**Trip Attack:** When you hit a creature, you can expend one die to add it to damage and attempt to knock the target prone (DC 13 STR save).</li><li>**Goading Attack:** When you hit a creature, you can expend one die to add it to damage and attempt to goad the target (DC 13 WIS save). It has disadvantage on attacks against targets other than you.</li></ul>",
+      "key": true
+    },
+    {
+      "title": "Fighting Style: Dueling",
+      "desc": "When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.",
+      "key": false
+    }
+  ],
+  "equipment": "Chain mail, a longsword, a light crossbow with 20 bolts, a shield, an explorer's pack, a rank insignia (Corporal), a trophy from a fallen enemy (a goblin's dagger), a set of common clothes, and a pouch containing 10 gp.",
+  "personality": {
+    "traits": "I'm always polite and respectful. I can stare down a hell hound without flinching.",
+    "ideal": "Respect. People deserve to be treated with dignity and respect.",
+    "bond": "I would still lay down my life for the people I served with.",
+    "flaw": "I have little respect for anyone who is not a proven warrior."
+  },
+  "spellcasting": null,
+  "spells": []
+}
+
