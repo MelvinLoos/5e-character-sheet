@@ -371,19 +371,12 @@
 
             loadingModal.classList.remove('hidden');
 
-            const systemInstruction = "You are an expert Dungeons & Dragons 5e 2024 ruleset Game Master. The user will provide a prompt describing a character. You will generate a complete, rules-legal character sheet in JSON format that adheres to the provided schema. Ensure the character is interesting and the choices are thematically appropriate to the prompt. Base all rules on the 2024 Player's Handbook.";
-            
             const payload = {
-                contents: [{ parts: [{ text: userPrompt }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] },
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: characterSchema
-                }
+                prompt: userPrompt,
+                schema: characterSchema
             };
 
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiUrl = `/api/generate-character`;
 
             try {
                 const response = await fetch(apiUrl, {
@@ -393,7 +386,8 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status} ${response.statusText}`);
+                    const errorText = await response.text();
+                    throw new Error(`API call failed with status: ${response.status} ${response.statusText} - ${errorText}`);
                 }
 
                 const result = await response.json();
@@ -402,21 +396,10 @@
                     const jsonText = result.candidates[0].content.parts[0].text;
                     const generatedData = JSON.parse(jsonText);
                     
-                    // Post-process to ensure calculated fields are correct
                     const finalData = { ...createBlankCharacter(), ...generatedData };
-                    const profBonus = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[Object.keys(DND_RULES.PROFICIENCY_BONUS_PROGRESSION).reverse().find(lvl => finalData.level >= lvl)] || 2;
-                    finalData.profBonus = profBonus;
-                    finalData.combat.hp_max = calculateMaxHp(finalData.level, finalData.class, finalData.abilityScores.con);
-                    
-                    const classData = DND_RULES.CLASSES[finalData.class];
-                    if (finalData.spellcasting && classData && classData.casterType) {
-                        const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
-                        if (progression && progression[finalData.level]) {
-                            finalData.spellcasting.spellSlots = { ...progression[finalData.level] };
-                        }
-                    }
                     
                     currentCharacterData = finalData;
+                    gatherDataFromForm(); // This will recalculate HP, prof, etc. based on the new data
                     isEditing = false;
                     renderCharacterSheet();
                     handleSaveToLibrary();
@@ -433,8 +416,9 @@
             }
         }
 
+
         // --- Initial Load ---
-        fetch('./schema.json')
+        fetch('./character_schema.json')
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
