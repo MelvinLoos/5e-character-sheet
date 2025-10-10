@@ -72,33 +72,52 @@
         .editor-button { padding: 0.5rem 1rem; }
         .flowing-columns { column-count: 2; column-gap: 1.5rem; height: 100%; }
         .flowing-columns > section { break-inside: avoid; }
+        .gemini-button { background-color: #4a3362; color: #f3e8ff; border-color: #3e2753; font-size: 0.8rem; padding: 0.25rem 0.5rem; }
+        .gemini-button:hover { background-color: #3e2753; }
+        .portrait-container { width: 100px; height: 100px; background-color: rgba(0,0,0,0.1); border: 1px solid #c9b7a2; cursor: pointer; position: relative; }
+        .portrait-image { width: 100%; height: 100%; object-fit: cover; }
+        .portrait-container .icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
         /* Edit Mode Styles */
         .edit-mode-input, .edit-mode-select { width: 100%; background-color: #fdf6e3; border: 1px dashed #c9b7a2; padding: 2px 4px; }
         .edit-mode-textarea { width: 100%; background-color: #fdf6e3; border: 1px dashed #c9b7a2; padding: 2px 4px; min-height: 50px; font-style: italic; font-size: 0.9rem;}
         .edit-stat { width: 40px; text-align: center; background-color: #fdf6e3; border: 1px solid #c9b7a2; }
         .edit-mode-small-btn { font-size: 0.7rem; padding: 0 4px; margin-left: 8px; border-radius: 50%; background-color: #8c1d1d; color: #fdf6e3; border: none; cursor: pointer; }
+        
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #8c1d1d; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background-color: #fdf6e3; padding: 2rem; border: 2px solid #5c4d3d; max-width: 500px; text-align: center; }
     </style>
 </head>
 <body class="p-4">
     <div class="control-panel max-w-5xl mx-auto p-4 mb-4 no-print bg-amber-50 rounded shadow-md border border-amber-200">
         <h1 class="font-fell text-3xl text-red-800 text-center mb-4">Character Sheet Creator</h1>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-2 items-center">
-            <div class="flex justify-start items-center gap-4">
-                <button id="new-char-btn" title="New Character"><i data-feather="file-plus"></i></button>
-                <label for="character-select" class="font-fell">Load Character:</label>
-                <select id="character-select" class="flex-grow"></select>
-                <label for="char-file-input" class="icon-button" title="Load character from file">
-                    <i data-feather="folder"></i>
-                </label>
-                <input type="file" id="char-file-input" accept=".json" class="hidden">
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 items-center">
+                <div class="flex justify-start items-center gap-4">
+                    <button id="new-char-btn" title="New Character"><i data-feather="file-plus"></i></button>
+                    <label for="character-select" class="font-fell">Load Character:</label>
+                    <select id="character-select" class="flex-grow"></select>
+                    <label for="char-file-input" class="icon-button" title="Load character from file">
+                        <i data-feather="folder"></i>
+                    </label>
+                    <input type="file" id="char-file-input" accept=".json" class="hidden">
+                </div>
+                 <div class="flex justify-end items-center gap-4">
+                    <label for="session-name" class="font-fell">Session Name:</label>
+                    <input type="text" id="session-name" placeholder="E.g., Curse of Strahd" class="flex-grow">
+                </div>
+                <div class="col-span-2 flex justify-end">
+                    <button id="clear-library-btn" class="bg-gray-600 hover:bg-gray-700 text-xs py-1 px-2">Clear Entire Library</button>
+                </div>
             </div>
-             <div class="flex justify-end items-center gap-4">
-                <label for="session-name" class="font-fell">Session Name:</label>
-                <input type="text" id="session-name" placeholder="E.g., Curse of Strahd" class="flex-grow">
-            </div>
-            <div class="col-span-2 flex justify-end mt-2">
-                <button id="clear-library-btn" class="bg-gray-600 hover:bg-gray-700 text-xs py-1 px-2">Clear Entire Library</button>
+             <div class="border-t border-amber-200 pt-4 mt-4">
+                <h2 class="font-fell text-xl text-center text-purple-900 mb-2">✨ AI Character Generator ✨</h2>
+                <div class="flex items-center gap-4">
+                    <input type="text" id="gemini-prompt" class="flex-grow" placeholder="Describe a character, e.g., 'a grumpy dwarf cleric who is afraid of spiders'">
+                    <button id="generate-character-btn" class="gemini-button">Generate</button>
+                </div>
             </div>
         </div>
     </div>
@@ -118,6 +137,19 @@
         <!-- Page Containers -->
         <div id="sheet-container-front" class="sheet-container p-6 page-break"></div>
         <div id="sheet-container-back" class="sheet-container p-6"></div>
+    </div>
+    <div id="loading-modal" class="modal-backdrop hidden no-print">
+        <div class="modal-content">
+            <div class="loading-spinner mx-auto"></div>
+            <p class="mt-4 font-fell text-lg">✨ The mists of creation are swirling...</p>
+        </div>
+    </div>
+    <div id="quest-modal" class="modal-backdrop hidden no-print">
+        <div class="modal-content">
+            <h2 class="font-fell text-2xl text-red-800">Adventure Calls!</h2>
+            <p id="quest-hook-text" class="my-4 italic"></p>
+            <button id="close-quest-modal" class="editor-button">Close</button>
+        </div>
     </div>
 
 <script type="module">
@@ -141,6 +173,7 @@
     function runApp(DND_RULES) {
         let isEditing = false;
         let currentCharacterData = null;
+        let characterSchema = null;
         const STORAGE_KEY = 'dndCharacterLibrary';
 
         const fileInput = document.getElementById('char-file-input');
@@ -157,6 +190,9 @@
         const saveLibraryBtn = document.getElementById('save-library-btn');
         const exportJsonBtn = document.getElementById('export-json-btn');
         const sheetControls = document.getElementById('sheet-controls');
+        const generateBtn = document.getElementById('generate-character-btn');
+        const geminiPromptInput = document.getElementById('gemini-prompt');
+        const loadingModal = document.getElementById('loading-modal');
 
         const getMod = (score) => Math.floor((score - 10) / 2);
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
@@ -322,6 +358,98 @@
             renderCharacterSheet();
         };
 
+        async function handleGenerateCharacter() {
+            const userPrompt = geminiPromptInput.value.trim();
+            if (!userPrompt) {
+                alert("Please describe the character you want to generate.");
+                return;
+            }
+             if (!characterSchema) {
+                alert("Character schema is not loaded. AI generation is disabled.");
+                return;
+            }
+
+            loadingModal.classList.remove('hidden');
+
+            const systemInstruction = "You are an expert Dungeons & Dragons 5e 2024 ruleset Game Master. The user will provide a prompt describing a character. You will generate a complete, rules-legal character sheet in JSON format that adheres to the provided schema. Ensure the character is interesting and the choices are thematically appropriate to the prompt. Base all rules on the 2024 Player's Handbook.";
+            
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: characterSchema
+                }
+            };
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
+                    const jsonText = result.candidates[0].content.parts[0].text;
+                    const generatedData = JSON.parse(jsonText);
+                    
+                    // Post-process to ensure calculated fields are correct
+                    const finalData = { ...createBlankCharacter(), ...generatedData };
+                    const profBonus = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[Object.keys(DND_RULES.PROFICIENCY_BONUS_PROGRESSION).reverse().find(lvl => finalData.level >= lvl)] || 2;
+                    finalData.profBonus = profBonus;
+                    finalData.combat.hp_max = calculateMaxHp(finalData.level, finalData.class, finalData.abilityScores.con);
+                    
+                    const classData = DND_RULES.CLASSES[finalData.class];
+                    if (finalData.spellcasting && classData && classData.casterType) {
+                        const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
+                        if (progression && progression[finalData.level]) {
+                            finalData.spellcasting.spellSlots = { ...progression[finalData.level] };
+                        }
+                    }
+                    
+                    currentCharacterData = finalData;
+                    isEditing = false;
+                    renderCharacterSheet();
+                    handleSaveToLibrary();
+
+                } else {
+                    throw new Error("Invalid response structure from Gemini API.");
+                }
+
+            } catch (error) {
+                console.error("Error generating character:", error);
+                alert("There was an error generating the character. Please check the console for more details.");
+            } finally {
+                loadingModal.classList.add('hidden');
+            }
+        }
+
+        // --- Initial Load ---
+        fetch('./schema.json')
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(schema => {
+                characterSchema = schema;
+                console.log("Character schema loaded successfully.");
+            })
+            .catch(error => {
+                console.error("Error loading character_schema.json:", error);
+                console.warn("AI character generation will be disabled.");
+                generateBtn.disabled = true;
+                geminiPromptInput.placeholder = "AI features disabled: schema not found.";
+            });
+
         fileInput.addEventListener('change', handleFileLoad);
         characterSelect.addEventListener('change', loadFromSelect);
         printBtn.addEventListener('click', () => window.print());
@@ -331,6 +459,7 @@
         editCharBtn.addEventListener('click', handleEditToggle);
         saveLibraryBtn.addEventListener('click', handleSaveToLibrary);
         exportJsonBtn.addEventListener('click', handleExport);
+        generateBtn.addEventListener('click', handleGenerateCharacter);
         
         populateCharacterSelect();
         feather.replace();
