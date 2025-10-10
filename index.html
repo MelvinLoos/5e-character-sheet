@@ -376,7 +376,7 @@
                 schema: characterSchema
             };
 
-            const apiUrl = `/api/generate-character`;
+            const apiUrl = `/.netlify/functions/generate-character`;
 
             try {
                 const response = await fetch(apiUrl, {
