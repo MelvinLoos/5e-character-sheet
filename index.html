@@ -16,15 +16,32 @@
             .page-break { page-break-after: always; }
             .usage-box, .spell-slot-box { border: 1px solid #5c4d3d !important; }
             .usage-box:checked, .spell-slot-box:checked { background-color: #3a2d21 !important; }
+            .sheet-container { border: none !important; box-shadow: none !important; height: 11in;}
+            .sheet-wrapper { max-width: 100%; margin: 0; }
+            /* Force print layout */
+            #sheet-container-front header { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; }
+            #sheet-container-front header .header-main { grid-column: span 2 / span 2 !important; }
+            #sheet-container-front main { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+            #sheet-container-front main > div { grid-column: span 1 / span 1 !important; }
+            #sheet-container-back main { column-count: 2 !important; }
         }
         body { font-family: 'EB Garamond', serif; background-color: #fdf6e3; color: #3a2d21; }
         .font-fell { font-family: 'IM Fell English SC', serif; }
         .sheet-wrapper { max-width: 8.5in; margin: 1rem auto; position: relative; }
         .sheet-container {
-            min-height: 11in; height: 11in;
             border: 2px solid #5c4d3d; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             background-image: url('https://www.transparenttextures.com/patterns/old-paper.png');
             background-color: #fdf6e3; display: none; flex-direction: column;
+        }
+        @media (max-width: 1023px) { /* Apply up to lg breakpoint */
+            .sheet-container {
+                height: auto;
+                min-height: 0;
+            }
+            .page-break {
+                page-break-after: unset;
+                margin-bottom: 1rem;
+            }
         }
         .sheet-visible { display: flex; }
         .header-main h1 { color: #8c1d1d; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
@@ -94,10 +111,10 @@
     <div class="control-panel max-w-5xl mx-auto p-4 mb-4 no-print bg-amber-50 rounded shadow-md border border-amber-200">
         <h1 class="font-fell text-3xl text-red-800 text-center mb-4">Character Sheet Creator</h1>
         <div class="space-y-4">
-            <div class="grid grid-cols-2 gap-x-4 gap-y-2 items-center">
-                <div class="flex justify-start items-center gap-4">
+            <div class="grid md:grid-cols-2 gap-x-4 gap-y-2 items-center">
+                <div class="flex justify-start items-center gap-2 md:gap-4">
                     <button id="new-char-btn" title="New Character"><i data-feather="file-plus"></i></button>
-                    <label for="character-select" class="font-fell">Load Character:</label>
+                    <label for="character-select" class="font-fell">Load:</label>
                     <select id="character-select" class="flex-grow"></select>
                     <label for="char-file-input" class="icon-button" title="Load character from file">
                         <i data-feather="folder"></i>
@@ -105,17 +122,17 @@
                     <input type="file" id="char-file-input" accept=".json" class="hidden">
                 </div>
                  <div class="flex justify-end items-center gap-4">
-                    <label for="session-name" class="font-fell">Session Name:</label>
-                    <input type="text" id="session-name" placeholder="E.g., Curse of Strahd" class="flex-grow">
+                    <label for="session-name" class="font-fell">Session:</label>
+                    <input type="text" id="session-name" placeholder="E.g., Westmarches" class="flex-grow">
                 </div>
-                <div class="col-span-2 flex justify-end">
+                <div class="col-span-1 md:col-span-2 flex justify-end">
                     <button id="clear-library-btn" class="bg-gray-600 hover:bg-gray-700 text-xs py-1 px-2">Clear Entire Library</button>
                 </div>
             </div>
              <div class="border-t border-amber-200 pt-4 mt-4">
                 <h2 class="font-fell text-xl text-center text-purple-900 mb-2">✨ AI Character Generator ✨</h2>
                 <div class="flex items-center gap-4">
-                    <input type="text" id="gemini-prompt" class="flex-grow" placeholder="Describe a character, e.g., 'a grumpy dwarf cleric who is afraid of spiders'">
+                    <input type="text" id="gemini-prompt" class="flex-grow" placeholder="Describe a character, e.g., 'a grumpy dwarf cleric'">
                     <button id="generate-character-btn" class="gemini-button">Generate</button>
                 </div>
             </div>
@@ -376,7 +393,7 @@
                 schema: characterSchema
             };
 
-            const apiUrl = `/.netlify/functions/generate-character`;
+            const apiUrl = `/api/generate-character`;
 
             try {
                 const response = await fetch(apiUrl, {
@@ -415,10 +432,29 @@
                 loadingModal.classList.add('hidden');
             }
         }
+        
+        const handlePrint = () => {
+            const wasEditing = isEditing;
+            if (wasEditing) {
+                isEditing = false;
+                renderCharacterSheet();
+            }
+
+            setTimeout(() => {
+                window.onafterprint = () => {
+                    if (wasEditing) {
+                        isEditing = true;
+                        renderCharacterSheet();
+                    }
+                    window.onafterprint = null;
+                };
+                window.print();
+            }, 100);
+        };
 
 
         // --- Initial Load ---
-        fetch('./schema.json')
+        fetch('./character_schema.json')
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
@@ -428,7 +464,7 @@
                 console.log("Character schema loaded successfully.");
             })
             .catch(error => {
-                console.error("Error loading schema.json:", error);
+                console.error("Error loading character_schema.json:", error);
                 console.warn("AI character generation will be disabled.");
                 generateBtn.disabled = true;
                 geminiPromptInput.placeholder = "AI features disabled: schema not found.";
@@ -436,7 +472,7 @@
 
         fileInput.addEventListener('change', handleFileLoad);
         characterSelect.addEventListener('change', loadFromSelect);
-        printBtn.addEventListener('click', () => window.print());
+        printBtn.addEventListener('click', handlePrint);
         clearLibraryBtn.addEventListener('click', clearLibrary);
         newCharBtn.addEventListener('click', handleNewCharacter);
         welcomeNewCharBtn.addEventListener('click', handleNewCharacter);
@@ -570,21 +606,21 @@
             }
 
             sheetFront.innerHTML = `
-                <header class="grid grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3">
-                    <div class="col-span-2 header-main">
+                <header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3">
+                    <div class="lg:col-span-2 header-main">
                         ${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}
                         ${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}
                     </div>
-                    <div class="text-right text-sm">
+                    <div class="text-left lg:text-right text-sm mt-2 lg:mt-0">
                         <p><strong>Class:</strong> ${isEditing ? classInputHTML : `${data.class}`}</p>
                         <p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p>
                         <p><strong>Species:</strong> ${isEditing ? speciesInputHTML : data.species}</p>
                         ${isEditing ? `<p><strong>Background:</strong> <input id="edit-char-background" class="edit-mode-input" value="${data.background}"></p>` : `<p><strong>Background:</strong> ${data.background}</p>`}
                     </div>
                 </header>
-                <main class="grid grid-cols-3 gap-6 flex-grow">
+                <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
                     <!-- COL 1: Exploration -->
-                    <div class="col-span-1 space-y-3 flex flex-col">
+                    <div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col">
                         <section class="grid grid-cols-2 gap-3">
                             ${Object.entries(data.abilityScores).map(([key, value]) => `
                                 <div class="stat-box">
@@ -606,7 +642,7 @@
                         </ul></section>
                     </div>
                     <!-- COL 2: Combat -->
-                    <div class="col-span-1 space-y-3 flex flex-col">
+                    <div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col">
                          <section class="grid grid-cols-3 gap-3 text-center">
                             <div class="stat-box">${isEditing ? `<input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}">` : `<div class="ability-score">${data.combat.ac}</div>`}<div class="font-fell text-xs">ARMOR CLASS</div></div>
                             <div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div>
@@ -632,7 +668,7 @@
                         </div></section>
                     </div>
                     <!-- COL 3: Actions -->
-                     <div class="col-span-1 space-y-4">
+                     <div class="lg:col-span-1 md:col-span-2 space-y-4">
                         <section id="key-features-section" class="text-sm"></section>
                     </div>
                 </main>
@@ -640,7 +676,7 @@
             renderKeyFeatures(keyFeatures);
             
             let backPageHTML = `<header class="flex justify-between items-baseline border-b-2 border-black pb-3 mb-4"><h1 class="text-3xl font-fell">${data.name}</h1><p class="text-sm italic">Character Details</p></header>
-                                <main class="flex-grow flowing-columns">`;
+                                <main class="flex-grow md:flowing-columns">`;
 
             backPageHTML += `
                 <section class="bordered-section text-sm mb-4">
