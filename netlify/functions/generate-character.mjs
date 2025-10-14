@@ -47,20 +47,17 @@ export default async (req, context) => {
         const data = await geminiResponse.json();
         
         const domain = Netlify.env.get('DOMAIN') || '*';
-        return {
-            statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-            },
-            body: JSON.stringify(data)
-        };
-
+        return new Response(
+            JSON.stringify(data),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': domain,
+                }
+            }
+        );
     } catch (error) {
         console.error('Error in Netlify Function:', error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: 'An error occurred while communicating with the Gemini API.' })
-        };
+        return Response.error('An error occurred while communicating with the Gemini API.', { status: 500 });
     }
 };
