@@ -1,19 +1,19 @@
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
-exports.handler = async function(event, context) {
+export default async (req, context) => {
     // Only allow POST requests
-    if (event.httpMethod !== 'POST') {
+    if (req.method !== 'POST') {
         return { statusCode: 405, body: 'Method Not Allowed' };
     }
 
     try {
-        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        const GEMINI_API_KEY = Netlify.env.get('GEMINI_API_KEY');
 
         if (!GEMINI_API_KEY) {
             return { statusCode: 500, body: JSON.stringify({ error: 'API key not found on server.' }) };
         }
 
-        const { prompt, schema } = JSON.parse(event.body);
+        const { prompt, schema } = JSON.parse(req.body);
 
         if (!prompt || !schema) {
             return { statusCode: 400, body: JSON.stringify({ error: 'Prompt and schema are required.' }) };
@@ -46,11 +46,12 @@ exports.handler = async function(event, context) {
 
         const data = await geminiResponse.json();
         
+        const domain = Netlify.env.get('DOMAIN') || '*';
         return {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // Or lock down to your domain
+                'Access-Control-Allow-Origin': '*',
             },
             body: JSON.stringify(data)
         };
