@@ -10,13 +10,13 @@ export default async (req, context) => {
         const GEMINI_API_KEY = Netlify.env.get('GEMINI_API_KEY');
 
         if (!GEMINI_API_KEY) {
-            return Response.json({ statusCode: 500, body: JSON.stringify({ error: 'API key not found on server.' }) });
+            return Response.error('API key not found on server.');
         }
 
         const { prompt, schema } = JSON.parse(req.body);
 
         if (!prompt || !schema) {
-            return Response.json({ statusCode: 400, body: JSON.stringify({ error: 'Prompt and schema are required.' }) });
+            return Response.error('Prompt and schema are required.');
         }
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
@@ -41,7 +41,7 @@ export default async (req, context) => {
         if (!geminiResponse.ok) {
             const errorBody = await geminiResponse.text();
             console.error('Gemini API Error:', errorBody);
-            return { statusCode: geminiResponse.status, body: JSON.stringify({ error: `Gemini API call failed: ${errorBody}` }) };
+            return Response.error({ statusCode: geminiResponse.status, body: JSON.stringify({ error: `Gemini API call failed: ${errorBody}` }) });
         }
 
         const data = await geminiResponse.json();
