@@ -454,7 +454,7 @@
 
 
         // --- Initial Load ---
-        fetch('./character_schema.json')
+        fetch('./schema.json')
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
@@ -464,7 +464,7 @@
                 console.log("Character schema loaded successfully.");
             })
             .catch(error => {
-                console.error("Error loading character_schema.json:", error);
+                console.error("Error loading schema.json:", error);
                 console.warn("AI character generation will be disabled.");
                 generateBtn.disabled = true;
                 geminiPromptInput.placeholder = "AI features disabled: schema not found.";
