@@ -599,7 +599,7 @@ export const BACKGROUNDS = {
         abilityScoreIncrease: ["str", "dex", "wis"],
         feature: { title: "Tough", desc: "Your hit point maximum increases by an amount equal to twice your level.", key: false }
     },
-    "scribe": { 
+    "Scribe": { 
         description: "You have spent your life learning to read and write, copying texts and preserving knowledge.", 
         skills: ["Investigation", "Perception"], 
         abilityScoreIncrease: ["dex", "int", "wis"],

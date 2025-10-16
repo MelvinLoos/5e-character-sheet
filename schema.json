@@ -1,189 +1,162 @@
 {
-  "$schema": "https://www.google.com/search?q=http://json-schema.org/draft-07/schema%23",
-  "title": "D&D 2024 Character Sheet",
-  "description": "A JSON schema for a Dungeons & Dragons character sheet based on the 2024 rules.",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "D&D 5e Character",
+  "description": "A schema for a Dungeons & Dragons 5th Edition character sheet, compatible with the 2024 Player's Handbook rules. The app will automatically calculate derived stats like final ability scores, HP, proficiency bonus, and will automatically add features from class, species, and background.",
   "type": "object",
   "properties": {
     "name": {
-      "description": "The character's full name.",
-      "type": "string"
+      "type": "string",
+      "description": "The character's name."
     },
     "title": {
-      "description": "A title or epithet for the character.",
-      "type": "string"
+      "type": "string",
+      "description": "An optional title or epithet for the character, like 'The Brave' or 'Nightbreeze'."
     },
     "class": {
-      "description": "The character's primary class.",
-      "type": "string"
+      "type": "string",
+      "description": "The character's class.",
+      "enum": [
+        "Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"
+      ]
     },
     "level": {
-      "description": "The character's current level.",
       "type": "integer",
-      "minimum": 1
+      "description": "The character's level.",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 1
     },
     "species": {
-      "description": "The character's species (formerly race).",
-      "type": "string"
+      "type": "string",
+      "description": "The character's species.",
+      "enum": [
+        "Human", "Dragonborn", "Dwarf", "Elf", "Gnome", "Goliath", "Halfling", "Orc", "Tiefling"
+      ]
     },
     "background": {
-      "description": "The character's background, which determines ability score increases and an origin feat.",
-      "type": "string"
-    },
-    "portrait": {
-      "description": "A URL pointing to an externally hosted image for the character's portrait.",
       "type": "string",
-      "format": "uri"
-    },
-    "backstory": {
-      "description": "The character's backstory.",
-      "type": "string"
+      "description": "The character's background.",
+      "enum": [
+        "Acolyte", "Artisan", "Charlatan", "Criminal", "Entertainer", "Farmer", "Guard", "Guide", "Hermit", "Merchant", "Noble", "Sage", "Sailor", "Scribe", "Soldier", "Urchin"
+      ]
     },
     "abilityScores": {
-      "description": "The character's six core ability scores.",
       "type": "object",
+      "description": "The character's six ability scores before any bonuses are applied. Each score must be between 8 and 15. The total cost of all scores using the point-buy system (8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9) should sum to 27.",
       "properties": {
-        "str": { "type": "integer", "minimum": 1, "maximum": 20 },
-        "dex": { "type": "integer", "minimum": 1, "maximum": 20 },
-        "con": { "type": "integer", "minimum": 1, "maximum": 20 },
-        "int": { "type": "integer", "minimum": 1, "maximum": 20 },
-        "wis": { "type": "integer", "minimum": 1, "maximum": 20 },
-        "cha": { "type": "integer", "minimum": 1, "maximum": 20 }
+        "str": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "dex": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "con": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "int": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "wis": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "cha": { "type": "integer", "minimum": 8, "maximum": 15 }
       },
       "required": ["str", "dex", "con", "int", "wis", "cha"]
     },
-    "profBonus": {
-      "description": "The character's proficiency bonus, determined by level.",
-      "type": "integer"
-    },
-    "proficiencies": {
-      "description": "A list of all the character's proficiencies.",
-      "type": "object",
-      "properties": {
-        "savingThrows": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["str", "dex", "con", "int", "wis", "cha"]
-          }
-        },
-        "skills": { "type": "array", "items": { "type": "string" } },
-        "weapons": { "type": "array", "items": { "type": "string" } },
-        "armor": { "type": "array", "items": { "type": "string" } },
-        "tools": { "type": "array", "items": { "type": "string" } }
-      }
-    },
-    "combat": {
-      "description": "Core combat statistics.",
-      "type": "object",
-      "properties": {
-        "ac": { "type": "integer" },
-        "hp_max": { "type": "integer" },
-        "speed": { "type": "string", "pattern": "^\\d+ft" }
-      }
-    },
-    "attacks": {
-      "description": "A list of the character's available attacks.",
-      "type": "array",
-      "items": {
+    "backgroundBonusSelections": {
         "type": "object",
+        "description": "The ability scores selected to receive the +2 and +1 bonuses from the character's background. These must be chosen from the three options provided by the background and must be different from each other.",
         "properties": {
-          "name": { "type": "string" },
-          "atkStat": {
-            "type": "string",
-            "enum": ["str", "dex", "con", "int", "wis", "cha"]
-          },
-          "dmgStat": {
-            "type": "string",
-            "enum": ["str", "dex", "con", "int", "wis", "cha"]
-          },
-          "dmgDie": { "type": "string" },
-          "dmgBonus": { "type": "integer" },
-          "type": { "type": "string" },
-          "notes": { "type": "string" },
-          "weaponMastery": {
-            "description": "The weapon mastery property for this attack (2024 rule).",
-            "type": "string"
-          }
+            "plusTwo": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
+            "plusOne": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] }
         },
-        "required": ["name", "atkStat", "dmgStat", "dmgDie", "type"]
-      }
+        "required": ["plusTwo", "plusOne"]
     },
     "features": {
-      "description": "A list of all class features, species traits, and feats.",
       "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "title": { "type": "string" },
-          "desc": { "type": "string" },
-          "key": {
-            "description": "If true, this feature appears on the front page.",
-            "type": "boolean"
-          },
-          "uses": {
-            "type": ["object", "null"],
-            "properties": {
-              "total": { "type": "integer" },
-              "per": {
-                "type": "string",
-                "enum": ["short rest", "long rest", "day", "charge"]
-              }
-            }
-          }
-        },
-        "required": ["title", "desc", "key"]
+      "description": "A list of additional features or traits the character has that are not automatically added by class, species, or background.",
+      "items": { 
+        "type": "string",
+        "description": "A feature or trait the character has."
       }
     },
+    "profBonus": {
+      "type": "integer",
+      "description": "The character's proficiency bonus. This is determined by the character's level according to standard D&D 5e rules.",
+      "minimum": 2,
+      "maximum": 6
+    },
+    "proficiencies": {
+        "type": "object",
+        "description": "Contains the character's skill proficiencies. Proficiencies from class and background will be added automatically, but you can specify extra ones here (e.g., from the 'Skilled' feat).",
+        "properties": {
+            "skills": {
+                "type": "array",
+                "items": { "type": "string" }
+            },
+            "savingThrows": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] }
+            }
+        }
+    },
+    "combat": {
+        "type": "object",
+        "properties": {
+            "ac": {
+                "type": "integer",
+                "description": "The character's Armor Class. A reasonable starting value is between 10 and 16."
+            },
+            "speed": {
+                "type": "string",
+                "description": "The character's movement speed in feet. A reasonable starting value is between 25 and 40."
+            }
+        }
+    },
+    "attacks": {
+        "type": "array",
+        "description": "A list of the character's common attacks.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string" },
+                "atkStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
+                "dmgDie": { "type": "string", "pattern": "^\\\\d+d\\\\d+$" },
+                "dmgStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
+                "dmgBonus": { "type": "integer" },
+                "type": { "type": "string" },
+                "notes": { "type": "string" },
+                "weaponMastery": { "type": "string" }
+            },
+            "required": ["name", "atkStat", "dmgDie", "dmgStat", "type"]
+        }
+    },
     "equipment": {
-      "description": "A summary of the character's carried equipment and currency.",
-      "type": "string"
+      "type": "string",
+      "description": "A summary of the character's equipment and starting gold."
     },
     "personality": {
-      "description": "The character's roleplaying traits.",
       "type": "object",
+      "description": "The character's personality traits.",
       "properties": {
         "traits": { "type": "string" },
         "ideal": { "type": "string" },
         "bond": { "type": "string" },
         "flaw": { "type": "string" }
-      }
+      },
+      "required": ["traits", "ideal", "bond", "flaw"]
     },
     "spellcasting": {
-      "description": "Spellcasting abilities and slots. Null if not a spellcaster.",
-      "type": ["object", "null"],
-      "properties": {
-        "ability": { "type": "string", "enum": ["int", "wis", "cha"] },
-        "spellSlots": {
-          "type": "object",
-          "patternProperties": {
-            "^level[1-9]$": { "type": "integer" }
-          }
-        }
-      }
+        "type": ["object", "null"],
+        "description": "Spellcasting information, if the character is a spellcaster. Null otherwise.",
+        "properties": {
+            "ability": { "type": "string", "enum": ["int", "wis", "cha"] }
+        },
+        "required": ["ability"]
     },
     "spells": {
-      "description": "A list of known or prepared spells.",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "level": { "type": "integer", "minimum": 0, "maximum": 9 },
-          "desc": { "type": "string" }
-        },
-        "required": ["name", "level", "desc"]
-      }
+        "type": "array",
+        "description": "A list of spells the character knows or has prepared.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string" },
+                "level": { "type": "integer", "minimum": 0, "maximum": 9 },
+                "desc": { "type": "string" }
+            },
+            "required": ["name", "level", "desc"]
+        }
     }
   },
-  "required": [
-    "name",
-    "class",
-    "level",
-    "species",
-    "background",
-    "abilityScores",
-    "profBonus",
-    "proficiencies",
-    "combat"
-  ]
+  "required": ["name", "class", "species", "background", "abilityScores", "backgroundBonusSelections", "features", "personality"]
 }

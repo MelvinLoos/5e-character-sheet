@@ -1,0 +1,74 @@
+{
+  "name": "Kriv aax",
+  "title": "The Just",
+  "class": "Paladin",
+  "level": 3,
+  "species": "Dragonborn",
+  "background": "Soldier",
+  "abilityScores": {
+    "str": 15,
+    "dex": 12,
+    "con": 13,
+    "int": 8,
+    "wis": 10,
+    "cha": 14
+  },
+  "pointBuyBaseScores": {
+    "str": 8,
+    "dex": 8,
+    "con": 8,
+    "int": 8,
+    "wis": 8,
+    "cha": 8
+  },
+  "backgroundBonusSelections": {
+    "plusTwo": "str",
+    "plusOne": "con"
+  },
+  "profBonus": 2,
+  "proficiencies": {
+    "skills": [],
+    "savingThrows": ["str", "cha"]
+  },
+  "features": [
+
+  ],
+  "combat": {
+    "ac": 18,
+    "speed": "30ft"
+  },
+  "attacks": [
+    {
+      "name": "Longsword",
+      "atkStat": "str",
+      "dmgDie": "1d8",
+      "dmgStat": "str",
+      "dmgBonus": 0,
+      "type": "Slashing",
+      "notes": "Versatile (1d10 when used with two hands).",
+      "weaponMastery": "Sap"
+    }
+  ],
+  "equipment": "Chain mail, a longsword, a shield, a holy symbol, and an explorer's pack.",
+  "personality": {
+    "traits": "I'm always polite and respectful, and I never forget my manners.",
+    "ideal": "Respect. People deserve to be treated with dignity and respect.",
+    "bond": "I protect those who cannot protect themselves.",
+    "flaw": "I have little respect for anyone who is not a proven warrior."
+  },
+  "spellcasting": {
+    "ability": "cha"
+  },
+  "spells": [
+    {
+      "name": "Cure Wounds",
+      "level": 1,
+      "desc": "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier."
+    },
+    {
+      "name": "Shield of Faith",
+      "level": 1,
+      "desc": "A shimmering field appears and surrounds a creature of your choice within range, granting it a +2 bonus to AC for the duration."
+    }
+  ]
+}

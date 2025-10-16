@@ -108,6 +108,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; }
         .modal-content { background-color: #fdf6e3; padding: 2rem; border: 2px solid #5c4d3d; max-width: 500px; text-align: center; }
+        .hide-feature { display: none; }
     </style>
 </head>
 <body class="p-4">
@@ -132,7 +133,7 @@
                     <button id="clear-library-btn" class="bg-gray-600 hover:bg-gray-700 text-xs py-1 px-2">Clear Entire Library</button>
                 </div>
             </div>
-             <div class="border-t border-amber-200 pt-4 mt-4">
+             <div class="border-t border-amber-200 pt-4 mt-4 hide-feature">
                 <h2 class="font-fell text-xl text-center text-purple-900 mb-2">✨ AI Character Generator ✨</h2>
                 <div class="flex items-center gap-4">
                     <input type="text" id="gemini-prompt" class="flex-grow" placeholder="Describe a character, e.g., 'a grumpy dwarf cleric'">
@@ -334,6 +335,7 @@
                     handleSaveToLibrary();
                 } catch (error) {
                     alert(`Error loading file: ${error.message}`);
+                    console.error("File load error:", error);
                 }
             };
             reader.readAsText(file);
