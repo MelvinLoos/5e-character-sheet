@@ -222,17 +222,15 @@
         const STORAGE_KEY = 'dndCharacterLibrary';
 
         // --- SUPABASE SETUP ---
-        const SUPABASE_URL = typeof process !== 'undefined' ? process.env.SUPABASE_DATABASE_URL : '';
-        const SUPABASE_ANON_KEY = typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_ANON_KEY : '';
+        // IMPORTANT: Replace these with your actual Supabase project URL and anon key.
+        const SUPABASE_URL = 'https://hqnxqotwtzeheydnaaio.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxbnhxb3R3dHplaGV5ZG5hYWlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTk5MjIsImV4cCI6MjA3NjE3NTkyMn0.0zB-cPMBx-SJkZyu0_MgGoz71xvrp-83r1tUEVg9MeQ';
         let supabaseClient = null;
 
-        if (SUPABASE_URL !== '' && SUPABASE_ANON_KEY !== '') {
+        if (SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
             try {
                 // The global object from the script tag is `supabase`.
-                const supabaseClient = createClient(
-                    SUPABASE_URL,
-                    SUPABASE_ANON_KEY
-                );
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log("Supabase client initialized.");
             } catch (e) {
                 console.error("Error initializing Supabase client:", e.message);
