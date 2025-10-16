@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+    <!-- SUPABASE CLIENT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -108,10 +110,10 @@
     </style>
 </head>
 <body class="p-4">
-    <div class="control-panel max-w-5xl mx-auto p-4 mb-4 no-print bg-amber-50 rounded shadow-md border border-amber-200">
+    <div id="control-panel-main" class="control-panel max-w-5xl mx-auto p-4 mb-4 no-print bg-amber-50 rounded shadow-md border border-amber-200">
         <h1 class="font-fell text-3xl text-red-800 text-center mb-4">Character Sheet Creator</h1>
         <div class="space-y-4">
-            <div class="grid md:grid-cols-2 gap-x-4 gap-y-2 items-center">
+            <div id="local-controls" class="grid md:grid-cols-2 gap-x-4 gap-y-2 items-center">
                 <div class="flex justify-start items-center gap-2 md:gap-4">
                     <button id="new-char-btn" title="New Character"><i data-feather="file-plus"></i></button>
                     <label for="character-select" class="font-fell">Load:</label>
@@ -146,6 +148,7 @@
 
     <div class="sheet-wrapper">
         <div id="sheet-controls" class="no-print space-x-2">
+            <button id="share-char-btn" class="icon-button" title="Share Online" disabled><i data-feather="share-2"></i></button>
             <button id="edit-char-btn" class="icon-button" title="Toggle Edit Mode" disabled><i data-feather="edit-2"></i></button>
             <button id="save-library-btn" class="icon-button" title="Save to Browser Library" disabled><i data-feather="save"></i></button>
             <button id="export-json-btn" class="icon-button" title="Export as JSON file" disabled><i data-feather="download"></i></button>
@@ -155,45 +158,88 @@
         <div id="sheet-container-front" class="sheet-container p-6 page-break"></div>
         <div id="sheet-container-back" class="sheet-container p-6"></div>
     </div>
+
+    <!-- MODALS -->
     <div id="loading-modal" class="modal-backdrop hidden no-print">
         <div class="modal-content">
-            <div class="loading-spinner mx-auto"></div>
-            <p class="mt-4 font-fell text-lg">✨ The mists of creation are swirling...</p>
+            <div id="loading-spinner" class="loading-spinner mx-auto"></div>
+            <p id="loading-text" class="mt-4 font-fell text-lg"></p>
         </div>
     </div>
-    <div id="quest-modal" class="modal-backdrop hidden no-print">
+    <div id="share-modal" class="modal-backdrop hidden no-print">
         <div class="modal-content">
-            <h2 class="font-fell text-2xl text-red-800">Adventure Calls!</h2>
-            <p id="quest-hook-text" class="my-4 italic"></p>
-            <button id="close-quest-modal" class="editor-button">Close</button>
+            <h2 class="font-fell text-2xl text-red-800">Share Your Character</h2>
+            <p class="my-4">Anyone with this link can view this version of your character sheet.</p>
+            <input type="text" id="share-url-input" readonly class="w-full p-2 border border-amber-400 bg-amber-50 text-center">
+            <div class="mt-4 flex justify-center gap-4">
+                <button id="copy-share-url-btn" class="editor-button">Copy Link</button>
+                <button id="close-share-modal-btn" class="editor-button bg-gray-600">Close</button>
+            </div>
         </div>
     </div>
+
 
 <script type="module">
-    import('./rules.js')
-        .then(rulesModule => {
-            runApp(rulesModule);
+    // Start by fetching the schema, as it's needed for AI features.
+    fetch('./schema.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok for schema.json');
+            }
+            return response.json();
         })
         .catch(error => {
-            console.warn("WARNING: rules.js not found. The character creator will run in basic mode without rule validation or auto-population. Dropdowns for Class and Species will be replaced with text inputs.", error);
-            const fallbackRules = {
-                ABILITIES: { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" },
-                SKILLS: { "Acrobatics": "dex", "Animal Handling": "wis", "Arcana": "int", "Athletics": "str", "Deception": "cha", "History": "int", "Insight": "wis", "Intimidation": "cha", "Investigation": "int", "Medicine": "wis", "Nature": "int", "Perception": "wis", "Performance": "cha", "Persuasion": "cha", "Religion": "int", "Sleight of Hand": "dex", "Stealth": "dex", "Survival": "wis" },
-                CLASSES: {},
-                SPECIES: {},
-                PROFICIENCY_BONUS_PROGRESSION: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
-                SPELL_SLOT_PROGRESSION: {},
-                BACKGROUNDS: {}
-            };
-            runApp(fallbackRules);
+            console.error("Error loading schema.json:", error);
+            console.warn("AI character generation will be disabled.");
+            return null;
+        })
+        .then(schemaData => {
+            // Now that we have schema data (or null), load the rules and start the app.
+            import('./rules.js')
+                .then(rulesModule => {
+                    runApp(rulesModule, schemaData);
+                })
+                .catch(error => {
+                    console.warn("WARNING: rules.js not found. The character creator will run in basic mode without rule validation or auto-population. Dropdowns for Class and Species will be replaced with text inputs.", error);
+                    const fallbackRules = {
+                        ABILITIES: { str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma" },
+                        SKILLS: { "Acrobatics": "dex", "Animal Handling": "wis", "Arcana": "int", "Athletics": "str", "Deception": "cha", "History": "int", "Insight": "wis", "Intimidation": "cha", "Investigation": "int", "Medicine": "wis", "Nature": "int", "Perception": "wis", "Performance": "cha", "Persuasion": "cha", "Religion": "int", "Sleight of Hand": "dex", "Stealth": "dex", "Survival": "wis" },
+                        CLASSES: {},
+                        SPECIES: {},
+                        PROFICIENCY_BONUS_PROGRESSION: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
+                        SPELL_SLOT_PROGRESSION: {},
+                        BACKGROUNDS: {}
+                    };
+                    runApp(fallbackRules, schemaData);
+                });
         });
 
-    function runApp(DND_RULES) {
+    async function runApp(DND_RULES, schema) {
         let isEditing = false;
         let currentCharacterData = null;
-        let characterSchema = null;
+        let characterSchema = schema;
+        let sourceCharacterId = null; // To track the ID of a character loaded from URL
         const STORAGE_KEY = 'dndCharacterLibrary';
 
+        // --- SUPABASE SETUP ---
+        // IMPORTANT: Replace these with your actual Supabase project URL and anon key.
+        const SUPABASE_URL = 'https://hqnxqotwtzeheydnaaio.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxbnhxb3R3dHplaGV5ZG5hYWlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTk5MjIsImV4cCI6MjA3NjE3NTkyMn0.0zB-cPMBx-SJkZyu0_MgGoz71xvrp-83r1tUEVg9MeQ';
+        let supabaseClient = null;
+
+        if (SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            try {
+                // The global object from the script tag is `supabase`.
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Supabase client initialized.");
+            } catch (e) {
+                console.error("Error initializing Supabase client:", e.message);
+            }
+        } else {
+            console.warn("Supabase credentials not found. Online sharing will be disabled.");
+        }
+        
+        // --- DOM Elements ---
         const fileInput = document.getElementById('char-file-input');
         const characterSelect = document.getElementById('character-select');
         const sessionNameInput = document.getElementById('session-name');
@@ -206,11 +252,27 @@
         const welcomeNewCharBtn = document.getElementById('welcome-new-char-btn');
         const editCharBtn = document.getElementById('edit-char-btn');
         const saveLibraryBtn = document.getElementById('save-library-btn');
+        const shareCharBtn = document.getElementById('share-char-btn');
         const exportJsonBtn = document.getElementById('export-json-btn');
         const sheetControls = document.getElementById('sheet-controls');
         const generateBtn = document.getElementById('generate-character-btn');
         const geminiPromptInput = document.getElementById('gemini-prompt');
         const loadingModal = document.getElementById('loading-modal');
+        const loadingText = document.getElementById('loading-text');
+
+        // Gracefully disable AI features if the schema failed to load.
+        if (!characterSchema) {
+            generateBtn.disabled = true;
+            geminiPromptInput.placeholder = "AI features disabled: schema not found.";
+        } else {
+             console.log("Character schema loaded successfully.");
+        }
+
+        const showLoading = (text) => {
+            loadingText.textContent = text;
+            loadingModal.classList.remove('hidden');
+        };
+        const hideLoading = () => loadingModal.classList.add('hidden');
 
         const getMod = (score) => Math.floor((score - 10) / 2);
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
@@ -238,6 +300,7 @@
             editCharBtn.disabled = false;
             saveLibraryBtn.disabled = false;
             exportJsonBtn.disabled = false;
+            if (supabaseClient) shareCharBtn.disabled = false;
         };
 
         const populateCharacterSelect = () => {
@@ -266,6 +329,7 @@
                     }
                     currentCharacterData = data;
                     isEditing = false;
+                    sourceCharacterId = null;
                     renderCharacterSheet();
                     handleSaveToLibrary();
                 } catch (error) {
@@ -291,6 +355,9 @@
             saveLibrary(library);
             populateCharacterSelect();
             characterSelect.value = `${sessionName}|${currentCharacterData.name}`;
+            saveLibraryBtn.innerHTML = `<i data-feather="save"></i>`;
+            saveLibraryBtn.title = `Save to Browser Library`;
+            feather.replace();
         };
 
         const loadFromSelect = () => {
@@ -301,6 +368,7 @@
             if (data) {
                 currentCharacterData = data;
                 isEditing = false;
+                sourceCharacterId = null;
                 renderCharacterSheet();
                 sessionNameInput.value = sessionName;
             }
@@ -316,6 +384,7 @@
         const handleNewCharacter = () => {
             currentCharacterData = createBlankCharacter();
             isEditing = true;
+            sourceCharacterId = null;
             renderCharacterSheet();
         };
 
@@ -349,56 +418,34 @@
 
         async function handleGenerateCharacter() {
             const userPrompt = geminiPromptInput.value.trim();
-            if (!userPrompt) {
-                alert("Please describe the character you want to generate.");
-                return;
-            }
-             if (!characterSchema) {
-                alert("Character schema is not loaded. AI generation is disabled.");
-                return;
-            }
-
-            loadingModal.classList.remove('hidden');
-
-            const payload = {
-                prompt: userPrompt,
-                schema: characterSchema
-            };
-
-            const apiUrl = `/.netlify/functions/generate-character`;
-
+            if (!userPrompt) { alert("Please describe the character you want to generate."); return; }
+            if (!characterSchema) { alert("Character schema is not loaded. AI generation is disabled."); return; }
+            showLoading("The mists of creation are swirling...");
             try {
-                const response = await fetch(apiUrl, {
+                const response = await fetch(`/.netlify/functions/generate-character`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ prompt: userPrompt, schema: characterSchema })
                 });
-
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`API call failed with status: ${response.status} ${response.statusText} - ${errorText}`);
                 }
-
                 const result = await response.json();
-                
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
                     const jsonText = result.candidates[0].content.parts[0].text;
                     const generatedData = JSON.parse(jsonText);
-                    const finalData = { ...createBlankCharacter(), ...generatedData };
-                    currentCharacterData = finalData;
+                    currentCharacterData = { ...createBlankCharacter(), ...generatedData };
                     gatherDataFromForm();
                     isEditing = false;
+                    sourceCharacterId = null;
                     renderCharacterSheet();
                     handleSaveToLibrary();
-                } else {
-                    throw new Error("Invalid response structure from Gemini API.");
-                }
+                } else { throw new Error("Invalid response structure from Gemini API."); }
             } catch (error) {
                 console.error("Error generating character:", error);
                 alert("There was an error generating the character. Please check the console for more details.");
-            } finally {
-                loadingModal.classList.add('hidden');
-            }
+            } finally { hideLoading(); }
         }
         
         const handlePrint = () => {
@@ -419,40 +466,104 @@
             }, 100);
         };
 
+        async function handleShareCharacter() {
+            if (!supabaseClient) {
+                alert("Online sharing is not configured.");
+                return;
+            }
+            if (isEditing) gatherDataFromForm();
+            if (!currentCharacterData) return;
+
+            showLoading("Saving character to the archives...");
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('characters')
+                    .insert([{
+                        name: currentCharacterData.name,
+                        character_data: currentCharacterData,
+                        source_character_id: sourceCharacterId
+                    }])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                
+                const newId = data.id;
+                const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`;
+                
+                const shareUrlInput = document.getElementById('share-url-input');
+                const shareModal = document.getElementById('share-modal');
+                shareUrlInput.value = newUrl;
+                shareModal.classList.remove('hidden');
+                
+                // Update browser URL without reloading
+                history.pushState({}, '', newUrl);
+                sourceCharacterId = newId;
+
+            } catch (error) {
+                console.error("Error sharing character:", error);
+                alert(`Could not share character: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadCharacterFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const characterId = urlParams.get('id');
+
+            if (characterId && supabaseClient) {
+                showLoading("Fetching character from the archives...");
+                document.getElementById('control-panel-main').style.display = 'none';
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('characters')
+                        .select('character_data, id')
+                        .eq('id', characterId)
+                        .single();
+                    
+                    if (error) throw error;
+                    if (!data) throw new Error("Character not found.");
+
+                    currentCharacterData = data.character_data;
+                    isEditing = false;
+                    sourceCharacterId = data.id;
+                    renderCharacterSheet();
+                    saveLibraryBtn.innerHTML = `<i data-feather="copy"></i>`;
+                    saveLibraryBtn.title = "Save a Local Copy";
+                    feather.replace();
+
+                } catch (error) {
+                    console.error("Error loading character from URL:", error);
+                    alert(`Could not load character: ${error.message}`);
+                    document.getElementById('control-panel-main').style.display = 'block';
+                    welcomeMessage.innerHTML = `<h2 class="font-fell text-2xl text-red-800">Error</h2><p>Could not load character from the provided link.</p>`;
+                } finally {
+                    hideLoading();
+                }
+                return true; // Indicates we loaded from URL.
+            }
+            return false; // Indicates normal startup.
+        }
+
+
         const pointBuyCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
         
         window.adjustPointBuyScore = (key, delta) => {
             if (!currentCharacterData) return;
             const currentScore = currentCharacterData.pointBuyBaseScores[key];
             const newScore = currentScore + delta;
-            
             let totalCost = 0;
             Object.values(currentCharacterData.pointBuyBaseScores).forEach(s => totalCost += pointBuyCosts[s]);
             const futureCost = totalCost - pointBuyCosts[currentScore] + pointBuyCosts[newScore];
-
             if (newScore >= 8 && newScore <= 15 && futureCost <= 27) {
                 currentCharacterData.pointBuyBaseScores[key] = newScore;
                 handleFormChange();
             }
         };
 
-        // --- Initial Load ---
-        fetch('./schema.json')
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(schema => {
-                characterSchema = schema;
-                console.log("Character schema loaded successfully.");
-            })
-            .catch(error => {
-                console.error("Error loading schema.json:", error);
-                console.warn("AI character generation will be disabled.");
-                generateBtn.disabled = true;
-                geminiPromptInput.placeholder = "AI features disabled: schema not found.";
-            });
-
+        // --- Event Listeners & Startup ---
         fileInput.addEventListener('change', handleFileLoad);
         characterSelect.addEventListener('change', loadFromSelect);
         printBtn.addEventListener('click', handlePrint);
@@ -463,14 +574,33 @@
         saveLibraryBtn.addEventListener('click', handleSaveToLibrary);
         exportJsonBtn.addEventListener('click', handleExport);
         generateBtn.addEventListener('click', handleGenerateCharacter);
+        if (supabaseClient) shareCharBtn.addEventListener('click', handleShareCharacter);
+
+        document.getElementById('close-share-modal-btn').addEventListener('click', () => {
+            document.getElementById('share-modal').classList.add('hidden');
+        });
+        document.getElementById('copy-share-url-btn').addEventListener('click', () => {
+            const input = document.getElementById('share-url-input');
+            input.select();
+            input.setSelectionRange(0, 99999); 
+            try {
+                document.execCommand('copy');
+                alert('Link copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy link.');
+            }
+        });
         
-        populateCharacterSelect();
+        // --- App Initialization ---
+        const loadedFromUrl = await loadCharacterFromUrl();
+        if (!loadedFromUrl) {
+            populateCharacterSelect();
+        }
         feather.replace();
 
         function gatherDataFromForm() {
             if (!currentCharacterData) return;
             const data = { ...currentCharacterData };
-
             const oldSpecies = currentCharacterData.species;
 
             data.name = document.getElementById('edit-char-name').value;
@@ -508,14 +638,11 @@
             if (data.species !== oldSpecies) {
                 const oldSpeciesData = DND_RULES.SPECIES[oldSpecies];
                 const newSpeciesData = DND_RULES.SPECIES[data.species];
-                
                 let featuresToKeep = featuresFromDOM;
-
                 if (oldSpeciesData) {
                     const oldTraitTitles = oldSpeciesData.traits.map(t => t.title);
                     featuresToKeep = featuresFromDOM.filter(f => !oldTraitTitles.includes(f.title));
                 }
-                
                 if (newSpeciesData) {
                     const newTraits = JSON.parse(JSON.stringify(newSpeciesData.traits));
                     data.features = [...featuresToKeep, ...newTraits];
@@ -564,7 +691,6 @@
                     data.spellcasting.spellSlots = { ...progression[data.level] };
                 }
             }
-            
             if(classData) data.proficiencies.savingThrows = [...classData.savingThrows];
             const backgroundData = DND_RULES.BACKGROUNDS[data.background];
             if(backgroundData) {
@@ -572,7 +698,6 @@
                  backgroundData.skills.forEach(skill => currentSkills.add(skill.toLowerCase().replace(/ /g,'')));
                  data.proficiencies.skills = Array.from(currentSkills);
             }
-
             currentCharacterData = data;
         }
 
@@ -591,32 +716,13 @@
             let totalCost = 0;
             Object.values(data.pointBuyBaseScores).forEach(s => totalCost += pointBuyCosts[s]);
             const pointsRemaining = 27 - totalCost;
-            
-            let editorHTML = `<div class="text-center mb-2">
-                <span class="font-fell">Points Remaining:</span>
-                <span class="font-bold ${pointsRemaining < 0 ? 'text-red-600' : ''}">${pointsRemaining}</span>
-            </div>`;
-            
+            let editorHTML = `<div class="text-center mb-2"><span class="font-fell">Points Remaining:</span><span class="font-bold ${pointsRemaining < 0 ? 'text-red-600' : ''}">${pointsRemaining}</span></div>`;
             editorHTML += Object.entries(data.pointBuyBaseScores).map(([key, baseScore]) => {
                 const finalScore = data.abilityScores[key];
                 const modifier = getMod(finalScore);
                 const cost = pointBuyCosts[baseScore];
-
-                return `<div class="flex items-center justify-between p-1 border-b border-dotted border-amber-200">
-                    <div class="w-1/4 font-fell text-sm">${DND_RULES.ABILITIES[key].substring(0,3).toUpperCase()}</div>
-                    <div class="flex items-center gap-2">
-                        <button class="icon-button text-xs h-6 w-6" onclick="adjustPointBuyScore('${key}', -1)">-</button>
-                        <span class="font-bold w-6 text-center">${baseScore}</span>
-                        <button class="icon-button text-xs h-6 w-6" onclick="adjustPointBuyScore('${key}', 1)">+</button>
-                    </div>
-                    <div class="text-xs w-10 text-right">Cost: ${cost}</div>
-                    <div class="stat-box p-1 w-16 ml-2">
-                         <div class="ability-score text-base">${finalScore}</div>
-                         <div class="ability-modifier text-xs w-6 h-6">${formatMod(modifier)}</div>
-                    </div>
-                </div>`;
+                return `<div class="flex items-center justify-between p-1 border-b border-dotted border-amber-200"><div class="w-1/4 font-fell text-sm">${DND_RULES.ABILITIES[key].substring(0,3).toUpperCase()}</div><div class="flex items-center gap-2"><button class="icon-button text-xs h-6 w-6" onclick="adjustPointBuyScore('${key}', -1)">-</button><span class="font-bold w-6 text-center">${baseScore}</span><button class="icon-button text-xs h-6 w-6" onclick="adjustPointBuyScore('${key}', 1)">+</button></div><div class="text-xs w-10 text-right">Cost: ${cost}</div><div class="stat-box p-1 w-16 ml-2"><div class="ability-score text-base">${finalScore}</div><div class="ability-modifier text-xs w-6 h-6">${formatMod(modifier)}</div></div></div>`;
             }).join('');
-            
             return editorHTML;
         }
 
@@ -629,129 +735,20 @@
             
             const data = currentCharacterData;
             const abilityMods = Object.fromEntries(Object.entries(data.abilityScores).map(([key, value]) => [key, getMod(value)]));
-
             const keyFeatures = data.features.filter(f => f.key);
             const otherFeatures = data.features.filter(f => !f.key);
-            
-            const createSelectHTML = (id, options, selectedValue) => {
-                const optionsHTML = Object.keys(options).map(key => `<option value="${key}" ${selectedValue === key ? 'selected' : ''}>${key}</option>`).join('');
-                return `<select id="${id}" class="edit-mode-select">${optionsHTML}</select>`;
-            };
-            
-            let classInputHTML = isEditing && Object.keys(DND_RULES.CLASSES).length > 0
-                ? createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class)
-                : (isEditing ? `<input id="edit-char-class" class="edit-mode-input" value="${data.class}">` : data.class);
-            
-            let speciesInputHTML = isEditing && Object.keys(DND_RULES.SPECIES).length > 0
-                ? createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species)
-                : (isEditing ? `<input id="edit-char-species" class="edit-mode-input" value="${data.species}">` : data.species);
+            const createSelectHTML = (id, options, selectedValue) => `<select id="${id}" class="edit-mode-select">${Object.keys(options).map(key => `<option value="${key}" ${selectedValue === key ? 'selected' : ''}>${key}</option>`).join('')}</select>`;
+            let classInputHTML = isEditing && Object.keys(DND_RULES.CLASSES).length > 0 ? createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class) : (isEditing ? `<input id="edit-char-class" class="edit-mode-input" value="${data.class}">` : data.class);
+            let speciesInputHTML = isEditing && Object.keys(DND_RULES.SPECIES).length > 0 ? createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species) : (isEditing ? `<input id="edit-char-species" class="edit-mode-input" value="${data.species}">` : data.species);
+            let backgroundInputHTML = isEditing && Object.keys(DND_RULES.BACKGROUNDS).length > 0 ? createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background) : (isEditing ? `<input id="edit-char-background" class="edit-mode-input" value="${data.background}">` : data.background);
 
-            let backgroundInputHTML = isEditing && Object.keys(DND_RULES.BACKGROUNDS).length > 0
-                ? createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background)
-                : (isEditing ? `<input id="edit-char-background" class="edit-mode-input" value="${data.background}">` : data.background);
-
-
-            sheetFront.innerHTML = `
-                <header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3">
-                    <div class="lg:col-span-2 header-main">
-                        ${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}
-                        ${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}
-                    </div>
-                    <div class="text-left lg:text-right text-sm mt-2 lg:mt-0">
-                        <p><strong>Class:</strong> ${classInputHTML}</p>
-                        <p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p>
-                        <p><strong>Species:</strong> ${speciesInputHTML}</p>
-                        <p><strong>Background:</strong> ${isEditing ? backgroundInputHTML : data.background}</p>
-                    </div>
-                </header>
-                <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
-                    <!-- COL 1: Exploration -->
-                    <div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col">
-                        <section class="grid grid-cols-1 gap-3">
-                            ${isEditing 
-                                ? renderPointBuyEditorHTML(data) 
-                                : Object.entries(data.abilityScores).map(([key, value]) => `
-                                <div class="stat-box">
-                                    <label class="font-fell text-sm">${key.toUpperCase()}</label>
-                                    <div class="ability-score">${value}</div>
-                                    <div class="ability-modifier">${formatMod(abilityMods[key])}</div>
-                                </div>
-                            `).join('').replace(/<div class="stat-box">/g, '<div class="stat-box inline-block w-[calc(50%-0.375rem)]">')}
-                        </section>
-                        <div class="text-center">
-                            <span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span>
-                            <label class="font-fell text-lg">Proficiency Bonus</label>
-                        </div>
-                        <section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">
-                            ${Object.entries(DND_RULES.SKILLS).map(([name, stat]) => {
-                                 const isProf = data.proficiencies.skills.includes(name.toLowerCase().replace(/ /g, ''));
-                                 return `<li class="${isProf ? 'proficient' : ''}">${name} <span class="text-gray-500">(${stat.toUpperCase()})</span><strong class="float-right">${formatMod(abilityMods[stat] + (isProf ? data.profBonus : 0))}</strong></li>`;
-                            }).join('')}
-                        </ul></section>
-                    </div>
-                    <!-- COL 2: Combat -->
-                    <div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col">
-                         <section class="grid grid-cols-3 gap-3 text-center">
-                            <div class="stat-box">${isEditing ? `<input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}">` : `<div class="ability-score">${data.combat.ac}</div>`}<div class="font-fell text-xs">ARMOR CLASS</div></div>
-                            <div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div>
-                            <div class="stat-box">${isEditing ? `<input id="edit-combat-speed" class="ability-score edit-stat w-full" value="${data.combat.speed}">` : `<div class="ability-score">${data.combat.speed.replace('ft','<span class="text-base">ft</span>')}</div>`}<div class="font-fell text-xs">SPEED</div></div>
-                        </section>
-                        <section class="bordered-section text-center">
-                            <label class="font-fell text-lg">Hit Points</label>
-                            <div class="text-3xl font-bold tracking-wider">${data.combat.hp_max} / ${data.combat.hp_max}</div>
-                            <div class="mt-2"><label class="font-fell">Hit Dice</label><div class="text-lg font-bold">${data.level}d${(DND_RULES.CLASSES[data.class] || {}).hitDice || 8}</div></div>
-                        </section>
-                        <section class="bordered-section text-center"><h3 class="font-fell text-lg mb-2">Death Saves</h3><div class="flex justify-around items-center"><div><span class="text-sm">Successes</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div><div><span class="text-sm">Failures</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div></div></section>
-                        <section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Saving Throws</h3><ul class="text-sm space-y-1 skill-list">
-                            ${Object.entries(DND_RULES.ABILITIES).map(([key, name]) => {
-                                const isProf = data.proficiencies.savingThrows.includes(key);
-                                return `<li class="${isProf ? 'proficient' : ''}"><span>${name}</span><strong class="float-right">${formatMod(abilityMods[key] + (isProf ? data.profBonus : 0))}</strong></li>`;
-                            }).join('')}
-                        </ul></section>
-                        <section><h2 class="section-header">Attacks</h2><div class="space-y-3">
-                            ${data.attacks.map(attack => `<div class="attack-box">
-                                <p><strong>${attack.name}:</strong> <span class="float-right"><strong>Atk:</strong> ${formatMod(abilityMods[attack.atkStat] + data.profBonus)} | <strong>Dmg:</strong> ${attack.dmgDie}${formatMod(abilityMods[attack.dmgStat] + (attack.dmgBonus || 0))} ${attack.type}</span></p>
-                                <p class="text-xs text-gray-600 italic mt-1">${attack.weaponMastery ? `<span class="font-bold not-italic text-red-800">${attack.weaponMastery}:</span> ` : ''}${attack.notes || ''}</p>
-                            </div>`).join('')}
-                        </div></section>
-                    </div>
-                    <!-- COL 3: Actions -->
-                     <div class="lg:col-span-1 md:col-span-2 space-y-4">
-                        <section id="key-features-section" class="text-sm"></section>
-                    </div>
-                </main>
-            `;
+            sheetFront.innerHTML = `<header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3"><div class="lg:col-span-2 header-main">${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}</div><div class="text-left lg:text-right text-sm mt-2 lg:mt-0"><p><strong>Class:</strong> ${classInputHTML}</p><p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p><p><strong>Species:</strong> ${speciesInputHTML}</p><p><strong>Background:</strong> ${isEditing ? backgroundInputHTML : data.background}</p></div></header><main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow"><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="${isEditing ? 'grid grid-cols-1 gap-y-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}">${isEditing ? renderPointBuyEditorHTML(data) : Object.entries(data.abilityScores).map(([key, value]) => `<div class="stat-box"><label class="font-fell text-sm">${key.toUpperCase()}</label><div class="ability-score">${value}</div><div class="ability-modifier">${formatMod(abilityMods[key])}</div></div>`).join('')}</section><div class="text-center"><span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span><label class="font-fell text-lg">Proficiency Bonus</label></div><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">${Object.entries(DND_RULES.SKILLS).map(([name, stat]) => `<li class="${data.proficiencies.skills.includes(name.toLowerCase().replace(/ /g, '')) ? 'proficient' : ''}">${name} <span class="text-gray-500">(${stat.toUpperCase()})</span><strong class="float-right">${formatMod(abilityMods[stat] + (data.proficiencies.skills.includes(name.toLowerCase().replace(/ /g, '')) ? data.profBonus : 0))}</strong></li>`).join('')}</ul></section></div><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="grid grid-cols-3 gap-3 text-center"><div class="stat-box">${isEditing ? `<input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}">` : `<div class="ability-score">${data.combat.ac}</div>`}<div class="font-fell text-xs">ARMOR CLASS</div></div><div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div><div class="stat-box">${isEditing ? `<input id="edit-combat-speed" class="ability-score edit-stat w-full" value="${data.combat.speed}">` : `<div class="ability-score">${data.combat.speed.replace('ft','<span class="text-base">ft</span>')}</div>`}<div class="font-fell text-xs">SPEED</div></div></section><section class="bordered-section text-center"><label class="font-fell text-lg">Hit Points</label><div class="text-3xl font-bold tracking-wider">${data.combat.hp_max} / ${data.combat.hp_max}</div><div class="mt-2"><label class="font-fell">Hit Dice</label><div class="text-lg font-bold">${data.level}d${(DND_RULES.CLASSES[data.class] || {}).hitDice || 8}</div></div></section><section class="bordered-section text-center"><h3 class="font-fell text-lg mb-2">Death Saves</h3><div class="flex justify-around items-center"><div><span class="text-sm">Successes</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div><div><span class="text-sm">Failures</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div></div></section><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Saving Throws</h3><ul class="text-sm space-y-1 skill-list">${Object.entries(DND_RULES.ABILITIES).map(([key, name]) => `<li class="${data.proficiencies.savingThrows.includes(key) ? 'proficient' : ''}"><span>${name}</span><strong class="float-right">${formatMod(abilityMods[key] + (data.proficiencies.savingThrows.includes(key) ? data.profBonus : 0))}</strong></li>`).join('')}</ul></section><section><h2 class="section-header">Attacks</h2><div class="space-y-3">${data.attacks.map(attack => `<div class="attack-box"><p><strong>${attack.name}:</strong> <span class="float-right"><strong>Atk:</strong> ${formatMod(abilityMods[attack.atkStat] + data.profBonus)} | <strong>Dmg:</strong> ${attack.dmgDie}${formatMod(abilityMods[attack.dmgStat] + (attack.dmgBonus || 0))} ${attack.type}</span></p><p class="text-xs text-gray-600 italic mt-1">${attack.weaponMastery ? `<span class="font-bold not-italic text-red-800">${attack.weaponMastery}:</span> ` : ''}${attack.notes || ''}</p></div>`).join('')}</div></section></div><div class="lg:col-span-1 md:col-span-2 space-y-4"><section id="key-features-section" class="text-sm"></section></div></main>`;
             renderKeyFeatures(keyFeatures);
             
-            let backPageHTML = `<header class="flex justify-between items-baseline border-b-2 border-black pb-3 mb-4"><h1 class="text-3xl font-fell">${data.name}</h1><p class="text-sm italic">Character Details</p></header>
-                                <main class="flex-grow md:flowing-columns">`;
-
-            backPageHTML += `
-                <section class="bordered-section text-sm mb-4">
-                    <h2 class="section-header">Personality</h2>
-                    ${isEditing ? `
-                        <p class="mb-2"><strong>Traits:</strong> <textarea id="edit-personality-traits" class="edit-mode-textarea">${data.personality.traits}</textarea></p>
-                        <p class="mb-2"><strong>Ideal:</strong> <textarea id="edit-personality-ideal" class="edit-mode-textarea">${data.personality.ideal}</textarea></p>
-                        <p class="mb-2"><strong>Bond:</strong> <textarea id="edit-personality-bond" class="edit-mode-textarea">${data.personality.bond}</textarea></p>
-                        <p><strong>Flaw:</strong> <textarea id="edit-personality-flaw" class="edit-mode-textarea">${data.personality.flaw}</textarea></p>
-                    ` : `
-                        <p class="mb-2"><strong>Traits:</strong> <span class="italic">${data.personality.traits}</span></p>
-                        <p class="mb-2"><strong>Ideal:</strong> <span class="italic">${data.personality.ideal}</span></p>
-                        <p class="mb-2"><strong>Bond:</strong> <span class="italic">${data.personality.bond}</span></p>
-                        <p><strong>Flaw:</strong> <span class="italic">${data.personality.flaw}</span></p>
-                    `}
-                </section>
-                <section class="mb-4"><h2 class="section-header">Features & Traits</h2><div id="features-list-render" class="space-y-3 text-sm"></div></section>
-                <section><h2 class="section-header">Equipment</h2>${isEditing ? `<textarea id="edit-equipment-list" class="edit-mode-textarea">${data.equipment}</textarea>`: `<p class="text-sm italic">${data.equipment}</p>`}</section>
-            `;
-
-            if (data.spellcasting) {
-                backPageHTML += `<section id="spellcasting-section-render" class="mt-4 flex-grow flex flex-col"></section>`;
-            }
-
+            let backPageHTML = `<header class="flex justify-between items-baseline border-b-2 border-black pb-3 mb-4"><h1 class="text-3xl font-fell">${data.name}</h1><p class="text-sm italic">Character Details</p></header><main class="flex-grow md:flowing-columns"><section class="bordered-section text-sm mb-4"><h2 class="section-header">Personality</h2>${isEditing ? `<p class="mb-2"><strong>Traits:</strong> <textarea id="edit-personality-traits" class="edit-mode-textarea">${data.personality.traits}</textarea></p><p class="mb-2"><strong>Ideal:</strong> <textarea id="edit-personality-ideal" class="edit-mode-textarea">${data.personality.ideal}</textarea></p><p class="mb-2"><strong>Bond:</strong> <textarea id="edit-personality-bond" class="edit-mode-textarea">${data.personality.bond}</textarea></p><p><strong>Flaw:</strong> <textarea id="edit-personality-flaw" class="edit-mode-textarea">${data.personality.flaw}</textarea></p>` : `<p class="mb-2"><strong>Traits:</strong> <span class="italic">${data.personality.traits}</span></p><p class="mb-2"><strong>Ideal:</strong> <span class="italic">${data.personality.ideal}</span></p><p class="mb-2"><strong>Bond:</strong> <span class="italic">${data.personality.bond}</span></p><p><strong>Flaw:</strong> <span class="italic">${data.personality.flaw}</span></p>`}</section><section class="mb-4"><h2 class="section-header">Features & Traits</h2><div id="features-list-render" class="space-y-3 text-sm"></div></section><section><h2 class="section-header">Equipment</h2>${isEditing ? `<textarea id="edit-equipment-list" class="edit-mode-textarea">${data.equipment}</textarea>`: `<p class="text-sm italic">${data.equipment}</p>`}</section>`;
+            if (data.spellcasting) backPageHTML += `<section id="spellcasting-section-render" class="mt-4 flex-grow flex flex-col"></section>`;
             backPageHTML += `</main>`;
             sheetBack.innerHTML = backPageHTML;
-            
             renderFeatureList(otherFeatures);
             if (data.spellcasting) renderSpellcastingSection(data, abilityMods);
             
@@ -767,38 +764,16 @@
         function renderKeyFeatures(features) {
             const container = document.getElementById('key-features-section');
             if (!container) return;
-            if (features.length > 0) {
-                container.innerHTML = `<h2 class="section-header">Key Features</h2>` + features.map(f => {
-                        const usageHTML = f.uses ? `<div class="usage-tracker">${[...Array(f.uses.total)].map(() => `<input type="checkbox" class="usage-box">`).join('')}<span class="text-xs italic text-gray-500"> per ${f.uses.per}</span></div>` : '';
-                        return `<div class="feature-box text-sm"><div class="flex items-center flex-wrap"><p class="feature-title">${f.title}</p>${usageHTML}</div><p class="feature-desc">${f.desc.replace(/<li>/g, '<li class="list-disc list-inside">')}</p></div>`;
-                    }).join('');
-            } else {
-                container.innerHTML = '';
-            }
+            container.innerHTML = features.length > 0 ? `<h2 class="section-header">Key Features</h2>` + features.map(f => `<div class="feature-box text-sm"><div class="flex items-center flex-wrap"><p class="feature-title">${f.title}</p>${f.uses ? `<div class="usage-tracker">${[...Array(f.uses.total)].map(() => `<input type="checkbox" class="usage-box">`).join('')}<span class="text-xs italic text-gray-500"> per ${f.uses.per}</span></div>` : ''}</div><p class="feature-desc">${f.desc.replace(/<li>/g, '<li class="list-disc list-inside">')}</p></div>`).join('') : '';
         }
 
         function renderFeatureList(features) {
             const container = document.getElementById('features-list-render');
             if (!container) return;
             if (isEditing) {
-                container.innerHTML = currentCharacterData.features.map((f, i) => `
-                    <div class="edit-feature-item bordered-section mb-2">
-                        <div class="flex justify-between items-center">
-                            <input class="edit-mode-input font-bold edit-feature-title" value="${f.title}">
-                            <button class="edit-mode-small-btn" onclick="removeListItem('features', ${i})">X</button>
-                        </div>
-                        <textarea class="edit-mode-textarea edit-feature-desc">${f.desc}</textarea>
-                        <div class="mt-1 text-xs">
-                            <input type="checkbox" id="key-feature-${i}" class="edit-feature-key" ${f.key ? 'checked' : ''}>
-                            <label for="key-feature-${i}">Show on front page as Key Feature</label>
-                        </div>
-                    </div>
-                `).join('') + `<button class="mt-2 text-sm editor-button" onclick="addListItem('features')">+ Add Feature</button>`;
+                container.innerHTML = currentCharacterData.features.map((f, i) => `<div class="edit-feature-item bordered-section mb-2"><div class="flex justify-between items-center"><input class="edit-mode-input font-bold edit-feature-title" value="${f.title}"><button class="edit-mode-small-btn" onclick="removeListItem('features', ${i})">X</button></div><textarea class="edit-mode-textarea edit-feature-desc">${f.desc}</textarea><div class="mt-1 text-xs"><input type="checkbox" id="key-feature-${i}" class="edit-feature-key" ${f.key ? 'checked' : ''}><label for="key-feature-${i}">Show on front page as Key Feature</label></div></div>`).join('') + `<button class="mt-2 text-sm editor-button" onclick="addListItem('features')">+ Add Feature</button>`;
             } else {
-                container.innerHTML = features.length > 0 ? features.map(f => {
-                    const usageHTML = f.uses ? `<div class="usage-tracker">${[...Array(f.uses.total)].map(() => `<input type="checkbox" class="usage-box">`).join('')}<span class="text-xs italic text-gray-500"> per ${f.uses.per}</span></div>` : '';
-                    return `<div class="feature-box"><div class="flex items-center flex-wrap"><p class="feature-title">${f.title}</p>${usageHTML}</div><p class="feature-desc">${f.desc.replace(/<li>/g, '<li class="list-disc list-inside">')}</p></div>`;
-                }).join('') : `<p class="italic text-center text-gray-500 pt-8">No other features.</p>`;
+                container.innerHTML = features.length > 0 ? features.map(f => `<div class="feature-box"><div class="flex items-center flex-wrap"><p class="feature-title">${f.title}</p>${f.uses ? `<div class="usage-tracker">${[...Array(f.uses.total)].map(() => `<input type="checkbox" class="usage-box">`).join('')}<span class="text-xs italic text-gray-500"> per ${f.uses.per}</span></div>` : ''}</div><p class="feature-desc">${f.desc.replace(/<li>/g, '<li class="list-disc list-inside">')}</p></div>`).join('') : `<p class="italic text-center text-gray-500 pt-8">No other features.</p>`;
             }
             feather.replace();
         }
@@ -807,86 +782,30 @@
             const container = document.getElementById('spellcasting-section-render');
             if (!container) return;
             const stLabels = DND_RULES.ABILITIES;
-            
             if (isEditing) {
-                 container.innerHTML = `
-                    <h2 class="section-header">Spellcasting <button onclick="toggleSpellcaster(false)" class="edit-mode-small-btn" title="Remove Spellcaster Status">X</button></h2>
-                    <div class="mb-2">
-                        <label class="font-fell">Ability:</label>
-                        <select id="edit-spell-ability" class="edit-mode-select w-auto">
-                            ${Object.keys(stLabels).map(key => `<option value="${key}" ${data.spellcasting.ability === key ? 'selected' : ''}>${stLabels[key]}</option>`).join('')}
-                        </select>
-                    </div>
-                    <h3 class="font-fell text-lg mb-2">Spell Slots</h3>
-                    <div class="grid grid-cols-3 gap-x-4 gap-y-2 mb-4">
-                        ${[...Array(9)].map((_, i) => `
-                            <div>
-                                <label class="text-sm">Level ${i + 1}:</label>
-                                <input type="number" id="edit-spell-slot-l${i + 1}" class="edit-stat w-12" value="${(data.spellcasting.spellSlots && data.spellcasting.spellSlots[`level${i + 1}`]) || 0}">
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div id="spells-list-render" class="space-y-3 text-sm flex-grow"></div>
-                `;
+                 container.innerHTML = `<h2 class="section-header">Spellcasting <button onclick="toggleSpellcaster(false)" class="edit-mode-small-btn" title="Remove Spellcaster Status">X</button></h2><div class="mb-2"><label class="font-fell">Ability:</label><select id="edit-spell-ability" class="edit-mode-select w-auto">${Object.keys(stLabels).map(key => `<option value="${key}" ${data.spellcasting.ability === key ? 'selected' : ''}>${stLabels[key]}</option>`).join('')}</select></div><h3 class="font-fell text-lg mb-2">Spell Slots</h3><div class="grid grid-cols-3 gap-x-4 gap-y-2 mb-4">${[...Array(9)].map((_, i) => `<div><label class="text-sm">Level ${i + 1}:</label><input type="number" id="edit-spell-slot-l${i + 1}" class="edit-stat w-12" value="${(data.spellcasting.spellSlots && data.spellcasting.spellSlots[`level${i + 1}`]) || 0}"></div>`).join('')}</div><div id="spells-list-render" class="space-y-3 text-sm flex-grow"></div>`;
                  renderSpellList(data.spells);
-            } else { 
-                if (data.spellcasting) {
-                    const spellMod = abilityMods[data.spellcasting.ability];
-                    const spellSaveDC = 8 + data.profBonus + spellMod;
-                    const spellAttack = data.profBonus + spellMod;
-                    container.innerHTML = `
-                        <h2 class="section-header">Spellcasting</h2>
-                        <div class="grid grid-cols-3 gap-2 text-center mb-4">
-                            <div class="stat-box text-sm"><div class="font-bold text-base">${stLabels[data.spellcasting.ability]}</div><div class="font-fell text-xs">ABILITY</div></div>
-                            <div class="stat-box text-sm"><div class="font-bold text-base">${spellSaveDC}</div><div class="font-fell text-xs">SAVE DC</div></div>
-                            <div class="stat-box text-sm"><div class="font-bold text-base">${formatMod(spellAttack)}</div><div class="font-fell text-xs">ATTACK BONUS</div></div>
-                        </div>
-                        <div class="mb-4">
-                            ${(data.spellcasting.spellSlots && Object.entries(data.spellcasting.spellSlots).map(([level, total]) => total > 0 ? `
-                                <div class="spell-slot-group"><span class="spell-slot-label">Level ${level.replace('level','')}</span><div class="flex flex-wrap gap-2">
-                                    ${[...Array(total)].map(() => `<input type="checkbox" class="spell-slot-box">`).join('')}
-                                </div></div>` : '').join('')) || ''
-                            }
-                        </div>
-                        <div id="spells-list-render" class="space-y-3 text-sm flex-grow"></div>
-                    `;
-                    renderSpellList(data.spells);
-                }
+            } else if (data.spellcasting) {
+                const spellMod = abilityMods[data.spellcasting.ability];
+                const spellSaveDC = 8 + data.profBonus + spellMod;
+                const spellAttack = data.profBonus + spellMod;
+                container.innerHTML = `<h2 class="section-header">Spellcasting</h2><div class="grid grid-cols-3 gap-2 text-center mb-4"><div class="stat-box text-sm"><div class="font-bold text-base">${stLabels[data.spellcasting.ability]}</div><div class="font-fell text-xs">ABILITY</div></div><div class="stat-box text-sm"><div class="font-bold text-base">${spellSaveDC}</div><div class="font-fell text-xs">SAVE DC</div></div><div class="stat-box text-sm"><div class="font-bold text-base">${formatMod(spellAttack)}</div><div class="font-fell text-xs">ATTACK BONUS</div></div></div><div class="mb-4">${(data.spellcasting.spellSlots && Object.entries(data.spellcasting.spellSlots).map(([level, total]) => total > 0 ? `<div class="spell-slot-group"><span class="spell-slot-label">Level ${level.replace('level','')}</span><div class="flex flex-wrap gap-2">${[...Array(total)].map(() => `<input type="checkbox" class="spell-slot-box">`).join('')}</div></div>` : '').join('')) || ''}</div><div id="spells-list-render" class="space-y-3 text-sm flex-grow"></div>`;
+                renderSpellList(data.spells);
             }
             feather.replace();
         }
         
         function renderSpellList(spells) {
             const container = document.getElementById('spells-list-render');
-            if (!container && !isEditing) return;
-            
-            let spellContent = '';
+            if (!container) return;
             if(isEditing && currentCharacterData.spellcasting === null){
-                const spellcastingSection = document.getElementById('spellcasting-section-render');
-                if (spellcastingSection) {
-                    spellcastingSection.innerHTML = `<div class="text-center p-8 bordered-section"><p class="italic text-gray-600 mb-4">This character is not a spellcaster.</p><button onclick="toggleSpellcaster(true)" class="editor-button">Make Spellcaster</button></div>`;
-                }
+                container.innerHTML = `<div class="text-center p-8 bordered-section"><p class="italic text-gray-600 mb-4">This character is not a spellcaster.</p><button onclick="toggleSpellcaster(true)" class="editor-button">Make Spellcaster</button></div>`;
                 return;
             }
-
-            spellContent = spells.map((s, i) => {
-                if (isEditing) {
-                    return `<div class="edit-spell-item bordered-section mb-2">
-                        <input class="edit-mode-input font-bold edit-spell-name" value="${s.name}" placeholder="Spell Name">
-                        <input type="number" class="edit-mode-input text-xs w-16 mt-1 edit-spell-level" value="${s.level}" placeholder="Lvl">
-                        <textarea class="edit-mode-textarea mt-1 edit-spell-desc">${s.desc}</textarea>
-                        <button class="edit-mode-small-btn" onclick="removeListItem('spells', ${i})">X</button>
-                    </div>`;
-                } else {
-                    return `<div class="spell-box"><p class="spell-title">${s.name} <span class="text-xs font-normal italic"> (Lvl ${s.level})</span></p><p class="spell-desc">${s.desc}</p></div>`;
-                }
-            }).join('');
-            
+            const spellContent = spells.map((s, i) => isEditing ? `<div class="edit-spell-item bordered-section mb-2"><input class="edit-mode-input font-bold edit-spell-name" value="${s.name}" placeholder="Spell Name"><input type="number" class="edit-mode-input text-xs w-16 mt-1 edit-spell-level" value="${s.level}" placeholder="Lvl"><textarea class="edit-mode-textarea mt-1 edit-spell-desc">${s.desc}</textarea><button class="edit-mode-small-btn" onclick="removeListItem('spells', ${i})">X</button></div>` : `<div class="spell-box"><p class="spell-title">${s.name} <span class="text-xs font-normal italic"> (Lvl ${s.level})</span></p><p class="spell-desc">${s.desc}</p></div>`).join('');
             const addSpellButton = isEditing ? `<button class="mt-2 text-sm editor-button" onclick="addListItem('spells')">+ Add Spell</button>` : '';
             const noSpellsMessage = !isEditing && spells.length === 0 ? `<p class="italic text-center text-gray-500 pt-8">No spells known.</p>` : '';
-
             container.innerHTML = spellContent + addSpellButton + noSpellsMessage;
-            feather.replace();
         }
         
         window.toggleSpellcaster = (makeCaster) => {
@@ -898,24 +817,16 @@
             }
             renderCharacterSheet();
         };
-
         window.addListItem = (type) => {
             gatherDataFromForm();
-            if (type === 'features') {
-                currentCharacterData.features.push({title: "New Feature", desc: "", key: false});
-            } else if (type === 'spells') {
-                currentCharacterData.spells.push({name: "New Spell", level: 1, desc: ""});
-            }
+            if (type === 'features') currentCharacterData.features.push({title: "New Feature", desc: "", key: false});
+            else if (type === 'spells') currentCharacterData.spells.push({name: "New Spell", level: 1, desc: ""});
             renderCharacterSheet();
         };
-        
         window.removeListItem = (type, index) => {
             gatherDataFromForm();
-            if (type === 'features') {
-                currentCharacterData.features.splice(index, 1);
-            } else if (type === 'spells') {
-                currentCharacterData.spells.splice(index, 1);
-            }
+            if (type === 'features') currentCharacterData.features.splice(index, 1);
+            else if (type === 'spells') currentCharacterData.spells.splice(index, 1);
             renderCharacterSheet();
         };
     }
