@@ -182,7 +182,8 @@
                 CLASSES: {},
                 SPECIES: {},
                 PROFICIENCY_BONUS_PROGRESSION: { 1: 2, 5: 3, 9: 4, 13: 5, 17: 6 },
-                SPELL_SLOT_PROGRESSION: {}
+                SPELL_SLOT_PROGRESSION: {},
+                BACKGROUNDS: {}
             };
             runApp(fallbackRules);
         });
@@ -217,10 +218,8 @@
         const calculateMaxHp = (level, className, conScore) => {
             const classData = DND_RULES.CLASSES[className];
             if (!classData) return 1;
-
             const conMod = getMod(conScore);
             let maxHp = classData.hitDice + conMod;
-
             if (level > 1) {
                 const hpGainPerLevel = classData.hitDiceAverage + conMod;
                 maxHp += (level - 1) * Math.max(1, hpGainPerLevel);
@@ -268,7 +267,7 @@
                     currentCharacterData = data;
                     isEditing = false;
                     renderCharacterSheet();
-                    handleSaveToLibrary(); // Auto-save on load
+                    handleSaveToLibrary();
                 } catch (error) {
                     alert(`Error loading file: ${error.message}`);
                 }
@@ -340,39 +339,12 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         };
-
-        const handleClassChange = (event) => {
-            const newClassName = event.target.value;
-            const classData = DND_RULES.CLASSES[newClassName];
-            if (classData) {
+        
+        const handleFormChange = () => {
+            if (isEditing) {
                 gatherDataFromForm();
-                currentCharacterData.class = newClassName;
-                currentCharacterData.proficiencies.savingThrows = [...classData.savingThrows];
                 renderCharacterSheet();
             }
-        };
-
-        const handleSpeciesChange = (event) => {
-             const newSpeciesName = event.target.value;
-             const newSpeciesData = DND_RULES.SPECIES[newSpeciesName];
-             if(newSpeciesData) {
-                const oldSpeciesName = currentCharacterData.species;
-                gatherDataFromForm();
-
-                const oldSpeciesTraits = (DND_RULES.SPECIES[oldSpeciesName] || {traits:[]}).traits.map(t => t.title);
-                currentCharacterData.features = currentCharacterData.features.filter(f => !oldSpeciesTraits.includes(f.title));
-                
-                currentCharacterData.features.push(...JSON.parse(JSON.stringify(newSpeciesData.traits)));
-                currentCharacterData.species = newSpeciesName;
-                currentCharacterData.combat.speed = newSpeciesData.speed;
-
-                renderCharacterSheet();
-             }
-        };
-
-        const handleStatChange = (event) => {
-            gatherDataFromForm();
-            renderCharacterSheet();
         };
 
         async function handleGenerateCharacter() {
@@ -412,19 +384,15 @@
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
                     const jsonText = result.candidates[0].content.parts[0].text;
                     const generatedData = JSON.parse(jsonText);
-                    
                     const finalData = { ...createBlankCharacter(), ...generatedData };
-                    
                     currentCharacterData = finalData;
-                    gatherDataFromForm(); // This will recalculate HP, prof, etc. based on the new data
+                    gatherDataFromForm();
                     isEditing = false;
                     renderCharacterSheet();
                     handleSaveToLibrary();
-
                 } else {
                     throw new Error("Invalid response structure from Gemini API.");
                 }
-
             } catch (error) {
                 console.error("Error generating character:", error);
                 alert("There was an error generating the character. Please check the console for more details.");
@@ -439,7 +407,6 @@
                 isEditing = false;
                 renderCharacterSheet();
             }
-
             setTimeout(() => {
                 window.onafterprint = () => {
                     if (wasEditing) {
@@ -452,6 +419,22 @@
             }, 100);
         };
 
+        const pointBuyCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
+        
+        window.adjustPointBuyScore = (key, delta) => {
+            if (!currentCharacterData) return;
+            const currentScore = currentCharacterData.pointBuyBaseScores[key];
+            const newScore = currentScore + delta;
+            
+            let totalCost = 0;
+            Object.values(currentCharacterData.pointBuyBaseScores).forEach(s => totalCost += pointBuyCosts[s]);
+            const futureCost = totalCost - pointBuyCosts[currentScore] + pointBuyCosts[newScore];
+
+            if (newScore >= 8 && newScore <= 15 && futureCost <= 27) {
+                currentCharacterData.pointBuyBaseScores[key] = newScore;
+                handleFormChange();
+            }
+        };
 
         // --- Initial Load ---
         fetch('./schema.json')
@@ -485,20 +468,26 @@
         feather.replace();
 
         function gatherDataFromForm() {
-            const data = createBlankCharacter();
+            if (!currentCharacterData) return;
+            const data = { ...currentCharacterData };
+
+            const oldSpecies = currentCharacterData.species;
+
             data.name = document.getElementById('edit-char-name').value;
             data.title = document.getElementById('edit-char-title').value;
             data.class = document.getElementById('edit-char-class').value;
             data.level = parseInt(document.getElementById('edit-char-level').value) || 1;
             data.species = document.getElementById('edit-char-species').value;
-            data.background = document.getElementById('edit-char-background').value;
-            Object.keys(data.abilityScores).forEach(key => {
-                let score = parseInt(document.getElementById(`edit-ability-${key}`).value) || 10;
-                if (score > 20) score = 20;
-                if (score < 1) score = 1;
-                data.abilityScores[key] = score;
-            });
+            data.background = document.getElementById('edit-char-background-select').value;
             
+            const background = DND_RULES.BACKGROUNDS[data.background];
+            const finalScores = { ...data.pointBuyBaseScores };
+            if (background) {
+                finalScores[background.abilityScoreIncrease.stat1] += 2;
+                finalScores[background.abilityScoreIncrease.stat2] += 1;
+            }
+            data.abilityScores = finalScores;
+
             data.combat.ac = parseInt(document.getElementById('edit-combat-ac').value) || 10;
             data.combat.speed = document.getElementById('edit-combat-speed').value;
             data.personality.traits = document.getElementById('edit-personality-traits').value;
@@ -506,14 +495,38 @@
             data.personality.bond = document.getElementById('edit-personality-bond').value;
             data.personality.flaw = document.getElementById('edit-personality-flaw').value;
             data.equipment = document.getElementById('edit-equipment-list').value;
-            data.features = [];
+            
+            let featuresFromDOM = [];
             document.querySelectorAll('.edit-feature-item').forEach(item => {
-                data.features.push({
+                featuresFromDOM.push({
                     title: item.querySelector('.edit-feature-title').value,
                     desc: item.querySelector('.edit-feature-desc').value,
                     key: item.querySelector('.edit-feature-key').checked
                 });
             });
+
+            if (data.species !== oldSpecies) {
+                const oldSpeciesData = DND_RULES.SPECIES[oldSpecies];
+                const newSpeciesData = DND_RULES.SPECIES[data.species];
+                
+                let featuresToKeep = featuresFromDOM;
+
+                if (oldSpeciesData) {
+                    const oldTraitTitles = oldSpeciesData.traits.map(t => t.title);
+                    featuresToKeep = featuresFromDOM.filter(f => !oldTraitTitles.includes(f.title));
+                }
+                
+                if (newSpeciesData) {
+                    const newTraits = JSON.parse(JSON.stringify(newSpeciesData.traits));
+                    data.features = [...featuresToKeep, ...newTraits];
+                    data.combat.speed = newSpeciesData.speed;
+                } else {
+                     data.features = featuresToKeep;
+                }
+            } else {
+                data.features = featuresFromDOM;
+            }
+
             data.spells = [];
             document.querySelectorAll('.edit-spell-item').forEach(item => {
                 data.spells.push({
@@ -522,6 +535,7 @@
                     desc: item.querySelector('.edit-spell-desc').value
                 });
             });
+
             const spellAbilitySelect = document.getElementById('edit-spell-ability');
             if (spellAbilitySelect) {
                 data.spellcasting = { ability: spellAbilitySelect.value, spellSlots: {} };
@@ -532,19 +546,8 @@
                         if (value > 0) data.spellcasting.spellSlots[`level${i}`] = value;
                     }
                 }
-            } else {
-                data.spellcasting = null;
-            }
-            if(currentCharacterData) {
-                data.proficiencies = currentCharacterData.proficiencies;
-                data.attacks = currentCharacterData.attacks;
-                data.features.forEach((f, i) => {
-                    const originalFeature = currentCharacterData.features.find(origF => origF.title === f.title);
-                    if(originalFeature && originalFeature.uses) f.uses = originalFeature.uses;
-                });
-            }
+            } else { data.spellcasting = null; }
 
-            // --- Auto-calculate derived stats ---
             let currentProf = 2;
             for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
                 if (data.level >= parseInt(levelThreshold)) {
@@ -552,7 +555,6 @@
                 }
             }
             data.profBonus = currentProf;
-            
             data.combat.hp_max = calculateMaxHp(data.level, data.class, data.abilityScores.con);
             
             const classData = DND_RULES.CLASSES[data.class];
@@ -562,20 +564,62 @@
                     data.spellcasting.spellSlots = { ...progression[data.level] };
                 }
             }
+            
+            if(classData) data.proficiencies.savingThrows = [...classData.savingThrows];
+            const backgroundData = DND_RULES.BACKGROUNDS[data.background];
+            if(backgroundData) {
+                 const currentSkills = new Set(data.proficiencies.skills);
+                 backgroundData.skills.forEach(skill => currentSkills.add(skill.toLowerCase().replace(/ /g,'')));
+                 data.proficiencies.skills = Array.from(currentSkills);
+            }
 
             currentCharacterData = data;
         }
 
         const createBlankCharacter = () => ({
-            "name": "New Character", "title": "", "class": "Fighter", "level": 1, "species": "Human",
+            "name": "New Character", "title": "", "class": "Fighter", "level": 1, "species": "Human", "background": "Acolyte",
+            "pointBuyBaseScores": {"str": 8, "dex": 8, "con": 8, "int": 8, "wis": 8, "cha": 8},
             "abilityScores": {"str": 10, "dex": 10, "con": 10, "int": 10, "wis": 10, "cha": 10},
-            "profBonus": 2, "proficiencies": {"savingThrows": [], "skills": []},
+            "profBonus": 2, "proficiencies": {"savingThrows": ["str", "con"], "skills": []},
             "combat": {"ac": 10, "hp_max": 1, "speed": "30ft"},
             "attacks": [], "features": [], "equipment": "",
             "personality": {"traits": "", "ideal": "", "bond": "", "flaw": ""},
             "spellcasting": null, "spells": []
         });
         
+        function renderPointBuyEditorHTML(data) {
+            let totalCost = 0;
+            Object.values(data.pointBuyBaseScores).forEach(s => totalCost += pointBuyCosts[s]);
+            const pointsRemaining = 27 - totalCost;
+            
+            let editorHTML = `<div class="text-center mb-2">
+                <span class="font-fell">Points Remaining:</span>
+                <span class="font-bold ${pointsRemaining < 0 ? 'text-red-600' : ''}">${pointsRemaining}</span>
+            </div>`;
+            
+            editorHTML += Object.entries(data.pointBuyBaseScores).map(([key, baseScore]) => {
+                const finalScore = data.abilityScores[key];
+                const modifier = getMod(finalScore);
+                const cost = pointBuyCosts[baseScore];
+
+                return `<div class="flex items-center justify-between p-1 border-b border-dotted border-amber-200">
+                    <div class="w-1/4 font-fell text-sm">${DND_RULES.ABILITIES[key].substring(0,3).toUpperCase()}</div>
+                    <div class="flex items-center gap-2">
+                        <button class="icon-button text-xs h-6 w-6" onclick="adjustPointBuyScore('${key}', -1)">-</button>
+                        <span class="font-bold w-6 text-center">${baseScore}</span>
+                        <button class="icon-button text-xs h-6 w-6" onclick="adjustPointBuyScore('${key}', 1)">+</button>
+                    </div>
+                    <div class="text-xs w-10 text-right">Cost: ${cost}</div>
+                    <div class="stat-box p-1 w-16 ml-2">
+                         <div class="ability-score text-base">${finalScore}</div>
+                         <div class="ability-modifier text-xs w-6 h-6">${formatMod(modifier)}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            return editorHTML;
+        }
+
         function renderCharacterSheet() {
             if (!currentCharacterData) return;
             showSheets();
@@ -589,21 +633,23 @@
             const keyFeatures = data.features.filter(f => f.key);
             const otherFeatures = data.features.filter(f => !f.key);
             
-            let classInputHTML;
-            if (isEditing && Object.keys(DND_RULES.CLASSES).length > 0) {
-                const classOptions = Object.keys(DND_RULES.CLASSES).map(key => `<option value="${key}" ${data.class === key ? 'selected' : ''}>${key}</option>`).join('');
-                classInputHTML = `<select id="edit-char-class" class="edit-mode-select">${classOptions}</select>`;
-            } else {
-                classInputHTML = isEditing ? `<input id="edit-char-class" class="edit-mode-input" value="${data.class}">` : data.class;
-            }
+            const createSelectHTML = (id, options, selectedValue) => {
+                const optionsHTML = Object.keys(options).map(key => `<option value="${key}" ${selectedValue === key ? 'selected' : ''}>${key}</option>`).join('');
+                return `<select id="${id}" class="edit-mode-select">${optionsHTML}</select>`;
+            };
+            
+            let classInputHTML = isEditing && Object.keys(DND_RULES.CLASSES).length > 0
+                ? createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class)
+                : (isEditing ? `<input id="edit-char-class" class="edit-mode-input" value="${data.class}">` : data.class);
+            
+            let speciesInputHTML = isEditing && Object.keys(DND_RULES.SPECIES).length > 0
+                ? createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species)
+                : (isEditing ? `<input id="edit-char-species" class="edit-mode-input" value="${data.species}">` : data.species);
 
-            let speciesInputHTML;
-            if (isEditing && Object.keys(DND_RULES.SPECIES).length > 0) {
-                const speciesOptions = Object.keys(DND_RULES.SPECIES).map(key => `<option value="${key}" ${data.species === key ? 'selected' : ''}>${key}</option>`).join('');
-                speciesInputHTML = `<select id="edit-char-species" class="edit-mode-select">${speciesOptions}</select>`;
-            } else {
-                speciesInputHTML = isEditing ? `<input id="edit-char-species" class="edit-mode-input" value="${data.species}">` : data.species;
-            }
+            let backgroundInputHTML = isEditing && Object.keys(DND_RULES.BACKGROUNDS).length > 0
+                ? createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background)
+                : (isEditing ? `<input id="edit-char-background" class="edit-mode-input" value="${data.background}">` : data.background);
+
 
             sheetFront.innerHTML = `
                 <header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3">
@@ -612,26 +658,28 @@
                         ${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}
                     </div>
                     <div class="text-left lg:text-right text-sm mt-2 lg:mt-0">
-                        <p><strong>Class:</strong> ${isEditing ? classInputHTML : `${data.class}`}</p>
+                        <p><strong>Class:</strong> ${classInputHTML}</p>
                         <p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p>
-                        <p><strong>Species:</strong> ${isEditing ? speciesInputHTML : data.species}</p>
-                        ${isEditing ? `<p><strong>Background:</strong> <input id="edit-char-background" class="edit-mode-input" value="${data.background}"></p>` : `<p><strong>Background:</strong> ${data.background}</p>`}
+                        <p><strong>Species:</strong> ${speciesInputHTML}</p>
+                        <p><strong>Background:</strong> ${isEditing ? backgroundInputHTML : data.background}</p>
                     </div>
                 </header>
                 <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
                     <!-- COL 1: Exploration -->
                     <div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col">
-                        <section class="grid grid-cols-2 gap-3">
-                            ${Object.entries(data.abilityScores).map(([key, value]) => `
+                        <section class="grid grid-cols-1 gap-3">
+                            ${isEditing 
+                                ? renderPointBuyEditorHTML(data) 
+                                : Object.entries(data.abilityScores).map(([key, value]) => `
                                 <div class="stat-box">
                                     <label class="font-fell text-sm">${key.toUpperCase()}</label>
-                                    ${isEditing ? `<input type="number" id="edit-ability-${key}" class="ability-score edit-stat" value="${value}" min="1" max="20">` : `<div class="ability-score">${value}</div>`}
+                                    <div class="ability-score">${value}</div>
                                     <div class="ability-modifier">${formatMod(abilityMods[key])}</div>
                                 </div>
-                            `).join('')}
+                            `).join('').replace(/<div class="stat-box">/g, '<div class="stat-box inline-block w-[calc(50%-0.375rem)]">')}
                         </section>
                         <div class="text-center">
-                            ${isEditing ? `<input type="number" id="edit-prof-bonus" readonly class="font-bold text-lg edit-stat bg-gray-200" value="${data.profBonus}">` : `<span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span>`}
+                            <span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span>
                             <label class="font-fell text-lg">Proficiency Bonus</label>
                         </div>
                         <section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">
@@ -708,16 +756,10 @@
             if (data.spellcasting) renderSpellcastingSection(data, abilityMods);
             
             if (isEditing) {
-                if (Object.keys(DND_RULES.CLASSES).length > 0) {
-                    document.getElementById('edit-char-class').addEventListener('change', handleStatChange);
-                }
-                if (Object.keys(DND_RULES.SPECIES).length > 0) {
-                    document.getElementById('edit-char-species').addEventListener('change', handleSpeciesChange);
-                }
-                document.getElementById('edit-char-level')?.addEventListener('change', handleStatChange);
-                Object.keys(data.abilityScores).forEach(key => {
-                    document.getElementById(`edit-ability-${key}`).addEventListener('change', handleStatChange);
-                });
+                document.getElementById('edit-char-class').addEventListener('change', handleFormChange);
+                document.getElementById('edit-char-species').addEventListener('change', handleFormChange);
+                document.getElementById('edit-char-level').addEventListener('change', handleFormChange);
+                document.getElementById('edit-char-background-select').addEventListener('change', handleFormChange);
             }
             feather.replace();
         }

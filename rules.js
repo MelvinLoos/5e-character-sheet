@@ -51,14 +51,16 @@ export const CLASSES = {
 export const SPECIES = {
     "Human": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
-            { title: "Resourceful", desc: "You gain one Skill Proficiency of your choice.", key: true },
-            { title: "Skillful", desc: "You gain Inspiration whenever you finish a Long Rest.", key: true },
+            { title: "Resourceful", desc: "You gain Inspiration whenever you finish a Long Rest.", key: true },
+            { title: "Skillful", desc: "You gain proficiency in one skill of your choice.", key: true },
             { title: "Versatile", desc: "You gain the Skilled feat or another 1st-level feat of your choice.", key: false }
         ]
     },
     "Elf": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Darkvision", desc: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", key: true },
             { title: "Fey Ancestry", desc: "You have advantage on saving throws against being Charmed, and magic can’t put you to sleep.", key: true },
@@ -67,6 +69,7 @@ export const SPECIES = {
     },
     "Dwarf": {
         speed: "25ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Darkvision", desc: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", key: true },
             { title: "Dwarven Resilience", desc: "You have advantage on saving throws against poison, and you have resistance against poison damage.", key: true },
@@ -75,6 +78,7 @@ export const SPECIES = {
     },
      "Gnome": {
         speed: "25ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Darkvision", desc: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", key: true },
             { title: "Gnome Cunning", desc: "You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic.", key: true }
@@ -82,6 +86,7 @@ export const SPECIES = {
     },
     "Halfling": {
         speed: "25ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Lucky", desc: "When you roll a 1 on a d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll.", key: true },
             { title: "Brave", desc: "You have advantage on saving throws against being Frightened.", key: true },
@@ -90,6 +95,7 @@ export const SPECIES = {
     },
     "Dragonborn": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Draconic Ancestry", desc: "You have a draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath weapon and damage resistance are determined by the dragon type.", key: true },
             { title: "Breath Weapon", desc: "You can use your action to exhale destructive energy.", key: true },
@@ -98,6 +104,7 @@ export const SPECIES = {
     },
     "Goliath": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Little Giant", desc: "You have proficiency in the Athletics skill. In addition, you count as one size larger when determining your carrying capacity and the weight you can push, drag, or lift.", key: true },
             { title: "Stone's Endurance", desc: "When you take damage, you can use your reaction to roll a d12. Add your Constitution modifier to the number rolled, and reduce the damage by that total.", key: true }
@@ -105,6 +112,7 @@ export const SPECIES = {
     },
     "Orc": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Darkvision", desc: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", key: true },
             { title: "Adrenaline Rush", desc: "As a bonus action, you can move up to your Speed toward an enemy of your choice that you can see or hear. You must end this move closer to the enemy than you started.", key: true },
@@ -113,6 +121,7 @@ export const SPECIES = {
     },
     "Tiefling": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Darkvision", desc: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", key: true },
             { title: "Hellish Resistance", desc: "You have resistance to fire damage.", key: true },
@@ -121,6 +130,7 @@ export const SPECIES = {
     },
     "Aasimar": {
         speed: "30ft",
+        abilityScoreIncrease: { choice: 1, amount: 1 },
         traits: [
             { title: "Darkvision", desc: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", key: true },
             { title: "Celestial Resistance", desc: "You have resistance to necrotic damage and radiant damage.", key: true },
@@ -129,3 +139,20 @@ export const SPECIES = {
     }
 };
 
+export const BACKGROUNDS = {
+    "Acolyte": { skills: ["Insight", "Religion"], tool_proficiencies: [], languages: 2, abilityScoreIncrease: { stat1: "wis", stat2: "int" } },
+    "Charlatan": { skills: ["Deception", "Sleight of Hand"], tool_proficiencies: ["Disguise Kit", "Forgery Kit"], languages: 0, abilityScoreIncrease: { stat1: "cha", stat2: "dex" } },
+    "Criminal": { skills: ["Deception", "Stealth"], tool_proficiencies: ["One type of gaming set", "Thieves' Tools"], languages: 0, abilityScoreIncrease: { stat1: "dex", stat2: "cha" } },
+    "Entertainer": { skills: ["Acrobatics", "Performance"], tool_proficiencies: ["Disguise Kit", "One type of musical instrument"], languages: 0, abilityScoreIncrease: { stat1: "cha", stat2: "dex" } },
+    "Folk Hero": { skills: ["Animal Handling", "Survival"], tool_proficiencies: ["One type of artisan's tools", "Vehicles (land)"], languages: 0, abilityScoreIncrease: { stat1: "str", stat2: "wis" } },
+    "Gladiator": { skills: ["Acrobatics", "Performance"], tool_proficiencies: ["Disguise Kit", "One type of musical instrument"], languages: 0, abilityScoreIncrease: { stat1: "str", stat2: "cha" } },
+    "Guild Artisan": { skills: ["Insight", "Persuasion"], tool_proficiencies: ["One type of artisan's tools"], languages: 1, abilityScoreIncrease: { stat1: "int", stat2: "cha" } },
+    "Hermit": { skills: ["Medicine", "Religion"], tool_proficiencies: ["Herbalism Kit"], languages: 1, abilityScoreIncrease: { stat1: "wis", stat2: "con" } },
+    "Knight": { skills: ["History", "Persuasion"], tool_proficiencies: ["One type of gaming set"], languages: 1, abilityScoreIncrease: { stat1: "str", stat2: "cha" } },
+    "Noble": { skills: ["History", "Persuasion"], tool_proficiencies: ["One type of gaming set"], languages: 1, abilityScoreIncrease: { stat1: "cha", stat2: "int" } },
+    "Outlander": { skills: ["Athletics", "Survival"], tool_proficiencies: ["One type of musical instrument"], languages: 1, abilityScoreIncrease: { stat1: "str", stat2: "con" } },
+    "Sage": { skills: ["Arcana", "History"], tool_proficiencies: [], languages: 2, abilityScoreIncrease: { stat1: "int", stat2: "wis" } },
+    "Sailor": { skills: ["Athletics", "Perception"], tool_proficiencies: ["Navigator's Tools", "Vehicles (water)"], languages: 0, abilityScoreIncrease: { stat1: "dex", stat2: "wis" } },
+    "Soldier": { skills: ["Athletics", "Intimidation"], tool_proficiencies: ["One type of gaming set", "Vehicles (land)"], languages: 0, abilityScoreIncrease: { stat1: "str", stat2: "con" } },
+    "Urchin": { skills: ["Sleight of Hand", "Stealth"], tool_proficiencies: ["Disguise Kit", "Thieves' Tools"], languages: 0, abilityScoreIncrease: { stat1: "dex", stat2: "con" } }
+};
