@@ -51,7 +51,7 @@
             width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
             margin: 0.25rem auto 0; background-color: #eaddc7;
         }
-        .skill-list li { padding: 0; line-height: 1.2; border-bottom: 1px dotted #dcd1c0; }
+        .skill-list li { padding: 0.1rem 0; line-height: 1.2; border-bottom: 1px dotted #dcd1c0; display: flex; justify-content: space-between; align-items: center; }
         .skill-list li:last-child { border-bottom: none; }
         .proficient::before { content: '♦'; margin-right: 0.5em; color: #8c1d1d; }
         .feature-box, .spell-box { margin-bottom: 0.75rem; }
@@ -68,16 +68,19 @@
         .control-panel button:hover, .icon-button:hover, .editor-button:hover { background-color: #6a1616; }
         .control-panel select, .control-panel input[type=text] { background-color: #eaddc7; border: 1px solid #5c4d3d; padding: 0.5rem; border-radius: 2px; }
         .usage-tracker { display: inline-flex; align-items: center; gap: 0.25rem; margin-left: 0.75rem; }
-        .usage-box, .spell-slot-box {
+        .usage-box, .spell-slot-box, .edit-skill-checkbox {
             -webkit-appearance: none; -moz-appearance: none; appearance: none;
             width: 0.9rem; height: 0.9rem; border: 1px solid #5c4d3d; background-color: #fdf6e3;
-            cursor: pointer; position: relative; border-radius: 2px;
+            cursor: pointer; position: relative; border-radius: 2px; flex-shrink: 0;
         }
-        .usage-box:checked, .spell-slot-box:checked { background-color: #3a2d21; }
-        .usage-box:checked::after, .spell-slot-box:checked::after {
-            content: '\\2713'; color: #fdf6e3; position: absolute; left: 50%; top: 50%;
+        .usage-box:checked, .spell-slot-box:checked, .edit-skill-checkbox:checked { background-color: #3a2d21; }
+        .usage-box:checked::after, .spell-slot-box:checked::after, .edit-skill-checkbox:checked::after {
+            content: '✓'; color: #fdf6e3; position: absolute; left: 50%; top: 50%;
             transform: translate(-50%, -50%); font-size: 0.7rem; line-height: 1;
         }
+        .edit-skill-checkbox:disabled { background-color: #c9b7a2; cursor: not-allowed; }
+        .edit-skill-checkbox:disabled:checked { background-color: #5c4d3d; }
+        
         .spell-slot-group { display: flex; align-items: center; margin-bottom: 0.5rem; }
         .spell-slot-label { width: 80px; font-weight: bold; }
         .sheet-controls { position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10; display: none; }
@@ -779,6 +782,16 @@
             data.combat.hp_max = calculateMaxHp(data.level, data.class, data.abilityScores.con);
             
             const classData = DND_RULES.CLASSES[data.class];
+            
+            const skillChecks = document.querySelectorAll('.edit-skill-checkbox');
+            const chosenSkills = new Set();
+            skillChecks.forEach(cb => {
+                if (cb.checked) {
+                    chosenSkills.add(cb.dataset.skill);
+                }
+            });
+            data.proficiencies.skills = Array.from(chosenSkills);
+
             if (data.spellcasting && classData && classData.casterType) {
                 const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
                 if (progression && progression[data.level]) {
@@ -786,11 +799,7 @@
                 }
             }
             if(classData) data.proficiencies.savingThrows = [...classData.savingThrows];
-            if(backgroundData) {
-                 const currentSkills = new Set(data.proficiencies.skills);
-                 backgroundData.skills.forEach(skill => currentSkills.add(skill.toLowerCase().replace(/ /g,'')));
-                 data.proficiencies.skills = Array.from(currentSkills);
-            }
+            
             currentCharacterData = data;
         }
 
@@ -877,7 +886,26 @@
                 return isEditing ? `<div class="flex items-center">${select}${infoButton}</div>` : selectedValue;
             };
 
-            sheetFront.innerHTML = `<header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3"><div class="lg:col-span-2 header-main">${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}</div><div class="text-left lg:text-right text-sm mt-2 lg:mt-0"><p class="flex justify-end items-center"><strong>Class:</strong> ${createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class, 'class')}</p><p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p><p class="flex justify-end items-center"><strong>Species:</strong> ${createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species, 'species')}</p><p class="flex justify-end items-center"><strong>Background:</strong> ${createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background, 'background')}</p></div></header><main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow"><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="${isEditing ? 'grid grid-cols-1 gap-y-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}">${isEditing ? renderPointBuyEditorHTML(data) : Object.entries(data.abilityScores).map(([key, value]) => `<div class="stat-box"><label class="font-fell text-sm">${key.toUpperCase()}</label><div class="ability-score">${value}</div><div class="ability-modifier">${formatMod(abilityMods[key])}</div></div>`).join('')}</section><div class="text-center"><span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span><label class="font-fell text-lg">Proficiency Bonus</label></div><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">${Object.entries(DND_RULES.SKILLS).map(([name, stat]) => `<li class="${data.proficiencies.skills.includes(name.toLowerCase().replace(/ /g, '')) ? 'proficient' : ''}">${name} <span class="text-gray-500">(${stat.toUpperCase()})</span><strong class="float-right">${formatMod(abilityMods[stat] + (data.proficiencies.skills.includes(name.toLowerCase().replace(/ /g, '')) ? data.profBonus : 0))}</strong></li>`).join('')}</ul></section></div><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="grid grid-cols-3 gap-3 text-center"><div class="stat-box">${isEditing ? `<input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}">` : `<div class="ability-score">${data.combat.ac}</div>`}<div class="font-fell text-xs">ARMOR CLASS</div></div><div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div><div class="stat-box">${isEditing ? `<input id="edit-combat-speed" class="ability-score edit-stat w-full" value="${data.combat.speed}">` : `<div class="ability-score">${data.combat.speed.replace('ft','<span class="text-base">ft</span>')}</div>`}<div class="font-fell text-xs">SPEED</div></div></section><section class="bordered-section text-center"><label class="font-fell text-lg">Hit Points</label><div class="text-3xl font-bold tracking-wider">${data.combat.hp_max} / ${data.combat.hp_max}</div><div class="mt-2"><label class="font-fell">Hit Dice</label><div class="text-lg font-bold">${data.level}d${(DND_RULES.CLASSES[data.class] || {}).hitDice || 8}</div></div></section><section class="bordered-section text-center"><h3 class="font-fell text-lg mb-2">Death Saves</h3><div class="flex justify-around items-center"><div><span class="text-sm">Successes</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div><div><span class="text-sm">Failures</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div></div></section><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Saving Throws</h3><ul class="text-sm space-y-1 skill-list">${Object.entries(DND_RULES.ABILITIES).map(([key, name]) => `<li class="${data.proficiencies.savingThrows.includes(key) ? 'proficient' : ''}"><span>${name}</span><strong class="float-right">${formatMod(abilityMods[key] + (data.proficiencies.savingThrows.includes(key) ? data.profBonus : 0))}</strong></li>`).join('')}</ul></section><section><h2 class="section-header">Attacks</h2><div id="attacks-section-render" class="space-y-3"></div></section></div><div class="lg:col-span-1 md:col-span-2 space-y-4"><section id="key-features-section" class="text-sm"></section></div></main>`;
+            const backgroundData = DND_RULES.BACKGROUNDS[data.background];
+            const classData = DND_RULES.CLASSES[data.class];
+            const speciesData = DND_RULES.SPECIES[data.species];
+            const lockedSkills = new Set([
+                ...(backgroundData?.skills?.map(s => s.toLowerCase().replace(/ /g, '')) || []),
+                ...(classData?.skills?.map(s => s.toLowerCase().replace(/ /g, '')) || []),
+                ...(speciesData?.skills?.map(s => s.toLowerCase().replace(/ /g, '')) || [])
+            ]);
+
+
+            sheetFront.innerHTML = `<header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3"><div class="lg:col-span-2 header-main">${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}</div><div class="text-left lg:text-right text-sm mt-2 lg:mt-0"><p class="flex justify-end items-center"><strong>Class:</strong> ${createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class, 'class')}</p><p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p><p class="flex justify-end items-center"><strong>Species:</strong> ${createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species, 'species')}</p><p class="flex justify-end items-center"><strong>Background:</strong> ${createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background, 'background')}</p></div></header><main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow"><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="${isEditing ? 'grid grid-cols-1 gap-y-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}">${isEditing ? renderPointBuyEditorHTML(data) : Object.entries(data.abilityScores).map(([key, value]) => `<div class="stat-box"><label class="font-fell text-sm">${key.toUpperCase()}</label><div class="ability-score">${value}</div><div class="ability-modifier">${formatMod(abilityMods[key])}</div></div>`).join('')}</section><div class="text-center"><span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span><label class="font-fell text-lg">Proficiency Bonus</label></div><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">${Object.entries(DND_RULES.SKILLS).map(([name, stat]) => {
+                const normName = name.toLowerCase().replace(/ /g, '');
+                const isProf = data.proficiencies.skills.includes(normName);
+                if (isEditing) {
+                    const isLocked = lockedSkills.has(normName);
+                    return `<li><label class="flex-grow flex items-center"><input type="checkbox" class="edit-skill-checkbox mr-2" data-skill="${normName}" ${isProf ? 'checked' : ''} ${isLocked ? 'disabled' : ''}>${name} <span class="text-gray-500 ml-1">(${stat.toUpperCase()})</span></label><strong class="ml-2">${formatMod(abilityMods[stat] + (isProf ? data.profBonus : 0))}</strong></li>`;
+                } else {
+                     return `<li class="${isProf ? 'proficient' : ''}"><span>${name} <span class="text-gray-500">(${stat.toUpperCase()})</span></span><strong>${formatMod(abilityMods[stat] + (isProf ? data.profBonus : 0))}</strong></li>`;
+                }
+            }).join('')}</ul></section></div><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="grid grid-cols-3 gap-3 text-center"><div class="stat-box">${isEditing ? `<input type="number" id="edit-combat-ac" class="ability-score edit-stat" value="${data.combat.ac}">` : `<div class="ability-score">${data.combat.ac}</div>`}<div class="font-fell text-xs">ARMOR CLASS</div></div><div class="stat-box"><div class="ability-score">${formatMod(abilityMods.dex)}</div><div class="font-fell text-xs">INIT</div></div><div class="stat-box">${isEditing ? `<input id="edit-combat-speed" class="ability-score edit-stat w-full" value="${data.combat.speed}">` : `<div class="ability-score">${data.combat.speed.replace('ft','<span class="text-base">ft</span>')}</div>`}<div class="font-fell text-xs">SPEED</div></div></section><section class="bordered-section text-center"><label class="font-fell text-lg">Hit Points</label><div class="text-3xl font-bold tracking-wider">${data.combat.hp_max} / ${data.combat.hp_max}</div><div class="mt-2"><label class="font-fell">Hit Dice</label><div class="text-lg font-bold">${data.level}d${(DND_RULES.CLASSES[data.class] || {}).hitDice || 8}</div></div></section><section class="bordered-section text-center"><h3 class="font-fell text-lg mb-2">Death Saves</h3><div class="flex justify-around items-center"><div><span class="text-sm">Successes</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div><div><span class="text-sm">Failures</span><div class="flex space-x-2 mt-1">${[...Array(3)].map(() => `<div class="save-dot"></div>`).join('')}</div></div></div></section><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Saving Throws</h3><ul class="text-sm skill-list">${Object.entries(DND_RULES.ABILITIES).map(([key, name]) => `<li class="${data.proficiencies.savingThrows.includes(key) ? 'proficient' : ''}"><span>${name}</span><strong>${formatMod(abilityMods[key] + (data.proficiencies.savingThrows.includes(key) ? data.profBonus : 0))}</strong></li>`).join('')}</ul></section><section><h2 class="section-header">Attacks</h2><div id="attacks-section-render" class="space-y-3"></div></section></div><div class="lg:col-span-1 md:col-span-2 space-y-4"><section id="key-features-section" class="text-sm"></section></div></main>`;
             renderKeyFeatures(keyFeatures);
             renderAttacks(data.attacks, abilityMods, data.profBonus);
 
@@ -896,6 +924,7 @@
                 addChangeListener('edit-char-background-select', handleFormChange);
                 addChangeListener('bg-bonus-plus-two', handleFormChange);
                 addChangeListener('bg-bonus-plus-one', handleFormChange);
+                document.querySelectorAll('.edit-skill-checkbox').forEach(cb => cb.addEventListener('change', handleFormChange));
 
                 document.querySelectorAll('.info-button').forEach(btn => {
                     btn.addEventListener('click', showInfo);
