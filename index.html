@@ -32,7 +32,7 @@
         .sheet-wrapper { max-width: 8.5in; margin: 1rem auto; position: relative; }
         .sheet-container {
             border: 2px solid #5c4d3d; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            background-image: url('https://www.transparenttextures.com/patterns/old-paper.png');
+            background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
             background-color: #fdf6e3; display: none; flex-direction: column;
         }
         @media (max-width: 1023px) {
@@ -278,6 +278,16 @@
 
         const getMod = (score) => Math.floor((score - 10) / 2);
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
+
+        const calculateProf = () => {
+            let prof = 2; 
+            for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
+                if (currentCharacterData.level >= parseInt(levelThreshold)) {
+                    prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold];
+                }
+            }
+            return prof;
+        };
 
         const calculateMaxHp = (level, className, conScore) => {
             const classData = DND_RULES.CLASSES[className];
@@ -781,13 +791,7 @@
                 data.spellcasting = null;
             }
 
-            let currentProf = 2;
-            for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
-                if (data.level >= parseInt(levelThreshold)) {
-                    currentProf = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold];
-                }
-            }
-            data.profBonus = currentProf;
+            data.profBonus = calculateProf();
             data.combat.hp_max = calculateMaxHp(data.level, data.class, data.abilityScores.con);
             
             const classData = DND_RULES.CLASSES[data.class];
@@ -899,7 +903,7 @@
             ]);
 
 
-            sheetFront.innerHTML = `<header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3"><div class="lg:col-span-2 header-main">${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}</div><div class="text-left lg:text-right text-sm mt-2 lg:mt-0"><p class="flex justify-end items-center"><strong>Class:</strong> ${createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class, 'class')}</p><p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p><p class="flex justify-end items-center"><strong>Species:</strong> ${createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species, 'species')}</p><p class="flex justify-end items-center"><strong>Background:</strong> ${createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background, 'background')}</p></div></header><main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow"><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="${isEditing ? 'grid grid-cols-1 gap-y-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}">${isEditing ? renderPointBuyEditorHTML(data) : Object.entries(data.abilityScores).map(([key, value]) => `<div class="stat-box"><label class="font-fell text-sm">${key.toUpperCase()}</label><div class="ability-score">${value}</div><div class="ability-modifier">${formatMod(abilityMods[key])}</div></div>`).join('')}</section><div class="text-center"><span class="font-bold text-lg mr-2">${formatMod(data.profBonus)}</span><label class="font-fell text-lg">Proficiency Bonus</label></div><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">${Object.entries(DND_RULES.SKILLS).map(([name, stat]) => {
+            sheetFront.innerHTML = `<header class="flex flex-col lg:grid lg:grid-cols-3 gap-4 border-b-2 border-black pb-2 mb-3"><div class="lg:col-span-2 header-main">${isEditing ? `<input id="edit-char-name" class="edit-mode-input text-4xl font-fell text-red-800" value="${data.name}">` : `<h1 class="text-4xl font-fell">${data.name}</h1>`}${isEditing ? `<input id="edit-char-title" class="edit-mode-input text-lg italic text-gray-700" value="${data.title}">` : `<p class="text-lg text-gray-700 italic">${data.title}</p>`}</div><div class="text-left lg:text-right text-sm mt-2 lg:mt-0"><p class="flex justify-end items-center"><strong>Class:</strong> ${createSelectHTML('edit-char-class', DND_RULES.CLASSES, data.class, 'class')}</p><p><strong>Level:</strong> ${isEditing ? `<input id="edit-char-level" type="number" min="1" class="edit-stat" value="${data.level}">` : data.level}</p><p class="flex justify-end items-center"><strong>Species:</strong> ${createSelectHTML('edit-char-species', DND_RULES.SPECIES, data.species, 'species')}</p><p class="flex justify-end items-center"><strong>Background:</strong> ${createSelectHTML('edit-char-background-select', DND_RULES.BACKGROUNDS, data.background, 'background')}</p></div></header><main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow"><div class="lg:col-span-1 md:col-span-1 space-y-3 flex flex-col"><section class="${isEditing ? 'grid grid-cols-1 gap-y-1' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}">${isEditing ? renderPointBuyEditorHTML(data) : Object.entries(data.abilityScores).map(([key, value]) => `<div class="stat-box"><label class="font-fell text-sm">${key.toUpperCase()}</label><div class="ability-score">${value}</div><div class="ability-modifier">${formatMod(abilityMods[key])}</div></div>`).join('')}</section><div class="text-center"><span class="font-bold text-lg mr-2">${formatMod(calculateProf())}</span><label class="font-fell text-lg">Proficiency Bonus</label></div><section class="bordered-section flex-grow"><h3 class="font-fell font-bold border-b border-gray-400 mb-1">Skills</h3><ul class="text-sm skill-list">${Object.entries(DND_RULES.SKILLS).map(([name, stat]) => {
                 const normName = name.toLowerCase().replace(/ /g, '');
                 const isProf = data.proficiencies.skills.includes(normName);
                 if (isEditing) {

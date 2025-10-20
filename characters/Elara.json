@@ -1,0 +1,172 @@
+{
+  "name": "Elara Vance",
+  "title": "Seeker of the Arcane",
+  "class": "Wizard",
+  "level": 3,
+  "species": "Elf",
+  "background": "Sage",
+  "abilityScores": {
+    "str": 8,
+    "dex": 14,
+    "con": 14,
+    "int": 15,
+    "wis": 10,
+    "cha": 10
+  },
+  "pointBuyBaseScores": {
+    "str": 8,
+    "dex": 8,
+    "con": 8,
+    "int": 8,
+    "wis": 8,
+    "cha": 8
+  },
+  "backgroundBonusSelections": {
+    "plusTwo": "int",
+    "plusOne": "wis"
+  },
+  "proficiencies": {
+    "skills": [
+      "arcana",
+      "history",
+      "investigation",
+      "insight"
+    ],
+    "savingThrows": [
+      "int",
+      "wis"
+    ]
+  },
+  "combat": {
+    "ac": 12,
+    "speed": "30ft"
+  },
+  "attacks": [
+    {
+      "name": "Quarterstaff",
+      "atkStat": "str",
+      "dmgDie": "1d6",
+      "dmgStat": "str",
+      "type": "Bludgeoning",
+      "notes": "Versatile (1d8 when used with two hands)."
+    },
+    {
+      "name": "Fire Bolt",
+      "atkStat": "int",
+      "dmgDie": "1d10",
+      "dmgStat": "int",
+      "type": "Fire",
+      "notes": "Ranged Spell Attack, 120 ft."
+    }
+  ],
+  "features": [
+    {
+      "title": "Spellcasting (Wizard)",
+      "desc": "You can cast wizard spells you have prepared. Intelligence is your spellcasting ability.",
+      "key": true,
+      "casterType": "full"
+    },
+    {
+      "title": "Arcane Recovery",
+      "desc": "Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up)."
+    },
+    {
+      "title": "Darkvision",
+      "desc": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.",
+      "key": true
+    },
+    {
+      "title": "Fey Ancestry",
+      "desc": "You have advantage on saving throws against being Charmed, and magic can’t put you to sleep.",
+      "key": true
+    },
+    {
+      "title": "Trance",
+      "desc": "You don’t need to sleep. Instead, you meditate deeply, remaining semiconscious, for 4 hours a day."
+    },
+    {
+      "title": "Magic Initiate (Wizard)",
+      "desc": "You learn two cantrips and one 1st-level spell from the Wizard spell list. You can cast the 1st-level spell once per long rest without a spell slot."
+    },
+    {
+      "title": "Arcane Tradition",
+      "desc": "You follow the School of Evocation, focusing your study on spells that create powerful elemental effects."
+    },
+    {
+      "title": "Evocation Savant",
+      "desc": "The gold and time you must spend to copy an evocation spell into your spellbook is halved."
+    },
+    {
+      "title": "Sculpt Spells",
+      "desc": "When you cast an evocation spell, you can create pockets of safety. Choose a number of creatures equal to 1 + the spell's level. The chosen creatures automatically succeed on their saving throws against the spell, and they take no damage if they would normally take half damage.",
+      "key": true
+    }
+  ],
+  "equipment": "A quarterstaff, a spellbook, a scholar's pack, a component pouch, and a letter from a dead master.",
+  "personality": {
+    "traits": "I use polysyllabic words that convey the impression of great erudition. I am never without my spellbook.",
+    "ideal": "Knowledge. The path to power and self-improvement is through knowledge.",
+    "bond": "I work to preserve the ancient library of my mentor, which was thought to be lost.",
+    "flaw": "I am easily distracted by the promise of new information or a rare, forgotten text."
+  },
+  "spellcasting": {
+    "ability": "int"
+  },
+  "spells": [
+    {
+      "name": "Fire Bolt",
+      "level": 0,
+      "desc": "Hurl a mote of fire at a creature or object within range."
+    },
+    {
+      "name": "Light",
+      "level": 0,
+      "desc": "Touch one object and cause it to glow with light."
+    },
+    {
+      "name": "Mage Hand",
+      "level": 0,
+      "desc": "A spectral, floating hand appears at a point you choose within range."
+    },
+    {
+      "name": "Prestidigitation",
+      "level": 0,
+      "desc": "You create one of several minor magical effects."
+    },
+    {
+      "name": "Ray of Frost",
+      "level": 0,
+      "desc": "A frigid beam of blue-white light streaks toward a creature."
+    },
+    {
+      "name": "Mage Armor",
+      "level": 1,
+      "desc": "Touch a willing creature who isn't wearing armor, and a protective magical force surrounds it until the spell ends. The target's base AC becomes 13 + its Dexterity modifier."
+    },
+    {
+      "name": "Magic Missile",
+      "level": 1,
+      "desc": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range."
+    },
+    {
+      "name": "Shield",
+      "level": 1,
+      "desc": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC."
+    },
+    {
+      "name": "Identify",
+      "level": 1,
+      "desc": "You choose one object that you must touch. You learn its properties and whether it requires attunement."
+    },
+    {
+      "name": "Misty Step",
+      "level": 2,
+      "desc": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see."
+    },
+    {
+      "name": "Web",
+      "level": 2,
+      "desc": "You conjure a mass of thick, sticky webbing at a point of your choice within range."
+    }
+  ]
+}
