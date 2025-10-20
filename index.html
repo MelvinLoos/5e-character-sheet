@@ -18,7 +18,8 @@
             .page-break { page-break-after: always; }
             .usage-box, .spell-slot-box { border: 1px solid #5c4d3d !important; }
             .usage-box:checked, .spell-slot-box:checked { background-color: #3a2d21 !important; }
-            .sheet-container { border: none !important; box-shadow: none !important; height: 11in;}
+            .sheet-container { border: none !important; box-shadow: none !important; height: auto; }
+            #sheet-container-front { page-break-inside: avoid; }
             .sheet-wrapper { max-width: 100%; margin: 0; }
             #sheet-container-front header { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; }
             #sheet-container-front header .header-main { grid-column: span 2 / span 2 !important; }
@@ -681,11 +682,15 @@
             let featuresFromDOM = [];
             document.querySelectorAll('.edit-feature-item').forEach(item => {
                 const title = item.querySelector('.edit-feature-title').value;
+                const casterTypeSelect = item.querySelector('.edit-feature-casterType');
                 const newFeature = {
                     title: title,
                     desc: item.querySelector('.edit-feature-desc').value,
                     key: item.querySelector('.edit-feature-key').checked
                 };
+                if (casterTypeSelect && casterTypeSelect.value !== 'none') {
+                    newFeature.casterType = casterTypeSelect.value;
+                }
                 const originalFeature = currentCharacterData.features.find(f => f.title === title);
                 if (originalFeature && originalFeature.uses) {
                     newFeature.uses = originalFeature.uses;
@@ -761,18 +766,20 @@
                     desc: item.querySelector('.edit-spell-desc').value
                 });
             });
-
-            const spellAbilitySelect = document.getElementById('edit-spell-ability');
-            if (spellAbilitySelect) {
-                data.spellcasting = { ability: spellAbilitySelect.value, spellSlots: {} };
-                for (let i = 1; i <= 9; i++) {
-                    const slotInput = document.getElementById(`edit-spell-slot-l${i}`);
-                    if (slotInput) {
-                        const value = parseInt(slotInput.value) || 0;
-                        if (value > 0) data.spellcasting.spellSlots[`level${i}`] = value;
-                    }
+            
+            const spellcastingFeature = data.features.find(f => f.casterType);
+            if (spellcastingFeature) {
+                if (!data.spellcasting) {
+                    data.spellcasting = { ability: 'int', spellSlots: {} };
                 }
-            } else { data.spellcasting = null; }
+                const casterType = spellcastingFeature.casterType;
+                const progression = DND_RULES.SPELL_SLOT_PROGRESSION[casterType];
+                if (progression && progression[data.level]) {
+                    data.spellcasting.spellSlots = { ...progression[data.level] };
+                }
+            } else {
+                data.spellcasting = null;
+            }
 
             let currentProf = 2;
             for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
@@ -793,13 +800,7 @@
                 }
             });
             data.proficiencies.skills = Array.from(chosenSkills);
-
-            if (data.spellcasting && classData && classData.casterType) {
-                const progression = DND_RULES.SPELL_SLOT_PROGRESSION[classData.casterType];
-                if (progression && progression[data.level]) {
-                    data.spellcasting.spellSlots = { ...progression[data.level] };
-                }
-            }
+            
             if(classData) data.proficiencies.savingThrows = [...classData.savingThrows];
             
             currentCharacterData = data;
@@ -912,11 +913,21 @@
             renderAttacks(data.attacks, abilityMods, data.profBonus);
 
             let backPageHTML = `<header class="flex justify-between items-baseline border-b-2 border-black pb-3 mb-4"><h1 class="text-3xl font-fell">${data.name}</h1><p class="text-sm italic">Character Details</p></header><main class="flex-grow md:flowing-columns"><section class="bordered-section text-sm mb-4"><h2 class="section-header">Personality</h2>${isEditing ? `<p class="mb-2"><strong>Traits:</strong> <textarea id="edit-personality-traits" class="edit-mode-textarea">${data.personality.traits}</textarea></p><p class="mb-2"><strong>Ideal:</strong> <textarea id="edit-personality-ideal" class="edit-mode-textarea">${data.personality.ideal}</textarea></p><p class="mb-2"><strong>Bond:</strong> <textarea id="edit-personality-bond" class="edit-mode-textarea">${data.personality.bond}</textarea></p><p><strong>Flaw:</strong> <textarea id="edit-personality-flaw" class="edit-mode-textarea">${data.personality.flaw}</textarea></p>` : `<p class="mb-2"><strong>Traits:</strong> <span class="italic">${data.personality.traits}</span></p><p class="mb-2"><strong>Ideal:</strong> <span class="italic">${data.personality.ideal}</span></p><p class="mb-2"><strong>Bond:</strong> <span class="italic">${data.personality.bond}</span></p><p><strong>Flaw:</strong> <span class="italic">${data.personality.flaw}</span></p>`}</section><section class="mb-4"><h2 class="section-header">Features & Traits</h2><div id="features-list-render" class="space-y-3 text-sm"></div></section><section><h2 class="section-header">Equipment</h2>${isEditing ? `<textarea id="edit-equipment-list" class="edit-mode-textarea">${data.equipment}</textarea>`: `<p class="text-sm italic">${data.equipment}</p>`}</section>`;
-            if (data.spellcasting) backPageHTML += `<section id="spellcasting-section-render" class="mt-4 flex-grow flex flex-col"></section>`;
-            backPageHTML += `</main>`;
+            
+            const hasSpellcastingFeature = data.features.some(f => f.casterType);
+            if(hasSpellcastingFeature) {
+                if (!data.spellcasting) data.spellcasting = { ability: 'int', spellSlots: {} }; // Initialize if missing
+                backPageHTML += `<section id="spellcasting-section-render" class="mt-4 flex-grow flex flex-col"></section>`;
+            } else if (isEditing) {
+                backPageHTML += `<section id="spellcasting-section-render" class="mt-4 flex-grow flex flex-col"></section>`;
+            }
+
             sheetBack.innerHTML = backPageHTML;
             renderFeatureList(otherFeatures);
-            if (data.spellcasting) renderSpellcastingSection(data, abilityMods);
+            
+            if (hasSpellcastingFeature || isEditing) {
+                 renderSpellcastingSection(data, abilityMods);
+            }
             
             if (isEditing) {
                 const addChangeListener = (id, handler) => document.getElementById(id)?.addEventListener('change', handler);
@@ -947,7 +958,10 @@
             const container = document.getElementById('features-list-render');
             if (!container) return;
             if (isEditing) {
-                container.innerHTML = currentCharacterData.features.map((f, i) => `<div class="edit-feature-item bordered-section mb-2"><div class="flex justify-between items-center"><input class="edit-mode-input font-bold edit-feature-title" value="${f.title}"><button class="edit-mode-small-btn" onclick="removeListItem('features', ${i})">X</button></div><textarea class="edit-mode-textarea edit-feature-desc">${f.desc}</textarea><div class="mt-1 text-xs"><input type="checkbox" id="key-feature-${i}" class="edit-feature-key" ${f.key ? 'checked' : ''}><label for="key-feature-${i}">Show on front page as Key Feature</label></div></div>`).join('') + `<button class="mt-2 text-sm editor-button" onclick="addListItem('features')">+ Add Feature</button>`;
+                container.innerHTML = currentCharacterData.features.map((f, i) => {
+                    const casterSelect = `<div class="mt-1 text-xs"><label>Spellcasting Type:</label><select class="edit-mode-select edit-feature-casterType"><option value="none">None</option>${Object.keys(DND_RULES.SPELL_SLOT_PROGRESSION).map(key => `<option value="${key}" ${f.casterType === key ? 'selected' : ''}>${key.charAt(0).toUpperCase() + key.slice(1)}</option>`).join('')}</select></div>`;
+                    return `<div class="edit-feature-item bordered-section mb-2"><div class="flex justify-between items-center"><input class="edit-mode-input font-bold edit-feature-title" value="${f.title}"><button class="edit-mode-small-btn" onclick="removeListItem('features', ${i})">X</button></div><textarea class="edit-mode-textarea edit-feature-desc">${f.desc}</textarea><div class="mt-1 text-xs"><input type="checkbox" id="key-feature-${i}" class="edit-feature-key" ${f.key ? 'checked' : ''}><label for="key-feature-${i}">Show on front page as Key Feature</label></div>${casterSelect}</div>`;
+                }).join('') + `<button class="mt-2 text-sm editor-button" onclick="addListItem('features')">+ Add Feature</button>`;
             } else {
                 container.innerHTML = features.length > 0 ? features.map(f => `<div class="feature-box"><div class="flex items-center flex-wrap"><p class="feature-title">${f.title}</p>${f.uses ? `<div class="usage-tracker">${[...Array(f.uses.total)].map(() => `<input type="checkbox" class="usage-box">`).join('')}<span class="text-xs italic text-gray-500"> per ${f.uses.per}</span></div>` : ''}</div><p class="feature-desc">${f.desc.replace(/<li>/g, '<li class="list-disc list-inside">')}</p></div>`).join('') : `<p class="italic text-center text-gray-500 pt-8">No other features.</p>`;
             }
@@ -987,9 +1001,15 @@
             const container = document.getElementById('spellcasting-section-render');
             if (!container) return;
             const stLabels = DND_RULES.ABILITIES;
+            const spellcastingFeature = data.features.find(f => f.casterType);
+
             if (isEditing) {
-                 container.innerHTML = `<h2 class="section-header">Spellcasting <button onclick="toggleSpellcaster(false)" class="edit-mode-small-btn" title="Remove Spellcaster Status">X</button></h2><div class="mb-2"><label class="font-fell">Ability:</label><select id="edit-spell-ability" class="edit-mode-select w-auto">${Object.keys(stLabels).map(key => `<option value="${key}" ${data.spellcasting.ability === key ? 'selected' : ''}>${stLabels[key]}</option>`).join('')}</select></div><h3 class="font-fell text-lg mb-2">Spell Slots</h3><div class="grid grid-cols-3 gap-x-4 gap-y-2 mb-4">${[...Array(9)].map((_, i) => `<div><label class="text-sm">Level ${i + 1}:</label><input type="number" id="edit-spell-slot-l${i + 1}" class="edit-stat w-12" value="${(data.spellcasting.spellSlots && data.spellcasting.spellSlots[`level${i + 1}`]) || 0}"></div>`).join('')}</div><div id="spells-list-render" class="space-y-3 text-sm flex-grow"></div>`;
-                 renderSpellList(data.spells);
+                 if(data.spellcasting) {
+                    container.innerHTML = `<h2 class="section-header">Spellcasting</h2><div class="mb-2"><label class="font-fell">Ability:</label><select id="edit-spell-ability" class="edit-mode-select w-auto">${Object.keys(stLabels).map(key => `<option value="${key}" ${data.spellcasting.ability === key ? 'selected' : ''}>${stLabels[key]}</option>`).join('')}</select></div><h3 class="font-fell text-lg mb-2">Spell Slots</h3><div class="grid grid-cols-3 gap-x-4 gap-y-2 mb-4">${[...Array(9)].map((_, i) => `<div><label class="text-sm">Level ${i + 1}:</label><input type="number" id="edit-spell-slot-l${i + 1}" class="edit-stat w-12" value="${(data.spellcasting.spellSlots && data.spellcasting.spellSlots[`level${i + 1}`]) || 0}"></div>`).join('')}</div><div id="spells-list-render" class="space-y-3 text-sm flex-grow"></div>`;
+                    renderSpellList(data.spells);
+                 } else {
+                    container.innerHTML = `<div class="text-center p-8 bordered-section"><p class="italic text-gray-600">This character has no spellcasting features.</p></div>`;
+                 }
             } else if (data.spellcasting) {
                 const spellMod = abilityMods[data.spellcasting.ability];
                 const spellSaveDC = 8 + data.profBonus + spellMod;
@@ -1003,25 +1023,13 @@
         function renderSpellList(spells) {
             const container = document.getElementById('spells-list-render');
             if (!container) return;
-            if(isEditing && currentCharacterData.spellcasting === null){
-                container.innerHTML = `<div class="text-center p-8 bordered-section"><p class="italic text-gray-600 mb-4">This character is not a spellcaster.</p><button onclick="toggleSpellcaster(true)" class="editor-button">Make Spellcaster</button></div>`;
-                return;
-            }
+
             const spellContent = spells.map((s, i) => isEditing ? `<div class="edit-spell-item bordered-section mb-2"><input class="edit-mode-input font-bold edit-spell-name" value="${s.name}" placeholder="Spell Name"><input type="number" class="edit-mode-input text-xs w-16 mt-1 edit-spell-level" value="${s.level}" placeholder="Lvl"><textarea class="edit-mode-textarea mt-1 edit-spell-desc">${s.desc}</textarea><button class="edit-mode-small-btn" onclick="removeListItem('spells', ${i})">X</button></div>` : `<div class="spell-box"><p class="spell-title">${s.name} <span class="text-xs font-normal italic"> (Lvl ${s.level})</span></p><p class="spell-desc">${s.desc}</p></div>`).join('');
             const addSpellButton = isEditing ? `<button class="mt-2 text-sm editor-button" onclick="addListItem('spells')">+ Add Spell</button>` : '';
             const noSpellsMessage = !isEditing && spells.length === 0 ? `<p class="italic text-center text-gray-500 pt-8">No spells known.</p>` : '';
             container.innerHTML = spellContent + addSpellButton + noSpellsMessage;
         }
         
-        window.toggleSpellcaster = (makeCaster) => {
-            gatherDataFromForm();
-            if (makeCaster) {
-                currentCharacterData.spellcasting = { ability: 'int', spellSlots: { level1: 2 } };
-            } else {
-                currentCharacterData.spellcasting = null;
-            }
-            renderCharacterSheet();
-        };
         window.addListItem = (type) => {
             gatherDataFromForm();
             if (type === 'features') currentCharacterData.features.push({title: "New Feature", desc: "", key: false});
@@ -1048,3 +1056,4 @@
 </script>
 </body>
 </html>
+
