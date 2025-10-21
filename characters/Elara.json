@@ -15,11 +15,11 @@
   },
   "pointBuyBaseScores": {
     "str": 8,
-    "dex": 8,
-    "con": 8,
-    "int": 8,
-    "wis": 8,
-    "cha": 8
+    "dex": 14,
+    "con": 14,
+    "int": 15,
+    "wis": 10,
+    "cha": 10
   },
   "backgroundBonusSelections": {
     "plusTwo": "int",

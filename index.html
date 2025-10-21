@@ -11,6 +11,10 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- SUPABASE CLIENT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- AJV for JSON Schema validation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv-errors/3.0.0/ajv-errors.min.js"></script>
+
     <style>
         @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -181,6 +185,17 @@
             </div>
         </div>
     </div>
+    <div id="error-modal" class="modal-backdrop hidden no-print">
+        <div class="modal-content">
+            <h2 class="font-fell text-2xl text-red-800">Validation Error</h2>
+            <p class="my-4">The imported character file has some issues:</p>
+            <ul id="error-list" class="text-left list-disc list-inside bg-red-50 p-4 border border-red-200 rounded">
+            </ul>
+            <div class="mt-4 flex justify-center gap-4">
+                <button id="close-error-modal-btn" class="editor-button bg-gray-600">Close</button>
+            </div>
+        </div>
+    </div>
 
 
 <script type="module">
@@ -224,6 +239,15 @@
         let characterSchema = schema;
         let sourceCharacterId = null; 
         const STORAGE_KEY = 'dndCharacterLibrary';
+        let ajv;
+
+        if (typeof Ajv !== 'undefined' && typeof ajvErrors !== 'undefined') {
+            ajv = new Ajv.default({ allErrors: true });
+            ajvErrors.default(ajv);
+        } else {
+            console.warn("Ajv or Ajv-errors not loaded. Validation will be limited.");
+        }
+
 
         // --- SUPABASE SETUP ---
         const SUPABASE_URL = 'https://hqnxqotwtzeheydnaaio.supabase.co';
@@ -275,6 +299,13 @@
             loadingModal.classList.remove('hidden');
         };
         const hideLoading = () => loadingModal.classList.add('hidden');
+
+        const showErrorModal = (errors) => {
+            const errorList = document.getElementById('error-list');
+            const errorModal = document.getElementById('error-modal');
+            errorList.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+            errorModal.classList.remove('hidden');
+        };
 
         const getMod = (score) => Math.floor((score - 10) / 2);
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
@@ -329,6 +360,26 @@
             });
         };
 
+        function validateCharacterData(data) {
+            if (!ajv || !characterSchema) {
+                console.warn("AJV or schema not initialized, skipping validation.");
+                return {
+                    valid: !!(data.name && data.class && data.level),
+                    errors: ["Validation library not loaded. Performed only a basic check."]
+                };
+            }
+           
+            const validate = ajv.compile(characterSchema);
+            const valid = validate(data);
+            
+            if (valid) {
+                return { valid: true, errors: [] };
+            }
+
+            const errorMessages = validate.errors.map(error => error.message);
+            return { valid: false, errors: [...new Set(errorMessages)] };
+        }
+
         const handleFileLoad = (event) => {
             const file = event.target.files[0];
             if (!file) return;
@@ -336,8 +387,11 @@
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!data.name || !data.abilityScores || !data.proficiencies) {
-                        throw new Error("Invalid character sheet format.");
+                    const { valid, errors } = validateCharacterData(data);
+
+                    if (!valid) {
+                        showErrorModal(errors);
+                        return;
                     }
                     currentCharacterData = data;
                     isEditing = false;
@@ -345,7 +399,7 @@
                     renderCharacterSheet();
                     handleSaveToLibrary();
                 } catch (error) {
-                    alert(`Error loading file: ${error.message}`);
+                    showErrorModal([`Error loading file: ${error.message}`]);
                     console.error("File load error:", error);
                 }
             };
@@ -448,8 +502,14 @@
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content?.parts?.[0]?.text) {
                     const jsonText = result.candidates[0].content.parts[0].text;
                     const generatedData = JSON.parse(jsonText);
+                    
+                    const { valid, errors } = validateCharacterData(generatedData);
+                    if (!valid) {
+                        console.error("AI generated invalid data:", errors);
+                        showErrorModal(["The AI generated a character with some inconsistencies, please try again or edit the result."].concat(errors));
+                    }
+                    
                     currentCharacterData = { ...createBlankCharacter(), ...generatedData };
-                    gatherDataFromForm();
                     isEditing = false;
                     sourceCharacterId = null;
                     renderCharacterSheet();
@@ -631,6 +691,9 @@
             } catch (err) {
                 alert('Failed to copy link.');
             }
+        });
+        document.getElementById('close-error-modal-btn').addEventListener('click', () => {
+            document.getElementById('error-modal').classList.add('hidden');
         });
         
         // --- App Initialization ---
@@ -1060,4 +1123,3 @@
 </script>
 </body>
 </html>
-

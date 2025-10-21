@@ -6,7 +6,8 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "The character's name."
+      "description": "The character's name.",
+      "errorMessage": "Character name must be a non-empty string."
     },
     "title": {
       "type": "string",
@@ -14,35 +15,40 @@
     },
     "class": {
       "type": "string",
-      "description": "The character's class (selected from rules.js)."
+      "description": "The character's class (selected from rules.js).",
+      "errorMessage": "Class must be a non-empty string."
     },
     "level": {
       "type": "integer",
       "description": "The character's level.",
       "minimum": 1,
       "maximum": 20,
-      "default": 1
+      "default": 1,
+      "errorMessage": "Level must be a number between 1 and 20."
     },
     "species": {
       "type": "string",
-      "description": "The character's species (selected from rules.js)."
+      "description": "The character's species (selected from rules.js).",
+      "errorMessage": "Species must be a non-empty string."
     },
     "background": {
       "type": "string",
-      "description": "The character's background (selected from rules.js)."
+      "description": "The character's background (selected from rules.js).",
+      "errorMessage": "Background must be a non-empty string."
     },
     "pointBuyBaseScores": {
       "type": "object",
       "description": "The character's six base ability scores (8-15) used for point buy calculation.",
       "properties": {
-        "str": { "type": "integer", "minimum": 8, "maximum": 15 },
-        "dex": { "type": "integer", "minimum": 8, "maximum": 15 },
-        "con": { "type": "integer", "minimum": 8, "maximum": 15 },
-        "int": { "type": "integer", "minimum": 8, "maximum": 15 },
-        "wis": { "type": "integer", "minimum": 8, "maximum": 15 },
-        "cha": { "type": "integer", "minimum": 8, "maximum": 15 }
+        "str": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Strength score must be between 8 and 15." },
+        "dex": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Dexterity score must be between 8 and 15." },
+        "con": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Constitution score must be between 8 and 15." },
+        "int": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Intelligence score must be between 8 and 15." },
+        "wis": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Wisdom score must be between 8 and 15." },
+        "cha": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Charisma score must be between 8 and 15." }
       },
-      "required": ["str", "dex", "con", "int", "wis", "cha"]
+      "required": ["str", "dex", "con", "int", "wis", "cha"],
+      "errorMessage": "Point buy base scores must be an object with str, dex, con, int, wis, cha properties."
     },
     "backgroundBonusSelections": {
       "type": "object",
@@ -51,7 +57,8 @@
         "plusTwo": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] },
         "plusOne": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] }
       },
-      "required": ["plusTwo", "plusOne"]
+      "required": ["plusTwo", "plusOne"],
+      "errorMessage": "Background bonus selections are required."
     },
     "proficiencies": {
       "type": "object",
@@ -93,14 +100,23 @@
         "properties": {
           "name": { "type": "string" },
           "atkStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
-          "dmgDie": { "type": "string", "pattern": "^\\d+d\\d+$" },
+          "dmgDie": { "type": "string", "pattern": "^\\d+d\\d+$", "errorMessage": "Damage die must be in the format 'XdY' (e.g., '1d8')." },
           "dmgStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
           "dmgBonus": { "type": "integer", "default": 0 },
           "type": { "type": "string", "description": "Damage type." },
           "notes": { "type": "string" },
           "weaponMastery": { "type": "string" }
         },
-        "required": ["name", "atkStat", "dmgDie", "dmgStat", "type"]
+        "required": ["name", "atkStat", "dmgDie", "dmgStat", "type"],
+        "errorMessage": {
+            "required": {
+                "name": "Attack name is required.",
+                "atkStat": "Attack stat is required.",
+                "dmgDie": "Damage die is required.",
+                "dmgStat": "Damage stat is required.",
+                "type": "Damage type is required."
+            }
+        }
       }
     },
     "features": {
@@ -179,5 +195,17 @@
     "pointBuyBaseScores",
     "backgroundBonusSelections",
     "personality"
-  ]
+  ],
+  "errorMessage": {
+      "required": {
+          "name": "Character name is required.",
+          "class": "Class is required.",
+          "level": "Level is required.",
+          "species": "Species is required.",
+          "background": "Background is required.",
+          "pointBuyBaseScores": "Point buy base scores are required.",
+          "backgroundBonusSelections": "Background bonus selections are required.",
+          "personality": "Personality traits, ideal, bond, and flaw are required."
+      }
+  }
 }
