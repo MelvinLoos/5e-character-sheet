@@ -113,7 +113,6 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; }
         .modal-content { background-color: #fdf6e3; padding: 2rem; border: 2px solid #5c4d3d; max-width: 500px; text-align: center; }
-        .hide-feature { display: none; }
     </style>
 </head>
 <body class="p-4">
@@ -307,6 +306,38 @@
             errorModal.classList.remove('hidden');
         };
 
+        function cleanSchemaForApi(schema) {
+            if (typeof schema !== 'object' || schema === null) {
+                return schema;
+            }
+
+            if (Array.isArray(schema)) {
+                return schema.map(item => cleanSchemaForApi(item));
+            }
+
+            const newSchema = {};
+
+            for (const key in schema) {
+                if (key === '$schema' || key === 'errorMessage') {
+                    continue;
+                }
+
+                const value = schema[key];
+
+                if (key === 'type' && Array.isArray(value)) {
+                    // Find the first non-null type, or default to the first type
+                    const nonNullType = value.find(t => t !== 'null');
+                    newSchema[key] = (nonNullType || value[0]).toUpperCase();
+                } else if (typeof value === 'object' && value !== null) {
+                    newSchema[key] = cleanSchemaForApi(value);
+                } else {
+                    newSchema[key] = value;
+                }
+            }
+
+            return newSchema;
+        }
+
         const getMod = (score) => Math.floor((score - 10) / 2);
         const formatMod = (mod) => mod >= 0 ? `+${mod}` : mod.toString();
 
@@ -489,10 +520,11 @@
             if (!characterSchema) { alert("Character schema is not loaded. AI generation is disabled."); return; }
             showLoading("The mists of creation are swirling...");
             try {
+                const cleanedSchema = cleanSchemaForApi(characterSchema);
                 const response = await fetch(`/.netlify/functions/generate-character`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: userPrompt, schema: characterSchema })
+                    body: JSON.stringify({ prompt: userPrompt, schema: cleanedSchema })
                 });
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -1123,3 +1155,4 @@
 </script>
 </body>
 </html>
+
