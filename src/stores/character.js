@@ -168,6 +168,26 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value = data
     isEditing.value = false
     sourceCharacterId.value = null // Reset source unless it's set by sharing
+    
+    // Setup spellcasting object if character has valid casterType
+    _setupSpellcasting()
+  }
+
+  function _setupSpellcasting() {
+    if (!currentCharacterData.value) return
+    
+    const features = currentCharacterData.value.features || []
+    const spellcastingFeature = features.find((f) => f.casterType && f.casterType !== 'none')
+    
+    if (spellcastingFeature && !currentCharacterData.value.spellcasting) {
+      // Set up spellcasting object with default ability
+      currentCharacterData.value.spellcasting = {
+        ability: 'int' // Default to Intelligence as specified
+      }
+    } else if (!spellcastingFeature) {
+      // Remove spellcasting object if no valid casterType exists
+      currentCharacterData.value.spellcasting = null
+    }
   }
 
   async function loadCharacterFromUrl() {
@@ -389,6 +409,9 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Also recalculate derived stats
     data.combat.hp_max = maxHp.value
+    
+    // Setup spellcasting based on current features
+    _setupSpellcasting()
   }
 
   return {

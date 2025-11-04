@@ -1,6 +1,7 @@
 <script setup>
 import { useCharacterStore } from '@/stores/character'
 import { formatMod } from '@/services/characterService.js'
+import { watch } from 'vue'
 import feather from 'feather-icons'
 
 const store = useCharacterStore()
@@ -25,6 +26,7 @@ function addFeature() {
     title: 'New Feature',
     desc: 'Enter feature description...',
     key: false,
+    casterType: null,
   }
 
   if (props.title === 'Key Features') {
@@ -54,7 +56,21 @@ function removeFeature(index) {
       allFeatures.splice(featureIndex, 1)
     }
   }
+  
+  // Trigger spellcasting recalculation when features change
+  store.recalculateAbilityScores()
 }
+
+// Watch for changes in features to trigger spellcasting updates
+watch(
+  () => store.currentCharacterData?.features,
+  () => {
+    if (store.currentCharacterData) {
+      store.recalculateAbilityScores()
+    }
+  },
+  { deep: true }
+)
 </script>
 
 <template>
@@ -105,6 +121,33 @@ function removeFeature(index) {
               placeholder="Feature description"
               rows="2"
             ></textarea>
+            
+            <!-- Edit mode options -->
+            <div v-if="store.isEditing" class="grid grid-cols-2 gap-3 mt-2 text-xs">
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="feature.key"
+                  type="checkbox"
+                  class="usage-box"
+                  :id="`key-${index}`"
+                />
+                <label :for="`key-${index}`" class="text-xs">
+                  Key Feature (show on front page)
+                </label>
+              </div>
+              
+              <div>
+                <label class="block text-xs mb-1">Spellcasting Type:</label>
+                <select v-model="feature.casterType" class="edit-mode-select w-full">
+                  <option :value="null">No Spellcasting</option>
+                  <option value="full">Full Caster</option>
+                  <option value="half">Half Caster</option>
+                  <option value="third">Third Caster</option>
+                  <option value="pact">Pact Magic</option>
+                </select>
+              </div>
+            </div>
+            
             <p
               v-else
               class="feature-desc"

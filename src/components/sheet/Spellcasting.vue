@@ -1,23 +1,44 @@
 <script setup>
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'
 import feather from 'feather-icons'
 
 const store = useCharacterStore()
 
-// Check if character has spellcasting - only show when a feature has casterType defined
+// Check if character has spellcasting - only show when casterType is not null and not 'none'
 const hasSpellcasting = computed(() => {
   const features = store.currentCharacterData?.features || []
-  return features.some((f) => f.casterType)
+  return features.some((f) => f.casterType && f.casterType !== 'none')
+})
+
+// Get the caster type for spell slot calculation
+const casterType = computed(() => {
+  const features = store.currentCharacterData?.features || []
+  const spellcastingFeature = features.find((f) => f.casterType && f.casterType !== 'none')
+  return spellcastingFeature?.casterType || null
+})
+
+// Calculate spell slots based on caster type and level
+const spellSlots = computed(() => {
+  if (!casterType.value || !store.currentCharacterData?.level) return {}
+  
+  const level = store.currentCharacterData.level
+  const progression = SPELL_SLOT_PROGRESSION[casterType.value]
+  
+  return progression?.[level] || {}
 })
 
 function addSpell() {
+  // Only allow adding spells if there's a valid casterType
+  if (!hasSpellcasting.value) return
+  
   const newSpell = {
     name: 'New Spell',
     level: 1,
     desc: 'Enter spell description...',
   }
-  
+
   store.currentCharacterData.spells = store.currentCharacterData.spells || []
   store.currentCharacterData.spells.push(newSpell)
 }
@@ -37,13 +58,11 @@ function removeSpell(index) {
       </p>
 
       <!-- Spell Slots -->
-      <div v-if="store.currentCharacterData.spellcasting?.spellSlots" class="mb-4">
+      <div v-if="Object.keys(spellSlots).length > 0" class="mb-4">
         <h3 class="font-bold mb-2">Spell Slots</h3>
         <div class="space-y-1">
           <div
-            v-for="[level, count] in Object.entries(
-              store.currentCharacterData.spellcasting.spellSlots,
-            )"
+            v-for="[level, count] in Object.entries(spellSlots)"
             :key="level"
             class="flex items-center"
           >
@@ -56,11 +75,11 @@ function removeSpell(index) {
       </div>
 
       <!-- Spells List -->
-      <div v-if="store.currentCharacterData.spells?.length > 0 || store.isEditing">
+      <div v-if="store.currentCharacterData.spells?.length > 0 || hasSpellcasting">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-bold mb-0">Spells</h3>
           <button
-            v-if="store.isEditing"
+            v-if="store.isEditing && hasSpellcasting"
             @click="addSpell"
             class="icon-button text-xs p-1"
             title="Add Spell"
@@ -68,16 +87,21 @@ function removeSpell(index) {
             <span v-html="feather.icons.plus.toSvg({ width: 14, height: 14 })"></span>
           </button>
         </div>
+
         
-        <div v-if="store.currentCharacterData.spells?.length === 0 && store.isEditing" class="italic text-center text-gray-500 py-4">
+        <div
+          v-if="store.currentCharacterData.spells?.length === 0 && hasSpellcasting && store.isEditing"
+          class="italic text-center text-gray-500 py-4"
+        >
           No spells known. Click the + button to add spells.
         </div>
-        
-        <div v-else-if="store.currentCharacterData.spells?.length === 0" class="italic text-center text-gray-500 py-8">
+
+        <div
+          v-else-if="store.currentCharacterData.spells?.length === 0"
+          class="italic text-center text-gray-500 py-8"
+        >
           No spells known.
-        </div>
-        
-        <div v-else class="space-y-3">
+        </div>        <div v-else class="space-y-3">
           <div
             v-for="(spell, index) in store.currentCharacterData.spells"
             :key="spell.name + index"
@@ -93,7 +117,7 @@ function removeSpell(index) {
                     placeholder="Spell name"
                   />
                   <p v-else class="spell-title font-bold">{{ spell.name }}</p>
-                  
+
                   <input
                     v-if="store.isEditing"
                     v-model.number="spell.level"
@@ -105,7 +129,7 @@ function removeSpell(index) {
                   />
                   <span v-else class="text-xs font-normal italic">(Level {{ spell.level }})</span>
                 </div>
-                
+
                 <textarea
                   v-if="store.isEditing"
                   v-model="spell.desc"
@@ -115,7 +139,7 @@ function removeSpell(index) {
                 ></textarea>
                 <p v-else class="spell-desc text-sm">{{ spell.desc }}</p>
               </div>
-              
+
               <button
                 v-if="store.isEditing"
                 @click="removeSpell(index)"
