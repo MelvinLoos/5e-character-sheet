@@ -22,17 +22,17 @@ const casterType = computed(() => {
 // Calculate spell slots based on caster type and level
 const spellSlots = computed(() => {
   if (!casterType.value || !store.currentCharacterData?.level) return {}
-  
+
   const level = store.currentCharacterData.level
   const progression = SPELL_SLOT_PROGRESSION[casterType.value]
-  
+
   return progression?.[level] || {}
 })
 
 function addSpell() {
   // Only allow adding spells if there's a valid casterType
   if (!hasSpellcasting.value) return
-  
+
   const newSpell = {
     name: 'New Spell',
     level: 1,
@@ -88,9 +88,10 @@ function removeSpell(index) {
           </button>
         </div>
 
-        
         <div
-          v-if="store.currentCharacterData.spells?.length === 0 && hasSpellcasting && store.isEditing"
+          v-if="
+            store.currentCharacterData.spells?.length === 0 && hasSpellcasting && store.isEditing
+          "
           class="italic text-center text-gray-500 py-4"
         >
           No spells known. Click the + button to add spells.
@@ -101,7 +102,8 @@ function removeSpell(index) {
           class="italic text-center text-gray-500 py-8"
         >
           No spells known.
-        </div>        <div v-else class="space-y-3">
+        </div>
+        <div v-else class="space-y-3">
           <div
             v-for="(spell, index) in store.currentCharacterData.spells"
             :key="spell.name + index"

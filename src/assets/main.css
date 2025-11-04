@@ -248,49 +248,125 @@
     page-break-after: always;
   }
 
-  /* Back page layout optimization */
+  /* Back page layout optimization - CSS columns for automatic content flow */
   .sheet-container:last-child {
     height: auto !important;
     min-height: auto !important;
     max-height: none !important;
     overflow: visible !important;
-  }
-  .sheet-container:last-child main {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.3rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    page-break-inside: avoid !important;
+    padding: 0.2rem !important;
   }
 
-  /* Compress spacing for print */
+  .sheet-container:last-child main {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Apply CSS columns to the content container */
+  .sheet-container:last-child main > div:first-child {
+    column-count: 2 !important;
+    column-gap: 0.5rem !important;
+    column-fill: auto !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* Ensure sections break appropriately in columns */
+  .sheet-container:last-child main > div {
+    margin-bottom: 0.2rem !important;
+  }
+
+  /* Specific section spacing and page break control */
+  .sheet-container:last-child .space-y-6 > * {
+    margin-bottom: 0.2rem !important;
+  }
+
+  /* Allow smaller sections to break if needed but avoid orphaned headers */
+  .sheet-container:last-child main > div:first-child h2 {
+    break-after: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Optimize column breaks for different section types */
+  .sheet-container:last-child main > div:first-child .bordered-section {
+    break-inside: avoid !important;
+  }
+
+  /* Keep related content together but allow natural flow */
+  .sheet-container:last-child main > div:first-child .feature-box,
+  .sheet-container:last-child main > div:first-child .spell-box {
+    break-inside: avoid !important;
+  }
+
+  /* Hide second column container in print mode - CSS columns handle layout */
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Control column breaks for better content distribution */
+  .sheet-container:last-child main > div:first-child > * {
+    break-inside: avoid !important;
+    margin-bottom: 0.2rem !important;
+    display: block !important;
+  }
+
+  /* Prevent awkward breaks in the middle of components */
+  .sheet-container:last-child main > div:first-child .space-y-6 > * {
+    break-inside: avoid !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  /* Compress spacing for print - reduce gaps to fit more content */
   .space-y-6 > * + * {
-    margin-top: 0.2rem !important;
+    margin-top: 0.1rem !important;
   }
   .space-y-8 > * + * {
-    margin-top: 0.3rem !important;
+    margin-top: 0.15rem !important;
   }
   .grid {
-    gap: 0.2rem !important;
+    gap: 0.1rem !important;
+  }
+
+  /* Specific back page spacing optimization */
+  .sheet-container:last-child .space-y-6 {
+    gap: 0.1rem !important;
+  }
+
+  /* Reduce section header spacing */
+  .sheet-container:last-child .section-header {
+    margin-bottom: 0.2rem !important;
+    margin-top: 0.1rem !important;
   }
 
   /* Component size adjustments for full A4 print */
   .stat-box {
-    padding: 0.3rem !important;
-    margin-bottom: 0.3rem !important;
+    padding: 0.2rem !important;
+    margin-bottom: 0.2rem !important;
   }
   .bordered-section {
-    padding: 0.4rem !important;
-    margin-bottom: 0.4rem !important;
+    padding: 0.3rem !important;
+    margin-bottom: 0.2rem !important;
   }
   .feature-box,
   .spell-box {
-    padding: 0.4rem !important;
-    margin-bottom: 0.3rem !important;
+    padding: 0.3rem !important;
+    margin-bottom: 0.2rem !important;
   }
 
   /* Header adjustments */
   .sheet-container header {
     margin-bottom: 0.5rem !important;
     padding-bottom: 0.2rem !important;
+  }
+
+  /* Reduce back page header spacing more aggressively */
+  .sheet-container:last-child header {
+    margin-bottom: 0.2rem !important;
+    padding-bottom: 0.1rem !important;
   }
 
   /* Header grid layout for print */

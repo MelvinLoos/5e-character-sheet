@@ -60,10 +60,11 @@ const store = useCharacterStore()
         <div class="space-y-6">
           <PersonalityBlock />
           <EquipmentBlock />
-        </div>
-        <div class="space-y-6">
           <FeaturesList :features="store.otherFeatures" title="Features & Traits" />
           <Spellcasting />
+        </div>
+        <div class="space-y-6 print-hidden">
+          <!-- This column is hidden in print mode - CSS columns handle layout -->
         </div>
       </main>
     </div>

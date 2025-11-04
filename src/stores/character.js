@@ -165,24 +165,143 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   function _setCharacter(data) {
-    currentCharacterData.value = data
+    // Migrate legacy character data to new format
+    const migratedData = _migrateLegacyCharacter(data)
+
+    currentCharacterData.value = migratedData
     isEditing.value = false
     sourceCharacterId.value = null // Reset source unless it's set by sharing
-    
+
     // Setup spellcasting object if character has valid casterType
     _setupSpellcasting()
   }
 
+  function _migrateLegacyCharacter(data) {
+    // Create a copy to avoid mutating the original
+    const migrated = { ...data }
+
+    // Add missing backgroundBonusSelections if not present
+    if (!migrated.backgroundBonusSelections) {
+      migrated.backgroundBonusSelections = {
+        plusTwo: null,
+        plusOne: null,
+      }
+    }
+
+    // Add missing pointBuyBaseScores if not present
+    if (!migrated.pointBuyBaseScores) {
+      // If we have final ability scores, try to reverse-engineer base scores
+      if (migrated.abilityScores) {
+        migrated.pointBuyBaseScores = { ...migrated.abilityScores }
+
+        // Subtract background bonuses if we can determine them
+        const background = migrated.background
+        if (background && DND_RULES.BACKGROUNDS[background]) {
+          const bonusOptions = DND_RULES.BACKGROUNDS[background].abilityScoreIncrease || []
+          // For legacy files, we can't know which bonuses were selected, so leave as-is
+        }
+      } else {
+        // Fallback to default 8s
+        migrated.pointBuyBaseScores = {
+          str: 8,
+          dex: 8,
+          con: 8,
+          int: 8,
+          wis: 8,
+          cha: 8,
+        }
+      }
+    }
+
+    // Ensure abilityScores exists
+    if (!migrated.abilityScores) {
+      migrated.abilityScores = { ...migrated.pointBuyBaseScores }
+    }
+
+    // Add missing proficiencies structure if not present
+    if (!migrated.proficiencies) {
+      migrated.proficiencies = {
+        skills: migrated.skills || [],
+        savingThrows: migrated.savingThrows || [],
+      }
+    }
+
+    // Ensure features array exists
+    if (!migrated.features) {
+      migrated.features = []
+    }
+
+    // Add missing spellcasting feature for spellcasting classes
+    if (migrated.class && migrated.spellcasting) {
+      const hasSpellcastingFeature = migrated.features.some(
+        (f) => f.title && f.title.toLowerCase().includes('spellcasting') && f.casterType,
+      )
+
+      if (!hasSpellcastingFeature) {
+        // Determine caster type based on class
+        let casterType = 'full'
+        const className = migrated.class.replace(/\s*\(.*\)/, '') // Remove subclass info
+
+        if (['Ranger', 'Paladin'].includes(className)) {
+          casterType = 'half'
+        } else if (['Eldritch Knight', 'Arcane Trickster'].includes(className)) {
+          casterType = 'third'
+        } else if (className === 'Warlock') {
+          casterType = 'pact'
+        }
+
+        // Add spellcasting feature
+        migrated.features.push({
+          title: `Spellcasting (${className})`,
+          desc: `You can cast ${className.toLowerCase()} spells. ${migrated.spellcasting.ability.toUpperCase()} is your spellcasting ability.`,
+          casterType: casterType,
+          key: true,
+        })
+      }
+    }
+
+    // Ensure spells array exists
+    if (!migrated.spells) {
+      migrated.spells = []
+    }
+
+    // Ensure combat object exists
+    if (!migrated.combat) {
+      migrated.combat = {
+        ac: 10,
+        hp_max: 1,
+        speed: '30ft',
+      }
+    }
+
+    // Ensure attacks array exists
+    if (!migrated.attacks) {
+      migrated.attacks = []
+    }
+
+    // Ensure personality object exists
+    if (!migrated.personality) {
+      migrated.personality = {
+        traits: '',
+        ideal: '',
+        bond: '',
+        flaw: '',
+      }
+    }
+
+    return migrated
+  }
+
   function _setupSpellcasting() {
     if (!currentCharacterData.value) return
-    
+
     const features = currentCharacterData.value.features || []
     const spellcastingFeature = features.find((f) => f.casterType && f.casterType !== 'none')
-    
+
     if (spellcastingFeature && !currentCharacterData.value.spellcasting) {
       // Set up spellcasting object with default ability
       currentCharacterData.value.spellcasting = {
-        ability: 'int' // Default to Intelligence as specified
+        ability: 'int', // Default to Intelligence as specified
       }
     } else if (!spellcastingFeature) {
       // Remove spellcasting object if no valid casterType exists
@@ -409,7 +528,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Also recalculate derived stats
     data.combat.hp_max = maxHp.value
-    
+
     // Setup spellcasting based on current features
     _setupSpellcasting()
   }

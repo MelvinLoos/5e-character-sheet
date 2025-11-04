@@ -12,7 +12,7 @@ const plusTwoOptions = computed(() => {
   if (!background || !DND_RULES.BACKGROUNDS[background]) return []
 
   const allOptions = DND_RULES.BACKGROUNDS[background].abilityScoreIncrease || []
-  const selectedPlusOne = store.currentCharacterData.backgroundBonusSelections.plusOne
+  const selectedPlusOne = store.currentCharacterData.backgroundBonusSelections?.plusOne
 
   // Filter out the option selected for +1 bonus
   return allOptions.filter((opt) => opt !== selectedPlusOne)
@@ -23,7 +23,7 @@ const plusOneOptions = computed(() => {
   if (!background || !DND_RULES.BACKGROUNDS[background]) return []
 
   const allOptions = DND_RULES.BACKGROUNDS[background].abilityScoreIncrease || []
-  const selectedPlusTwo = store.currentCharacterData.backgroundBonusSelections.plusTwo
+  const selectedPlusTwo = store.currentCharacterData.backgroundBonusSelections?.plusTwo
 
   // Filter out the option selected for +2 bonus
   return allOptions.filter((opt) => opt !== selectedPlusTwo)
@@ -31,21 +31,31 @@ const plusOneOptions = computed(() => {
 
 // Watch for conflicts and resolve them automatically
 watch(
-  () => store.currentCharacterData.backgroundBonusSelections.plusTwo,
+  () => store.currentCharacterData.backgroundBonusSelections?.plusTwo,
   (newPlusTwo) => {
-    if (newPlusTwo && newPlusTwo === store.currentCharacterData.backgroundBonusSelections.plusOne) {
+    if (
+      newPlusTwo &&
+      newPlusTwo === store.currentCharacterData.backgroundBonusSelections?.plusOne
+    ) {
       // If +2 conflicts with +1, clear +1 selection
-      store.currentCharacterData.backgroundBonusSelections.plusOne = ''
+      if (store.currentCharacterData.backgroundBonusSelections) {
+        store.currentCharacterData.backgroundBonusSelections.plusOne = ''
+      }
     }
   },
 )
 
 watch(
-  () => store.currentCharacterData.backgroundBonusSelections.plusOne,
+  () => store.currentCharacterData.backgroundBonusSelections?.plusOne,
   (newPlusOne) => {
-    if (newPlusOne && newPlusOne === store.currentCharacterData.backgroundBonusSelections.plusTwo) {
+    if (
+      newPlusOne &&
+      newPlusOne === store.currentCharacterData.backgroundBonusSelections?.plusTwo
+    ) {
       // If +1 conflicts with +2, clear +2 selection
-      store.currentCharacterData.backgroundBonusSelections.plusTwo = ''
+      if (store.currentCharacterData.backgroundBonusSelections) {
+        store.currentCharacterData.backgroundBonusSelections.plusTwo = ''
+      }
     }
   },
 )
@@ -104,7 +114,10 @@ function renderPointBuyEditor() {
 
     <!-- Background Bonus Selections -->
     <div
-      v-if="DND_RULES.BACKGROUNDS[store.currentCharacterData.background]"
+      v-if="
+        DND_RULES.BACKGROUNDS[store.currentCharacterData.background] &&
+        store.currentCharacterData.backgroundBonusSelections
+      "
       class="mt-4 pt-2 border-t border-amber-300"
     >
       <div class="flex items-center justify-between mt-2">

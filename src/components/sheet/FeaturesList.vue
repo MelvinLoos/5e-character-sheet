@@ -56,7 +56,7 @@ function removeFeature(index) {
       allFeatures.splice(featureIndex, 1)
     }
   }
-  
+
   // Trigger spellcasting recalculation when features change
   store.recalculateAbilityScores()
 }
@@ -69,7 +69,7 @@ watch(
       store.recalculateAbilityScores()
     }
   },
-  { deep: true }
+  { deep: true },
 )
 </script>
 
@@ -121,7 +121,7 @@ watch(
               placeholder="Feature description"
               rows="2"
             ></textarea>
-            
+
             <!-- Edit mode options -->
             <div v-if="store.isEditing" class="grid grid-cols-2 gap-3 mt-2 text-xs">
               <div class="flex items-center gap-2">
@@ -135,7 +135,7 @@ watch(
                   Key Feature (show on front page)
                 </label>
               </div>
-              
+
               <div>
                 <label class="block text-xs mb-1">Spellcasting Type:</label>
                 <select v-model="feature.casterType" class="edit-mode-select w-full">
@@ -147,7 +147,7 @@ watch(
                 </select>
               </div>
             </div>
-            
+
             <p
               v-else
               class="feature-desc"
