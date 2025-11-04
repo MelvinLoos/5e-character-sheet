@@ -1,0 +1,416 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    font-family: 'EB Garamond', serif;
+    background-color: #fdf6e3;
+    color: #3a2d21;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  #app {
+    min-height: 100vh;
+    background-color: #fdf6e3;
+  }
+}
+
+@layer components {
+  .sheet-wrapper {
+    @apply max-w-4xl mx-auto relative;
+  }
+
+  .sheet-container {
+    @apply border-2 border-sheet-border shadow-xl flex-col rounded-lg;
+    background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
+    background-color: #fdf6e3;
+    box-shadow:
+      0 8px 32px rgba(139, 69, 19, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-header {
+    @apply font-fell text-2xl text-sheet-red border-b-2 border-sheet-accent pb-1 mb-3 tracking-wide;
+  }
+
+  .stat-box {
+    @apply border border-sheet-accent bg-white/20 rounded-sm p-2 text-center;
+  }
+
+  .ability-score {
+    @apply font-garamond text-3xl font-bold;
+  }
+
+  .ability-modifier {
+    @apply text-base font-bold border border-sheet-text rounded-full w-8 h-8 flex items-center justify-center mx-auto mt-1 bg-sheet-input-bg;
+  }
+
+  .skill-list li {
+    @apply py-0.5 border-b border-dotted border-sheet-accent/70 flex justify-between items-center;
+  }
+  .skill-list li:last-child {
+    @apply border-b-0;
+  }
+
+  .proficient::before {
+    content: '♦';
+    @apply mr-2 text-sheet-red;
+  }
+
+  .feature-box,
+  .spell-box {
+    @apply mb-4 p-4 border border-sheet-accent/30 rounded-lg bg-white/10 shadow-sm;
+  }
+
+  .feature-title,
+  .spell-title {
+    @apply font-bold font-garamond text-lg mb-2;
+  }
+
+  .feature-desc,
+  .spell-desc {
+    @apply text-sm text-sheet-border italic mt-2 leading-relaxed;
+  }
+
+  .attack-box {
+    @apply p-4 border border-sheet-accent rounded-lg bg-white/10 shadow-sm;
+  }
+
+  .bordered-section {
+    @apply border border-sheet-accent p-4 bg-white/10 rounded-lg shadow-sm;
+  }
+
+  .save-dot {
+    @apply w-4 h-4 rounded-full border border-sheet-text bg-black/5;
+  }
+
+  .control-panel button,
+  .icon-button,
+  .editor-button {
+    @apply bg-sheet-red text-sheet-bg border border-sheet-border p-2 rounded-sm cursor-pointer transition-colors duration-200 flex items-center justify-center;
+  }
+  .control-panel button:hover,
+  .icon-button:hover,
+  .editor-button:hover {
+    @apply bg-sheet-red-dark;
+  }
+  .control-panel button:disabled,
+  .icon-button:disabled,
+  .editor-button:disabled {
+    @apply bg-gray-400 cursor-not-allowed;
+  }
+  .control-panel select,
+  .control-panel input[type='text'] {
+    @apply bg-sheet-input-bg border border-sheet-border p-2 rounded-sm;
+  }
+
+  .usage-box,
+  .spell-slot-box,
+  .edit-skill-checkbox {
+    @apply appearance-none w-4 h-4 border border-sheet-border bg-sheet-bg cursor-pointer relative rounded-sm flex-shrink-0;
+  }
+  .usage-box + .usage-box {
+    @apply ml-2;
+  }
+  .usage-box:checked,
+  .spell-slot-box:checked,
+  .edit-skill-checkbox:checked {
+    @apply bg-sheet-text;
+  }
+  .usage-box:checked::after,
+  .spell-slot-box:checked::after,
+  .edit-skill-checkbox:checked::after {
+    content: '✓';
+    @apply text-sheet-bg absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs leading-none;
+  }
+  .edit-skill-checkbox:disabled {
+    @apply bg-sheet-accent cursor-not-allowed;
+  }
+  .edit-skill-checkbox:disabled:checked {
+    @apply bg-sheet-border;
+  }
+
+  .gemini-button {
+    @apply bg-purple-800 text-purple-100 border-purple-950 text-sm py-1 px-2;
+  }
+  .gemini-button:hover {
+    @apply bg-purple-950;
+  }
+
+  .edit-mode-input,
+  .edit-mode-select {
+    @apply w-full bg-sheet-bg border border-dashed border-sheet-accent p-0.5 px-1;
+  }
+  .edit-mode-textarea {
+    @apply w-full bg-sheet-bg border border-dashed border-sheet-accent p-0.5 px-1 min-h-12 text-sm italic;
+  }
+  .edit-stat {
+    @apply w-12 text-center bg-sheet-bg border border-sheet-accent;
+  }
+  .edit-mode-small-btn {
+    @apply text-xs px-2 py-1 ml-2 rounded-full bg-sheet-red text-sheet-bg border-none cursor-pointer;
+  }
+
+  .info-button {
+    @apply p-1 rounded-full hover:bg-sheet-accent/20 transition-colors cursor-pointer border-none bg-transparent;
+  }
+
+  .info-button:hover {
+    @apply bg-sheet-accent/30;
+  }
+
+  .loading-spinner {
+    @apply border-4 border-gray-200 border-t-sheet-red rounded-full w-8 h-8 animate-spin;
+  }
+
+  .modal-backdrop {
+    @apply fixed inset-0 w-full h-full bg-black/50 z-50 flex items-center justify-center;
+  }
+  .modal-content {
+    @apply bg-sheet-bg p-8 border-2 border-sheet-border max-w-lg text-center shadow-lg;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0.5in;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .page-break {
+    page-break-after: always;
+  }
+  .usage-box,
+  .spell-slot-box {
+    border: 1px solid #5c4d3d !important;
+  }
+  .usage-box:checked,
+  .spell-slot-box:checked {
+    background-color: #3a2d21 !important;
+  }
+  .sheet-container {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 0.3rem !important;
+    margin: 0 !important;
+    page-break-inside: avoid;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 0.7rem !important;
+  }
+  .sheet-wrapper {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  /* Force 3-column layout on front page */
+  .sheet-container:first-child main {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 0.3rem !important;
+    height: auto !important;
+  }
+
+  /* Ensure columns stack properly */
+  .sheet-container:first-child main > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.3rem !important;
+  }
+
+  /* Front page layout optimization */
+  .sheet-container:first-child {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    page-break-after: always;
+  }
+
+  /* Back page layout optimization */
+  .sheet-container:last-child {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .sheet-container:last-child main {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.3rem !important;
+  }
+
+  /* Compress spacing for print */
+  .space-y-6 > * + * {
+    margin-top: 0.2rem !important;
+  }
+  .space-y-8 > * + * {
+    margin-top: 0.3rem !important;
+  }
+  .grid {
+    gap: 0.2rem !important;
+  }
+
+  /* Component size adjustments for full A4 print */
+  .stat-box {
+    padding: 0.3rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+  .bordered-section {
+    padding: 0.4rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+  .feature-box,
+  .spell-box {
+    padding: 0.4rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+
+  /* Header adjustments */
+  .sheet-container header {
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.2rem !important;
+  }
+
+  /* Header grid layout for print */
+  .sheet-container:first-child header {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .sheet-container:first-child header .header-main {
+    grid-column: 1 / 2 !important;
+  }
+
+  .sheet-container:first-child header > div:last-child {
+    grid-column: 2 / 3 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.25rem !important;
+    align-items: start !important;
+  }
+
+  /* Text size adjustments for full A4 */
+  h1 {
+    font-size: 1.4rem !important;
+    margin: 0 !important;
+  }
+  h2 {
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+  }
+  h3 {
+    font-size: 1rem !important;
+    margin: 0 !important;
+  }
+  .text-4xl {
+    font-size: 1.4rem !important;
+    line-height: 1.2 !important;
+  }
+  .text-5xl {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+    color: #8b4513 !important;
+  }
+  .text-3xl {
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+  }
+  .text-2xl {
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+  }
+  .text-xl {
+    font-size: 0.9rem !important;
+    line-height: 1.2 !important;
+  }
+  .text-lg {
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Ability scores grid optimization */
+  .sheet-container:first-child .grid-cols-2 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.2rem !important;
+  }
+
+  /* Skills list optimization for print */
+  .skill-list li {
+    padding: 0.1rem 0 !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Proficiency bonus compact styling for print */
+  .sheet-container:first-child .text-center.py-2 {
+    padding: 0.2rem !important;
+    margin: 0.2rem 0 !important;
+  } /* Combat stats grid */
+  .sheet-container:first-child .grid-cols-3 {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 0.2rem !important;
+  }
+
+  /* Features text size */
+  .feature-title,
+  .spell-title {
+    font-size: 0.7rem !important;
+    font-weight: bold !important;
+  }
+  .feature-desc,
+  .spell-desc {
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
+  }
+}
+
+/* Enhanced spacing and responsive design */
+@layer utilities {
+  .space-y-6 > * + * {
+    margin-top: 1.5rem;
+  }
+
+  .space-y-8 > * + * {
+    margin-top: 2rem;
+  }
+}
+
+/* Better responsive grid spacing */
+@media (min-width: 1024px) {
+  .grid {
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sheet-container {
+    margin: 0.5rem;
+    padding: 1rem !important;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+}
