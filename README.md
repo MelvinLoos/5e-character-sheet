@@ -2,9 +2,10 @@
 
 A modern, responsive digital character sheet designed specifically for the **Heroes Guild Westmarches** community at [westmarches.games](https://www.westmarches.games/communities/heroes-guild). Built with Vue.js 3 and optimized for both screen and print use.
 
-![Character Sheet Preview](https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=flat&logo=vue.js&logoColor=white)
-![Build Status](https://img.shields.io/badge/Build-Passing-success)
-![License](https://img.shields.io/badge/License-MIT-blue)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3.5.22-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/b8a04a80-1349-4a79-a3ce-c1d997e3bc9d/deploy-status)](https://app.netlify.com/projects/5e-character-sheet/deploys)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Heroes Guild](https://img.shields.io/badge/Heroes_Guild-Westmarches-8B4513?logo=castle&logoColor=white)](https://www.westmarches.games/communities/heroes-guild)
 
 ## 🏰 Heroes Guild Westmarches
 
