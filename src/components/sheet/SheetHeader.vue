@@ -155,11 +155,16 @@ function decrementLevel() {
       <p v-else class="text-lg text-gray-700 italic">{{ store.currentCharacterData.title }}</p>
     </div>
 
-    <div class="text-left md:text-right text-sm mt-2 lg:mt-0 flex flex-col md:grid md:grid-cols-2 gap-x-4 gap-y-2">
+    <div
+      class="text-left md:text-right text-sm mt-2 lg:mt-0 flex flex-col md:grid md:grid-cols-2 gap-x-4 gap-y-2"
+    >
       <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
         <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Class:</strong>
         <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
-          <select v-model="store.currentCharacterData.class" class="edit-mode-select w-full md:w-auto">
+          <select
+            v-model="store.currentCharacterData.class"
+            class="edit-mode-select w-full md:w-auto"
+          >
             <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
               {{ key }}
             </option>
@@ -221,7 +226,10 @@ function decrementLevel() {
       <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
         <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Species:</strong>
         <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
-          <select v-model="store.currentCharacterData.species" class="edit-mode-select w-full md:w-auto">
+          <select
+            v-model="store.currentCharacterData.species"
+            class="edit-mode-select w-full md:w-auto"
+          >
             <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
               {{ key }}
             </option>
@@ -251,7 +259,10 @@ function decrementLevel() {
       <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
         <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Background:</strong>
         <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
-          <select v-model="store.currentCharacterData.background" class="edit-mode-select w-full md:w-auto">
+          <select
+            v-model="store.currentCharacterData.background"
+            class="edit-mode-select w-full md:w-auto"
+          >
             <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">
               {{ key }}
             </option>
