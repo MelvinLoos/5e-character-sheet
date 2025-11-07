@@ -122,10 +122,22 @@ function createSelectHTML(id, options, selectedValue, infoType) {
   // This will be handled in template with v-model
   return { id, options, selectedValue, infoType }
 }
+
+function incrementLevel() {
+  if (store.currentCharacterData.level < 20) {
+    store.currentCharacterData.level++
+  }
+}
+
+function decrementLevel() {
+  if (store.currentCharacterData.level > 1) {
+    store.currentCharacterData.level--
+  }
+}
 </script>
 
 <template>
-  <header class="grid grid-cols-2 gap-4 border-b-2 border-black pb-2 mb-3">
+  <header class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b-2 border-black pb-2 mb-3">
     <div class="header-main">
       <input
         v-if="store.isEditing"
@@ -143,18 +155,18 @@ function createSelectHTML(id, options, selectedValue, infoType) {
       <p v-else class="text-lg text-gray-700 italic">{{ store.currentCharacterData.title }}</p>
     </div>
 
-    <div class="text-right text-sm mt-2 lg:mt-0 grid grid-cols-2 gap-x-4 gap-y-1">
-      <div class="flex justify-end items-center relative">
-        <strong class="mr-2">Class:</strong>
-        <div v-if="store.isEditing" class="flex items-center relative">
-          <select v-model="store.currentCharacterData.class" class="edit-mode-select">
+    <div class="text-left md:text-right text-sm mt-2 lg:mt-0 flex flex-col md:grid md:grid-cols-2 gap-x-4 gap-y-2">
+      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
+        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Class:</strong>
+        <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
+          <select v-model="store.currentCharacterData.class" class="edit-mode-select w-full md:w-auto">
             <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
               {{ key }}
             </option>
           </select>
           <button
             @click="toggleInfo('class')"
-            class="info-button ml-1"
+            class="info-button ml-1 flex-shrink-0"
             title="Class info"
             type="button"
           >
@@ -174,30 +186,49 @@ function createSelectHTML(id, options, selectedValue, infoType) {
         <span v-else>{{ store.currentCharacterData.class }}</span>
       </div>
 
-      <div class="flex justify-end items-center">
-        <strong class="mr-2">Level:</strong>
-        <input
-          v-if="store.isEditing"
-          v-model.number="store.currentCharacterData.level"
-          type="number"
-          min="1"
-          max="20"
-          class="edit-stat"
-        />
+      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center">
+        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Level:</strong>
+        <div v-if="store.isEditing" class="flex items-center w-full md:w-auto">
+          <!-- Mobile stepper buttons -->
+          <button
+            @click="decrementLevel"
+            class="md:hidden bg-sheet-accent hover:bg-sheet-accent/80 text-sheet-text border border-sheet-border px-3 py-2 rounded-l-md transition-colors"
+            :disabled="store.currentCharacterData.level <= 1"
+            type="button"
+          >
+            −
+          </button>
+          <input
+            v-model.number="store.currentCharacterData.level"
+            type="number"
+            min="1"
+            max="20"
+            class="edit-stat flex-1 md:flex-none text-center border-t border-b md:border border-sheet-border rounded-none md:rounded px-3 py-2"
+            style="width: 60px"
+          />
+          <button
+            @click="incrementLevel"
+            class="md:hidden bg-sheet-accent hover:bg-sheet-accent/80 text-sheet-text border border-sheet-border px-3 py-2 rounded-r-md transition-colors"
+            :disabled="store.currentCharacterData.level >= 20"
+            type="button"
+          >
+            +
+          </button>
+        </div>
         <span v-else>{{ store.currentCharacterData.level }}</span>
       </div>
 
-      <div class="flex justify-end items-center relative">
-        <strong class="mr-2">Species:</strong>
-        <div v-if="store.isEditing" class="flex items-center relative">
-          <select v-model="store.currentCharacterData.species" class="edit-mode-select">
+      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
+        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Species:</strong>
+        <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
+          <select v-model="store.currentCharacterData.species" class="edit-mode-select w-full md:w-auto">
             <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
               {{ key }}
             </option>
           </select>
           <button
             @click="toggleInfo('species')"
-            class="info-button ml-1"
+            class="info-button ml-1 flex-shrink-0"
             title="Species info"
             type="button"
           >
@@ -217,17 +248,17 @@ function createSelectHTML(id, options, selectedValue, infoType) {
         <span v-else>{{ store.currentCharacterData.species }}</span>
       </div>
 
-      <div class="flex justify-end items-center relative">
-        <strong class="mr-2">Background:</strong>
-        <div v-if="store.isEditing" class="flex items-center relative">
-          <select v-model="store.currentCharacterData.background" class="edit-mode-select">
+      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
+        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Background:</strong>
+        <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
+          <select v-model="store.currentCharacterData.background" class="edit-mode-select w-full md:w-auto">
             <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">
               {{ key }}
             </option>
           </select>
           <button
             @click="toggleInfo('background')"
-            class="info-button ml-1"
+            class="info-button ml-1 flex-shrink-0"
             title="Background info"
             type="button"
           >
