@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'
 import feather from 'feather-icons'
+import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
 
@@ -27,6 +28,16 @@ const spellSlots = computed(() => {
   const progression = SPELL_SLOT_PROGRESSION[casterType.value]
 
   return progression?.[level] || {}
+})
+
+// Computed property for draggable spells
+const editableSpells = computed({
+  get() {
+    return store.currentCharacterData.spells || []
+  },
+  set(value) {
+    store.currentCharacterData.spells = value
+  },
 })
 
 function addSpell() {
@@ -103,57 +114,99 @@ function removeSpell(index) {
         >
           No spells known.
         </div>
-        <div v-else class="space-y-3">
-          <div
-            v-for="(spell, index) in store.currentCharacterData.spells"
-            :key="spell.name + index"
-            class="spell-box"
-          >
-            <div class="flex justify-between items-start">
-              <div class="flex-grow">
-                <div class="flex items-baseline flex-wrap gap-2 mb-2">
-                  <input
-                    v-if="store.isEditing"
-                    v-model="spell.name"
-                    class="edit-mode-input font-bold text-base flex-grow"
-                    placeholder="Spell name"
-                  />
-                  <p v-else class="spell-title font-bold">{{ spell.name }}</p>
 
-                  <input
-                    v-if="store.isEditing"
-                    v-model.number="spell.level"
-                    type="number"
-                    min="0"
-                    max="9"
-                    class="edit-mode-input w-16 text-xs"
-                    placeholder="Level"
-                  />
-                  <span v-else class="text-xs font-normal italic">(Level {{ spell.level }})</span>
-                </div>
-
-                <textarea
-                  v-if="store.isEditing"
-                  v-model="spell.desc"
-                  class="edit-mode-textarea w-full"
-                  placeholder="Spell description"
-                  rows="3"
-                ></textarea>
-                <p v-else class="spell-desc text-sm">{{ spell.desc }}</p>
+        <draggable
+          v-else
+          v-model="editableSpells"
+          item-key="name"
+          tag="div"
+          class="space-y-3"
+          :disabled="!store.isEditing"
+          handle=".spell-drag-handle"
+          ghost-class="ghost-item"
+          chosen-class="chosen-item"
+          drag-class="drag-item"
+        >
+          <template #item="{ element: spell, index }">
+            <div class="spell-box relative">
+              <!-- Drag handle - only show in edit mode -->
+              <div
+                v-if="store.isEditing"
+                class="spell-drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
+                title="Drag to reorder"
+              >
+                <span v-html="feather.icons['move'].toSvg({ width: 16, height: 16 })"></span>
               </div>
 
-              <button
-                v-if="store.isEditing"
-                @click="removeSpell(index)"
-                class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700"
-                title="Remove Spell"
-              >
-                <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
-              </button>
+              <div class="flex justify-between items-start" :class="{ 'ml-6': store.isEditing }">
+                <div class="flex-grow">
+                  <div class="flex items-baseline flex-wrap gap-2 mb-2">
+                    <input
+                      v-if="store.isEditing"
+                      v-model="spell.name"
+                      class="edit-mode-input font-bold text-base flex-grow"
+                      placeholder="Spell name"
+                    />
+                    <p v-else class="spell-title font-bold">{{ spell.name }}</p>
+
+                    <input
+                      v-if="store.isEditing"
+                      v-model.number="spell.level"
+                      type="number"
+                      min="0"
+                      max="9"
+                      class="edit-mode-input w-16 text-xs"
+                      placeholder="Level"
+                    />
+                    <span v-else class="text-xs font-normal italic">(Level {{ spell.level }})</span>
+                  </div>
+
+                  <textarea
+                    v-if="store.isEditing"
+                    v-model="spell.desc"
+                    class="edit-mode-textarea w-full"
+                    placeholder="Spell description"
+                    rows="3"
+                  ></textarea>
+                  <p v-else class="spell-desc text-sm">{{ spell.desc }}</p>
+                </div>
+
+                <button
+                  v-if="store.isEditing"
+                  @click="removeSpell(index)"
+                  class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700"
+                  title="Remove Spell"
+                >
+                  <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          </template>
+        </draggable>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Drag and drop styling */
+.spell-drag-handle {
+  transition: opacity 0.2s ease;
+}
+
+.ghost-item {
+  opacity: 0.5;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px dashed #3b82f6;
+}
+
+.chosen-item {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.drag-item {
+  transform: rotate(2deg);
+  opacity: 0.8;
+}
+</style>

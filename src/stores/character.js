@@ -174,7 +174,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Setup spellcasting object if character has valid casterType
     _setupSpellcasting()
-    
+
     // Ensure background skills are properly applied
     updateBackgroundSkills()
   }
@@ -545,14 +545,14 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Get current skill proficiencies
     const currentSkills = new Set(currentCharacterData.value.proficiencies.skills)
-    
+
     // Normalize background skill names (lowercase, no spaces)
-    const backgroundSkills = backgroundData.skills.map(skill => 
-      skill.toLowerCase().replace(/ /g, '')
+    const backgroundSkills = backgroundData.skills.map((skill) =>
+      skill.toLowerCase().replace(/ /g, ''),
     )
 
     // Add background skills to proficiencies if not already there
-    backgroundSkills.forEach(skill => {
+    backgroundSkills.forEach((skill) => {
       currentSkills.add(skill)
     })
 
@@ -568,7 +568,7 @@ export const useCharacterStore = defineStore('character', () => {
         updateBackgroundSkills()
       }
     },
-    { deep: false }
+    { deep: false },
   )
 
   return {

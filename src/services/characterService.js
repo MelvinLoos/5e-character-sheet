@@ -56,7 +56,10 @@ export const createBlankCharacter = () => {
     profBonus: 2,
     proficiencies: {
       savingThrows: DND_RULES.CLASSES[defaultClass]?.savingThrows || [],
-      skills: DND_RULES.BACKGROUNDS[defaultBackground]?.skills?.map(skill => skill.toLowerCase().replace(/ /g, '')) || [],
+      skills:
+        DND_RULES.BACKGROUNDS[defaultBackground]?.skills?.map((skill) =>
+          skill.toLowerCase().replace(/ /g, ''),
+        ) || [],
     },
     combat: { ac: 10, hp_max: 1, speed: DND_RULES.SPECIES[defaultSpecies]?.speed || '30ft' },
     attacks: [],
