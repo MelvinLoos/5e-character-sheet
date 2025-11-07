@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as DND_RULES from '../data/rules.js'
 import { createClient } from '@supabase/supabase-js'
 import { generateCharacterViaGemini } from '../services/apiService.js'
@@ -174,6 +174,9 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Setup spellcasting object if character has valid casterType
     _setupSpellcasting()
+    
+    // Ensure background skills are properly applied
+    updateBackgroundSkills()
   }
 
   function _migrateLegacyCharacter(data) {
@@ -532,6 +535,41 @@ export const useCharacterStore = defineStore('character', () => {
     // Setup spellcasting based on current features
     _setupSpellcasting()
   }
+
+  // Helper function to update background skills
+  function updateBackgroundSkills() {
+    if (!currentCharacterData.value || !currentCharacterData.value.background) return
+
+    const backgroundData = DND_RULES.BACKGROUNDS[currentCharacterData.value.background]
+    if (!backgroundData || !backgroundData.skills) return
+
+    // Get current skill proficiencies
+    const currentSkills = new Set(currentCharacterData.value.proficiencies.skills)
+    
+    // Normalize background skill names (lowercase, no spaces)
+    const backgroundSkills = backgroundData.skills.map(skill => 
+      skill.toLowerCase().replace(/ /g, '')
+    )
+
+    // Add background skills to proficiencies if not already there
+    backgroundSkills.forEach(skill => {
+      currentSkills.add(skill)
+    })
+
+    // Update character data
+    currentCharacterData.value.proficiencies.skills = Array.from(currentSkills)
+  }
+
+  // Watch for background changes and auto-update skills
+  watch(
+    () => currentCharacterData.value?.background,
+    (newBackground, oldBackground) => {
+      if (newBackground && newBackground !== oldBackground) {
+        updateBackgroundSkills()
+      }
+    },
+    { deep: false }
+  )
 
   return {
     // State

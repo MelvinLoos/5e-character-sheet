@@ -54,10 +54,14 @@
   }
 
   .skill-list li {
-    @apply py-0.5 border-b border-dotted border-sheet-accent/70 flex justify-between items-center;
+    @apply py-0.5 border-b border-dotted border-sheet-accent/70 flex items-center;
   }
   .skill-list li:last-child {
     @apply border-b-0;
+  }
+
+  .skill-list li > span {
+    @apply flex-1;
   }
 
   .proficient::before {
@@ -443,6 +447,12 @@
   .skill-list li {
     padding: 0.1rem 0 !important;
     font-size: 0.7rem !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .skill-list li > span {
+    flex: 1 !important;
   }
 
   /* Proficiency bonus compact styling for print */
