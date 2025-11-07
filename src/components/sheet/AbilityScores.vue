@@ -19,7 +19,7 @@ watch(
         pointsAnimationClass.value = ''
       }, 400)
     }
-  }
+  },
 )
 
 // Computed properties for background bonus options
@@ -86,7 +86,7 @@ function renderPointBuyEditor() {
   <section v-if="store.isEditing" class="grid grid-cols-1 gap-y-1">
     <div class="text-center mb-3 p-3 bg-white/30 rounded-lg border border-amber-300">
       <div class="font-fell text-lg mb-1">Points Remaining</div>
-      <div 
+      <div
         class="text-3xl font-bold transition-all duration-300 ease-in-out"
         :class="[
           pointsAnimationClass,
@@ -94,8 +94,8 @@ function renderPointBuyEditor() {
             'text-red-600 animate-pulse': store.pointBuyPointsRemaining < 0,
             'text-amber-600': store.pointBuyPointsRemaining === 0,
             'text-green-600 points-positive': store.pointBuyPointsRemaining > 0,
-            'transform scale-110': store.pointBuyPointsRemaining !== 27
-          }
+            'transform scale-110': store.pointBuyPointsRemaining !== 27,
+          },
         ]"
       >
         {{ store.pointBuyPointsRemaining }}
@@ -131,7 +131,9 @@ function renderPointBuyEditor() {
         >
           −
         </button>
-        <span class="font-bold w-8 text-center tabular-nums text-lg md:text-base">{{ baseScore }}</span>
+        <span class="font-bold w-8 text-center tabular-nums text-lg md:text-base">{{
+          baseScore
+        }}</span>
         <button
           class="ability-score-btn ability-score-btn-increase"
           @click="store.adjustPointBuyScore(key, 1)"

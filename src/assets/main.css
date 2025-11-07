@@ -523,13 +523,13 @@
 /* Ability Score Button Improvements */
 .ability-score-btn {
   @apply bg-sheet-accent hover:bg-sheet-accent/80 active:bg-sheet-accent/60 text-sheet-text border border-sheet-border rounded-full font-bold transition-all duration-150 ease-in-out flex items-center justify-center select-none;
-  
+
   /* Mobile-first sizing - larger touch targets */
   width: 2.5rem;
   height: 2.5rem;
   font-size: 1.125rem;
   line-height: 1;
-  
+
   /* Better visual feedback */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -575,16 +575,23 @@
 
 /* Point Buy Counter Animations */
 @keyframes pointsChanged {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1.1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1.1);
+  }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { 
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
   }
-  50% { 
+  50% {
     box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
   }
 }
