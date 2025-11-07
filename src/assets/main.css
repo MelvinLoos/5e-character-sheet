@@ -519,3 +519,80 @@
   transform: rotate(2deg);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
+
+/* Ability Score Button Improvements */
+.ability-score-btn {
+  @apply bg-sheet-accent hover:bg-sheet-accent/80 active:bg-sheet-accent/60 text-sheet-text border border-sheet-border rounded-full font-bold transition-all duration-150 ease-in-out flex items-center justify-center select-none;
+  
+  /* Mobile-first sizing - larger touch targets */
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.125rem;
+  line-height: 1;
+  
+  /* Better visual feedback */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ability-score-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ability-score-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.ability-score-btn:disabled {
+  @apply bg-gray-300 text-gray-500 cursor-not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ability-score-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Distinct styling for increase vs decrease */
+.ability-score-btn-increase {
+  @apply bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white border-emerald-700;
+}
+
+.ability-score-btn-decrease {
+  @apply bg-red-600 hover:bg-red-700 active:bg-red-800 text-white border-red-700;
+}
+
+/* Desktop refinements */
+@media (min-width: 768px) {
+  .ability-score-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+}
+
+/* Point Buy Counter Animations */
+@keyframes pointsChanged {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+  }
+}
+
+.points-highlight {
+  animation: pointsChanged 0.4s ease-out;
+}
+
+.points-positive {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
