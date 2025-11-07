@@ -1,8 +1,20 @@
 <script setup>
 import { useCharacterStore } from '@/stores/character'
+import { computed } from 'vue'
 import feather from 'feather-icons'
+import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
+
+// Computed property for draggable attacks
+const editableAttacks = computed({
+  get() {
+    return store.currentCharacterData.attacks || []
+  },
+  set(value) {
+    store.currentCharacterData.attacks = value
+  }
+})
 
 function addAttack() {
   const newAttack = {
@@ -38,21 +50,39 @@ function removeAttack(index) {
         <span v-html="feather.icons.plus.toSvg({ width: 14, height: 14 })"></span>
       </button>
     </div>
-    <div class="space-y-3">
-      <div
-        v-if="store.currentCharacterData.attacks.length === 0"
-        class="italic text-center text-gray-500"
-      >
-        No attacks defined.
-      </div>
-      <div
-        v-for="(attack, index) in store.currentCharacterData.attacks"
-        :key="attack.name + index"
-        class="attack-box"
-      >
-        <div class="flex justify-between items-start">
-          <div class="flex-grow">
-            <div class="flex justify-between items-baseline flex-wrap">
+    <div
+      v-if="store.currentCharacterData.attacks.length === 0"
+      class="italic text-center text-gray-500"
+    >
+      No attacks defined.
+    </div>
+    
+    <draggable
+      v-else
+      v-model="editableAttacks"
+      item-key="name"
+      tag="div"
+      class="space-y-3"
+      :disabled="!store.isEditing"
+      handle=".attack-drag-handle"
+      ghost-class="ghost-item"
+      chosen-class="chosen-item"
+      drag-class="drag-item"
+    >
+      <template #item="{ element: attack, index }">
+        <div class="attack-box relative">
+          <!-- Drag handle - only show in edit mode -->
+          <div
+            v-if="store.isEditing"
+            class="attack-drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
+            title="Drag to reorder"
+          >
+            <span v-html="feather.icons['move'].toSvg({ width: 16, height: 16 })"></span>
+          </div>
+          
+          <div class="flex justify-between items-start" :class="{ 'ml-6': store.isEditing }">
+            <div class="flex-grow">
+              <div class="flex justify-between items-baseline flex-wrap">
               <input
                 v-if="store.isEditing"
                 v-model="attack.name"
@@ -154,8 +184,32 @@ function removeAttack(index) {
           >
             <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
           </button>
+          </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </draggable>
   </section>
 </template>
+
+<style scoped>
+/* Drag and drop styling for attacks */
+.attack-drag-handle {
+  transition: opacity 0.2s ease;
+}
+
+.ghost-item {
+  opacity: 0.5;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px dashed #3b82f6;
+}
+
+.chosen-item {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.drag-item {
+  transform: rotate(2deg);
+  opacity: 0.8;
+}
+</style>
