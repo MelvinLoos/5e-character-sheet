@@ -576,12 +576,12 @@ export const useCharacterStore = defineStore('character', () => {
     // We identify background features by checking if they match any background feature title
     const allBackgroundFeatureTitles = new Set(
       Object.values(DND_RULES.BACKGROUNDS)
-        .map(bg => bg.feature?.title)
-        .filter(Boolean)
+        .map((bg) => bg.feature?.title)
+        .filter(Boolean),
     )
-    
+
     currentCharacterData.value.features = currentCharacterData.value.features.filter(
-      feature => !allBackgroundFeatureTitles.has(feature.title)
+      (feature) => !allBackgroundFeatureTitles.has(feature.title),
     )
 
     // Add the new background feature
@@ -595,6 +595,93 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value.features.push(newFeature)
   }
 
+  // Helper function to update class features
+  function updateClassFeatures() {
+    if (!currentCharacterData.value || !currentCharacterData.value.class) return
+
+    const classData = DND_RULES.CLASSES[currentCharacterData.value.class]
+    if (!classData || !classData.features) return
+
+    // Ensure features array exists
+    if (!currentCharacterData.value.features) {
+      currentCharacterData.value.features = []
+    }
+
+    // Remove existing class features
+    // We identify class features by checking if they match any class feature title
+    const allClassFeatureTitles = new Set()
+    Object.values(DND_RULES.CLASSES).forEach((cls) => {
+      if (cls.features) {
+        cls.features.forEach((feature) => {
+          if (feature.title) {
+            allClassFeatureTitles.add(feature.title)
+          }
+        })
+      }
+    })
+
+    currentCharacterData.value.features = currentCharacterData.value.features.filter(
+      (feature) => !allClassFeatureTitles.has(feature.title),
+    )
+
+    // Add the new class features
+    classData.features.forEach((feature) => {
+      const newFeature = {
+        title: feature.title,
+        desc: feature.desc,
+        key: feature.key || false,
+        casterType: feature.casterType || null,
+        uses: feature.uses || undefined,
+      }
+      currentCharacterData.value.features.push(newFeature)
+    })
+
+    // Update spellcasting ability based on new class
+    _setupSpellcasting()
+  }
+
+  // Helper function to update species traits
+  function updateSpeciesTraits() {
+    if (!currentCharacterData.value || !currentCharacterData.value.species) return
+
+    const speciesData = DND_RULES.SPECIES[currentCharacterData.value.species]
+    if (!speciesData || !speciesData.traits) return
+
+    // Ensure features array exists
+    if (!currentCharacterData.value.features) {
+      currentCharacterData.value.features = []
+    }
+
+    // Remove existing species traits
+    // We identify species traits by checking if they match any species trait title
+    const allSpeciesTraitTitles = new Set()
+    Object.values(DND_RULES.SPECIES).forEach((species) => {
+      if (species.traits) {
+        species.traits.forEach((trait) => {
+          if (trait.title) {
+            allSpeciesTraitTitles.add(trait.title)
+          }
+        })
+      }
+    })
+
+    currentCharacterData.value.features = currentCharacterData.value.features.filter(
+      (feature) => !allSpeciesTraitTitles.has(feature.title),
+    )
+
+    // Add the new species traits
+    speciesData.traits.forEach((trait) => {
+      const newTrait = {
+        title: trait.title,
+        desc: trait.desc,
+        key: trait.key || false,
+        casterType: null,
+        uses: trait.uses || undefined,
+      }
+      currentCharacterData.value.features.push(newTrait)
+    })
+  }
+
   // Watch for background changes and auto-update skills and features
   watch(
     () => currentCharacterData.value?.background,
@@ -602,6 +689,42 @@ export const useCharacterStore = defineStore('character', () => {
       if (newBackground && newBackground !== oldBackground) {
         updateBackgroundSkills()
         updateBackgroundFeatures()
+      }
+    },
+    { deep: false },
+  )
+
+  // Watch for class changes and auto-update features and saving throws
+  watch(
+    () => currentCharacterData.value?.class,
+    (newClass, oldClass) => {
+      if (newClass && newClass !== oldClass) {
+        updateClassFeatures()
+
+        // Update saving throw proficiencies
+        if (currentCharacterData.value && DND_RULES.CLASSES[newClass]?.savingThrows) {
+          currentCharacterData.value.proficiencies.savingThrows =
+            DND_RULES.CLASSES[newClass].savingThrows
+        }
+
+        // Recalculate derived stats including HP
+        recalculateAbilityScores()
+      }
+    },
+    { deep: false },
+  )
+
+  // Watch for species changes and auto-update traits
+  watch(
+    () => currentCharacterData.value?.species,
+    (newSpecies, oldSpecies) => {
+      if (newSpecies && newSpecies !== oldSpecies) {
+        updateSpeciesTraits()
+
+        // Update speed if available
+        if (currentCharacterData.value && DND_RULES.SPECIES[newSpecies]?.speed) {
+          currentCharacterData.value.combat.speed = DND_RULES.SPECIES[newSpecies].speed
+        }
       }
     },
     { deep: false },
