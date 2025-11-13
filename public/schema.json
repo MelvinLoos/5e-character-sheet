@@ -125,11 +125,76 @@
       "items": {
         "type": "object",
         "properties": {
-          "title": { "type": "string" },
-          "desc": { "type": "string" },
-          "key": { "type": "boolean", "description": "Display on front page.", "default": false },
+          "title": { 
+            "type": "string",
+            "description": "The name/title of the feature."
+          },
+          "desc": { 
+            "type": "string",
+            "description": "Description of what the feature does."
+          },
+          "key": { 
+            "type": "boolean", 
+            "description": "Display on front page.", 
+            "default": false 
+          },
+          "featureType": {
+            "type": "string",
+            "description": "The category/type of this feature according to 2024 PHB standards.",
+            "enum": ["Class Feature", "Species Trait", "Background Feature", "Origin Feat", "General Feat", "Fighting Style", "Epic Boon", "Other"],
+            "default": "Other"
+          },
+          "actionType": {
+            "type": "string",
+            "description": "What type of action economy this feature uses.",
+            "enum": ["Action", "Bonus Action", "Reaction", "Free Action", "Passive", "None"],
+            "default": "None"
+          },
+          "resource": {
+            "type": ["object", "null"],
+            "description": "Resource tracking for limited-use features. Replaces the simple 'uses' field.",
+            "properties": {
+              "resourceType": {
+                "type": "string",
+                "enum": ["static", "scaling"],
+                "description": "Whether the resource is a fixed number or scales with character stats."
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Static number of uses (only used when resourceType is 'static')."
+              },
+              "scalingStat": {
+                "type": "string",
+                "enum": ["pb", "str", "dex", "con", "int", "wis", "cha"],
+                "description": "What stat to scale with (only used when resourceType is 'scaling')."
+              },
+              "reset": {
+                "type": "string",
+                "enum": ["Short Rest", "Long Rest", "Dawn", "Initiative", "Special", "None"],
+                "description": "When the resource resets."
+              }
+            },
+            "required": ["resourceType", "reset"],
+            "additionalProperties": false,
+            "if": {
+              "properties": { "resourceType": { "const": "static" } }
+            },
+            "then": {
+              "required": ["value"]
+            },
+            "else": {
+              "if": {
+                "properties": { "resourceType": { "const": "scaling" } }
+              },
+              "then": {
+                "required": ["scalingStat"]
+              }
+            }
+          },
           "uses": {
             "type": ["object", "null"],
+            "description": "Legacy field for backward compatibility. Will be converted to 'resource' format.",
             "properties": {
               "total": { "type": "integer" },
               "per": { "type": "string" }
@@ -142,7 +207,8 @@
             "enum": ["full", "half", "third", "pact", "none", null]
           }
         },
-        "required": ["title", "desc"]
+        "required": ["title", "desc"],
+        "additionalProperties": false
       }
     },
     "equipment": {
