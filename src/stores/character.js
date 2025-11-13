@@ -560,12 +560,48 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value.proficiencies.skills = Array.from(currentSkills)
   }
 
-  // Watch for background changes and auto-update skills
+  // Helper function to update background features
+  function updateBackgroundFeatures() {
+    if (!currentCharacterData.value || !currentCharacterData.value.background) return
+
+    const backgroundData = DND_RULES.BACKGROUNDS[currentCharacterData.value.background]
+    if (!backgroundData || !backgroundData.feature) return
+
+    // Ensure features array exists
+    if (!currentCharacterData.value.features) {
+      currentCharacterData.value.features = []
+    }
+
+    // Remove existing background features
+    // We identify background features by checking if they match any background feature title
+    const allBackgroundFeatureTitles = new Set(
+      Object.values(DND_RULES.BACKGROUNDS)
+        .map(bg => bg.feature?.title)
+        .filter(Boolean)
+    )
+    
+    currentCharacterData.value.features = currentCharacterData.value.features.filter(
+      feature => !allBackgroundFeatureTitles.has(feature.title)
+    )
+
+    // Add the new background feature
+    const newFeature = {
+      title: backgroundData.feature.title,
+      desc: backgroundData.feature.desc,
+      key: backgroundData.feature.key || false,
+      casterType: null,
+    }
+
+    currentCharacterData.value.features.push(newFeature)
+  }
+
+  // Watch for background changes and auto-update skills and features
   watch(
     () => currentCharacterData.value?.background,
     (newBackground, oldBackground) => {
       if (newBackground && newBackground !== oldBackground) {
         updateBackgroundSkills()
+        updateBackgroundFeatures()
       }
     },
     { deep: false },
