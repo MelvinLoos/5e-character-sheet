@@ -95,7 +95,49 @@ export const useCharacterStore = defineStore('character', () => {
 
   const pointBuyPointsRemaining = computed(() => 27 - pointBuyPointsUsed.value)
 
-  // --- ACTIONS (Methods) ---
+  // Helper function to calculate feature maximum uses based on 2024 resource system
+  function getFeatureMaxUses(feature) {
+    if (!feature || !currentCharacterData.value) return null
+
+    // Handle legacy 'uses' format for backward compatibility
+    if (feature.uses && !feature.resource) {
+      return feature.uses.total || null
+    }
+
+    // Handle new 'resource' format
+    if (!feature.resource || !feature.resource.resourceType) {
+      return null // No resource tracking
+    }
+
+    const { resourceType, value, scalingStat } = feature.resource
+
+    try {
+      if (resourceType === 'static') {
+        return Math.max(0, value || 0)
+      }
+      
+      if (resourceType === 'scaling') {
+        if (!scalingStat) return 1 // Fallback if stat not specified
+        
+        if (scalingStat === 'pb') {
+          return profBonus.value || 2 // Fallback to level 1 PB
+        }
+        
+        // Handle ability score scaling
+        const validAbilities = ['str', 'dex', 'con', 'int', 'wis', 'cha']
+        if (validAbilities.includes(scalingStat)) {
+          const abilityMod = abilityMods.value[scalingStat] || 0
+          return Math.max(1, abilityMod) // Minimum 1 use
+        }
+      }
+      
+      // Fallback for unknown configurations
+      return 1
+    } catch (error) {
+      console.warn('Error calculating feature max uses:', error)
+      return 1
+    }
+  }  // --- ACTIONS (Methods) ---
 
   async function initStore() {
     // Init Supabase
@@ -755,6 +797,8 @@ export const useCharacterStore = defineStore('character', () => {
     spellAttack,
     pointBuyPointsUsed,
     pointBuyPointsRemaining,
+    // Helper functions
+    getFeatureMaxUses,
     // Actions
     initStore,
     loadCharacterFromUrl,
