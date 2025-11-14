@@ -215,10 +215,12 @@ const maxUsesType = computed({
     if (formData.resource.resourceType === 'static') return 'fixed'
 
     // If it's proficiency scaling, return 'pb'
-    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat === 'pb') return 'pb'
+    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat === 'pb')
+      return 'pb'
 
     // If it's level scaling, return 'level' (note: level scaling not supported in current schema)
-    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat === 'level') return 'level'
+    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat === 'level')
+      return 'level'
 
     // If it's ability scaling, return the specific ability
     if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat) {

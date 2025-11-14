@@ -34,7 +34,7 @@
     {
       "title": "Second Wind",
       "desc": "You can regain hit points as a bonus action.",
-      "featureType": "Class Feature", 
+      "featureType": "Class Feature",
       "actionType": "Bonus Action",
       "key": true,
       "resource": {
@@ -54,7 +54,7 @@
       "title": "Action Surge",
       "desc": "On your turn, you can take one additional action.",
       "featureType": "Class Feature",
-      "actionType": "Free Action", 
+      "actionType": "Free Action",
       "key": true,
       "resource": {
         "resourceType": "static",
