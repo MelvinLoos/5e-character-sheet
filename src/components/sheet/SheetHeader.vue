@@ -5,9 +5,9 @@ import * as DND_RULES from '@/data/rules.js'
 import feather from 'feather-icons'
 
 const store = useCharacterStore()
-const showInfo = ref({ class: false, species: false, background: false })
+const showInfo = ref<Record<string, boolean>>({ class: false, species: false, background: false })
 
-function toggleInfo(type) {
+function toggleInfo(type: string) {
   showInfo.value[type] = !showInfo.value[type]
   // Close other info panels
   Object.keys(showInfo.value).forEach((key) => {
@@ -21,8 +21,9 @@ function closeAllInfo() {
   })
 }
 
-function handleClickOutside(event) {
-  if (!event.target.closest('.info-button') && !event.target.closest('.absolute')) {
+function handleClickOutside(event: Event) {
+  const target = event.target as Element
+  if (target && !target.closest('.info-button') && !target.closest('.absolute')) {
     closeAllInfo()
   }
 }
@@ -35,23 +36,23 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-function getClassInfo(className) {
+function getClassInfo(className: string) {
   const classData = DND_RULES.CLASSES[className]
   if (!classData) return 'No information available'
 
   let info = `Hit Die: d${classData.hitDice} (avg ${classData.hitDiceAverage})\n`
 
   if (classData.savingThrows && classData.savingThrows.length > 0) {
-    info += `Saving Throw Proficiencies: ${classData.savingThrows.map((s) => DND_RULES.ABILITIES[s]).join(', ')}\n`
+    info += `Saving Throw Proficiencies: ${classData.savingThrows.map((s: string) => DND_RULES.ABILITIES[s]).join(', ')}\n`
   }
 
   // Add key features
   if (classData.features && classData.features.length > 0) {
-    const keyFeatures = classData.features.filter((f) => f.key)
+    const keyFeatures = classData.features.filter((f: { key?: boolean }) => f.key)
     if (keyFeatures.length > 0) {
       info += `\nKey Features:\n`
-      keyFeatures.slice(0, 2).forEach((feature) => {
-        info += `• ${feature.title}: ${feature.desc.substring(0, 100)}${feature.desc.length > 100 ? '...' : ''}\n`
+      keyFeatures.slice(0, 2).forEach((feature: { title?: string; desc?: string }) => {
+        info += `• ${feature.title}: ${(feature.desc || '').substring(0, 100)}${(feature.desc || '').length > 100 ? '...' : ''}\n`
       })
     }
   }
@@ -63,7 +64,7 @@ function getClassInfo(className) {
   return info
 }
 
-function getSpeciesInfo(speciesName) {
+function getSpeciesInfo(speciesName: string) {
   const speciesData = DND_RULES.SPECIES[speciesName]
   if (!speciesData) return 'No information available'
 
@@ -79,8 +80,8 @@ function getSpeciesInfo(speciesName) {
   // Add traits information
   if (speciesData.traits && speciesData.traits.length > 0) {
     info += `\nSpecies Traits:\n`
-    speciesData.traits.slice(0, 3).forEach((trait) => {
-      info += `• ${trait.title}: ${trait.desc.substring(0, 80)}${trait.desc.length > 80 ? '...' : ''}\n`
+    speciesData.traits.slice(0, 3).forEach((trait: { title?: string; desc?: string }) => {
+      info += `• ${trait.title}: ${(trait.desc || '').substring(0, 80)}${(trait.desc || '').length > 80 ? '...' : ''}\n`
     })
   }
 
@@ -91,7 +92,7 @@ function getSpeciesInfo(speciesName) {
   return info
 }
 
-function getBackgroundInfo(backgroundName) {
+function getBackgroundInfo(backgroundName: string) {
   const bgData = DND_RULES.BACKGROUNDS[backgroundName]
   if (!bgData) return 'No information available'
 
@@ -103,7 +104,7 @@ function getBackgroundInfo(backgroundName) {
 
   // In D&D 2024, backgrounds provide ability score increases, not species
   if (bgData.abilityScoreIncrease && bgData.abilityScoreIncrease.length > 0) {
-    info += `Ability Score Increase Options: ${bgData.abilityScoreIncrease.map((s) => DND_RULES.ABILITIES[s]).join(', ')}\n`
+    info += `Ability Score Increase Options: ${bgData.abilityScoreIncrease.map((s: string) => DND_RULES.ABILITIES[s]).join(', ')}\n`
     info += `(Choose +2 to one, +1 to another)\n`
   }
 

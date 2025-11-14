@@ -32,7 +32,7 @@ function addAttack() {
   store.currentCharacterData.attacks.push(newAttack)
 }
 
-function removeAttack(index) {
+function removeAttack(index: number) {
   store.currentCharacterData.attacks.splice(index, 1)
 }
 </script>

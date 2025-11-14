@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+// @ts-expect-error - JS module without types
 import * as DND_RULES from '../data/rules.js'
 import { createClient } from '@supabase/supabase-js'
+// @ts-expect-error - JS module without types
 import { generateCharacterViaGemini } from '../services/apiService.js'
 import {
   getLibrary as getLocalLibrary,
@@ -9,23 +11,61 @@ import {
   createBlankCharacter,
   getMod,
   pointBuyCosts,
+// @ts-expect-error - JS module without types
 } from '../services/characterService.js'
+
+// Type interfaces
+interface CharacterData {
+  name: string
+  title: string
+  class: string | null
+  level: number
+  species: string | null
+  background: string | null
+  pointBuyBaseScores: Record<string, number>
+  backgroundBonusSelections: {
+    plusTwo: string | null
+    plusOne: string | null
+  }
+  abilityScores: Record<string, number>
+  profBonus: number
+  proficiencies: {
+    savingThrows: string[]
+    skills: string[]
+  }
+  combat: {
+    ac: number
+    hp_max: number
+    speed: string
+  }
+  attacks: any[]
+  features: any[]
+  equipment: string
+  personality: {
+    traits: string
+    ideal: string
+    bond: string
+    flaw: string
+  }
+  spellcasting: any
+  spells: any[]
+}
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
-  const currentCharacterData = ref(null)
+  const currentCharacterData = ref<CharacterData | null>(null)
   const isEditing = ref(false)
   const characterLibrary = ref(getLocalLibrary())
   const sessionName = ref('Uncategorized')
-  const schema = ref(null)
-  const ajv = ref(null)
-  const supabaseClient = ref(null)
-  const sourceCharacterId = ref(null) // For shared characters
+  const schema = ref<object | null>(null)
+  const ajv = ref<object | null>(null)
+  const supabaseClient = ref<object | null>(null)
+  const sourceCharacterId = ref<string | null>(null) // For shared characters
 
   // Modal states
   const isLoading = ref(false)
   const loadingText = ref('')
-  const errorModal = ref({ show: false, errors: [] })
+  const errorModal = ref({ show: false, errors: [] as string[] })
   const shareModal = ref({ show: false, url: '' })
 
   // --- GETTERS (Computed Properties) ---
@@ -95,20 +135,21 @@ export const useCharacterStore = defineStore('character', () => {
   const pointBuyPointsRemaining = computed(() => 27 - pointBuyPointsUsed.value)
 
   // Helper function to calculate feature maximum uses based on 2024 resource system
-  function getFeatureMaxUses(feature) {
+  function getFeatureMaxUses(feature: unknown) {
     if (!feature || !currentCharacterData.value) return null
+    const f = feature as any
 
     // Handle legacy 'uses' format for backward compatibility
-    if (feature.uses && !feature.resource) {
-      return feature.uses.total || null
+    if (f.uses && !f.resource) {
+      return f.uses.total || null
     }
 
     // Handle new 'resource' format
-    if (!feature.resource || !feature.resource.resourceType) {
+    if (!f.resource || !f.resource.resourceType) {
       return null // No resource tracking
     }
 
-    const { resourceType, value, scalingStat } = feature.resource
+    const { resourceType, value, scalingStat } = f.resource
 
     try {
       if (resourceType === 'static') {
@@ -144,21 +185,21 @@ export const useCharacterStore = defineStore('character', () => {
     const SUPABASE_ANON_KEY =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxbnhxb3R3dHplaGV5ZG5hYWlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTk5MjIsImV4cCI6MjA3NjE3NTkyMn0.0zB-cPMBx-SJkZyu0_MgGoz71xvrp-83r1tUEVg9MeQ'
 
-    if (SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
+    if ((SUPABASE_URL as string) !== 'YOUR_SUPABASE_PROJECT_URL') {
       try {
         supabaseClient.value = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
         console.log('Supabase client initialized.')
       } catch (e) {
-        console.error('Error initializing Supabase client:', e.message)
+        console.error('Error initializing Supabase client:', (e as Error).message)
       }
     } else {
       console.warn('Supabase credentials not found. Online sharing will be disabled.')
     }
 
     // Init AJV
-    if (typeof window !== 'undefined' && window.Ajv && window.ajvErrors) {
-      ajv.value = new window.Ajv.default({ allErrors: true })
-      window.ajvErrors.default(ajv.value)
+    if (typeof window !== 'undefined' && (window as any).Ajv && (window as any).ajvErrors) {
+      ajv.value = new (window as any).Ajv.default({ allErrors: true })
+      ;(window as any).ajvErrors.default(ajv.value)
     } else {
       console.warn('Ajv not loaded. Validation will be limited.')
     }
@@ -178,21 +219,21 @@ export const useCharacterStore = defineStore('character', () => {
     await loadCharacterFromUrl()
   }
 
-  function validateCharacter(data) {
+  function validateCharacter(data: unknown) {
     if (!ajv.value || !schema.value) {
       console.warn('AJV or schema not initialized, skipping validation.')
       return { valid: true }
     }
-    const validate = ajv.value.compile(schema.value)
+    const validate = (ajv.value as any).compile(schema.value)
     const valid = validate(data)
     if (valid) {
       return { valid: true, errors: [] }
     }
-    const errorMessages = validate.errors.map((error) => error.message)
+    const errorMessages = validate.errors.map((error: any) => error.message)
     return { valid: false, errors: [...new Set(errorMessages)] }
   }
 
-  function _showLoading(text) {
+  function _showLoading(text: string) {
     isLoading.value = true
     loadingText.value = text
   }
@@ -200,12 +241,12 @@ export const useCharacterStore = defineStore('character', () => {
     isLoading.value = false
   }
 
-  function _showErrorModal(errors) {
+  function _showErrorModal(errors: string[]) {
     errorModal.value.errors = errors
     errorModal.value.show = true
   }
 
-  function _setCharacter(data) {
+  function _setCharacter(data: unknown) {
     // Migrate legacy character data to new format
     const migratedData = _migrateLegacyCharacter(data)
 
@@ -220,9 +261,9 @@ export const useCharacterStore = defineStore('character', () => {
     updateBackgroundSkills()
   }
 
-  function _migrateLegacyCharacter(data) {
+  function _migrateLegacyCharacter(data: unknown) {
     // Create a copy to avoid mutating the original
-    const migrated = { ...data }
+    const migrated = { ...(data as any) }
 
     // Add missing backgroundBonusSelections if not present
     if (!migrated.backgroundBonusSelections) {
@@ -277,7 +318,7 @@ export const useCharacterStore = defineStore('character', () => {
     // Add missing spellcasting feature for spellcasting classes
     if (migrated.class && migrated.spellcasting) {
       const hasSpellcastingFeature = migrated.features.some(
-        (f) => f.title && f.title.toLowerCase().includes('spellcasting') && f.casterType,
+        (f: any) => f.title && f.title.toLowerCase().includes('spellcasting') && f.casterType,
       )
 
       if (!hasSpellcastingFeature) {
@@ -359,7 +400,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (characterId && supabaseClient.value) {
       _showLoading('Fetching character from the archives...')
       try {
-        const { data, error } = await supabaseClient.value
+        const { data, error } = await (supabaseClient.value as any)
           .from('characters')
           .select('character_data, id')
           .eq('id', characterId)
@@ -372,7 +413,7 @@ export const useCharacterStore = defineStore('character', () => {
         sourceCharacterId.value = data.id // Set the source ID
       } catch (error) {
         console.error('Error loading character from URL:', error)
-        _showErrorModal([`Could not load character: ${error.message}`])
+        _showErrorModal([`Could not load character: ${(error as Error).message}`])
         // Clear the URL query param to avoid confusion
         history.replaceState({}, '', window.location.pathname)
       } finally {
@@ -381,34 +422,37 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  function loadCharacterFromLibrary(key) {
+  function loadCharacterFromLibrary(key: string) {
     const [session, charName] = key.split('|')
     if (!session || !charName) return
 
-    const data = characterLibrary.value[session]?.find((c) => c.name === charName)
+    const data = characterLibrary.value[session]?.find((c: any) => c.name === charName)
     if (data) {
       _setCharacter(data)
       sessionName.value = session
     }
   }
 
-  function handleFileLoad(event) {
-    const file = event.target.files[0]
+  function handleFileLoad(event: Event) {
+    const target = event.target as HTMLInputElement
+    const file = target?.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target.result)
+        const result = e.target?.result
+        if (typeof result !== 'string') return
+        const data = JSON.parse(result)
         const { valid, errors } = validateCharacter(data)
 
         if (!valid) {
-          _showErrorModal(errors)
+          _showErrorModal((errors as string[]) || [])
           return
         }
         _setCharacter(data)
         saveToLibrary() // Auto-save imported char
       } catch (error) {
-        _showErrorModal([`Error loading file: ${error.message}`])
+        _showErrorModal([`Error loading file: ${(error as Error).message}`])
         console.error('File load error:', error)
       }
     }
@@ -422,7 +466,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!library[session]) library[session] = []
 
     const existingIndex = library[session].findIndex(
-      (c) => c.name === currentCharacterData.value.name,
+      (c: any) => c.name === currentCharacterData.value?.name,
     )
     if (existingIndex > -1) {
       library[session][existingIndex] = currentCharacterData.value
@@ -443,7 +487,7 @@ export const useCharacterStore = defineStore('character', () => {
     isEditing.value = !isEditing.value
   }
 
-  async function generateCharacter(userPrompt) {
+  async function generateCharacter(userPrompt: string) {
     if (!userPrompt) {
       _showErrorModal(['Please describe the character you want to generate.'])
       return
@@ -461,7 +505,7 @@ export const useCharacterStore = defineStore('character', () => {
         console.error('AI generated invalid data:', errors)
         _showErrorModal(
           ['The AI generated a character with some inconsistencies, but here it is:'].concat(
-            errors,
+            (errors as string[]) || [],
           ),
         )
       }
@@ -470,7 +514,7 @@ export const useCharacterStore = defineStore('character', () => {
       saveToLibrary()
     } catch (error) {
       console.error('Error generating character:', error)
-      _showErrorModal([`Error generating character: ${error.message}`])
+      _showErrorModal([`Error generating character: ${(error as Error).message}`])
     } finally {
       _hideLoading()
     }
@@ -485,7 +529,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     _showLoading('Saving character to the archives...')
     try {
-      const { data, error } = await supabaseClient.value
+      const { data, error } = await (supabaseClient.value as any)
         .from('characters')
         .insert([
           {
@@ -509,7 +553,7 @@ export const useCharacterStore = defineStore('character', () => {
       sourceCharacterId.value = newId
     } catch (error) {
       console.error('Error sharing character:', error)
-      _showErrorModal([`Could not share character: ${error.message}`])
+      _showErrorModal([`Could not share character: ${(error as Error).message}`])
     } finally {
       _hideLoading()
     }
@@ -531,21 +575,21 @@ export const useCharacterStore = defineStore('character', () => {
 
   // --- Direct Data Mutations ---
 
-  function updateCharacter(key, value) {
+  function updateCharacter(key: string, value: unknown) {
     if (currentCharacterData.value) {
-      currentCharacterData.value[key] = value
+      ;(currentCharacterData.value as any)[key] = value
     }
   }
 
-  function updateNested(key1, key2, value) {
+  function updateNested(key1: string, key2: string, value: unknown) {
     if (currentCharacterData.value) {
-      currentCharacterData.value[key1][key2] = value
+      ;(currentCharacterData.value as any)[key1][key2] = value
     }
   }
 
-  function adjustPointBuyScore(key, delta) {
+  function adjustPointBuyScore(key: string, delta: number) {
     if (!currentCharacterData.value) return
-    const currentScore = currentCharacterData.value.pointBuyBaseScores[key]
+    const currentScore = currentCharacterData.value.pointBuyBaseScores[key] || 8
     const newScore = currentScore + delta
     let totalCost = 0
     Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
@@ -560,12 +604,19 @@ export const useCharacterStore = defineStore('character', () => {
 
   function recalculateAbilityScores() {
     const data = currentCharacterData.value
+    if (!data) return
     const finalScores = { ...data.pointBuyBaseScores }
     if (data.backgroundBonusSelections.plusTwo) {
-      finalScores[data.backgroundBonusSelections.plusTwo] += 2
+      const score = finalScores[data.backgroundBonusSelections.plusTwo]
+      if (score !== undefined) {
+        finalScores[data.backgroundBonusSelections.plusTwo] = score + 2
+      }
     }
     if (data.backgroundBonusSelections.plusOne) {
-      finalScores[data.backgroundBonusSelections.plusOne] += 1
+      const score = finalScores[data.backgroundBonusSelections.plusOne]
+      if (score !== undefined) {
+        finalScores[data.backgroundBonusSelections.plusOne] = score + 1
+      }
     }
     data.abilityScores = finalScores
 
@@ -587,12 +638,12 @@ export const useCharacterStore = defineStore('character', () => {
     const currentSkills = new Set(currentCharacterData.value.proficiencies.skills)
 
     // Normalize background skill names (lowercase, no spaces)
-    const backgroundSkills = backgroundData.skills.map((skill) =>
+    const backgroundSkills = backgroundData.skills.map((skill: string) =>
       skill.toLowerCase().replace(/ /g, ''),
     )
 
     // Add background skills to proficiencies if not already there
-    backgroundSkills.forEach((skill) => {
+    backgroundSkills.forEach((skill: string) => {
       currentSkills.add(skill)
     })
 
@@ -616,7 +667,7 @@ export const useCharacterStore = defineStore('character', () => {
     // We identify background features by checking if they match any background feature title
     const allBackgroundFeatureTitles = new Set(
       Object.values(DND_RULES.BACKGROUNDS)
-        .map((bg) => bg.feature?.title)
+        .map((bg: unknown) => (bg as any)?.feature?.title)
         .filter(Boolean),
     )
 
@@ -650,11 +701,13 @@ export const useCharacterStore = defineStore('character', () => {
     // Remove existing class features
     // We identify class features by checking if they match any class feature title
     const allClassFeatureTitles = new Set()
-    Object.values(DND_RULES.CLASSES).forEach((cls) => {
-      if (cls.features) {
-        cls.features.forEach((feature) => {
-          if (feature.title) {
-            allClassFeatureTitles.add(feature.title)
+    Object.values(DND_RULES.CLASSES).forEach((cls: unknown) => {
+      const clsData = cls as any
+      if (clsData.features) {
+        clsData.features.forEach((feature: unknown) => {
+          const featureData = feature as any
+          if (featureData.title) {
+            allClassFeatureTitles.add(featureData.title)
           }
         })
       }
@@ -665,7 +718,7 @@ export const useCharacterStore = defineStore('character', () => {
     )
 
     // Add the new class features
-    classData.features.forEach((feature) => {
+    classData.features.forEach((feature: any) => {
       const newFeature = {
         title: feature.title,
         desc: feature.desc,
@@ -673,7 +726,7 @@ export const useCharacterStore = defineStore('character', () => {
         casterType: feature.casterType || null,
         uses: feature.uses || undefined,
       }
-      currentCharacterData.value.features.push(newFeature)
+      currentCharacterData.value?.features.push(newFeature)
     })
 
     // Update spellcasting ability based on new class
@@ -695,9 +748,9 @@ export const useCharacterStore = defineStore('character', () => {
     // Remove existing species traits
     // We identify species traits by checking if they match any species trait title
     const allSpeciesTraitTitles = new Set()
-    Object.values(DND_RULES.SPECIES).forEach((species) => {
+    Object.values(DND_RULES.SPECIES).forEach((species: any) => {
       if (species.traits) {
-        species.traits.forEach((trait) => {
+        species.traits.forEach((trait: any) => {
           if (trait.title) {
             allSpeciesTraitTitles.add(trait.title)
           }
@@ -710,7 +763,7 @@ export const useCharacterStore = defineStore('character', () => {
     )
 
     // Add the new species traits
-    speciesData.traits.forEach((trait) => {
+    speciesData.traits.forEach((trait: any) => {
       const newTrait = {
         title: trait.title,
         desc: trait.desc,
@@ -718,7 +771,7 @@ export const useCharacterStore = defineStore('character', () => {
         casterType: null,
         uses: trait.uses || undefined,
       }
-      currentCharacterData.value.features.push(newTrait)
+      currentCharacterData.value?.features.push(newTrait)
     })
   }
 

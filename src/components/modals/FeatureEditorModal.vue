@@ -21,8 +21,32 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['save', 'cancel', 'delete'])
 
+// Type definitions
+interface ResourceData {
+  baseAmount: number
+  scaling: string
+  scalingAbility: string | null
+  resetPer: string
+}
+
+interface UsesData {
+  total: number
+  per: string
+}
+
+interface FeatureFormData {
+  title: string
+  desc: string
+  key: boolean
+  featureType: string
+  actionType: string
+  resource: ResourceData | null
+  uses: UsesData | null
+  casterType: string | null
+}
+
 // Form data - reactive copy of the feature
-const formData = reactive({
+const formData = reactive<FeatureFormData>({
   title: '',
   desc: '',
   key: false,
@@ -34,7 +58,7 @@ const formData = reactive({
 })
 
 // Validation state
-const errors = ref([])
+const errors = ref<string[]>([])
 
 // Available options for dropdowns
 const featureTypes = [
@@ -112,7 +136,7 @@ function handleSave() {
   }
 
   // Clean up the data before emitting
-  const cleanedFeature = {
+  const cleanedFeature: Partial<FeatureFormData> = {
     title: formData.title.trim(),
     desc: formData.desc.trim(),
     key: formData.key,
@@ -146,7 +170,7 @@ function handleDelete() {
 }
 
 // Close modal on backdrop click
-function handleBackdropClick(event) {
+function handleBackdropClick(event: MouseEvent) {
   if (event.target === event.currentTarget) {
     handleCancel()
   }
@@ -338,7 +362,11 @@ const baseAmount = computed({
           <div>
             <label for="caster-type" class="block text-sm font-bold mb-1">Spellcasting:</label>
             <select id="caster-type" v-model="formData.casterType" class="edit-mode-select">
-              <option v-for="type in casterTypes" :key="type.value" :value="type.value">
+              <option
+                v-for="(type, index) in casterTypes"
+                :key="`caster-${index}`"
+                :value="type.value"
+              >
                 {{ type.label }}
               </option>
             </select>
@@ -394,7 +422,7 @@ const baseAmount = computed({
                   <label for="reset-condition" class="block text-xs font-bold mb-1">Resets:</label>
                   <select
                     id="reset-condition"
-                    v-model="formData.resource.resetPer"
+                    v-model="formData.resource!.resetPer"
                     class="edit-mode-select text-sm w-full"
                   >
                     <option value="long rest">Long Rest</option>
@@ -436,7 +464,7 @@ const baseAmount = computed({
             @click="handleDelete"
             class="icon-button bg-red-600 text-white hover:bg-red-700"
           >
-            <span v-html="feather.icons?.trash2?.toSvg({ width: 16, height: 16 })"></span>
+            <span v-html="feather.icons?.trash?.toSvg({ width: 16, height: 16 })"></span>
             Delete
           </button>
         </div>

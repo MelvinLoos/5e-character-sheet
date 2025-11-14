@@ -6,10 +6,15 @@ import feather from 'feather-icons'
 const store = useCharacterStore()
 const geminiPrompt = ref('')
 
+interface Character {
+  name: string
+  [key: string]: unknown
+}
+
 const characterSelectOptions = computed(() => {
   return Object.entries(store.characterLibrary).map(([session, chars]) => ({
     label: session,
-    options: chars.map((char) => ({
+    options: (chars as Character[]).map((char: Character) => ({
       text: char.name,
       value: `${session}|${char.name}`,
     })),
@@ -22,10 +27,13 @@ const selectedCharacter = computed({
   set: (value) => store.loadCharacterFromLibrary(value),
 })
 
-function onFileChange(event) {
+function onFileChange(event: Event) {
   store.handleFileLoad(event)
   // Reset file input
-  event.target.value = null
+  const target = event.target as HTMLInputElement
+  if (target) {
+    target.value = ''
+  }
 }
 
 function generate() {

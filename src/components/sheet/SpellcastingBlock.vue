@@ -5,18 +5,26 @@ import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
 
+// Define local Feature interface
+interface Feature {
+  casterType?: string
+  title?: string
+  description?: string
+  [key: string]: unknown
+}
+
 const store = useCharacterStore()
 
 // Check if character has spellcasting - only show when casterType is not null and not 'none'
 const hasSpellcasting = computed(() => {
   const features = store.currentCharacterData?.features || []
-  return features.some((f) => f.casterType && f.casterType !== 'none')
+  return features.some((f: Feature) => f.casterType && f.casterType !== 'none')
 })
 
 // Get the caster type for spell slot calculation
 const casterType = computed(() => {
   const features = store.currentCharacterData?.features || []
-  const spellcastingFeature = features.find((f) => f.casterType && f.casterType !== 'none')
+  const spellcastingFeature = features.find((f: Feature) => f.casterType && f.casterType !== 'none')
   return spellcastingFeature?.casterType || null
 })
 
@@ -25,7 +33,8 @@ const spellSlots = computed(() => {
   if (!casterType.value || !store.currentCharacterData?.level) return {}
 
   const level = store.currentCharacterData.level
-  const progression = SPELL_SLOT_PROGRESSION[casterType.value]
+  const progression =
+    SPELL_SLOT_PROGRESSION[casterType.value as keyof typeof SPELL_SLOT_PROGRESSION]
 
   return progression?.[level] || {}
 })
@@ -54,7 +63,7 @@ function addSpell() {
   store.currentCharacterData.spells.push(newSpell)
 }
 
-function removeSpell(index) {
+function removeSpell(index: number) {
   store.currentCharacterData.spells.splice(index, 1)
 }
 </script>

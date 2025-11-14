@@ -1,22 +1,35 @@
 <script setup lang="ts">
 import feather from 'feather-icons'
 
+type ActionType = 'Action' | 'Bonus Action' | 'Reaction' | 'Free Action' | 'Passive' | 'None'
+type SizeType = 'sm' | 'md' | 'lg'
+
 const props = defineProps({
   actionType: {
-    type: String,
+    type: String as () => ActionType,
     required: true,
-    validator: (value) =>
-      ['Action', 'Bonus Action', 'Reaction', 'Free Action', 'Passive', 'None'].includes(value),
+    validator: (value: string): value is ActionType =>
+      ['Action', 'Bonus Action', 'Reaction', 'Free Action', 'Passive', 'None'].includes(
+        value as ActionType,
+      ),
   },
   size: {
-    type: String,
-    default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    type: String as () => SizeType,
+    default: 'md' as SizeType,
+    validator: (value: string): value is SizeType => ['sm', 'md', 'lg'].includes(value as SizeType),
   },
 })
 
 // Icon mapping based on action type
-const iconConfig = {
+const iconConfig: Record<
+  ActionType,
+  {
+    icon: string | null
+    color: string
+    bgColor: string
+    label: string
+  }
+> = {
   Action: {
     icon: 'star',
     color: 'text-red-600',
@@ -56,7 +69,14 @@ const iconConfig = {
 }
 
 // Size configurations
-const sizeConfig = {
+const sizeConfig: Record<
+  SizeType,
+  {
+    iconSize: number
+    padding: string
+    text: string
+  }
+> = {
   sm: {
     iconSize: 16,
     padding: 'p-1.5',
@@ -98,10 +118,12 @@ const shouldRender = props.actionType !== 'None' && config.icon
   >
     <span
       v-html="
-        feather.icons?.[config.icon]?.toSvg({
-          width: sizes.iconSize,
-          height: sizes.iconSize,
-        })
+        config.icon
+          ? (feather.icons as any)?.[config.icon]?.toSvg({
+              width: sizes.iconSize,
+              height: sizes.iconSize,
+            })
+          : ''
       "
       class="flex items-center"
     ></span>

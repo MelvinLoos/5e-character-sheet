@@ -31,7 +31,7 @@ const plusTwoOptions = computed(() => {
   const selectedPlusOne = store.currentCharacterData.backgroundBonusSelections?.plusOne
 
   // Filter out the option selected for +1 bonus
-  return allOptions.filter((opt) => opt !== selectedPlusOne)
+  return allOptions.filter((opt: string) => opt !== selectedPlusOne)
 })
 
 const plusOneOptions = computed(() => {
@@ -42,7 +42,7 @@ const plusOneOptions = computed(() => {
   const selectedPlusTwo = store.currentCharacterData.backgroundBonusSelections?.plusTwo
 
   // Filter out the option selected for +2 bonus
-  return allOptions.filter((opt) => opt !== selectedPlusTwo)
+  return allOptions.filter((opt: string) => opt !== selectedPlusTwo)
 })
 
 // Watch for conflicts and resolve them automatically
@@ -109,19 +109,21 @@ watch(
     </div>
 
     <div
-      v-for="[key, baseScore] in Object.entries(store.currentCharacterData.pointBuyBaseScores)"
+      v-for="[key, baseScore] in Object.entries(
+        store.currentCharacterData?.pointBuyBaseScores || {},
+      )"
       :key="key"
       class="flex items-center justify-between p-2 md:p-1 border-b border-dotted border-amber-200"
     >
       <div class="w-1/4 font-fell text-sm">
-        {{ DND_RULES.ABILITIES[key].substring(0, 3).toUpperCase() }}
+        {{ DND_RULES.ABILITIES[key]?.substring(0, 3).toUpperCase() }}
       </div>
 
       <div class="flex items-center gap-3 md:gap-2">
         <button
           class="ability-score-btn ability-score-btn-decrease"
           @click="store.adjustPointBuyScore(key, -1)"
-          :disabled="baseScore <= 8"
+          :disabled="(baseScore as number) <= 8"
           aria-label="Decrease ability score"
         >
           −
@@ -132,14 +134,14 @@ watch(
         <button
           class="ability-score-btn ability-score-btn-increase"
           @click="store.adjustPointBuyScore(key, 1)"
-          :disabled="baseScore >= 15 || store.pointBuyPointsRemaining <= 0"
+          :disabled="(baseScore as number) >= 15 || store.pointBuyPointsRemaining <= 0"
           aria-label="Increase ability score"
         >
           +
         </button>
       </div>
 
-      <div class="text-xs w-10 text-right">Cost: {{ pointBuyCosts[baseScore] }}</div>
+      <div class="text-xs w-10 text-right">Cost: {{ pointBuyCosts[baseScore as number] }}</div>
 
       <div class="stat-box p-1 w-16 ml-2">
         <div class="ability-score text-base">
@@ -186,7 +188,7 @@ watch(
 
   <section v-else class="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
     <div
-      v-for="[key, value] in Object.entries(store.currentCharacterData.abilityScores)"
+      v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
       :key="key"
       class="stat-box shadow-sm hover:shadow-md transition-shadow"
     >
