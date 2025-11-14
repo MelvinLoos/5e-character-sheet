@@ -4,6 +4,7 @@ import { watch, computed, ref } from 'vue'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
+import ActionBadge from '@/components/ui/ActionBadge.vue'
 
 const store = useCharacterStore()
 
@@ -178,10 +179,16 @@ watch(
 
           <div class="flex items-start justify-between" :class="{ 'ml-6': store.isEditing }">
             <div class="flex-grow">
-              <div class="flex items-center flex-wrap">
+              <div class="flex items-center flex-wrap gap-2">
                 <p class="feature-title">{{ feature.title }}</p>
+                <!-- Action Economy Badge -->
+                <ActionBadge 
+                  v-if="feature.actionType" 
+                  :action-type="feature.actionType" 
+                  size="sm" 
+                />
                 <!-- Resource usage display - using new schema format -->
-                <div v-if="feature.resource" class="usage-tracker ml-3">
+                <div v-if="feature.resource" class="usage-tracker">
                   <div class="flex items-center gap-2">
                     <input
                       v-for="n in store.getFeatureMaxUses(feature)"
@@ -195,7 +202,7 @@ watch(
                   </div>
                 </div>
                 <!-- Legacy uses format for backward compatibility -->
-                <div v-else-if="feature.uses" class="usage-tracker ml-3">
+                <div v-else-if="feature.uses" class="usage-tracker">
                   <div class="flex items-center gap-2">
                     <input
                       v-for="n in feature.uses.total"
