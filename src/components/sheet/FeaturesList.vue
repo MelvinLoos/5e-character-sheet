@@ -67,7 +67,7 @@ function handleModalSave(featureData) {
     if (props.title === 'Key Features') {
       featureData.key = true
     }
-    
+
     store.currentCharacterData.features = store.currentCharacterData.features || []
     store.currentCharacterData.features.push(featureData)
   } else {
@@ -90,7 +90,7 @@ function handleModalSave(featureData) {
       }
     }
   }
-  
+
   isModalOpen.value = false
   store.recalculateAbilityScores()
 }
@@ -151,7 +151,7 @@ watch(
         class="icon-button text-xs p-1"
         title="Add Feature"
       >
-        <span v-html="feather.icons.plus.toSvg({ width: 14, height: 14 })"></span>
+        <span v-html="feather.icons?.plus?.toSvg({ width: 14, height: 14 })"></span>
       </button>
     </div>
     <draggable
@@ -173,7 +173,7 @@ watch(
             class="drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
             title="Drag to reorder"
           >
-            <span v-html="feather.icons['move'].toSvg({ width: 16, height: 16 })"></span>
+            <span v-html="feather.icons?.['move']?.toSvg({ width: 16, height: 16 })"></span>
           </div>
 
           <div class="flex items-start justify-between" :class="{ 'ml-6': store.isEditing }">
@@ -189,7 +189,9 @@ watch(
                       type="checkbox"
                       class="usage-box"
                     />
-                    <span class="text-xs italic text-gray-500">per {{ feature.resource.resetPer }}</span>
+                    <span class="text-xs italic text-gray-500"
+                      >per {{ feature.resource.resetPer }}</span
+                    >
                   </div>
                 </div>
                 <!-- Legacy uses format for backward compatibility -->
@@ -211,7 +213,7 @@ watch(
                 v-html="feature.desc.replace(/<li>/g, '<li class=\'list-disc list-inside\'>')"
               ></p>
             </div>
-            
+
             <!-- Action buttons -->
             <div v-if="store.isEditing && props.editable" class="flex items-center gap-1 ml-2">
               <button
@@ -219,14 +221,14 @@ watch(
                 class="icon-button text-xs p-1 bg-blue-600 hover:bg-blue-700"
                 title="Edit Feature"
               >
-                <span v-html="feather.icons.edit2.toSvg({ width: 12, height: 12 })"></span>
+                <span v-html="feather.icons?.['edit-2']?.toSvg({ width: 12, height: 12 })"></span>
               </button>
               <button
                 @click="removeFeature(index)"
                 class="icon-button text-xs p-1 bg-red-600 hover:bg-red-700"
                 title="Remove Feature"
               >
-                <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
+                <span v-html="feather.icons?.x?.toSvg({ width: 12, height: 12 })"></span>
               </button>
             </div>
           </div>
