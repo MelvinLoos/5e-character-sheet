@@ -94,7 +94,7 @@ function generate() {
           />
         </div>
       </div>
-      <div class="border-t border-amber-300 pt-6" v-if="store.schema">
+      <div class="border-t border-amber-300 pt-6" v-if="store.geminiSchema">
         <h2 class="font-fell text-2xl text-center text-purple-900 mb-4">
           ✨ AI Character Generator ✨
         </h2>

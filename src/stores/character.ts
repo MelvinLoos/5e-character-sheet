@@ -58,6 +58,7 @@ export const useCharacterStore = defineStore('character', () => {
   const characterLibrary = ref(getLocalLibrary())
   const sessionName = ref('Uncategorized')
   const schema = ref<object | null>(null)
+  const geminiSchema = ref<object | null>(null)
   const ajv = ref<object | null>(null)
   const supabaseClient = ref<object | null>(null)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
@@ -212,6 +213,17 @@ export const useCharacterStore = defineStore('character', () => {
       console.log('Character schema loaded.')
     } catch (e) {
       console.error('Error loading schema.json:', e)
+      console.warn('AI character generation will be disabled.')
+    }
+
+    // Load Gemini-compatible schema
+    try {
+      const response = await fetch('/gemini-schema.json')
+      if (!response.ok) throw new Error('Network response was not ok for gemini-schema.json')
+      geminiSchema.value = await response.json()
+      console.log('Gemini schema loaded.')
+    } catch (e) {
+      console.error('Error loading gemini-schema.json:', e)
       console.warn('AI character generation will be disabled.')
     }
 
@@ -492,14 +504,14 @@ export const useCharacterStore = defineStore('character', () => {
       _showErrorModal(['Please describe the character you want to generate.'])
       return
     }
-    if (!schema.value) {
+    if (!geminiSchema.value) {
       _showErrorModal(['Character schema is not loaded. AI generation is disabled.'])
       return
     }
 
     _showLoading('The mists of creation are swirling...')
     try {
-      const generatedData = await generateCharacterViaGemini(userPrompt, schema.value)
+      const generatedData = await generateCharacterViaGemini(userPrompt, geminiSchema.value)
       const { valid, errors } = validateCharacter(generatedData)
       if (!valid) {
         console.error('AI generated invalid data:', errors)
@@ -830,6 +842,7 @@ export const useCharacterStore = defineStore('character', () => {
     characterLibrary,
     sessionName,
     schema,
+    geminiSchema,
     supabaseClient,
     sourceCharacterId,
     isLoading,

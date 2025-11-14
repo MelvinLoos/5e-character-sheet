@@ -1,0 +1,217 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "D&D 5e Character Input - Gemini Compatible",
+  "description": "A simplified schema for Gemini API character generation",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The character's name."
+    },
+    "title": {
+      "type": "string",
+      "description": "An optional title or epithet for the character."
+    },
+    "class": {
+      "type": "string",
+      "description": "The character's class."
+    },
+    "level": {
+      "type": "integer",
+      "description": "The character's level.",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 1
+    },
+    "species": {
+      "type": "string",
+      "description": "The character's species."
+    },
+    "background": {
+      "type": "string",
+      "description": "The character's background."
+    },
+    "pointBuyBaseScores": {
+      "type": "object",
+      "description": "The character's six base ability scores (8-15) used for point buy calculation.",
+      "properties": {
+        "str": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "dex": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "con": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "int": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "wis": { "type": "integer", "minimum": 8, "maximum": 15 },
+        "cha": { "type": "integer", "minimum": 8, "maximum": 15 }
+      },
+      "required": ["str", "dex", "con", "int", "wis", "cha"]
+    },
+    "backgroundBonusSelections": {
+      "type": "object",
+      "description": "The ability scores selected for the background's +2 and +1 bonuses.",
+      "properties": {
+        "plusTwo": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] },
+        "plusOne": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] }
+      },
+      "required": ["plusTwo", "plusOne"]
+    },
+    "proficiencies": {
+      "type": "object",
+      "description": "Skill and saving throw proficiencies.",
+      "properties": {
+        "skills": {
+          "type": "array",
+          "description": "List of skill names (lowercase, no spaces) the character is proficient in.",
+          "items": { "type": "string" }
+        },
+        "savingThrows": {
+          "type": "array",
+          "description": "List of ability score abbreviations (lowercase) for saving throw proficiencies.",
+          "items": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] }
+        }
+      },
+      "required": ["skills", "savingThrows"]
+    },
+    "combat": {
+      "type": "object",
+      "description": "Combat-related statistics.",
+      "properties": {
+        "ac": {
+          "type": "integer",
+          "description": "Armor Class."
+        },
+        "speed": {
+          "type": "string",
+          "description": "Movement speed (e.g., '30ft')."
+        }
+      },
+      "required": ["ac", "speed"]
+    },
+    "attacks": {
+      "type": "array",
+      "description": "List of character attacks.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "damage": { "type": "string" },
+          "properties": { "type": "string" }
+        },
+        "required": ["name", "damage", "properties"]
+      }
+    },
+    "spellcasting": {
+      "type": "object",
+      "description": "Spellcasting details.",
+      "properties": {
+        "ability": {
+          "type": "string",
+          "enum": ["str", "dex", "con", "int", "wis", "cha"],
+          "description": "Spellcasting ability modifier key."
+        },
+        "slots": {
+          "type": "object",
+          "description": "Spell slots by level.",
+          "properties": {
+            "1": { "type": "integer", "minimum": 0 },
+            "2": { "type": "integer", "minimum": 0 },
+            "3": { "type": "integer", "minimum": 0 },
+            "4": { "type": "integer", "minimum": 0 },
+            "5": { "type": "integer", "minimum": 0 },
+            "6": { "type": "integer", "minimum": 0 },
+            "7": { "type": "integer", "minimum": 0 },
+            "8": { "type": "integer", "minimum": 0 },
+            "9": { "type": "integer", "minimum": 0 }
+          }
+        }
+      },
+      "required": ["ability", "slots"]
+    },
+    "features": {
+      "type": "array",
+      "description": "List of character features and traits.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The feature's name."
+          },
+          "desc": {
+            "type": "string",
+            "description": "The feature's description."
+          },
+          "featureType": {
+            "type": "string",
+            "enum": ["Class Feature", "Species Trait", "Background Feature", "Origin Feat", "General Feat", "Fighting Style", "Epic Boon", "Other"],
+            "default": "Other",
+            "description": "What type of feature this is."
+          },
+          "actionType": {
+            "type": "string",
+            "enum": ["Action", "Bonus Action", "Reaction", "Free Action", "Passive", "None"],
+            "default": "None",
+            "description": "What type of action economy this feature uses."
+          },
+          "key": {
+            "type": "boolean",
+            "description": "Whether this feature appears in the key features section.",
+            "default": false
+          },
+          "resource": {
+            "type": ["object", "null"],
+            "description": "Resource tracking for limited-use features.",
+            "properties": {
+              "resourceType": {
+                "type": "string",
+                "enum": ["static", "scaling"],
+                "description": "Whether the resource is a fixed number or scales with character stats."
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Static number of uses (only used when resourceType is 'static')."
+              },
+              "scalingStat": {
+                "type": "string",
+                "enum": ["pb", "str", "dex", "con", "int", "wis", "cha"],
+                "description": "What stat to scale with (only used when resourceType is 'scaling')."
+              },
+              "reset": {
+                "type": "string",
+                "enum": ["Short Rest", "Long Rest", "Dawn", "Initiative", "Special", "None"],
+                "description": "When the resource resets."
+              }
+            },
+            "required": ["resourceType", "reset"]
+          },
+          "casterType": {
+            "type": ["string", "null"],
+            "enum": ["full", "half", "third", "pact", null],
+            "description": "Spellcasting progression if this feature grants it."
+          }
+        },
+        "required": ["title", "desc"]
+      }
+    },
+    "personality": {
+      "type": "object",
+      "description": "Character personality traits.",
+      "properties": {
+        "traits": { "type": "string" },
+        "ideals": { "type": "string" },
+        "bonds": { "type": "string" },
+        "flaws": { "type": "string" }
+      },
+      "required": ["traits", "ideals", "bonds", "flaws"]
+    },
+    "equipment": {
+      "type": "string",
+      "description": "Character equipment as a descriptive string."
+    }
+  },
+  "required": [
+    "name", "class", "level", "species", "background", 
+    "pointBuyBaseScores", "backgroundBonusSelections", 
+    "proficiencies", "combat", "attacks", "spellcasting", 
+    "features", "personality", "equipment"
+  ]
+}
