@@ -24,7 +24,7 @@ const props = defineProps({
 // Icon mapping based on action type
 const iconConfig = {
   'Action': {
-    icon: 'play-circle',
+    icon: 'star',
     color: 'text-red-600',
     bgColor: 'bg-red-100',
     label: 'Action'
@@ -36,7 +36,7 @@ const iconConfig = {
     label: 'Bonus Action'
   },
   'Reaction': {
-    icon: 'shield',
+    icon: 'refresh-ccw',
     color: 'text-blue-600',
     bgColor: 'bg-blue-100', 
     label: 'Reaction'
