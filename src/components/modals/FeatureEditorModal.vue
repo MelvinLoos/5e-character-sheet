@@ -179,7 +179,13 @@ const hasResource = computed({
 // Computed property for hybrid max uses type
 const maxUsesType = computed({
   get() {
-    if (!formData.resource) return 'fixed'
+    if (!formData.resource) {
+      // For legacy features with 'uses', convert to fixed value
+      if (formData.uses && formData.uses.total) {
+        return 'fixed'
+      }
+      return 'fixed'
+    }
     
     // If it's static scaling, it's a fixed value
     if (formData.resource.scaling === 'static') return 'fixed'
@@ -198,7 +204,17 @@ const maxUsesType = computed({
     return 'fixed'
   },
   set(value) {
-    if (!formData.resource) return
+    // Initialize resource if it doesn't exist
+    if (!formData.resource) {
+      formData.resource = {
+        baseAmount: formData.uses?.total || 1,
+        scaling: 'static',
+        scalingAbility: null,
+        resetPer: formData.uses?.per || 'long rest',
+      }
+      // Clear legacy uses when converting to resource
+      formData.uses = null
+    }
     
     if (value === 'fixed') {
       formData.resource.scaling = 'static'
@@ -219,6 +235,18 @@ const maxUsesType = computed({
     }
   }
 })
+
+// Safe computed property for base amount to handle v-model
+const baseAmount = computed({
+  get() {
+    return formData.resource?.baseAmount || (formData.uses?.total || 1)
+  },
+  set(value) {
+    if (formData.resource) {
+      formData.resource.baseAmount = value
+    }
+  }
+})
 </script>
 
 <template>
@@ -228,7 +256,7 @@ const maxUsesType = computed({
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-fell text-sheet-red">{{ modalTitle }}</h2>
         <button @click="handleCancel" class="info-button" title="Close">
-          <span v-html="feather.icons.x.toSvg({ width: 20, height: 20 })"></span>
+          <span v-html="feather.icons?.x?.toSvg({ width: 20, height: 20 })"></span>
         </button>
       </div>
 
@@ -262,7 +290,7 @@ const maxUsesType = computed({
               <input id="key-feature" v-model="formData.key" type="checkbox" class="usage-box" />
               <label for="key-feature" class="text-sm font-bold">Key Feature</label>
               <button class="info-button" title="Key features appear on the front page">
-                <span v-html="feather.icons['help-circle'].toSvg({ width: 16, height: 16 })"></span>
+                <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"></span>
               </button>
             </div>
           </div>
@@ -349,7 +377,7 @@ const maxUsesType = computed({
                   <label for="fixed-amount" class="block text-xs font-bold mb-1">Enter Amount:</label>
                   <input
                     id="fixed-amount"
-                    v-model="formData.resource.baseAmount"
+                    v-model="baseAmount"
                     type="number"
                     min="1"
                     class="edit-mode-input text-sm w-full"
@@ -383,7 +411,7 @@ const maxUsesType = computed({
                 <div class="bg-blue-50 p-2 rounded text-xs">
                   <strong>Preview:</strong> 
                   <span v-if="maxUsesType === 'fixed'">
-                    {{ formData.resource.baseAmount || 0 }} use{{ (formData.resource.baseAmount || 0) !== 1 ? 's' : '' }}
+                    {{ baseAmount || 0 }} use{{ (baseAmount || 0) !== 1 ? 's' : '' }}
                   </span>
                   <span v-else-if="maxUsesType === 'pb'">
                     Proficiency Bonus uses
@@ -394,7 +422,7 @@ const maxUsesType = computed({
                   <span v-else>
                     {{ maxUsesType.toUpperCase() }} modifier uses
                   </span>
-                  per {{ formData.resource.resetPer || 'long rest' }}
+                  per {{ formData.resource?.resetPer || formData.uses?.per || 'long rest' }}
                 </div>
               </div>
             </div>
@@ -410,20 +438,20 @@ const maxUsesType = computed({
             @click="handleDelete"
             class="icon-button bg-red-600 text-white hover:bg-red-700"
           >
-            <span v-html="feather.icons.trash2.toSvg({ width: 16, height: 16 })"></span>
+            <span v-html="feather.icons?.trash2?.toSvg({ width: 16, height: 16 })"></span>
             Delete
           </button>
         </div>
         <div class="flex items-center gap-3">
           <button @click="handleCancel" class="icon-button">
-            <span v-html="feather.icons.x.toSvg({ width: 16, height: 16 })"></span>
+            <span v-html="feather.icons?.x?.toSvg({ width: 16, height: 16 })"></span>
             Cancel
           </button>
           <button
             @click="handleSave"
             class="icon-button bg-green-600 text-white hover:bg-green-700"
           >
-            <span v-html="feather.icons.save.toSvg({ width: 16, height: 16 })"></span>
+            <span v-html="feather.icons?.save?.toSvg({ width: 16, height: 16 })"></span>
             {{ isNew ? 'Add Feature' : 'Save Changes' }}
           </button>
         </div>

@@ -55,7 +55,7 @@ function addFeature() {
   isModalOpen.value = true
 }
 
-function editFeature(feature, index) {
+function editFeature(feature) {
   editingFeature.value = { ...feature }
   editingFeatureRef.value = feature // Keep direct reference to original feature
   isNewFeature.value = false
@@ -225,7 +225,7 @@ watch(
             <!-- Action buttons -->
             <div v-if="store.isEditing && props.editable" class="flex items-center gap-1 ml-2">
               <button
-                @click="editFeature(feature, index)"
+                @click="editFeature(feature)"
                 class="icon-button text-xs p-1 bg-blue-600 hover:bg-blue-700"
                 title="Edit Feature"
               >
