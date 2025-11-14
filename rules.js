@@ -219,15 +219,15 @@ export const CLASSES = {
         resource: {
           resourceType: 'static',
           value: 2,
-          reset: 'Long Rest'
-        }
+          reset: 'Long Rest',
+        },
       },
       {
         title: 'Unarmored Defense (Barbarian)',
         desc: 'While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier.',
         key: true,
         featureType: 'Class Feature',
-        actionType: 'Passive'
+        actionType: 'Passive',
       },
     ],
   },
@@ -243,7 +243,7 @@ export const CLASSES = {
         casterType: 'full',
         key: true,
         featureType: 'Class Feature',
-        actionType: 'Action'
+        actionType: 'Action',
       },
       {
         title: 'Bardic Inspiration',
@@ -254,8 +254,8 @@ export const CLASSES = {
         resource: {
           resourceType: 'scaling',
           scalingStat: 'cha',
-          reset: 'Long Rest'
-        }
+          reset: 'Long Rest',
+        },
       },
     ],
   },
@@ -271,7 +271,7 @@ export const CLASSES = {
         casterType: 'full',
         key: true,
         featureType: 'Class Feature',
-        actionType: 'Action'
+        actionType: 'Action',
       },
       {
         title: 'Channel Divinity',
@@ -282,8 +282,8 @@ export const CLASSES = {
         resource: {
           resourceType: 'static',
           value: 1,
-          reset: 'Short Rest'
-        }
+          reset: 'Short Rest',
+        },
       },
     ],
   },
@@ -300,7 +300,7 @@ export const CLASSES = {
         casterType: 'full',
         key: true,
         featureType: 'Class Feature',
-        actionType: 'Action'
+        actionType: 'Action',
       },
       {
         title: 'Wild Shape',
@@ -311,8 +311,8 @@ export const CLASSES = {
         resource: {
           resourceType: 'static',
           value: 2,
-          reset: 'Short Rest'
-        }
+          reset: 'Short Rest',
+        },
       },
     ],
   },
@@ -331,8 +331,8 @@ export const CLASSES = {
         resource: {
           resourceType: 'static',
           value: 1,
-          reset: 'Short Rest'
-        }
+          reset: 'Short Rest',
+        },
       },
     ],
   },
@@ -602,19 +602,19 @@ export const SPECIES = {
         desc: 'As a bonus action, you can move up to your Speed toward an enemy of your choice that you can see or hear. You must end this move closer to the enemy than you started.',
         key: true,
         featureType: 'Species Trait',
-        actionType: 'Bonus Action'
+        actionType: 'Bonus Action',
       },
       {
         title: 'Relentless Endurance',
-        desc: 'When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can\'t use this feature again until you finish a long rest.',
+        desc: "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest.",
         key: true,
         featureType: 'Species Trait',
         actionType: 'Free Action',
         resource: {
           resourceType: 'static',
           value: 1,
-          reset: 'Long Rest'
-        }
+          reset: 'Long Rest',
+        },
       },
     ],
   },
@@ -679,8 +679,8 @@ export const BACKGROUNDS = {
       resource: {
         resourceType: 'static',
         value: 1,
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
   Artisan: {
@@ -693,7 +693,7 @@ export const BACKGROUNDS = {
       desc: "You gain proficiency with three different types of artisan's tools of your choice.",
       key: false,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Charlatan: {
@@ -706,7 +706,7 @@ export const BACKGROUNDS = {
       desc: "You gain a +5 bonus to initiative and can't be surprised while you are conscious.",
       key: true,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Criminal: {
@@ -718,7 +718,7 @@ export const BACKGROUNDS = {
       desc: "You gain a +5 bonus to initiative and can't be surprised while you are conscious.",
       key: true,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Entertainer: {
@@ -731,7 +731,7 @@ export const BACKGROUNDS = {
       desc: 'You gain proficiency with three musical instruments of your choice.',
       key: false,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Farmer: {
@@ -743,7 +743,7 @@ export const BACKGROUNDS = {
       desc: 'Your hit point maximum increases by an amount equal to twice your level.',
       key: true,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Guard: {
@@ -756,7 +756,7 @@ export const BACKGROUNDS = {
       desc: "You gain a +5 bonus to initiative and can't be surprised while you are conscious.",
       key: true,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Guide: {
@@ -773,8 +773,8 @@ export const BACKGROUNDS = {
       resource: {
         resourceType: 'static',
         value: 1,
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
   Hermit: {
@@ -791,8 +791,8 @@ export const BACKGROUNDS = {
       resource: {
         resourceType: 'static',
         value: 1,
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
   Merchant: {
@@ -809,8 +809,8 @@ export const BACKGROUNDS = {
       resource: {
         resourceType: 'static',
         value: 3,
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
   Noble: {
@@ -823,7 +823,7 @@ export const BACKGROUNDS = {
       desc: 'You gain proficiency in any combination of three skills or tools of your choice.',
       key: false,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Sage: {
@@ -840,8 +840,8 @@ export const BACKGROUNDS = {
       resource: {
         resourceType: 'static',
         value: 1,
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
   Sailor: {
@@ -854,7 +854,7 @@ export const BACKGROUNDS = {
       desc: 'Your hit point maximum increases by an amount equal to twice your level.',
       key: true,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Scribe: {
@@ -867,7 +867,7 @@ export const BACKGROUNDS = {
       desc: 'You gain proficiency in any combination of three skills or tools of your choice.',
       key: false,
       featureType: 'Background Feature',
-      actionType: 'Passive'
+      actionType: 'Passive',
     },
   },
   Soldier: {
@@ -877,15 +877,15 @@ export const BACKGROUNDS = {
     abilityScoreIncrease: ['str', 'con', 'cha'],
     feature: {
       title: 'Savage Attacker',
-      desc: 'When you take the Attack action and hit with a melee weapon, you can reroll the weapon\'s damage dice and use either total. You can use this benefit a number of times equal to your proficiency bonus per long rest.',
+      desc: "When you take the Attack action and hit with a melee weapon, you can reroll the weapon's damage dice and use either total. You can use this benefit a number of times equal to your proficiency bonus per long rest.",
       key: true,
       featureType: 'Background Feature',
       actionType: 'Free Action',
       resource: {
         resourceType: 'scaling',
         scalingStat: 'pb',
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
   Urchin: {
@@ -902,8 +902,8 @@ export const BACKGROUNDS = {
       resource: {
         resourceType: 'static',
         value: 3,
-        reset: 'Long Rest'
-      }
+        reset: 'Long Rest',
+      },
     },
   },
 }

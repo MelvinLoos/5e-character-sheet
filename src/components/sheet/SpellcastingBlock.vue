@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'

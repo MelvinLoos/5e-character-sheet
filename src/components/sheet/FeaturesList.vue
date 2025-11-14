@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { watch, computed, ref } from 'vue'
 import feather from 'feather-icons'
@@ -68,7 +68,7 @@ function handleModalSave(featureData) {
     if (props.title === 'Key Features') {
       featureData.key = true
     }
-    
+
     store.currentCharacterData.features = store.currentCharacterData.features || []
     store.currentCharacterData.features.push(featureData)
   } else {
@@ -86,11 +86,12 @@ function handleModalSave(featureData) {
       }
     }
   }
-  
+
   isModalOpen.value = false
   editingFeatureRef.value = null
   store.recalculateAbilityScores()
-}function handleModalCancel() {
+}
+function handleModalCancel() {
   isModalOpen.value = false
   editingFeatureRef.value = null
 }
@@ -183,10 +184,10 @@ watch(
               <div class="flex items-center flex-wrap gap-2">
                 <p class="feature-title">{{ feature.title }}</p>
                 <!-- Action Economy Badge -->
-                <ActionBadge 
-                  v-if="feature.actionType" 
-                  :action-type="feature.actionType" 
-                  size="md" 
+                <ActionBadge
+                  v-if="feature.actionType"
+                  :action-type="feature.actionType"
+                  size="md"
                 />
                 <!-- Resource usage display - using new schema format -->
                 <div v-if="feature.resource" class="usage-tracker">

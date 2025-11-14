@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import SheetControls from './SheetControls.vue'
 import SheetHeader from './sheet/SheetHeader.vue'
@@ -10,7 +10,7 @@ import AttacksList from './sheet/AttacksList.vue'
 import FeaturesList from './sheet/FeaturesList.vue'
 import PersonalityBlock from './sheet/PersonalityBlock.vue'
 import EquipmentBlock from './sheet/EquipmentBlock.vue'
-import Spellcasting from './sheet/Spellcasting.vue'
+import SpellcastingBlock from './sheet/SpellcastingBlock.vue'
 import DeathSaves from './sheet/DeathSaves.vue'
 
 const store = useCharacterStore()
@@ -61,7 +61,7 @@ const store = useCharacterStore()
           <PersonalityBlock />
           <EquipmentBlock />
           <FeaturesList :features="store.otherFeatures" title="Features & Traits" />
-          <Spellcasting />
+          <SpellcastingBlock />
         </div>
         <div class="space-y-6 print-hidden">
           <!-- This column is hidden in print mode - CSS columns handle layout -->

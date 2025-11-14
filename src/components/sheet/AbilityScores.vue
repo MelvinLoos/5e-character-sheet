@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, watch, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules.js'
@@ -75,11 +75,6 @@ watch(
     }
   },
 )
-
-function renderPointBuyEditor() {
-  // This will be handled in the template
-  return true
-}
 </script>
 
 <template>

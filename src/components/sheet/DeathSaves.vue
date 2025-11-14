@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // Simple placeholder for death saves
 </script>
 

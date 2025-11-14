@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { computed } from 'vue'
 import feather from 'feather-icons'

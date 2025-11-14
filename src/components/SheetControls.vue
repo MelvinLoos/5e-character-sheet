@@ -1,5 +1,4 @@
-<script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+<script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import feather from 'feather-icons'
 

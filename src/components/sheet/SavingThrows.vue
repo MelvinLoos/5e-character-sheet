@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules.js'
 import { formatMod } from '@/services/characterService.js'

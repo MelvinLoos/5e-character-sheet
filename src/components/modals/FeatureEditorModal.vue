@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
 import feather from 'feather-icons'
 
@@ -186,21 +186,21 @@ const maxUsesType = computed({
       }
       return 'fixed'
     }
-    
+
     // If it's static scaling, it's a fixed value
     if (formData.resource.scaling === 'static') return 'fixed'
-    
+
     // If it's proficiency scaling, return 'pb'
     if (formData.resource.scaling === 'proficiency') return 'pb'
-    
-    // If it's level scaling, return 'level' 
+
+    // If it's level scaling, return 'level'
     if (formData.resource.scaling === 'level') return 'level'
-    
+
     // If it's ability scaling, return the specific ability
     if (formData.resource.scaling === 'ability' && formData.resource.scalingAbility) {
       return formData.resource.scalingAbility
     }
-    
+
     return 'fixed'
   },
   set(value) {
@@ -215,7 +215,7 @@ const maxUsesType = computed({
       // Clear legacy uses when converting to resource
       formData.uses = null
     }
-    
+
     if (value === 'fixed') {
       formData.resource.scaling = 'static'
       formData.resource.scalingAbility = null
@@ -233,19 +233,19 @@ const maxUsesType = computed({
       formData.resource.scalingAbility = value
       formData.resource.baseAmount = 1
     }
-  }
+  },
 })
 
 // Safe computed property for base amount to handle v-model
 const baseAmount = computed({
   get() {
-    return formData.resource?.baseAmount || (formData.uses?.total || 1)
+    return formData.resource?.baseAmount || formData.uses?.total || 1
   },
   set(value) {
     if (formData.resource) {
       formData.resource.baseAmount = value
     }
-  }
+  },
 })
 </script>
 
@@ -290,7 +290,9 @@ const baseAmount = computed({
               <input id="key-feature" v-model="formData.key" type="checkbox" class="usage-box" />
               <label for="key-feature" class="text-sm font-bold">Key Feature</label>
               <button class="info-button" title="Key features appear on the front page">
-                <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"></span>
+                <span
+                  v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"
+                ></span>
               </button>
             </div>
           </div>
@@ -374,7 +376,9 @@ const baseAmount = computed({
 
                 <!-- Manual Input (only show if "Fixed Value" selected) -->
                 <div v-if="maxUsesType === 'fixed'">
-                  <label for="fixed-amount" class="block text-xs font-bold mb-1">Enter Amount:</label>
+                  <label for="fixed-amount" class="block text-xs font-bold mb-1"
+                    >Enter Amount:</label
+                  >
                   <input
                     id="fixed-amount"
                     v-model="baseAmount"
@@ -409,19 +413,13 @@ const baseAmount = computed({
 
                 <!-- Preview -->
                 <div class="bg-blue-50 p-2 rounded text-xs">
-                  <strong>Preview:</strong> 
+                  <strong>Preview:</strong>
                   <span v-if="maxUsesType === 'fixed'">
                     {{ baseAmount || 0 }} use{{ (baseAmount || 0) !== 1 ? 's' : '' }}
                   </span>
-                  <span v-else-if="maxUsesType === 'pb'">
-                    Proficiency Bonus uses
-                  </span>
-                  <span v-else-if="maxUsesType === 'level'">
-                    Character Level uses
-                  </span>
-                  <span v-else>
-                    {{ maxUsesType.toUpperCase() }} modifier uses
-                  </span>
+                  <span v-else-if="maxUsesType === 'pb'"> Proficiency Bonus uses </span>
+                  <span v-else-if="maxUsesType === 'level'"> Character Level uses </span>
+                  <span v-else> {{ maxUsesType.toUpperCase() }} modifier uses </span>
                   per {{ formData.resource?.resetPer || formData.uses?.per || 'long rest' }}
                 </div>
               </div>

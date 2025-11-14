@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useCharacterStore } from './stores/character'
 import ControlPanel from './components/ControlPanel.vue'

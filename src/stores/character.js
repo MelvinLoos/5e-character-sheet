@@ -8,7 +8,6 @@ import {
   saveLibrary as saveLocalLibrary,
   createBlankCharacter,
   getMod,
-  formatMod,
   pointBuyCosts,
 } from '../services/characterService.js'
 
@@ -54,7 +53,7 @@ export const useCharacterStore = defineStore('character', () => {
 
   const maxHp = computed(() => {
     if (!currentCharacterData.value) return 1
-    const { level, class: className, abilityScores } = currentCharacterData.value
+    const { level, class: className } = currentCharacterData.value
     const classData = DND_RULES.CLASSES[className]
     if (!classData) return 1
 
@@ -242,7 +241,6 @@ export const useCharacterStore = defineStore('character', () => {
         // Subtract background bonuses if we can determine them
         const background = migrated.background
         if (background && DND_RULES.BACKGROUNDS[background]) {
-          const bonusOptions = DND_RULES.BACKGROUNDS[background].abilityScoreIncrease || []
           // For legacy files, we can't know which bonuses were selected, so leave as-is
         }
       } else {
