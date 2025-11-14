@@ -212,7 +212,7 @@ watch(
                       class="usage-box"
                     />
                     <span class="text-xs italic text-gray-500"
-                      >per {{ feature.resource.resetPer }}</span
+                      >per {{ feature.resource.reset }}</span
                     >
                   </div>
                 </div>

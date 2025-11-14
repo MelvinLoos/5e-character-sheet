@@ -1,0 +1,79 @@
+{
+  "name": "Test Hero",
+  "title": "The Brave",
+  "class": "Fighter",
+  "level": 3,
+  "species": "Human",
+  "background": "Soldier",
+  "pointBuyBaseScores": {
+    "str": 15,
+    "dex": 14,
+    "con": 13,
+    "int": 12,
+    "wis": 10,
+    "cha": 8
+  },
+  "backgroundBonusSelections": {
+    "plusTwo": "str",
+    "plusOne": "con"
+  },
+  "proficiencies": {
+    "skills": ["athletics", "intimidation"],
+    "savingThrows": ["str", "con"]
+  },
+  "combat": {
+    "ac": 16,
+    "speed": "30ft"
+  },
+  "attacks": [],
+  "spellcasting": {
+    "ability": "int",
+    "slots": {}
+  },
+  "features": [
+    {
+      "title": "Second Wind",
+      "desc": "You can regain hit points as a bonus action.",
+      "featureType": "Class Feature", 
+      "actionType": "Bonus Action",
+      "key": true,
+      "resource": {
+        "resourceType": "static",
+        "value": 1,
+        "reset": "Short Rest"
+      }
+    },
+    {
+      "title": "Fighting Style: Defense",
+      "desc": "+1 bonus to AC while wearing armor.",
+      "featureType": "Class Feature",
+      "actionType": "Passive",
+      "key": true
+    },
+    {
+      "title": "Action Surge",
+      "desc": "On your turn, you can take one additional action.",
+      "featureType": "Class Feature",
+      "actionType": "Free Action", 
+      "key": true,
+      "resource": {
+        "resourceType": "static",
+        "value": 1,
+        "reset": "Short Rest"
+      }
+    },
+    {
+      "title": "Human Versatility",
+      "desc": "You gain proficiency in one skill of your choice.",
+      "featureType": "Species Trait",
+      "actionType": "Passive"
+    }
+  ],
+  "personality": {
+    "traits": "Brave and determined",
+    "ideals": "Protect the innocent",
+    "bonds": "My squad",
+    "flaws": "Can be reckless"
+  },
+  "equipment": "Chain mail, shield, longsword, handaxe (2), light crossbow, crossbow bolts (20)"
+}

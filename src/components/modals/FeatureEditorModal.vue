@@ -23,10 +23,10 @@ const emit = defineEmits(['save', 'cancel', 'delete'])
 
 // Type definitions
 interface ResourceData {
-  baseAmount: number
-  scaling: string
-  scalingAbility: string | null
-  resetPer: string
+  resourceType: string
+  value?: number
+  scalingStat?: string | null
+  reset: string
 }
 
 interface UsesData {
@@ -189,10 +189,10 @@ const hasResource = computed({
   set(value) {
     if (value) {
       formData.resource = {
-        baseAmount: 1,
-        scaling: 'static',
-        scalingAbility: 'str',
-        resetPer: 'long rest',
+        resourceType: 'static',
+        value: 1,
+        scalingStat: null,
+        reset: 'Long Rest',
       }
     } else {
       formData.resource = null
@@ -212,17 +212,17 @@ const maxUsesType = computed({
     }
 
     // If it's static scaling, it's a fixed value
-    if (formData.resource.scaling === 'static') return 'fixed'
+    if (formData.resource.resourceType === 'static') return 'fixed'
 
     // If it's proficiency scaling, return 'pb'
-    if (formData.resource.scaling === 'proficiency') return 'pb'
+    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat === 'pb') return 'pb'
 
-    // If it's level scaling, return 'level'
-    if (formData.resource.scaling === 'level') return 'level'
+    // If it's level scaling, return 'level' (note: level scaling not supported in current schema)
+    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat === 'level') return 'level'
 
     // If it's ability scaling, return the specific ability
-    if (formData.resource.scaling === 'ability' && formData.resource.scalingAbility) {
-      return formData.resource.scalingAbility
+    if (formData.resource.resourceType === 'scaling' && formData.resource.scalingStat) {
+      return formData.resource.scalingStat
     }
 
     return 'fixed'
@@ -231,31 +231,32 @@ const maxUsesType = computed({
     // Initialize resource if it doesn't exist
     if (!formData.resource) {
       formData.resource = {
-        baseAmount: formData.uses?.total || 1,
-        scaling: 'static',
-        scalingAbility: null,
-        resetPer: formData.uses?.per || 'long rest',
+        resourceType: 'static',
+        value: formData.uses?.total || 1,
+        scalingStat: null,
+        reset: formData.uses?.per || 'Long Rest',
       }
       // Clear legacy uses when converting to resource
       formData.uses = null
     }
 
     if (value === 'fixed') {
-      formData.resource.scaling = 'static'
-      formData.resource.scalingAbility = null
+      formData.resource.resourceType = 'static'
+      formData.resource.scalingStat = null
     } else if (value === 'pb') {
-      formData.resource.scaling = 'proficiency'
-      formData.resource.scalingAbility = null
-      formData.resource.baseAmount = 1
+      formData.resource.resourceType = 'scaling'
+      formData.resource.scalingStat = 'pb'
+      formData.resource.value = undefined // Not used for scaling
     } else if (value === 'level') {
-      formData.resource.scaling = 'level'
-      formData.resource.scalingAbility = null
-      formData.resource.baseAmount = 1
+      // Note: Level scaling not in schema, but we'll handle it for future compatibility
+      formData.resource.resourceType = 'scaling'
+      formData.resource.scalingStat = 'level'
+      formData.resource.value = undefined
     } else {
-      // It's an ability modifier
-      formData.resource.scaling = 'ability'
-      formData.resource.scalingAbility = value
-      formData.resource.baseAmount = 1
+      // Ability score (str, dex, con, int, wis, cha)
+      formData.resource.resourceType = 'scaling'
+      formData.resource.scalingStat = value
+      formData.resource.value = undefined
     }
   },
 })
@@ -263,11 +264,11 @@ const maxUsesType = computed({
 // Safe computed property for base amount to handle v-model
 const baseAmount = computed({
   get() {
-    return formData.resource?.baseAmount || formData.uses?.total || 1
+    return formData.resource?.value || formData.uses?.total || 1
   },
   set(value) {
     if (formData.resource) {
-      formData.resource.baseAmount = value
+      formData.resource.value = value
     }
   },
 })
@@ -422,7 +423,7 @@ const baseAmount = computed({
                   <label for="reset-condition" class="block text-xs font-bold mb-1">Resets:</label>
                   <select
                     id="reset-condition"
-                    v-model="formData.resource!.resetPer"
+                    v-model="formData.resource!.reset"
                     class="edit-mode-select text-sm w-full"
                   >
                     <option value="long rest">Long Rest</option>
@@ -448,7 +449,7 @@ const baseAmount = computed({
                   <span v-else-if="maxUsesType === 'pb'"> Proficiency Bonus uses </span>
                   <span v-else-if="maxUsesType === 'level'"> Character Level uses </span>
                   <span v-else> {{ maxUsesType.toUpperCase() }} modifier uses </span>
-                  per {{ formData.resource?.resetPer || formData.uses?.per || 'long rest' }}
+                  per {{ formData.resource?.reset || formData.uses?.per || 'long rest' }}
                 </div>
               </div>
             </div>
@@ -488,6 +489,9 @@ const baseAmount = computed({
 
 <style scoped>
 .usage-box {
-  @apply w-4 h-4 border border-sheet-border bg-white;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--sheet-border, #d1d5db);
+  background-color: white;
 }
 </style>
