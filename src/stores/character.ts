@@ -11,7 +11,7 @@ import {
   createBlankCharacter,
   getMod,
   pointBuyCosts,
-// @ts-expect-error - JS module without types
+  // @ts-expect-error - JS module without types
 } from '../services/characterService.js'
 
 // Type interfaces
