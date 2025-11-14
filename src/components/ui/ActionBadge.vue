@@ -64,18 +64,18 @@ const iconConfig = {
 // Size configurations
 const sizeConfig = {
   'sm': { 
-    iconSize: 12, 
-    padding: 'p-1', 
+    iconSize: 16, 
+    padding: 'p-1.5', 
     text: 'text-xs' 
   },
   'md': { 
-    iconSize: 16, 
-    padding: 'p-1.5', 
+    iconSize: 20, 
+    padding: 'p-2', 
     text: 'text-sm' 
   },
   'lg': { 
-    iconSize: 20, 
-    padding: 'p-2', 
+    iconSize: 24, 
+    padding: 'p-2.5', 
     text: 'text-base' 
   }
 }

@@ -12,7 +12,7 @@ const store = useCharacterStore()
 const isModalOpen = ref(false)
 const editingFeature = ref({})
 const isNewFeature = ref(false)
-const editingIndex = ref(-1)
+const editingFeatureRef = ref(null) // Direct reference to the feature being edited
 
 const props = defineProps({
   features: {
@@ -50,15 +50,15 @@ const editableFeatures = computed({
 
 function addFeature() {
   editingFeature.value = {}
+  editingFeatureRef.value = null
   isNewFeature.value = true
-  editingIndex.value = -1
   isModalOpen.value = true
 }
 
 function editFeature(feature, index) {
   editingFeature.value = { ...feature }
+  editingFeatureRef.value = feature // Keep direct reference to original feature
   isNewFeature.value = false
-  editingIndex.value = index
   isModalOpen.value = true
 }
 
@@ -68,43 +68,44 @@ function handleModalSave(featureData) {
     if (props.title === 'Key Features') {
       featureData.key = true
     }
-
+    
     store.currentCharacterData.features = store.currentCharacterData.features || []
     store.currentCharacterData.features.push(featureData)
   } else {
-    // Update existing feature
-    if (props.title === 'Key Features') {
+    // Update existing feature using direct reference
+    if (editingFeatureRef.value) {
+      // Find the feature in the main array and update it
       const allFeatures = store.currentCharacterData.features || []
-      const keyFeatures = allFeatures.filter((f) => f.key)
-      const featureToUpdate = keyFeatures[editingIndex.value]
-      const featureIndex = allFeatures.findIndex((f) => f === featureToUpdate)
+      const featureIndex = allFeatures.findIndex((f) => f === editingFeatureRef.value)
       if (featureIndex !== -1) {
-        allFeatures[featureIndex] = { ...featureData, key: true }
-      }
-    } else {
-      const allFeatures = store.currentCharacterData.features || []
-      const otherFeatures = allFeatures.filter((f) => !f.key)
-      const featureToUpdate = otherFeatures[editingIndex.value]
-      const featureIndex = allFeatures.findIndex((f) => f === featureToUpdate)
-      if (featureIndex !== -1) {
+        // Preserve the key property for Key Features
+        if (props.title === 'Key Features') {
+          featureData.key = true
+        }
         allFeatures[featureIndex] = featureData
       }
     }
   }
-
+  
   isModalOpen.value = false
+  editingFeatureRef.value = null
   store.recalculateAbilityScores()
-}
-
-function handleModalCancel() {
+}function handleModalCancel() {
   isModalOpen.value = false
+  editingFeatureRef.value = null
 }
 
 function handleModalDelete() {
-  if (!isNewFeature.value) {
-    removeFeature(editingIndex.value)
+  if (!isNewFeature.value && editingFeatureRef.value) {
+    const allFeatures = store.currentCharacterData.features || []
+    const featureIndex = allFeatures.findIndex((f) => f === editingFeatureRef.value)
+    if (featureIndex !== -1) {
+      allFeatures.splice(featureIndex, 1)
+    }
+    store.recalculateAbilityScores()
   }
   isModalOpen.value = false
+  editingFeatureRef.value = null
 }
 
 function removeFeature(index) {
@@ -185,7 +186,7 @@ watch(
                 <ActionBadge 
                   v-if="feature.actionType" 
                   :action-type="feature.actionType" 
-                  size="sm" 
+                  size="md" 
                 />
                 <!-- Resource usage display - using new schema format -->
                 <div v-if="feature.resource" class="usage-tracker">
