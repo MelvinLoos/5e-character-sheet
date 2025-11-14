@@ -6,16 +6,16 @@ import feather from 'feather-icons'
 const props = defineProps({
   isOpen: {
     type: Boolean,
-    default: false
+    default: false,
   },
   feature: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   isNew: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 // Emits
@@ -30,7 +30,7 @@ const formData = reactive({
   actionType: 'None',
   resource: null,
   uses: null,
-  casterType: null
+  casterType: null,
 })
 
 // Validation state
@@ -39,72 +39,69 @@ const errors = ref([])
 // Available options for dropdowns
 const featureTypes = [
   'Class Feature',
-  'Species Trait', 
+  'Species Trait',
   'Background Feature',
   'Origin Feat',
   'General Feat',
   'Fighting Style',
   'Epic Boon',
-  'Other'
+  'Other',
 ]
 
-const actionTypes = [
-  'Action',
-  'Bonus Action',
-  'Reaction',
-  'Free Action',
-  'Passive',
-  'None'
-]
+const actionTypes = ['Action', 'Bonus Action', 'Reaction', 'Free Action', 'Passive', 'None']
 
 const casterTypes = [
   { value: null, label: 'No Spellcasting' },
   { value: 'full', label: 'Full Caster' },
   { value: 'half', label: 'Half Caster' },
   { value: 'third', label: 'Third Caster' },
-  { value: 'pact', label: 'Pact Magic' }
+  { value: 'pact', label: 'Pact Magic' },
 ]
 
 // Watch for prop changes to update form data
-watch(() => props.feature, (newFeature) => {
-  if (newFeature && Object.keys(newFeature).length > 0) {
-    Object.assign(formData, {
-      title: newFeature.title || '',
-      desc: newFeature.desc || '',
-      key: newFeature.key || false,
-      featureType: newFeature.featureType || 'Other',
-      actionType: newFeature.actionType || 'None',
-      resource: newFeature.resource || null,
-      uses: newFeature.uses || null,
-      casterType: newFeature.casterType || null
-    })
-  } else if (props.isNew) {
-    // Reset form for new feature
-    Object.assign(formData, {
-      title: 'New Feature',
-      desc: 'Enter feature description...',
-      key: false,
-      featureType: 'Other',
-      actionType: 'None',
-      resource: null,
-      uses: null,
-      casterType: null
-    })
-  }
-}, { immediate: true })
+watch(
+  () => props.feature,
+  (newFeature) => {
+    if (newFeature && Object.keys(newFeature).length > 0) {
+      Object.assign(formData, {
+        title: newFeature.title || '',
+        desc: newFeature.desc || '',
+        key: newFeature.key || false,
+        featureType: newFeature.featureType || 'Other',
+        actionType: newFeature.actionType || 'None',
+        resource: newFeature.resource ? { ...newFeature.resource } : null,
+        uses: newFeature.uses || null,
+        casterType: newFeature.casterType || null,
+      })
+    } else if (props.isNew) {
+      // Reset form for new feature
+      Object.assign(formData, {
+        title: 'New Feature',
+        desc: 'Enter feature description...',
+        key: false,
+        featureType: 'Other',
+        actionType: 'None',
+        resource: null,
+        uses: null,
+        casterType: null,
+      })
+    }
+  },
+  { immediate: true },
+)
 
 // Validation
 function validateForm() {
   errors.value = []
-  
+
   if (!formData.title.trim()) {
     errors.value.push('Feature title is required')
   }
-  
+
   if (!formData.desc.trim()) {
     errors.value.push('Feature description is required')
   }
-  
+
   return errors.value.length === 0
 }
 
@@ -113,7 +110,7 @@ function handleSave() {
   if (!validateForm()) {
     return
   }
-  
+
   // Clean up the data before emitting
   const cleanedFeature = {
     title: formData.title.trim(),
@@ -121,19 +118,19 @@ function handleSave() {
     key: formData.key,
     featureType: formData.featureType,
     actionType: formData.actionType,
-    casterType: formData.casterType
+    casterType: formData.casterType,
   }
-  
+
   // Only include resource if it exists
   if (formData.resource) {
     cleanedFeature.resource = { ...formData.resource }
   }
-  
+
   // Keep legacy uses for backward compatibility
   if (formData.uses) {
     cleanedFeature.uses = { ...formData.uses }
   }
-  
+
   emit('save', cleanedFeature)
 }
 
@@ -159,6 +156,25 @@ function handleBackdropClick(event) {
 const modalTitle = computed(() => {
   return props.isNew ? 'Add New Feature' : 'Edit Feature'
 })
+
+// Computed property for resource toggle
+const hasResource = computed({
+  get() {
+    return formData.resource !== null
+  },
+  set(value) {
+    if (value) {
+      formData.resource = {
+        baseAmount: 1,
+        scaling: 'static',
+        scalingAbility: 'str',
+        resetPer: 'long rest'
+      }
+    } else {
+      formData.resource = null
+    }
+  }
+})
 </script>
 
 <template>
@@ -173,7 +189,10 @@ const modalTitle = computed(() => {
       </div>
 
       <!-- Error Messages -->
-      <div v-if="errors.length > 0" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      <div
+        v-if="errors.length > 0"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+      >
         <ul class="list-disc list-inside">
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>
@@ -196,12 +215,7 @@ const modalTitle = computed(() => {
               />
             </div>
             <div class="flex items-center gap-2 mt-6">
-              <input
-                id="key-feature"
-                v-model="formData.key"
-                type="checkbox"
-                class="usage-box"
-              />
+              <input id="key-feature" v-model="formData.key" type="checkbox" class="usage-box" />
               <label for="key-feature" class="text-sm font-bold">Key Feature</label>
               <button class="info-button" title="Key features appear on the front page">
                 <span v-html="feather.icons['help-circle'].toSvg({ width: 16, height: 16 })"></span>
@@ -225,7 +239,7 @@ const modalTitle = computed(() => {
         <!-- Right Column - Categorization -->
         <div class="space-y-4">
           <h3 class="font-bold text-lg border-b border-sheet-border pb-1">Categorization</h3>
-          
+
           <!-- Feature Type -->
           <div>
             <label for="feature-type" class="block text-sm font-bold mb-1">Feature Type:</label>
@@ -256,12 +270,73 @@ const modalTitle = computed(() => {
             </select>
           </div>
 
-          <!-- Resource Usage Placeholder -->
-          <div class="bg-gray-100 p-3 rounded border">
-            <p class="text-sm text-gray-600">
-              <strong>Resource Usage:</strong><br>
-              Advanced resource tracking will be available in a future update.
-            </p>
+          <!-- Resource Usage -->
+          <div>
+            <label for="has-resource" class="block text-sm font-bold mb-1">Resource Usage:</label>
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <input 
+                  id="has-resource" 
+                  v-model="hasResource" 
+                  type="checkbox" 
+                  class="usage-box"
+                />
+                <label for="has-resource" class="text-sm">Has limited uses</label>
+              </div>
+              
+              <div v-if="hasResource" class="space-y-2 ml-6">
+                <!-- Base Amount -->
+                <div>
+                  <label for="base-amount" class="block text-xs font-bold mb-1">Base Amount:</label>
+                  <input 
+                    id="base-amount"
+                    v-model="formData.resource.baseAmount"
+                    type="number" 
+                    min="1"
+                    class="edit-mode-input text-sm w-full"
+                    placeholder="1"
+                  />
+                </div>
+                
+                <!-- Scaling Type -->
+                <div>
+                  <label for="scaling-type" class="block text-xs font-bold mb-1">Scaling:</label>
+                  <select id="scaling-type" v-model="formData.resource.scaling" class="edit-mode-select text-sm w-full">
+                    <option value="static">Static (no scaling)</option>
+                    <option value="proficiency">Proficiency Bonus</option>
+                    <option value="ability">Ability Modifier</option>
+                    <option value="level">Character Level</option>
+                  </select>
+                </div>
+                
+                <!-- Scaling Ability (only show if scaling by ability) -->
+                <div v-if="formData.resource.scaling === 'ability'">
+                  <label for="scaling-ability" class="block text-xs font-bold mb-1">Scaling Ability:</label>
+                  <select id="scaling-ability" v-model="formData.resource.scalingAbility" class="edit-mode-select text-sm w-full">
+                    <option value="str">Strength</option>
+                    <option value="dex">Dexterity</option>
+                    <option value="con">Constitution</option>
+                    <option value="int">Intelligence</option>
+                    <option value="wis">Wisdom</option>
+                    <option value="cha">Charisma</option>
+                  </select>
+                </div>
+                
+                <!-- Reset Period -->
+                <div>
+                  <label for="reset-per" class="block text-xs font-bold mb-1">Resets:</label>
+                  <select id="reset-per" v-model="formData.resource.resetPer" class="edit-mode-select text-sm w-full">
+                    <option value="turn">Per Turn</option>
+                    <option value="round">Per Round</option>
+                    <option value="encounter">Per Encounter</option>
+                    <option value="short rest">Per Short Rest</option>
+                    <option value="long rest">Per Long Rest</option>
+                    <option value="day">Per Day</option>
+                    <option value="week">Per Week</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -269,9 +344,9 @@ const modalTitle = computed(() => {
       <!-- Modal Actions -->
       <div class="flex items-center justify-between mt-8 pt-4 border-t border-sheet-border">
         <div>
-          <button 
-            v-if="!isNew" 
-            @click="handleDelete" 
+          <button
+            v-if="!isNew"
+            @click="handleDelete"
             class="icon-button bg-red-600 text-white hover:bg-red-700"
           >
             <span v-html="feather.icons.trash2.toSvg({ width: 16, height: 16 })"></span>
@@ -283,7 +358,10 @@ const modalTitle = computed(() => {
             <span v-html="feather.icons.x.toSvg({ width: 16, height: 16 })"></span>
             Cancel
           </button>
-          <button @click="handleSave" class="icon-button bg-green-600 text-white hover:bg-green-700">
+          <button
+            @click="handleSave"
+            class="icon-button bg-green-600 text-white hover:bg-green-700"
+          >
             <span v-html="feather.icons.save.toSvg({ width: 16, height: 16 })"></span>
             {{ isNew ? 'Add Feature' : 'Save Changes' }}
           </button>
