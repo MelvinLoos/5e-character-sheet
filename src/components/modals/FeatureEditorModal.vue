@@ -175,6 +175,50 @@ const hasResource = computed({
     }
   },
 })
+
+// Computed property for hybrid max uses type
+const maxUsesType = computed({
+  get() {
+    if (!formData.resource) return 'fixed'
+    
+    // If it's static scaling, it's a fixed value
+    if (formData.resource.scaling === 'static') return 'fixed'
+    
+    // If it's proficiency scaling, return 'pb'
+    if (formData.resource.scaling === 'proficiency') return 'pb'
+    
+    // If it's level scaling, return 'level' 
+    if (formData.resource.scaling === 'level') return 'level'
+    
+    // If it's ability scaling, return the specific ability
+    if (formData.resource.scaling === 'ability' && formData.resource.scalingAbility) {
+      return formData.resource.scalingAbility
+    }
+    
+    return 'fixed'
+  },
+  set(value) {
+    if (!formData.resource) return
+    
+    if (value === 'fixed') {
+      formData.resource.scaling = 'static'
+      formData.resource.scalingAbility = null
+    } else if (value === 'pb') {
+      formData.resource.scaling = 'proficiency'
+      formData.resource.scalingAbility = null
+      formData.resource.baseAmount = 1
+    } else if (value === 'level') {
+      formData.resource.scaling = 'level'
+      formData.resource.scalingAbility = null
+      formData.resource.baseAmount = 1
+    } else {
+      // It's an ability modifier
+      formData.resource.scaling = 'ability'
+      formData.resource.scalingAbility = value
+      formData.resource.baseAmount = 1
+    }
+  }
+})
 </script>
 
 <template>
@@ -279,70 +323,78 @@ const hasResource = computed({
                 <label for="has-resource" class="text-sm">Has limited uses</label>
               </div>
 
-              <div v-if="hasResource" class="space-y-2 ml-6">
-                <!-- Base Amount -->
+              <div v-if="hasResource" class="space-y-3 ml-6">
+                <!-- Max Uses (Hybrid Input) -->
                 <div>
-                  <label for="base-amount" class="block text-xs font-bold mb-1">Base Amount:</label>
+                  <label for="max-uses-type" class="block text-xs font-bold mb-1">Max Uses:</label>
+                  <select
+                    id="max-uses-type"
+                    v-model="maxUsesType"
+                    class="edit-mode-select text-sm w-full"
+                  >
+                    <option value="fixed">Fixed Value</option>
+                    <option value="pb">Equal to Proficiency Bonus</option>
+                    <option value="str">Equal to STR Modifier</option>
+                    <option value="dex">Equal to DEX Modifier</option>
+                    <option value="con">Equal to CON Modifier</option>
+                    <option value="int">Equal to INT Modifier</option>
+                    <option value="wis">Equal to WIS Modifier</option>
+                    <option value="cha">Equal to CHA Modifier</option>
+                    <option value="level">Equal to Character Level</option>
+                  </select>
+                </div>
+
+                <!-- Manual Input (only show if "Fixed Value" selected) -->
+                <div v-if="maxUsesType === 'fixed'">
+                  <label for="fixed-amount" class="block text-xs font-bold mb-1">Enter Amount:</label>
                   <input
-                    id="base-amount"
+                    id="fixed-amount"
                     v-model="formData.resource.baseAmount"
                     type="number"
                     min="1"
                     class="edit-mode-input text-sm w-full"
-                    placeholder="1"
+                    placeholder="Enter number of uses"
                   />
                 </div>
 
-                <!-- Scaling Type -->
+                <!-- Reset Condition -->
                 <div>
-                  <label for="scaling-type" class="block text-xs font-bold mb-1">Scaling:</label>
+                  <label for="reset-condition" class="block text-xs font-bold mb-1">Resets:</label>
                   <select
-                    id="scaling-type"
-                    v-model="formData.resource.scaling"
-                    class="edit-mode-select text-sm w-full"
-                  >
-                    <option value="static">Static (no scaling)</option>
-                    <option value="proficiency">Proficiency Bonus</option>
-                    <option value="ability">Ability Modifier</option>
-                    <option value="level">Character Level</option>
-                  </select>
-                </div>
-
-                <!-- Scaling Ability (only show if scaling by ability) -->
-                <div v-if="formData.resource.scaling === 'ability'">
-                  <label for="scaling-ability" class="block text-xs font-bold mb-1"
-                    >Scaling Ability:</label
-                  >
-                  <select
-                    id="scaling-ability"
-                    v-model="formData.resource.scalingAbility"
-                    class="edit-mode-select text-sm w-full"
-                  >
-                    <option value="str">Strength</option>
-                    <option value="dex">Dexterity</option>
-                    <option value="con">Constitution</option>
-                    <option value="int">Intelligence</option>
-                    <option value="wis">Wisdom</option>
-                    <option value="cha">Charisma</option>
-                  </select>
-                </div>
-
-                <!-- Reset Period -->
-                <div>
-                  <label for="reset-per" class="block text-xs font-bold mb-1">Resets:</label>
-                  <select
-                    id="reset-per"
+                    id="reset-condition"
                     v-model="formData.resource.resetPer"
                     class="edit-mode-select text-sm w-full"
                   >
-                    <option value="turn">Per Turn</option>
-                    <option value="round">Per Round</option>
-                    <option value="encounter">Per Encounter</option>
-                    <option value="short rest">Per Short Rest</option>
-                    <option value="long rest">Per Long Rest</option>
-                    <option value="day">Per Day</option>
-                    <option value="week">Per Week</option>
+                    <option value="long rest">Long Rest</option>
+                    <option value="short rest">Short Rest</option>
+                    <option value="dawn">Dawn</option>
+                    <option value="initiative">Initiative</option>
+                    <option value="turn">Turn</option>
+                    <option value="round">Round</option>
+                    <option value="encounter">Encounter</option>
+                    <option value="day">Day</option>
+                    <option value="week">Week</option>
+                    <option value="special">Special</option>
+                    <option value="none">None</option>
                   </select>
+                </div>
+
+                <!-- Preview -->
+                <div class="bg-blue-50 p-2 rounded text-xs">
+                  <strong>Preview:</strong> 
+                  <span v-if="maxUsesType === 'fixed'">
+                    {{ formData.resource.baseAmount || 0 }} use{{ (formData.resource.baseAmount || 0) !== 1 ? 's' : '' }}
+                  </span>
+                  <span v-else-if="maxUsesType === 'pb'">
+                    Proficiency Bonus uses
+                  </span>
+                  <span v-else-if="maxUsesType === 'level'">
+                    Character Level uses
+                  </span>
+                  <span v-else>
+                    {{ maxUsesType.toUpperCase() }} modifier uses
+                  </span>
+                  per {{ formData.resource.resetPer || 'long rest' }}
                 </div>
               </div>
             </div>
