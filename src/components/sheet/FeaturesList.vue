@@ -1,10 +1,17 @@
 <script setup>
 import { useCharacterStore } from '@/stores/character'
-import { watch, computed } from 'vue'
+import { watch, computed, ref } from 'vue'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
+import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 
 const store = useCharacterStore()
+
+// Modal state
+const isModalOpen = ref(false)
+const editingFeature = ref({})
+const isNewFeature = ref(false)
+const editingIndex = ref(-1)
 
 const props = defineProps({
   features: {
@@ -41,20 +48,62 @@ const editableFeatures = computed({
 })
 
 function addFeature() {
-  const newFeature = {
-    title: 'New Feature',
-    desc: 'Enter feature description...',
-    key: false,
-    casterType: null,
-  }
+  editingFeature.value = {}
+  isNewFeature.value = true
+  editingIndex.value = -1
+  isModalOpen.value = true
+}
 
-  if (props.title === 'Key Features') {
+function editFeature(feature, index) {
+  editingFeature.value = { ...feature }
+  isNewFeature.value = false
+  editingIndex.value = index
+  isModalOpen.value = true
+}
+
+function handleModalSave(featureData) {
+  if (isNewFeature.value) {
+    // Add new feature
+    if (props.title === 'Key Features') {
+      featureData.key = true
+    }
+    
     store.currentCharacterData.features = store.currentCharacterData.features || []
-    store.currentCharacterData.features.push({ ...newFeature, key: true })
+    store.currentCharacterData.features.push(featureData)
   } else {
-    store.currentCharacterData.features = store.currentCharacterData.features || []
-    store.currentCharacterData.features.push(newFeature)
+    // Update existing feature
+    if (props.title === 'Key Features') {
+      const allFeatures = store.currentCharacterData.features || []
+      const keyFeatures = allFeatures.filter((f) => f.key)
+      const featureToUpdate = keyFeatures[editingIndex.value]
+      const featureIndex = allFeatures.findIndex((f) => f === featureToUpdate)
+      if (featureIndex !== -1) {
+        allFeatures[featureIndex] = { ...featureData, key: true }
+      }
+    } else {
+      const allFeatures = store.currentCharacterData.features || []
+      const otherFeatures = allFeatures.filter((f) => !f.key)
+      const featureToUpdate = otherFeatures[editingIndex.value]
+      const featureIndex = allFeatures.findIndex((f) => f === featureToUpdate)
+      if (featureIndex !== -1) {
+        allFeatures[featureIndex] = featureData
+      }
+    }
   }
+  
+  isModalOpen.value = false
+  store.recalculateAbilityScores()
+}
+
+function handleModalCancel() {
+  isModalOpen.value = false
+}
+
+function handleModalDelete() {
+  if (!isNewFeature.value) {
+    removeFeature(editingIndex.value)
+  }
+  isModalOpen.value = false
 }
 
 function removeFeature(index) {
@@ -130,14 +179,21 @@ watch(
           <div class="flex items-start justify-between" :class="{ 'ml-6': store.isEditing }">
             <div class="flex-grow">
               <div class="flex items-center flex-wrap">
-                <input
-                  v-if="store.isEditing"
-                  v-model="feature.title"
-                  class="feature-title edit-mode-input font-bold"
-                  placeholder="Feature name"
-                />
-                <p v-else class="feature-title">{{ feature.title }}</p>
-                <div v-if="feature.uses" class="usage-tracker ml-3">
+                <p class="feature-title">{{ feature.title }}</p>
+                <!-- Resource usage display - using new schema format -->
+                <div v-if="feature.resource" class="usage-tracker ml-3">
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-for="n in store.getFeatureMaxUses(feature)"
+                      :key="n"
+                      type="checkbox"
+                      class="usage-box"
+                    />
+                    <span class="text-xs italic text-gray-500">per {{ feature.resource.resetPer }}</span>
+                  </div>
+                </div>
+                <!-- Legacy uses format for backward compatibility -->
+                <div v-else-if="feature.uses" class="usage-tracker ml-3">
                   <div class="flex items-center gap-2">
                     <input
                       v-for="n in feature.uses.total"
@@ -149,54 +205,30 @@ watch(
                   </div>
                 </div>
               </div>
-              <textarea
-                v-if="store.isEditing"
-                v-model="feature.desc"
-                class="feature-desc edit-mode-textarea w-full mt-2"
-                placeholder="Feature description"
-                rows="2"
-              ></textarea>
-
-              <!-- Edit mode options -->
-              <div v-if="store.isEditing" class="grid grid-cols-2 gap-3 mt-2 text-xs">
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="feature.key"
-                    type="checkbox"
-                    class="usage-box"
-                    :id="`key-${index}`"
-                  />
-                  <label :for="`key-${index}`" class="text-xs">
-                    Key Feature (show on front page)
-                  </label>
-                </div>
-
-                <div>
-                  <label class="block text-xs mb-1">Spellcasting Type:</label>
-                  <select v-model="feature.casterType" class="edit-mode-select w-full">
-                    <option :value="null">No Spellcasting</option>
-                    <option value="full">Full Caster</option>
-                    <option value="half">Half Caster</option>
-                    <option value="third">Third Caster</option>
-                    <option value="pact">Pact Magic</option>
-                  </select>
-                </div>
-              </div>
 
               <p
-                v-else
                 class="feature-desc"
                 v-html="feature.desc.replace(/<li>/g, '<li class=\'list-disc list-inside\'>')"
               ></p>
             </div>
-            <button
-              v-if="store.isEditing && props.editable"
-              @click="removeFeature(index)"
-              class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700"
-              title="Remove Feature"
-            >
-              <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
-            </button>
+            
+            <!-- Action buttons -->
+            <div v-if="store.isEditing && props.editable" class="flex items-center gap-1 ml-2">
+              <button
+                @click="editFeature(feature, index)"
+                class="icon-button text-xs p-1 bg-blue-600 hover:bg-blue-700"
+                title="Edit Feature"
+              >
+                <span v-html="feather.icons.edit2.toSvg({ width: 12, height: 12 })"></span>
+              </button>
+              <button
+                @click="removeFeature(index)"
+                class="icon-button text-xs p-1 bg-red-600 hover:bg-red-700"
+                title="Remove Feature"
+              >
+                <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
+              </button>
+            </div>
           </div>
         </div>
       </template>
@@ -209,6 +241,16 @@ watch(
       No {{ props.title.toLowerCase() }} defined. Click the + button to add
       {{ props.title.toLowerCase() }}.
     </div>
+
+    <!-- Feature Editor Modal -->
+    <FeatureEditorModal
+      :is-open="isModalOpen"
+      :feature="editingFeature"
+      :is-new="isNewFeature"
+      @save="handleModalSave"
+      @cancel="handleModalCancel"
+      @delete="handleModalDelete"
+    />
   </section>
 </template>
 
