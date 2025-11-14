@@ -213,13 +213,21 @@ export const CLASSES = {
       {
         title: 'Rage',
         desc: 'As a bonus action, you can enter a rage. You gain advantage on Strength checks and saves, +2 damage on melee Strength attacks, and resistance to bludgeoning, piercing, and slashing damage. Your rage lasts for 1 minute.',
-        uses: { total: 2, per: 'Long Rest' },
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Bonus Action',
+        resource: {
+          resourceType: 'static',
+          value: 2,
+          reset: 'Long Rest'
+        }
       },
       {
         title: 'Unarmored Defense (Barbarian)',
         desc: 'While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier.',
-        key: false,
+        key: true,
+        featureType: 'Class Feature',
+        actionType: 'Passive'
       },
     ],
   },
@@ -234,12 +242,20 @@ export const CLASSES = {
         desc: 'You can cast bard spells you know. Charisma is your spellcasting ability.',
         casterType: 'full',
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Action'
       },
       {
         title: 'Bardic Inspiration',
         desc: 'As a bonus action, you can give one creature a d6 inspiration die. Once within 10 minutes, the creature can roll the die and add the number to one ability check, attack roll, or saving throw.',
-        uses: { total: 3, per: 'Long Rest' },
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Bonus Action',
+        resource: {
+          resourceType: 'scaling',
+          scalingStat: 'cha',
+          reset: 'Long Rest'
+        }
       },
     ],
   },
@@ -254,12 +270,20 @@ export const CLASSES = {
         desc: 'You can cast cleric spells you have prepared. Wisdom is your spellcasting ability.',
         casterType: 'full',
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Action'
       },
       {
         title: 'Channel Divinity',
         desc: 'You can channel divine energy to fuel magical effects. You start with one effect: Turn Undead.',
-        uses: { total: 1, per: 'Short Rest' },
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Action',
+        resource: {
+          resourceType: 'static',
+          value: 1,
+          reset: 'Short Rest'
+        }
       },
     ],
   },
@@ -275,12 +299,20 @@ export const CLASSES = {
         desc: 'You can cast druid spells you have prepared. Wisdom is your spellcasting ability.',
         casterType: 'full',
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Action'
       },
       {
         title: 'Wild Shape',
         desc: 'As an action, you can magically assume the shape of a beast you have seen before. You can use this feature twice.',
-        uses: { total: 2, per: 'Short Rest' },
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Action',
+        resource: {
+          resourceType: 'static',
+          value: 2,
+          reset: 'Short Rest'
+        }
       },
     ],
   },
@@ -293,8 +325,14 @@ export const CLASSES = {
       {
         title: 'Second Wind',
         desc: 'On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level.',
-        uses: { total: 1, per: 'Short Rest' },
         key: true,
+        featureType: 'Class Feature',
+        actionType: 'Bonus Action',
+        resource: {
+          resourceType: 'static',
+          value: 1,
+          reset: 'Short Rest'
+        }
       },
     ],
   },
@@ -563,11 +601,20 @@ export const SPECIES = {
         title: 'Adrenaline Rush',
         desc: 'As a bonus action, you can move up to your Speed toward an enemy of your choice that you can see or hear. You must end this move closer to the enemy than you started.',
         key: true,
+        featureType: 'Species Trait',
+        actionType: 'Bonus Action'
       },
       {
         title: 'Relentless Endurance',
-        desc: 'When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can’t use this feature again until you finish a long rest.',
-        key: false,
+        desc: 'When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can\'t use this feature again until you finish a long rest.',
+        key: true,
+        featureType: 'Species Trait',
+        actionType: 'Free Action',
+        resource: {
+          resourceType: 'static',
+          value: 1,
+          reset: 'Long Rest'
+        }
       },
     ],
   },
@@ -626,7 +673,14 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Magic Initiate (Cleric)',
       desc: 'You learn two cantrips and one 1st-level spell from the Cleric spell list. You can cast the 1st-level spell once per long rest without a spell slot.',
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Action',
+      resource: {
+        resourceType: 'static',
+        value: 1,
+        reset: 'Long Rest'
+      }
     },
   },
   Artisan: {
@@ -638,6 +692,8 @@ export const BACKGROUNDS = {
       title: 'Crafter',
       desc: "You gain proficiency with three different types of artisan's tools of your choice.",
       key: false,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Charlatan: {
@@ -648,7 +704,9 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Alert',
       desc: "You gain a +5 bonus to initiative and can't be surprised while you are conscious.",
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Criminal: {
@@ -658,7 +716,9 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Alert',
       desc: "You gain a +5 bonus to initiative and can't be surprised while you are conscious.",
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Entertainer: {
@@ -670,6 +730,8 @@ export const BACKGROUNDS = {
       title: 'Musician',
       desc: 'You gain proficiency with three musical instruments of your choice.',
       key: false,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Farmer: {
@@ -679,7 +741,9 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Tough',
       desc: 'Your hit point maximum increases by an amount equal to twice your level.',
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Guard: {
@@ -690,7 +754,9 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Alert',
       desc: "You gain a +5 bonus to initiative and can't be surprised while you are conscious.",
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Guide: {
@@ -701,7 +767,14 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Magic Initiate (Druid)',
       desc: 'You learn two cantrips and one 1st-level spell from the Druid spell list. You can cast the 1st-level spell once per long rest without a spell slot.',
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Action',
+      resource: {
+        resourceType: 'static',
+        value: 1,
+        reset: 'Long Rest'
+      }
     },
   },
   Hermit: {
@@ -712,7 +785,14 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Magic Initiate (Wizard)',
       desc: 'You learn two cantrips and one 1st-level spell from the Wizard spell list. You can cast the 1st-level spell once per long rest without a spell slot.',
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Action',
+      resource: {
+        resourceType: 'static',
+        value: 1,
+        reset: 'Long Rest'
+      }
     },
   },
   Merchant: {
@@ -722,8 +802,15 @@ export const BACKGROUNDS = {
     abilityScoreIncrease: ['con', 'int', 'cha'],
     feature: {
       title: 'Lucky',
-      desc: 'When you roll a 1 on a d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll.',
-      key: false,
+      desc: 'You have 3 luck points. Whenever you make a d20 roll, you can spend 1 luck point to roll an additional d20 and choose which result to use. You regain all expended luck points when you finish a long rest.',
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Free Action',
+      resource: {
+        resourceType: 'static',
+        value: 3,
+        reset: 'Long Rest'
+      }
     },
   },
   Noble: {
@@ -735,6 +822,8 @@ export const BACKGROUNDS = {
       title: 'Skilled',
       desc: 'You gain proficiency in any combination of three skills or tools of your choice.',
       key: false,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Sage: {
@@ -745,7 +834,14 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Magic Initiate (Wizard)',
       desc: 'You learn two cantrips and one 1st-level spell from the Wizard spell list. You can cast the 1st-level spell once per long rest without a spell slot.',
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Action',
+      resource: {
+        resourceType: 'static',
+        value: 1,
+        reset: 'Long Rest'
+      }
     },
   },
   Sailor: {
@@ -756,7 +852,9 @@ export const BACKGROUNDS = {
     feature: {
       title: 'Tough',
       desc: 'Your hit point maximum increases by an amount equal to twice your level.',
-      key: false,
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Scribe: {
@@ -768,6 +866,8 @@ export const BACKGROUNDS = {
       title: 'Skilled',
       desc: 'You gain proficiency in any combination of three skills or tools of your choice.',
       key: false,
+      featureType: 'Background Feature',
+      actionType: 'Passive'
     },
   },
   Soldier: {
@@ -777,8 +877,15 @@ export const BACKGROUNDS = {
     abilityScoreIncrease: ['str', 'con', 'cha'],
     feature: {
       title: 'Savage Attacker',
-      desc: "Once per turn when you roll damage for a melee weapon attack, you can reroll the weapon's damage dice and use either total.",
-      key: false,
+      desc: 'When you take the Attack action and hit with a melee weapon, you can reroll the weapon\'s damage dice and use either total. You can use this benefit a number of times equal to your proficiency bonus per long rest.',
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Free Action',
+      resource: {
+        resourceType: 'scaling',
+        scalingStat: 'pb',
+        reset: 'Long Rest'
+      }
     },
   },
   Urchin: {
@@ -788,8 +895,15 @@ export const BACKGROUNDS = {
     abilityScoreIncrease: ['dex', 'wis', 'cha'],
     feature: {
       title: 'Lucky',
-      desc: 'When you roll a 1 on a d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll.',
-      key: false,
+      desc: 'You have 3 luck points. Whenever you make a d20 roll, you can spend 1 luck point to roll an additional d20 and choose which result to use. You regain all expended luck points when you finish a long rest.',
+      key: true,
+      featureType: 'Background Feature',
+      actionType: 'Free Action',
+      resource: {
+        resourceType: 'static',
+        value: 3,
+        reset: 'Long Rest'
+      }
     },
   },
 }
