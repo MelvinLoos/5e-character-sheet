@@ -168,12 +168,12 @@ const hasResource = computed({
         baseAmount: 1,
         scaling: 'static',
         scalingAbility: 'str',
-        resetPer: 'long rest'
+        resetPer: 'long rest',
       }
     } else {
       formData.resource = null
     }
-  }
+  },
 })
 </script>
 
@@ -275,44 +275,49 @@ const hasResource = computed({
             <label for="has-resource" class="block text-sm font-bold mb-1">Resource Usage:</label>
             <div class="space-y-3">
               <div class="flex items-center gap-2">
-                <input 
-                  id="has-resource" 
-                  v-model="hasResource" 
-                  type="checkbox" 
-                  class="usage-box"
-                />
+                <input id="has-resource" v-model="hasResource" type="checkbox" class="usage-box" />
                 <label for="has-resource" class="text-sm">Has limited uses</label>
               </div>
-              
+
               <div v-if="hasResource" class="space-y-2 ml-6">
                 <!-- Base Amount -->
                 <div>
                   <label for="base-amount" class="block text-xs font-bold mb-1">Base Amount:</label>
-                  <input 
+                  <input
                     id="base-amount"
                     v-model="formData.resource.baseAmount"
-                    type="number" 
+                    type="number"
                     min="1"
                     class="edit-mode-input text-sm w-full"
                     placeholder="1"
                   />
                 </div>
-                
+
                 <!-- Scaling Type -->
                 <div>
                   <label for="scaling-type" class="block text-xs font-bold mb-1">Scaling:</label>
-                  <select id="scaling-type" v-model="formData.resource.scaling" class="edit-mode-select text-sm w-full">
+                  <select
+                    id="scaling-type"
+                    v-model="formData.resource.scaling"
+                    class="edit-mode-select text-sm w-full"
+                  >
                     <option value="static">Static (no scaling)</option>
                     <option value="proficiency">Proficiency Bonus</option>
                     <option value="ability">Ability Modifier</option>
                     <option value="level">Character Level</option>
                   </select>
                 </div>
-                
+
                 <!-- Scaling Ability (only show if scaling by ability) -->
                 <div v-if="formData.resource.scaling === 'ability'">
-                  <label for="scaling-ability" class="block text-xs font-bold mb-1">Scaling Ability:</label>
-                  <select id="scaling-ability" v-model="formData.resource.scalingAbility" class="edit-mode-select text-sm w-full">
+                  <label for="scaling-ability" class="block text-xs font-bold mb-1"
+                    >Scaling Ability:</label
+                  >
+                  <select
+                    id="scaling-ability"
+                    v-model="formData.resource.scalingAbility"
+                    class="edit-mode-select text-sm w-full"
+                  >
                     <option value="str">Strength</option>
                     <option value="dex">Dexterity</option>
                     <option value="con">Constitution</option>
@@ -321,11 +326,15 @@ const hasResource = computed({
                     <option value="cha">Charisma</option>
                   </select>
                 </div>
-                
+
                 <!-- Reset Period -->
                 <div>
                   <label for="reset-per" class="block text-xs font-bold mb-1">Resets:</label>
-                  <select id="reset-per" v-model="formData.resource.resetPer" class="edit-mode-select text-sm w-full">
+                  <select
+                    id="reset-per"
+                    v-model="formData.resource.resetPer"
+                    class="edit-mode-select text-sm w-full"
+                  >
                     <option value="turn">Per Turn</option>
                     <option value="round">Per Round</option>
                     <option value="encounter">Per Encounter</option>
