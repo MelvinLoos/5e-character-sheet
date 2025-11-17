@@ -194,7 +194,7 @@ function removeAttack(index: number) {
               <!-- Display mode -->
               <p v-else-if="attack.weaponMastery || attack.notes" class="text-xs text-gray-600 italic mt-1">
                 <span v-if="attack.weaponMastery" class="font-bold not-italic text-red-800">{{ attack.weaponMastery
-                  }}:</span>
+                }}:</span>
                 {{ attack.notes || '' }}
               </p>
             </div>

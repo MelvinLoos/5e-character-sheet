@@ -10,39 +10,24 @@ const store = useCharacterStore()
     <div v-if="store.isEditing" class="space-y-2">
       <div>
         <strong>Traits:</strong>
-        <textarea
-          v-model="store.currentCharacterData.personality.traits"
-          class="edit-mode-textarea"
-        ></textarea>
+        <textarea v-model="store.currentCharacterData.personality.traits" class="edit-mode-textarea"></textarea>
       </div>
       <div>
         <strong>Ideal:</strong>
-        <textarea
-          v-model="store.currentCharacterData.personality.ideal"
-          class="edit-mode-textarea"
-        ></textarea>
+        <textarea v-model="store.currentCharacterData.personality.ideal" class="edit-mode-textarea"></textarea>
       </div>
       <div>
         <strong>Bond:</strong>
-        <textarea
-          v-model="store.currentCharacterData.personality.bond"
-          class="edit-mode-textarea"
-        ></textarea>
+        <textarea v-model="store.currentCharacterData.personality.bond" class="edit-mode-textarea"></textarea>
       </div>
       <div>
         <strong>Flaw:</strong>
-        <textarea
-          v-model="store.currentCharacterData.personality.flaw"
-          class="edit-mode-textarea"
-        ></textarea>
+        <textarea v-model="store.currentCharacterData.personality.flaw" class="edit-mode-textarea"></textarea>
       </div>
       <div>
         <strong>Notes (optional):</strong>
-        <textarea
-          v-model="store.currentCharacterData.personality.notes"
-          placeholder="Additional personality notes or roleplaying cues..."
-          class="edit-mode-textarea"
-        ></textarea>
+        <textarea v-model="store.currentCharacterData.personality.notes"
+          placeholder="Additional personality notes or roleplaying cues..." class="edit-mode-textarea"></textarea>
       </div>
     </div>
     <div v-else class="space-y-2">

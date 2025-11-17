@@ -65,7 +65,7 @@ export const createBlankCharacter = () => {
     attacks: [],
     features: [...speciesTraits, ...classFeatures, ...backgroundFeature],
     equipment: '',
-  personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
+    personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
     spellcasting: null,
     spells: [],
   }
