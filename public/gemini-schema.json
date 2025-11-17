@@ -48,8 +48,14 @@
       "type": "object",
       "description": "The ability scores selected for the background's +2 and +1 bonuses.",
       "properties": {
-        "plusTwo": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] },
-        "plusOne": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] }
+        "plusTwo": {
+          "type": ["string", "null"],
+          "enum": ["str", "dex", "con", "int", "wis", "cha", null]
+        },
+        "plusOne": {
+          "type": ["string", "null"],
+          "enum": ["str", "dex", "con", "int", "wis", "cha", null]
+        }
       },
       "required": ["plusTwo", "plusOne"]
     },
@@ -141,7 +147,16 @@
           },
           "featureType": {
             "type": "string",
-            "enum": ["Class Feature", "Species Trait", "Background Feature", "Origin Feat", "General Feat", "Fighting Style", "Epic Boon", "Other"],
+            "enum": [
+              "Class Feature",
+              "Species Trait",
+              "Background Feature",
+              "Origin Feat",
+              "General Feat",
+              "Fighting Style",
+              "Epic Boon",
+              "Other"
+            ],
             "default": "Other",
             "description": "What type of feature this is."
           },
@@ -209,9 +224,19 @@
     }
   },
   "required": [
-    "name", "class", "level", "species", "background", 
-    "pointBuyBaseScores", "backgroundBonusSelections", 
-    "proficiencies", "combat", "attacks", "spellcasting", 
-    "features", "personality", "equipment"
+    "name",
+    "class",
+    "level",
+    "species",
+    "background",
+    "pointBuyBaseScores",
+    "backgroundBonusSelections",
+    "proficiencies",
+    "combat",
+    "attacks",
+    "spellcasting",
+    "features",
+    "personality",
+    "equipment"
   ]
 }

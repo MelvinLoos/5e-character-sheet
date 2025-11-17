@@ -29,9 +29,7 @@ const store = useCharacterStore()
         <div class="space-y-6 flex flex-col">
           <AbilityScores />
           <div class="text-center py-2 bg-white/20">
-            <span class="font-bold text-xl block"
-              >{{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}</span
-            >
+            <span class="font-bold text-xl block">{{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}</span>
             <label class="font-fell text-sm text-sheet-red">Proficiency Bonus</label>
           </div>
           <SkillsList />

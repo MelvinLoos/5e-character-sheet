@@ -21,16 +21,13 @@ onMounted(() => {
     <div class="container mx-auto px-4 py-4 max-w-7xl">
       <ControlPanel />
 
-      <div
-        v-if="!store.currentCharacterData"
-        class="text-center p-10 max-w-4xl mx-auto bg-amber-50 rounded shadow-md border border-amber-200"
-      >
+      <div v-if="!store.currentCharacterData"
+        class="text-center p-10 max-w-4xl mx-auto bg-amber-50 rounded shadow-md border border-amber-200">
         <h2 class="font-fell text-2xl">Welcome, Gamemaster!</h2>
         <p class="mt-2">
           Start by creating a
           <button @click="store.handleNewCharacter" class="text-sheet-red font-bold underline">
-            new character</button
-          >, loading one from your library, or using the AI generator.
+            new character</button>, loading one from your library, or using the AI generator.
         </p>
       </div>
 
