@@ -36,6 +36,14 @@ const store = useCharacterStore()
           class="edit-mode-textarea"
         ></textarea>
       </div>
+      <div>
+        <strong>Notes (optional):</strong>
+        <textarea
+          v-model="store.currentCharacterData.personality.notes"
+          placeholder="Additional personality notes or roleplaying cues..."
+          class="edit-mode-textarea"
+        ></textarea>
+      </div>
     </div>
     <div v-else class="space-y-2">
       <p>
@@ -53,6 +61,10 @@ const store = useCharacterStore()
       <p>
         <strong>Flaw:</strong>
         <span class="italic">{{ store.currentCharacterData.personality.flaw }}</span>
+      </p>
+      <p v-if="store.currentCharacterData.personality.notes">
+        <strong>Notes:</strong>
+        <span class="italic">{{ store.currentCharacterData.personality.notes }}</span>
       </p>
     </div>
   </section>

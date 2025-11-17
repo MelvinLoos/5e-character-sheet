@@ -46,6 +46,7 @@ interface CharacterData {
     ideal: string
     bond: string
     flaw: string
+    notes?: string
   }
   spellcasting: any
   spells: any[]
@@ -382,6 +383,7 @@ export const useCharacterStore = defineStore('character', () => {
         ideal: '',
         bond: '',
         flaw: '',
+        notes: '',
       }
     }
 

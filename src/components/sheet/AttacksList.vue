@@ -19,8 +19,12 @@ const editableAttacks = computed({
 function addAttack() {
   const newAttack = {
     name: 'New Attack',
-    atkStat: 'str',
-    dmgStat: 'str',
+    atkStat: '',
+      // when 'custom' is selected, use this manual numeric modifier
+      customAtkValue: 0,
+    dmgStat: '',
+    // when 'custom' is selected for damage, use this manual numeric modifier
+    customDmgValue: 0,
     dmgDie: '1d8',
     dmgBonus: 0,
     type: 'slashing',
@@ -41,63 +45,67 @@ function removeAttack(index: number) {
   <section>
     <div class="flex items-center justify-between mb-3">
       <h2 class="section-header mb-0">Attacks</h2>
-      <button
-        v-if="store.isEditing"
-        @click="addAttack"
-        class="icon-button text-xs p-1"
-        title="Add Attack"
-      >
+      <button v-if="store.isEditing" @click="addAttack" class="icon-button text-xs p-1" title="Add Attack">
         <span v-html="feather.icons.plus.toSvg({ width: 14, height: 14 })"></span>
       </button>
     </div>
-    <div
-      v-if="store.currentCharacterData.attacks.length === 0"
-      class="italic text-center text-gray-500"
-    >
+    <div v-if="store.currentCharacterData.attacks.length === 0" class="italic text-center text-gray-500">
       No attacks defined.
     </div>
 
-    <draggable
-      v-else
-      v-model="editableAttacks"
-      item-key="name"
-      tag="div"
-      class="space-y-3"
-      :disabled="!store.isEditing"
-      handle=".attack-drag-handle"
-      ghost-class="ghost-item"
-      chosen-class="chosen-item"
-      drag-class="drag-item"
-    >
+    <draggable v-else v-model="editableAttacks" item-key="name" tag="div" class="space-y-3" :disabled="!store.isEditing"
+      handle=".attack-drag-handle" ghost-class="ghost-item" chosen-class="chosen-item" drag-class="drag-item">
       <template #item="{ element: attack, index }">
         <div class="attack-box relative">
           <!-- Drag handle - only show in edit mode -->
-          <div
-            v-if="store.isEditing"
+          <div v-if="store.isEditing"
             class="attack-drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
-            title="Drag to reorder"
-          >
+            title="Drag to reorder">
             <span v-html="feather.icons['move'].toSvg({ width: 16, height: 16 })"></span>
           </div>
 
           <div class="flex justify-between items-start" :class="{ 'ml-6': store.isEditing }">
             <div class="flex-grow">
               <div class="flex justify-between items-baseline flex-wrap">
-                <input
-                  v-if="store.isEditing"
-                  v-model="attack.name"
-                  class="edit-mode-input font-bold text-base"
-                  placeholder="Attack name"
-                />
+                <input v-if="store.isEditing" v-model="attack.name" class="edit-mode-input font-bold text-base"
+                  placeholder="Attack name" />
                 <strong v-else>{{ attack.name }}:</strong>
                 <span class="text-right text-sm whitespace-nowrap">
-                  <strong>Atk:</strong>
-                  {{ store.abilityMods[attack.atkStat] + store.profBonus >= 0 ? '+' : ''
-                  }}{{ store.abilityMods[attack.atkStat] + store.profBonus }} |
-                  <strong>Dmg:</strong> {{ attack.dmgDie
-                  }}{{ store.abilityMods[attack.dmgStat] + (attack.dmgBonus || 0) >= 0 ? '+' : ''
-                  }}{{ store.abilityMods[attack.dmgStat] + (attack.dmgBonus || 0) }}
-                  {{ attack.type }}
+                  <template v-if="attack.atkStat">
+                    <template v-if="attack.atkStat === 'custom'">
+                      <strong>Atk:</strong>
+                      {{ attack.customAtkValue >= 0 ? '+' + attack.customAtkValue : attack.customAtkValue }} |
+                    </template>
+                    <template v-else>
+                      <strong>Atk:</strong>
+                      {{ ((store.abilityMods[attack.atkStat] ?? 0) + store.profBonus) >= 0 ? '+' : '' }}{{
+                        (store.abilityMods[attack.atkStat] ?? 0) + store.profBonus
+                      }} |
+                    </template>
+                  </template>
+                  <template v-else>
+                    <!-- No attack modifier selected - show 0 per request -->
+                    <strong>Atk:</strong> 0 |
+                  </template>
+
+                  <strong v-if="attack.dmgDie">Dmg:</strong>
+                  <template v-if="attack.dmgStat">
+                    <template v-if="attack.dmgStat === 'custom'">
+                      {{ ((attack.customDmgValue || 0) + (attack.dmgBonus || 0)) >= 0 ? '+' : '' }}{{
+                        (attack.customDmgValue || 0) + (attack.dmgBonus || 0)
+                      }}
+                    </template>
+                    <template v-else>
+                      {{ ((store.abilityMods[attack.dmgStat] ?? 0) + (attack.dmgBonus || 0)) >= 0 ? '+' : '' }}{{
+                        (store.abilityMods[attack.dmgStat] ?? 0) + (attack.dmgBonus || 0)
+                      }}
+                    </template>
+                  </template>
+                  <template v-else>
+                    {{ attack.dmgBonus ? (attack.dmgBonus >= 0 ? '+' + attack.dmgBonus : attack.dmgBonus) : '' }}
+                  </template>
+
+                  {{ attack.dmgDie }} {{ attack.type }}
                 </span>
               </div>
 
@@ -106,6 +114,8 @@ function removeAttack(index: number) {
                 <div>
                   <label class="block text-xs">Attack Stat:</label>
                   <select v-model="attack.atkStat" class="edit-mode-select w-full">
+                    <option value="">None</option>
+                    <option value="custom">Custom</option>
                     <option value="str">Strength</option>
                     <option value="dex">Dexterity</option>
                     <option value="con">Constitution</option>
@@ -113,10 +123,17 @@ function removeAttack(index: number) {
                     <option value="wis">Wisdom</option>
                     <option value="cha">Charisma</option>
                   </select>
+                  <div v-if="attack.atkStat === 'custom'" class="mt-2">
+                    <label class="block text-xs">Custom Attack Modifier:</label>
+                    <input v-model.number="attack.customAtkValue" type="number" class="edit-mode-input w-full"
+                      placeholder="e.g., 2" />
+                  </div>
                 </div>
                 <div>
                   <label class="block text-xs">Damage Stat:</label>
                   <select v-model="attack.dmgStat" class="edit-mode-select w-full">
+                    <option value="">None</option>
+                    <option value="custom">Custom</option>
                     <option value="str">Strength</option>
                     <option value="dex">Dexterity</option>
                     <option value="con">Constitution</option>
@@ -124,6 +141,11 @@ function removeAttack(index: number) {
                     <option value="wis">Wisdom</option>
                     <option value="cha">Charisma</option>
                   </select>
+                  <div v-if="attack.dmgStat === 'custom'" class="mt-2">
+                    <label class="block text-xs">Custom Damage Modifier:</label>
+                    <input v-model.number="attack.customDmgValue" type="number" class="edit-mode-input w-full"
+                      placeholder="e.g., 1" />
+                  </div>
                 </div>
                 <div>
                   <label class="block text-xs">Damage Die:</label>
@@ -149,40 +171,25 @@ function removeAttack(index: number) {
                 </div>
                 <div class="col-span-2">
                   <label class="block text-xs">Weapon Mastery:</label>
-                  <input
-                    v-model="attack.weaponMastery"
-                    class="edit-mode-input w-full"
-                    placeholder="e.g., Nick, Push, etc."
-                  />
+                  <input v-model="attack.weaponMastery" class="edit-mode-input w-full"
+                    placeholder="e.g., Nick, Push, etc." />
                 </div>
                 <div class="col-span-2">
                   <label class="block text-xs">Notes:</label>
-                  <textarea
-                    v-model="attack.notes"
-                    class="edit-mode-textarea w-full"
-                    placeholder="Additional notes..."
-                    rows="2"
-                  ></textarea>
+                  <textarea v-model="attack.notes" class="edit-mode-textarea w-full" placeholder="Additional notes..."
+                    rows="2"></textarea>
                 </div>
               </div>
 
               <!-- Display mode -->
-              <p
-                v-else-if="attack.weaponMastery || attack.notes"
-                class="text-xs text-gray-600 italic mt-1"
-              >
-                <span v-if="attack.weaponMastery" class="font-bold not-italic text-red-800"
-                  >{{ attack.weaponMastery }}:</span
-                >
+              <p v-else-if="attack.weaponMastery || attack.notes" class="text-xs text-gray-600 italic mt-1">
+                <span v-if="attack.weaponMastery" class="font-bold not-italic text-red-800">{{ attack.weaponMastery
+                }}:</span>
                 {{ attack.notes || '' }}
               </p>
             </div>
-            <button
-              v-if="store.isEditing"
-              @click="removeAttack(index)"
-              class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700"
-              title="Remove Attack"
-            >
+            <button v-if="store.isEditing" @click="removeAttack(index)"
+              class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700" title="Remove Attack">
               <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
             </button>
           </div>
