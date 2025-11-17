@@ -6,10 +6,19 @@ import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
 
+function generateId() {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
+}
+
 // Computed property for draggable attacks
 const editableAttacks = computed({
   get() {
-    return store.currentCharacterData.attacks || []
+    const arr = store.currentCharacterData.attacks || []
+    // ensure each attack has a stable id to avoid re-keying while editing
+    for (const a of arr) {
+      if (!a.id) a.id = generateId()
+    }
+    return arr
   },
   set(value) {
     store.currentCharacterData.attacks = value
@@ -18,10 +27,11 @@ const editableAttacks = computed({
 
 function addAttack() {
   const newAttack = {
+    id: generateId(),
     name: 'New Attack',
     atkStat: '',
-      // when 'custom' is selected, use this manual numeric modifier
-      customAtkValue: 0,
+    // when 'custom' is selected, use this manual numeric modifier
+    customAtkValue: 0,
     dmgStat: '',
     // when 'custom' is selected for damage, use this manual numeric modifier
     customDmgValue: 0,
@@ -53,7 +63,7 @@ function removeAttack(index: number) {
       No attacks defined.
     </div>
 
-    <draggable v-else v-model="editableAttacks" item-key="name" tag="div" class="space-y-3" :disabled="!store.isEditing"
+    <draggable v-else v-model="editableAttacks" item-key="id" tag="div" class="space-y-3" :disabled="!store.isEditing"
       handle=".attack-drag-handle" ghost-class="ghost-item" chosen-class="chosen-item" drag-class="drag-item">
       <template #item="{ element: attack, index }">
         <div class="attack-box relative">
@@ -184,7 +194,7 @@ function removeAttack(index: number) {
               <!-- Display mode -->
               <p v-else-if="attack.weaponMastery || attack.notes" class="text-xs text-gray-600 italic mt-1">
                 <span v-if="attack.weaponMastery" class="font-bold not-italic text-red-800">{{ attack.weaponMastery
-                }}:</span>
+                  }}:</span>
                 {{ attack.notes || '' }}
               </p>
             </div>

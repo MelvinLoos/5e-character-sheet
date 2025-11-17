@@ -5,6 +5,10 @@ import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
 
+function generateId() {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
+}
+
 // Define local Feature interface
 interface Feature {
   casterType?: string
@@ -42,7 +46,11 @@ const spellSlots = computed(() => {
 // Computed property for draggable spells
 const editableSpells = computed({
   get() {
-    return store.currentCharacterData.spells || []
+    const arr = store.currentCharacterData.spells || []
+    for (const s of arr) {
+      if (!s.id) s.id = generateId()
+    }
+    return arr
   },
   set(value) {
     store.currentCharacterData.spells = value
@@ -54,6 +62,7 @@ function addSpell() {
   if (!hasSpellcasting.value) return
 
   const newSpell = {
+    id: generateId(),
     name: 'New Spell',
     level: 1,
     desc: 'Enter spell description...',
@@ -127,7 +136,7 @@ function removeSpell(index: number) {
         <draggable
           v-else
           v-model="editableSpells"
-          item-key="name"
+          item-key="id"
           tag="div"
           class="space-y-3"
           :disabled="!store.isEditing"
