@@ -43,6 +43,9 @@ interface FeatureFormData {
   resource: ResourceData | null
   uses: UsesData | null
   casterType: string | null
+  // For feats that grant individual spells (no full spellcasting)
+  grantsSpells?: boolean
+  grantedSpellLevels?: number[]
 }
 
 // Form data - reactive copy of the feature
@@ -55,6 +58,8 @@ const formData = reactive<FeatureFormData>({
   resource: null,
   uses: null,
   casterType: null,
+  grantsSpells: false,
+  grantedSpellLevels: [],
 })
 
 // Validation state
@@ -96,6 +101,8 @@ watch(
         resource: newFeature.resource ? { ...newFeature.resource } : null,
         uses: newFeature.uses || null,
         casterType: newFeature.casterType || null,
+        grantsSpells: newFeature.grantsSpells || false,
+        grantedSpellLevels: newFeature.grantedSpellLevels ? [...newFeature.grantedSpellLevels] : [],
       })
     } else if (props.isNew) {
       // Reset form for new feature
@@ -153,6 +160,15 @@ function handleSave() {
   // Keep legacy uses for backward compatibility
   if (formData.uses) {
     cleanedFeature.uses = { ...formData.uses }
+  }
+
+  // Include grantsSpells and grantedSpellLevels when relevant
+  if (formData.grantsSpells) {
+    cleanedFeature.grantsSpells = true
+    cleanedFeature.grantedSpellLevels = formData.grantedSpellLevels ? [...formData.grantedSpellLevels] : []
+  } else {
+    cleanedFeature.grantsSpells = false
+    cleanedFeature.grantedSpellLevels = []
   }
 
   emit('save', cleanedFeature)
@@ -288,10 +304,7 @@ const baseAmount = computed({
       </div>
 
       <!-- Error Messages -->
-      <div
-        v-if="errors.length > 0"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
-      >
+      <div v-if="errors.length > 0" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
         <ul class="list-disc list-inside">
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>
@@ -305,21 +318,14 @@ const baseAmount = computed({
           <div class="flex items-center gap-4">
             <div class="flex-grow">
               <label for="feature-title" class="block text-sm font-bold mb-1">Feature Title:</label>
-              <input
-                id="feature-title"
-                v-model="formData.title"
-                type="text"
-                class="edit-mode-input"
-                placeholder="Enter feature name"
-              />
+              <input id="feature-title" v-model="formData.title" type="text" class="edit-mode-input"
+                placeholder="Enter feature name" />
             </div>
             <div class="flex items-center gap-2 mt-6">
               <input id="key-feature" v-model="formData.key" type="checkbox" class="usage-box" />
               <label for="key-feature" class="text-sm font-bold">Key Feature</label>
               <button class="info-button" title="Key features appear on the front page">
-                <span
-                  v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"
-                ></span>
+                <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"></span>
               </button>
             </div>
           </div>
@@ -327,13 +333,8 @@ const baseAmount = computed({
           <!-- Description -->
           <div>
             <label for="feature-desc" class="block text-sm font-bold mb-1">Description:</label>
-            <textarea
-              id="feature-desc"
-              v-model="formData.desc"
-              class="edit-mode-textarea"
-              rows="6"
-              placeholder="Describe what this feature does..."
-            ></textarea>
+            <textarea id="feature-desc" v-model="formData.desc" class="edit-mode-textarea" rows="6"
+              placeholder="Describe what this feature does..."></textarea>
           </div>
         </div>
 
@@ -365,14 +366,31 @@ const baseAmount = computed({
           <div>
             <label for="caster-type" class="block text-sm font-bold mb-1">Spellcasting:</label>
             <select id="caster-type" v-model="formData.casterType" class="edit-mode-select">
-              <option
-                v-for="(type, index) in casterTypes"
-                :key="`caster-${index}`"
-                :value="type.value"
-              >
+              <option v-for="(type, index) in casterTypes" :key="`caster-${index}`" :value="type.value">
                 {{ type.label }}
               </option>
             </select>
+          </div>
+
+          <!-- Grants Spells (for feats that provide specific spells but not full casting) -->
+          <div>
+            <label class="block text-sm font-bold mb-1">Grant Spells:</label>
+            <div class="flex items-center gap-2">
+              <input id="grants-spells" v-model="formData.grantsSpells" type="checkbox" class="usage-box" />
+              <label for="grants-spells" class="text-sm">This feature grants specific spells (no full
+                spellcasting)</label>
+            </div>
+
+            <div v-if="formData.grantsSpells" class="mt-2 ml-4 text-xs">
+              <label class="block text-xs font-bold mb-1">Granted Spell Levels</label>
+              <div class="flex flex-wrap gap-2">
+                <label v-for="lvl in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="lvl" class="inline-flex items-center gap-1">
+                  <input type="checkbox" :value="lvl" v-model="formData.grantedSpellLevels" />
+                  <span>{{ lvl === 0 ? 'Cantrip (0)' : 'Level ' + lvl }}</span>
+                </label>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Select one or more spell levels granted by this feature.</p>
+            </div>
           </div>
 
           <!-- Resource Usage -->
@@ -388,11 +406,7 @@ const baseAmount = computed({
                 <!-- Max Uses (Hybrid Input) -->
                 <div>
                   <label for="max-uses-type" class="block text-xs font-bold mb-1">Max Uses:</label>
-                  <select
-                    id="max-uses-type"
-                    v-model="maxUsesType"
-                    class="edit-mode-select text-sm w-full"
-                  >
+                  <select id="max-uses-type" v-model="maxUsesType" class="edit-mode-select text-sm w-full">
                     <option value="fixed">Fixed Value</option>
                     <option value="pb">Equal to Proficiency Bonus</option>
                     <option value="str">Equal to STR Modifier</option>
@@ -407,27 +421,16 @@ const baseAmount = computed({
 
                 <!-- Manual Input (only show if "Fixed Value" selected) -->
                 <div v-if="maxUsesType === 'fixed'">
-                  <label for="fixed-amount" class="block text-xs font-bold mb-1"
-                    >Enter Amount:</label
-                  >
-                  <input
-                    id="fixed-amount"
-                    v-model="baseAmount"
-                    type="number"
-                    min="1"
-                    class="edit-mode-input text-sm w-full"
-                    placeholder="Enter number of uses"
-                  />
+                  <label for="fixed-amount" class="block text-xs font-bold mb-1">Enter Amount:</label>
+                  <input id="fixed-amount" v-model="baseAmount" type="number" min="1"
+                    class="edit-mode-input text-sm w-full" placeholder="Enter number of uses" />
                 </div>
 
                 <!-- Reset Condition -->
                 <div>
                   <label for="reset-condition" class="block text-xs font-bold mb-1">Resets:</label>
-                  <select
-                    id="reset-condition"
-                    v-model="formData.resource!.reset"
-                    class="edit-mode-select text-sm w-full"
-                  >
+                  <select id="reset-condition" v-model="formData.resource!.reset"
+                    class="edit-mode-select text-sm w-full">
                     <option value="long rest">Long Rest</option>
                     <option value="short rest">Short Rest</option>
                     <option value="dawn">Dawn</option>
@@ -462,11 +465,7 @@ const baseAmount = computed({
       <!-- Modal Actions -->
       <div class="flex items-center justify-between mt-8 pt-4 border-t border-sheet-border">
         <div>
-          <button
-            v-if="!isNew"
-            @click="handleDelete"
-            class="icon-button bg-red-600 text-white hover:bg-red-700"
-          >
+          <button v-if="!isNew" @click="handleDelete" class="icon-button bg-red-600 text-white hover:bg-red-700">
             <span v-html="feather.icons?.trash?.toSvg({ width: 16, height: 16 })"></span>
             Delete
           </button>
@@ -476,10 +475,7 @@ const baseAmount = computed({
             <span v-html="feather.icons?.x?.toSvg({ width: 16, height: 16 })"></span>
             Cancel
           </button>
-          <button
-            @click="handleSave"
-            class="icon-button bg-green-600 text-white hover:bg-green-700"
-          >
+          <button @click="handleSave" class="icon-button bg-green-600 text-white hover:bg-green-700">
             <span v-html="feather.icons?.save?.toSvg({ width: 16, height: 16 })"></span>
             {{ isNew ? 'Add Feature' : 'Save Changes' }}
           </button>

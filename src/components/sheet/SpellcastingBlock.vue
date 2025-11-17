@@ -14,33 +14,63 @@ interface Feature {
   casterType?: string
   title?: string
   description?: string
+  grantsSpells?: boolean
+  grantedSpellLevels?: number[]
   [key: string]: unknown
 }
 
 const store = useCharacterStore()
 
-// Check if character has spellcasting - only show when casterType is not null and not 'none'
+// Check if character has spellcasting - show when casterType is set OR when any feature grants spells
 const hasSpellcasting = computed(() => {
   const features = store.currentCharacterData?.features || []
-  return features.some((f: Feature) => f.casterType && f.casterType !== 'none')
+  const hasFullCaster = features.some((f: Feature) => f.casterType && f.casterType !== 'none')
+  const hasGranted = features.some((f: Feature) => !!f.grantsSpells)
+  return hasFullCaster || hasGranted
 })
 
 // Get the caster type for spell slot calculation
 const casterType = computed(() => {
   const features = store.currentCharacterData?.features || []
   const spellcastingFeature = features.find((f: Feature) => f.casterType && f.casterType !== 'none')
-  return spellcastingFeature?.casterType || null
+  if (spellcastingFeature) return spellcastingFeature.casterType || null
+
+  // If no full caster type but there are granted-spell features, mark as 'granted' (handled in spellSlots)
+  const hasGranted = features.some((f: Feature) => !!f.grantsSpells)
+  return hasGranted ? 'granted' : null
 })
 
 // Calculate spell slots based on caster type and level
 const spellSlots = computed(() => {
-  if (!casterType.value || !store.currentCharacterData?.level) return {}
+  const features = store.currentCharacterData?.features || []
 
-  const level = store.currentCharacterData.level
-  const progression =
-    SPELL_SLOT_PROGRESSION[casterType.value as keyof typeof SPELL_SLOT_PROGRESSION]
+  // Full/half/third/pact casters use the predefined progression
+  if (casterType.value && casterType.value !== 'granted') {
+    if (!store.currentCharacterData?.level) return {}
+    const level = store.currentCharacterData.level
+    const progression = SPELL_SLOT_PROGRESSION[casterType.value as keyof typeof SPELL_SLOT_PROGRESSION]
+    return progression?.[level] || {}
+  }
 
-  return progression?.[level] || {}
+  // If casterType === 'granted' (feats that grant spells), build slots from grantedSpellLevels
+  const grantedLevels = new Set<number>()
+  for (const f of features) {
+    if (f.grantsSpells && Array.isArray(f.grantedSpellLevels)) {
+      for (const lvl of f.grantedSpellLevels || []) {
+        // only consider numeric levels 0-9
+        if (typeof lvl === 'number' && lvl >= 0 && lvl <= 9) grantedLevels.add(lvl)
+      }
+    }
+  }
+
+  // Build an object like { level1: 1, level2: 1 } - give one slot per granted level (exclude cantrips)
+  const slots: Record<string, number> = {}
+  for (const lvl of Array.from(grantedLevels).sort((a, b) => a - b)) {
+    if (lvl === 0) continue // cantrips don't use slots
+    slots[`level${lvl}`] = (slots[`level${lvl}`] || 0) + 1
+  }
+
+  return slots
 })
 
 // Computed property for draggable spells
@@ -90,11 +120,7 @@ function removeSpell(index: number) {
       <div v-if="Object.keys(spellSlots).length > 0" class="mb-4">
         <h3 class="font-bold mb-2">Spell Slots</h3>
         <div class="space-y-1">
-          <div
-            v-for="[level, count] in Object.entries(spellSlots)"
-            :key="level"
-            class="flex items-center"
-          >
+          <div v-for="[level, count] in Object.entries(spellSlots)" :key="level" class="flex items-center">
             <span class="w-20 font-bold">{{ level.replace('level', 'Level ') }}:</span>
             <div class="flex space-x-1">
               <input v-for="n in count" :key="n" type="checkbox" class="spell-slot-box" />
@@ -107,94 +133,53 @@ function removeSpell(index: number) {
       <div v-if="store.currentCharacterData.spells?.length > 0 || hasSpellcasting">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-bold mb-0">Spells</h3>
-          <button
-            v-if="store.isEditing && hasSpellcasting"
-            @click="addSpell"
-            class="icon-button text-xs p-1"
-            title="Add Spell"
-          >
+          <button v-if="store.isEditing && hasSpellcasting" @click="addSpell" class="icon-button text-xs p-1"
+            title="Add Spell">
             <span v-html="feather.icons.plus.toSvg({ width: 14, height: 14 })"></span>
           </button>
         </div>
 
-        <div
-          v-if="
-            store.currentCharacterData.spells?.length === 0 && hasSpellcasting && store.isEditing
-          "
-          class="italic text-center text-gray-500 py-4"
-        >
+        <div v-if="
+          store.currentCharacterData.spells?.length === 0 && hasSpellcasting && store.isEditing
+        " class="italic text-center text-gray-500 py-4">
           No spells known. Click the + button to add spells.
         </div>
 
-        <div
-          v-else-if="store.currentCharacterData.spells?.length === 0"
-          class="italic text-center text-gray-500 py-8"
-        >
+        <div v-else-if="store.currentCharacterData.spells?.length === 0" class="italic text-center text-gray-500 py-8">
           No spells known.
         </div>
 
-        <draggable
-          v-else
-          v-model="editableSpells"
-          item-key="id"
-          tag="div"
-          class="space-y-3"
-          :disabled="!store.isEditing"
-          handle=".spell-drag-handle"
-          ghost-class="ghost-item"
-          chosen-class="chosen-item"
-          drag-class="drag-item"
-        >
+        <draggable v-else v-model="editableSpells" item-key="id" tag="div" class="space-y-3"
+          :disabled="!store.isEditing" handle=".spell-drag-handle" ghost-class="ghost-item" chosen-class="chosen-item"
+          drag-class="drag-item">
           <template #item="{ element: spell, index }">
             <div class="spell-box relative">
               <!-- Drag handle - only show in edit mode -->
-              <div
-                v-if="store.isEditing"
+              <div v-if="store.isEditing"
                 class="spell-drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
-                title="Drag to reorder"
-              >
+                title="Drag to reorder">
                 <span v-html="feather.icons['move'].toSvg({ width: 16, height: 16 })"></span>
               </div>
 
               <div class="flex justify-between items-start" :class="{ 'ml-6': store.isEditing }">
                 <div class="flex-grow">
                   <div class="flex items-baseline flex-wrap gap-2 mb-2">
-                    <input
-                      v-if="store.isEditing"
-                      v-model="spell.name"
-                      class="edit-mode-input font-bold text-base flex-grow"
-                      placeholder="Spell name"
-                    />
+                    <input v-if="store.isEditing" v-model="spell.name"
+                      class="edit-mode-input font-bold text-base flex-grow" placeholder="Spell name" />
                     <p v-else class="spell-title font-bold">{{ spell.name }}</p>
 
-                    <input
-                      v-if="store.isEditing"
-                      v-model.number="spell.level"
-                      type="number"
-                      min="0"
-                      max="9"
-                      class="edit-mode-input w-16 text-xs"
-                      placeholder="Level"
-                    />
+                    <input v-if="store.isEditing" v-model.number="spell.level" type="number" min="0" max="9"
+                      class="edit-mode-input w-16 text-xs" placeholder="Level" />
                     <span v-else class="text-xs font-normal italic">(Level {{ spell.level }})</span>
                   </div>
 
-                  <textarea
-                    v-if="store.isEditing"
-                    v-model="spell.desc"
-                    class="edit-mode-textarea w-full"
-                    placeholder="Spell description"
-                    rows="3"
-                  ></textarea>
+                  <textarea v-if="store.isEditing" v-model="spell.desc" class="edit-mode-textarea w-full"
+                    placeholder="Spell description" rows="3"></textarea>
                   <p v-else class="spell-desc text-sm">{{ spell.desc }}</p>
                 </div>
 
-                <button
-                  v-if="store.isEditing"
-                  @click="removeSpell(index)"
-                  class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700"
-                  title="Remove Spell"
-                >
+                <button v-if="store.isEditing" @click="removeSpell(index)"
+                  class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700" title="Remove Spell">
                   <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
                 </button>
               </div>
