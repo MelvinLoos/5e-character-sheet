@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import SheetControls from './SheetControls.vue'
 import SheetHeader from './sheet/SheetHeader.vue'
@@ -7,10 +8,11 @@ import SkillsList from './sheet/SkillsList.vue'
 import CombatStats from './sheet/CombatStats.vue'
 import SavingThrows from './sheet/SavingThrows.vue'
 import AttacksList from './sheet/AttacksList.vue'
-import FeaturesList from './sheet/FeaturesList.vue'
+// Lazy-load larger/ui-heavy components so initial bundle is smaller
+const FeaturesList = defineAsyncComponent(() => import('./sheet/FeaturesList.vue'))
 import PersonalityBlock from './sheet/PersonalityBlock.vue'
 import EquipmentBlock from './sheet/EquipmentBlock.vue'
-import SpellcastingBlock from './sheet/SpellcastingBlock.vue'
+const SpellcastingBlock = defineAsyncComponent(() => import('./sheet/SpellcastingBlock.vue'))
 import DeathSaves from './sheet/DeathSaves.vue'
 
 const store = useCharacterStore()

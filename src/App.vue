@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import ControlPanel from './components/ControlPanel.vue'
 import CharacterSheet from './components/CharacterSheet.vue'
-import LoadingModal from './components/modals/LoadingModal.vue'
-import ErrorModal from './components/modals/ErrorModal.vue'
-import ShareModal from './components/modals/ShareModal.vue'
+
+// Lazy-load modals to reduce initial bundle size
+const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
+const ErrorModal = defineAsyncComponent(() => import('./components/modals/ErrorModal.vue'))
+const ShareModal = defineAsyncComponent(() => import('./components/modals/ShareModal.vue'))
 
 const store = useCharacterStore()
 
