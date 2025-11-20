@@ -38,8 +38,33 @@ interface CharacterData {
     hp_max: number
     speed: string
   }
-  attacks: any[]
-  features: any[]
+  attacks: Array<{
+    id?: string
+    name: string
+    atkStat?: string | null
+    customAtkValue?: number
+    dmgDie: string
+    dmgStat?: string | null
+    customDmgValue?: number
+    dmgBonus: number
+    type: string
+    notes?: string
+    weaponMastery?: string
+  }>
+  features: Array<{
+    title: string
+    desc: string
+    key?: boolean
+    source?: string
+    featureType?: string
+    actionType?: string
+    uses?: { total: number; per: string } | null
+    resource?: { resourceType: string; value?: number; scalingStat?: string | null; reset?: string } | null
+    casterType?: string | null
+    grantsSpells?: boolean
+    grantedSpellLevels?: number[]
+    [key: string]: unknown
+  }>
   equipment: string
   personality: {
     traits: string
@@ -48,8 +73,8 @@ interface CharacterData {
     flaw: string
     notes?: string
   }
-  spellcasting: any
-  spells: any[]
+  spellcasting: { ability?: string } | null
+  spells: Array<{ name: string; level: number; desc: string; source?: string; school?: string; castingTime?: string; range?: string; components?: string; duration?: string; concentration?: boolean }>
 }
 
 export const useCharacterStore = defineStore('character', () => {

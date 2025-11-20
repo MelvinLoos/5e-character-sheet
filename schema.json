@@ -99,15 +99,16 @@
         "type": "object",
         "properties": {
           "name": { "type": "string" },
-          "atkStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
+          "id": { "type": "string" },
+          "atkStat": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", "custom", null] },
           "dmgDie": { "type": "string", "pattern": "^\\d+d\\d+$", "errorMessage": "Damage die must be in the format 'XdY' (e.g., '1d8')." },
-          "dmgStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
+          "dmgStat": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", "custom", null] },
           "dmgBonus": { "type": "integer", "default": 0 },
           "type": { "type": "string", "description": "Damage type." },
           "notes": { "type": "string" },
           "weaponMastery": { "type": "string" }
         },
-        "required": ["name", "atkStat", "dmgDie", "dmgStat", "type"],
+  "required": ["name", "dmgDie", "type"],
         "errorMessage": {
             "required": {
                 "name": "Attack name is required.",
@@ -128,6 +129,9 @@
           "title": { "type": "string" },
           "desc": { "type": "string" },
           "key": { "type": "boolean", "description": "Display on front page.", "default": false },
+          "source": { "type": "string", "description": "Source book or reference (e.g., PHB, XGE)." },
+          "featureType": { "type": "string", "enum": ["Class Feature", "Species Trait", "Background Feature", "Origin Feat", "General Feat", "Fighting Style", "Epic Boon", "Other"] },
+          "actionType": { "type": "string", "enum": ["Action", "Bonus Action", "Reaction", "Free Action", "Passive", "None"] },
           "uses": {
             "type": ["object", "null"],
             "properties": {
@@ -136,11 +140,22 @@
             },
             "required": ["total", "per"]
           },
+          "resource": {
+            "type": ["object", "null"],
+            "properties": {
+              "resourceType": { "type": "string", "enum": ["static", "scaling"] },
+              "value": { "type": "integer" },
+              "scalingStat": { "type": ["string", "null"], "enum": ["pb", "str", "dex", "con", "int", "wis", "cha", "level", null] },
+              "reset": { "type": "string", "enum": ["Long Rest", "Short Rest", "Dawn", "Initiative", "Turn", "Round", "Encounter", "Day", "Week", "Special", "None"] }
+            }
+          },
           "casterType": {
             "type": ["string", "null"],
             "description": "Specifies spellcasting progression if this feature grants it.",
             "enum": ["full", "half", "third", "pact", "none", null]
-          }
+          },
+          "grantsSpells": { "type": "boolean", "description": "Feature grants specific spells but not full casting." },
+          "grantedSpellLevels": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 9 } }
         },
         "required": ["title", "desc"]
       }
@@ -180,7 +195,14 @@
         "properties": {
           "name": { "type": "string" },
           "level": { "type": "integer", "minimum": 0, "maximum": 9 },
-          "desc": { "type": "string" }
+          "desc": { "type": "string" },
+          "source": { "type": "string" },
+          "school": { "type": "string" },
+          "castingTime": { "type": "string" },
+          "range": { "type": "string" },
+          "components": { "type": "string" },
+          "duration": { "type": "string" },
+          "concentration": { "type": "boolean" }
         },
         "required": ["name", "level", "desc"]
       }
