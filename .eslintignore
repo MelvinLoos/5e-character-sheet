@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.netlify/
+.netlify/functions-serve/
+.netlify/functions/
+.cache/
+.vite/
+coverage/
+.vscode/
+*.log
