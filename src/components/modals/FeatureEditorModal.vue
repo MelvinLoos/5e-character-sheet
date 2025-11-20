@@ -136,41 +136,15 @@ function validateForm() {
   return errors.value.length === 0
 }
 
+import { normalizeFeatureForSave } from '../../utils/featureNormalizer'
+
 // Event handlers
 function handleSave() {
   if (!validateForm()) {
     return
   }
 
-  // Clean up the data before emitting
-  const cleanedFeature: Partial<FeatureFormData> = {
-    title: formData.title.trim(),
-    desc: formData.desc.trim(),
-    key: formData.key,
-    featureType: formData.featureType,
-    actionType: formData.actionType,
-    casterType: formData.casterType,
-  }
-
-  // Only include resource if it exists
-  if (formData.resource) {
-    cleanedFeature.resource = { ...formData.resource }
-  }
-
-  // Keep legacy uses for backward compatibility
-  if (formData.uses) {
-    cleanedFeature.uses = { ...formData.uses }
-  }
-
-  // Include grantsSpells and grantedSpellLevels when relevant
-  if (formData.grantsSpells) {
-    cleanedFeature.grantsSpells = true
-    cleanedFeature.grantedSpellLevels = formData.grantedSpellLevels ? [...formData.grantedSpellLevels] : []
-  } else {
-    cleanedFeature.grantsSpells = false
-    cleanedFeature.grantedSpellLevels = []
-  }
-
+  const cleanedFeature = normalizeFeatureForSave(formData as FeatureFormData)
   emit('save', cleanedFeature)
 }
 
