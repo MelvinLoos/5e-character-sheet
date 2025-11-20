@@ -39,14 +39,30 @@ function normalizeReset(reset?: string | null) {
     .join(' ')
 }
 
-export function normalizeFeatureForSave(formData: FeatureFormData) {
-  const out: any = {
-    title: formData.title?.trim(),
-    desc: formData.desc?.trim(),
+export type FeatureOut = {
+  title: string
+  desc: string
+  key: boolean
+  featureType: string
+  actionType: string
+  casterType: string | null
+  resource?: ResourceData
+  uses?: { total: number; per: string }
+  grantsSpells: boolean
+  grantedSpellLevels: number[]
+  [key: string]: unknown
+}
+
+export function normalizeFeatureForSave(formData: FeatureFormData): FeatureOut {
+  const out: FeatureOut = {
+    title: formData.title?.trim() || '',
+    desc: formData.desc?.trim() || '',
     key: !!formData.key,
     featureType: formData.featureType,
     actionType: formData.actionType,
     casterType: formData.casterType || null,
+    grantsSpells: false,
+    grantedSpellLevels: [],
   }
 
   // Normalize resource if present

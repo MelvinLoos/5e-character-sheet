@@ -25,7 +25,7 @@ describe('FeatureEditorModal (extra edge cases)', () => {
 
     const saves = wrapper.emitted('save')
     expect(saves).toBeTruthy()
-  const payload = saves![0][0] as any
+    const payload = saves![0][0] as any
     expect(payload.title).toBe('Legacy Uses')
     expect(payload.uses).toBeDefined()
     expect(payload.uses.total).toBe(2)
@@ -65,14 +65,14 @@ describe('FeatureEditorModal (extra edge cases)', () => {
 
     const saves = wrapper.emitted('save')
     expect(saves).toBeTruthy()
-  const payload = saves![0][0] as any
+    const payload = saves![0][0] as any
     expect(payload.resource).toBeDefined()
-  expect(payload.resource.value).toBe(4)
-  expect(payload.resource.reset).toBe('Day')
-  // Current behavior: legacy `uses` may still be preserved unless maxUsesType setter ran to explicitly clear it
-  expect(payload.uses).toBeDefined()
-  expect(payload.uses.total).toBe(4)
-  expect(payload.uses.per).toBe('Day')
+    expect(payload.resource.value).toBe(4)
+    expect(payload.resource.reset).toBe('Day')
+    // Current behavior: legacy `uses` may still be preserved unless maxUsesType setter ran to explicitly clear it
+    expect(payload.uses).toBeDefined()
+    expect(payload.uses.total).toBe(4)
+    expect(payload.uses.per).toBe('Day')
   })
 
   it('saves scaling resource when Max Uses type switched to Proficiency Bonus', async () => {
@@ -103,7 +103,7 @@ describe('FeatureEditorModal (extra edge cases)', () => {
 
     const saves = wrapper.emitted('save')
     expect(saves).toBeTruthy()
-  const payload = saves![0][0] as any
+    const payload = saves![0][0] as any
     expect(payload.resource).toBeDefined()
     expect(payload.resource.resourceType).toBe('scaling')
     expect(payload.resource.scalingStat).toBe('pb')
