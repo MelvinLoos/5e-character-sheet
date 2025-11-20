@@ -104,7 +104,8 @@ interface AjvLike {
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
-  const currentCharacterData = ref<CharacterData | null>(null)
+  // Initialize with a blank character to avoid widespread null checks in templates/components
+  const currentCharacterData = ref<CharacterData>(createBlankCharacter())
   const isEditing = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
   const sessionName = ref('Uncategorized')

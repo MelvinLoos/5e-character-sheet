@@ -14,7 +14,7 @@ interface Character {
 const characterSelectOptions = computed(() => {
   return Object.entries(store.characterLibrary).map(([session, chars]) => ({
     label: session,
-    options: (chars as Character[]).map((char: Character) => ({
+  options: (chars as unknown as Character[]).map((char: Character) => ({
       text: char.name,
       value: `${session}|${char.name}`,
     })),

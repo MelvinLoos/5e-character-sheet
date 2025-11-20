@@ -11,11 +11,17 @@ interface LocalFeature {
   title: string
   desc: string
   key?: boolean
+  source?: string
   featureType?: string
   actionType?: string
+  // Match store.Feature typing: casterType may be string|null
   casterType?: string | null
-  resource?: object
-  uses?: object
+  // Resource follows store shape or can be null/undefined
+  resource?: { resourceType: string; value?: number; scalingStat?: string | null; reset?: string } | null
+  // uses legacy shape
+  uses?: { total?: number; per?: string } | null
+  grantsSpells?: boolean
+  grantedSpellLevels?: number[]
   [key: string]: unknown
 }
 
@@ -23,7 +29,7 @@ const store = useCharacterStore()
 
 // Modal state
 const isModalOpen = ref(false)
-const editingFeature = ref({})
+const editingFeature = ref<Record<string, unknown>>({})
 const isNewFeature = ref(false)
 const editingFeatureRef = ref<LocalFeature | null>(null) // Direct reference to the feature being edited
 
@@ -43,20 +49,28 @@ const props = defineProps({
 })
 
 // Create a computed property for draggable features
-const editableFeatures = computed({
+const editableFeatures = computed<LocalFeature[]>({
   get() {
-    return props.features
+    return props.features as LocalFeature[]
   },
-  set(value) {
+  set(value: LocalFeature[]) {
     // Update the main features array in the store based on feature type
     if (props.title === 'Key Features') {
       const allFeatures = store.currentCharacterData.features || []
       const otherFeatures = allFeatures.filter((f: LocalFeature) => !f.key)
-      store.currentCharacterData.features = [...value, ...otherFeatures]
+      const normalized = value.map((v) => ({
+        ...v,
+        uses: v.uses ? { total: (v.uses.total as number) || 0, per: (v.uses.per as string) || '' } : undefined,
+      })) as unknown as typeof store.currentCharacterData.features
+      store.currentCharacterData.features = [...normalized, ...otherFeatures]
     } else {
       const allFeatures = store.currentCharacterData.features || []
       const keyFeatures = allFeatures.filter((f: LocalFeature) => f.key)
-      store.currentCharacterData.features = [...keyFeatures, ...value]
+      const normalized = value.map((v) => ({
+        ...v,
+        uses: v.uses ? { total: (v.uses.total as number) || 0, per: (v.uses.per as string) || '' } : undefined,
+      })) as unknown as typeof store.currentCharacterData.features
+      store.currentCharacterData.features = [...keyFeatures, ...normalized]
     }
   },
 })
@@ -76,26 +90,39 @@ function editFeature(feature: LocalFeature) {
 }
 
 function handleModalSave(featureData: LocalFeature) {
-  if (isNewFeature.value) {
+    if (isNewFeature.value) {
     // Add new feature
     if (props.title === 'Key Features') {
       featureData.key = true
     }
 
     store.currentCharacterData.features = store.currentCharacterData.features || []
-    store.currentCharacterData.features.push(featureData)
+      // Normalize legacy uses shape to ensure required properties
+      const normalizedFeature = {
+        ...featureData,
+        uses: featureData.uses
+          ? { total: (featureData.uses.total as number) || 0, per: (featureData.uses.per as string) || '' }
+          : undefined,
+      } as unknown as typeof store.currentCharacterData.features[number]
+      store.currentCharacterData.features.push(normalizedFeature)
   } else {
     // Update existing feature using direct reference
     if (editingFeatureRef.value) {
       // Find the feature in the main array and update it
       const allFeatures = store.currentCharacterData.features || []
       const featureIndex = allFeatures.findIndex((f: LocalFeature) => f === editingFeatureRef.value)
-      if (featureIndex !== -1) {
+        if (featureIndex !== -1) {
         // Preserve the key property for Key Features
         if (props.title === 'Key Features') {
           featureData.key = true
         }
-        allFeatures[featureIndex] = featureData
+          const normalizedFeature = {
+            ...featureData,
+            uses: featureData.uses
+              ? { total: (featureData.uses.total as number) || 0, per: (featureData.uses.per as string) || '' }
+              : undefined,
+          } as unknown as typeof store.currentCharacterData.features[number]
+          allFeatures[featureIndex] = normalizedFeature
       }
     }
   }

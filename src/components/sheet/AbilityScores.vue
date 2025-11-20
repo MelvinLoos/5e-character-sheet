@@ -22,12 +22,15 @@ watch(
   },
 )
 
+// Computed helper for current background (string or empty)
+const currentBackground = computed(() => store.currentCharacterData.background || '')
+
 // Computed properties for background bonus options
 const plusTwoOptions = computed(() => {
-  const background = store.currentCharacterData.background
-  if (!background || !DND_RULES.BACKGROUNDS[background]) return []
+  const bg = currentBackground.value
+  if (!bg || !DND_RULES.BACKGROUNDS[bg]) return []
 
-  const allOptions = DND_RULES.BACKGROUNDS[background].abilityScoreIncrease || []
+  const allOptions = DND_RULES.BACKGROUNDS[bg].abilityScoreIncrease || []
   const selectedPlusOne = store.currentCharacterData.backgroundBonusSelections?.plusOne
 
   // Filter out the option selected for +1 bonus
@@ -35,10 +38,10 @@ const plusTwoOptions = computed(() => {
 })
 
 const plusOneOptions = computed(() => {
-  const background = store.currentCharacterData.background
-  if (!background || !DND_RULES.BACKGROUNDS[background]) return []
+  const bg = currentBackground.value
+  if (!bg || !DND_RULES.BACKGROUNDS[bg]) return []
 
-  const allOptions = DND_RULES.BACKGROUNDS[background].abilityScoreIncrease || []
+  const allOptions = DND_RULES.BACKGROUNDS[bg].abilityScoreIncrease || []
   const selectedPlusTwo = store.currentCharacterData.backgroundBonusSelections?.plusTwo
 
   // Filter out the option selected for +2 bonus
@@ -152,11 +155,7 @@ watch(
     </div>
 
     <!-- Background Bonus Selections -->
-    <div
-      v-if="
-        DND_RULES.BACKGROUNDS[store.currentCharacterData.background] &&
-        store.currentCharacterData.backgroundBonusSelections
-      "
+    <div v-if="DND_RULES.BACKGROUNDS[currentBackground] && store.currentCharacterData.backgroundBonusSelections"
       class="mt-4 pt-2 border-t border-amber-300"
     >
       <div class="flex items-center justify-between mt-2">
