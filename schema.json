@@ -40,12 +40,42 @@
       "type": "object",
       "description": "The character's six base ability scores (8-15) used for point buy calculation.",
       "properties": {
-        "str": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Strength score must be between 8 and 15." },
-        "dex": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Dexterity score must be between 8 and 15." },
-        "con": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Constitution score must be between 8 and 15." },
-        "int": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Intelligence score must be between 8 and 15." },
-        "wis": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Wisdom score must be between 8 and 15." },
-        "cha": { "type": "integer", "minimum": 8, "maximum": 15, "errorMessage": "Charisma score must be between 8 and 15." }
+        "str": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 15,
+          "errorMessage": "Strength score must be between 8 and 15."
+        },
+        "dex": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 15,
+          "errorMessage": "Dexterity score must be between 8 and 15."
+        },
+        "con": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 15,
+          "errorMessage": "Constitution score must be between 8 and 15."
+        },
+        "int": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 15,
+          "errorMessage": "Intelligence score must be between 8 and 15."
+        },
+        "wis": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 15,
+          "errorMessage": "Wisdom score must be between 8 and 15."
+        },
+        "cha": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 15,
+          "errorMessage": "Charisma score must be between 8 and 15."
+        }
       },
       "required": ["str", "dex", "con", "int", "wis", "cha"],
       "errorMessage": "Point buy base scores must be an object with str, dex, con, int, wis, cha properties."
@@ -54,8 +84,14 @@
       "type": "object",
       "description": "The ability scores selected for the background's +2 and +1 bonuses.",
       "properties": {
-        "plusTwo": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] },
-        "plusOne": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", null] }
+        "plusTwo": {
+          "type": ["string", "null"],
+          "enum": ["str", "dex", "con", "int", "wis", "cha", null]
+        },
+        "plusOne": {
+          "type": ["string", "null"],
+          "enum": ["str", "dex", "con", "int", "wis", "cha", null]
+        }
       },
       "required": ["plusTwo", "plusOne"],
       "errorMessage": "Background bonus selections are required."
@@ -100,23 +136,33 @@
         "properties": {
           "name": { "type": "string" },
           "id": { "type": "string" },
-          "atkStat": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", "custom", null] },
-          "dmgDie": { "type": "string", "pattern": "^\\d+d\\d+$", "errorMessage": "Damage die must be in the format 'XdY' (e.g., '1d8')." },
-          "dmgStat": { "type": ["string", "null"], "enum": ["str", "dex", "con", "int", "wis", "cha", "custom", null] },
+          "atkStat": {
+            "type": ["string", "null"],
+            "enum": ["str", "dex", "con", "int", "wis", "cha", "custom", null]
+          },
+          "dmgDie": {
+            "type": "string",
+            "pattern": "^\\d+d\\d+$",
+            "errorMessage": "Damage die must be in the format 'XdY' (e.g., '1d8')."
+          },
+          "dmgStat": {
+            "type": ["string", "null"],
+            "enum": ["str", "dex", "con", "int", "wis", "cha", "custom", null]
+          },
           "dmgBonus": { "type": "integer", "default": 0 },
           "type": { "type": "string", "description": "Damage type." },
           "notes": { "type": "string" },
           "weaponMastery": { "type": "string" }
         },
-  "required": ["name", "dmgDie", "type"],
+        "required": ["name", "dmgDie", "type"],
         "errorMessage": {
-            "required": {
-                "name": "Attack name is required.",
-                "atkStat": "Attack stat is required.",
-                "dmgDie": "Damage die is required.",
-                "dmgStat": "Damage stat is required.",
-                "type": "Damage type is required."
-            }
+          "required": {
+            "name": "Attack name is required.",
+            "atkStat": "Attack stat is required.",
+            "dmgDie": "Damage die is required.",
+            "dmgStat": "Damage stat is required.",
+            "type": "Damage type is required."
+          }
         }
       }
     },
@@ -129,9 +175,27 @@
           "title": { "type": "string" },
           "desc": { "type": "string" },
           "key": { "type": "boolean", "description": "Display on front page.", "default": false },
-          "source": { "type": "string", "description": "Source book or reference (e.g., PHB, XGE)." },
-          "featureType": { "type": "string", "enum": ["Class Feature", "Species Trait", "Background Feature", "Origin Feat", "General Feat", "Fighting Style", "Epic Boon", "Other"] },
-          "actionType": { "type": "string", "enum": ["Action", "Bonus Action", "Reaction", "Free Action", "Passive", "None"] },
+          "source": {
+            "type": "string",
+            "description": "Source book or reference (e.g., PHB, XGE)."
+          },
+          "featureType": {
+            "type": "string",
+            "enum": [
+              "Class Feature",
+              "Species Trait",
+              "Background Feature",
+              "Origin Feat",
+              "General Feat",
+              "Fighting Style",
+              "Epic Boon",
+              "Other"
+            ]
+          },
+          "actionType": {
+            "type": "string",
+            "enum": ["Action", "Bonus Action", "Reaction", "Free Action", "Passive", "None"]
+          },
           "uses": {
             "type": ["object", "null"],
             "properties": {
@@ -145,8 +209,26 @@
             "properties": {
               "resourceType": { "type": "string", "enum": ["static", "scaling"] },
               "value": { "type": "integer" },
-              "scalingStat": { "type": ["string", "null"], "enum": ["pb", "str", "dex", "con", "int", "wis", "cha", "level", null] },
-              "reset": { "type": "string", "enum": ["Long Rest", "Short Rest", "Dawn", "Initiative", "Turn", "Round", "Encounter", "Day", "Week", "Special", "None"] }
+              "scalingStat": {
+                "type": ["string", "null"],
+                "enum": ["pb", "str", "dex", "con", "int", "wis", "cha", "level", null]
+              },
+              "reset": {
+                "type": "string",
+                "enum": [
+                  "Long Rest",
+                  "Short Rest",
+                  "Dawn",
+                  "Initiative",
+                  "Turn",
+                  "Round",
+                  "Encounter",
+                  "Day",
+                  "Week",
+                  "Special",
+                  "None"
+                ]
+              }
             }
           },
           "casterType": {
@@ -154,8 +236,14 @@
             "description": "Specifies spellcasting progression if this feature grants it.",
             "enum": ["full", "half", "third", "pact", "none", null]
           },
-          "grantsSpells": { "type": "boolean", "description": "Feature grants specific spells but not full casting." },
-          "grantedSpellLevels": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 9 } }
+          "grantsSpells": {
+            "type": "boolean",
+            "description": "Feature grants specific spells but not full casting."
+          },
+          "grantedSpellLevels": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 9 }
+          }
         },
         "required": ["title", "desc"]
       }
@@ -219,15 +307,15 @@
     "personality"
   ],
   "errorMessage": {
-      "required": {
-          "name": "Character name is required.",
-          "class": "Class is required.",
-          "level": "Level is required.",
-          "species": "Species is required.",
-          "background": "Background is required.",
-          "pointBuyBaseScores": "Point buy base scores are required.",
-          "backgroundBonusSelections": "Background bonus selections are required.",
-          "personality": "Personality traits, ideal, bond, and flaw are required."
-      }
+    "required": {
+      "name": "Character name is required.",
+      "class": "Class is required.",
+      "level": "Level is required.",
+      "species": "Species is required.",
+      "background": "Background is required.",
+      "pointBuyBaseScores": "Point buy base scores are required.",
+      "backgroundBonusSelections": "Background bonus selections are required.",
+      "personality": "Personality traits, ideal, bond, and flaw are required."
+    }
   }
 }

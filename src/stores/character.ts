@@ -59,7 +59,12 @@ interface CharacterData {
     featureType?: string
     actionType?: string
     uses?: { total: number; per: string } | null
-    resource?: { resourceType: string; value?: number; scalingStat?: string | null; reset?: string } | null
+    resource?: {
+      resourceType: string
+      value?: number
+      scalingStat?: string | null
+      reset?: string
+    } | null
     casterType?: string | null
     grantsSpells?: boolean
     grantedSpellLevels?: number[]
@@ -74,7 +79,18 @@ interface CharacterData {
     notes?: string
   }
   spellcasting: { ability?: string } | null
-  spells: Array<{ name: string; level: number; desc: string; source?: string; school?: string; castingTime?: string; range?: string; components?: string; duration?: string; concentration?: boolean }>
+  spells: Array<{
+    name: string
+    level: number
+    desc: string
+    source?: string
+    school?: string
+    castingTime?: string
+    range?: string
+    components?: string
+    duration?: string
+    concentration?: boolean
+  }>
 }
 
 export const useCharacterStore = defineStore('character', () => {
