@@ -13,6 +13,7 @@ import {
   pointBuyCosts,
   // @ts-expect-error - JS module without types
 } from '../services/characterService.js'
+import { migrateUsesToResource } from '../utils/migrations'
 
 // Type interfaces
 interface CharacterData {
@@ -317,7 +318,10 @@ export const useCharacterStore = defineStore('character', () => {
 
   function _migrateLegacyCharacter(data: unknown) {
     // Create a copy to avoid mutating the original
-    const migrated = { ...(data as any) }
+    let migrated = { ...(data as any) }
+
+    // Convert legacy `uses` into the new `resource` shape when applicable
+    migrated = migrateUsesToResource(migrated)
 
     // Add missing backgroundBonusSelections if not present
     if (!migrated.backgroundBonusSelections) {
