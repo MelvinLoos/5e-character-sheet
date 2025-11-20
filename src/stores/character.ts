@@ -522,6 +522,23 @@ export const useCharacterStore = defineStore('character', () => {
             (errors as string[]) || [],
           ),
         )
+
+        // Recalculate derived stats when level changes (ensures profBonus, HP, spell slots, etc. update)
+        watch(
+          () => currentCharacterData.value?.level,
+          () => {
+            recalculateAbilityScores()
+          },
+        )
+
+        // Recalculate when ability scores change (to refresh ability mods and derived values)
+        watch(
+          () => currentCharacterData.value?.abilityScores,
+          () => {
+            recalculateAbilityScores()
+          },
+          { deep: true },
+        )
       }
 
       _setCharacter({ ...createBlankCharacter(), ...generatedData })
@@ -799,6 +816,15 @@ export const useCharacterStore = defineStore('character', () => {
       }
     },
     { deep: false },
+  )
+
+  // Recalculate ability scores when background bonus selections change (+2 / +1)
+  watch(
+    () => currentCharacterData.value?.backgroundBonusSelections,
+    () => {
+      recalculateAbilityScores()
+    },
+    { deep: true },
   )
 
   // Watch for class changes and auto-update features and saving throws
