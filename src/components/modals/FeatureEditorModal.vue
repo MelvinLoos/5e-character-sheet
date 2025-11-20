@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import feather from 'feather-icons'
 
 // Props
@@ -64,6 +64,34 @@ const formData = reactive<FeatureFormData>({
 
 // Validation state
 const errors = ref<string[]>([])
+
+// Local visibility flags for info popups
+const showHelp = ref({ key: false, grants: false, reset: false })
+
+function toggleHelp(type: 'key' | 'grants' | 'reset') {
+  // Toggle selected, close others
+  Object.keys(showHelp.value).forEach((k) => {
+    // @ts-ignore
+    showHelp.value[k] = false
+  })
+  showHelp.value[type] = !showHelp.value[type]
+}
+
+// Close help popups when clicking outside of them or their buttons
+function handleDocumentClick(e: MouseEvent) {
+  const target = e.target as HTMLElement
+  if (!target) return
+
+  // If the click is inside a help popup or on an info button, don't hide
+  if (target.closest('.help-popup') || target.closest('.info-button')) return
+
+  showHelp.value.key = false
+  showHelp.value.grants = false
+  showHelp.value.reset = false
+}
+
+onMounted(() => document.addEventListener('click', handleDocumentClick))
+onBeforeUnmount(() => document.removeEventListener('click', handleDocumentClick))
 
 // Available options for dropdowns
 const featureTypes = [
@@ -298,9 +326,17 @@ const baseAmount = computed({
             <div class="flex items-center gap-2 mt-6">
               <input id="key-feature" v-model="formData.key" type="checkbox" class="usage-box" />
               <label for="key-feature" class="text-sm font-bold">Key Feature</label>
-              <button class="info-button" title="Key features appear on the front page">
-                <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"></span>
-              </button>
+              <div class="relative inline-flex items-center">
+                <button class="info-button" title="Key features appear on the front page"
+                  @click.prevent="toggleHelp('key')">
+                  <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"></span>
+                </button>
+                <div v-if="showHelp.key"
+                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                  <div class="font-bold mb-1">Key Feature</div>
+                  <div class="text-xs">Key features appear on the front page.</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -356,14 +392,26 @@ const baseAmount = computed({
             </div>
 
             <div v-if="formData.grantsSpells" class="mt-2 ml-4 text-xs">
-              <label class="block text-xs font-bold mb-1">Granted Spell Levels</label>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold mb-1">Granted Spell Levels</label>
+                <div class="relative inline-flex items-center">
+                  <button class="info-button" title="Select one or more spell levels granted by this feature."
+                    @click.prevent="toggleHelp('grants')">
+                    <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"></span>
+                  </button>
+                  <div v-if="showHelp.grants"
+                    class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                    <div class="font-bold mb-1">Granted Spell Levels</div>
+                    <div class="text-xs">Select one or more spell levels granted by this feature.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-2 mt-2">
                 <label v-for="lvl in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="lvl" class="inline-flex items-center gap-1">
                   <input type="checkbox" :value="lvl" v-model="formData.grantedSpellLevels" />
                   <span>{{ lvl === 0 ? 'Cantrip (0)' : 'Level ' + lvl }}</span>
                 </label>
               </div>
-              <p class="text-xs text-gray-500 mt-1">Select one or more spell levels granted by this feature.</p>
             </div>
           </div>
 
@@ -403,20 +451,35 @@ const baseAmount = computed({
                 <!-- Reset Condition -->
                 <div>
                   <label for="reset-condition" class="block text-xs font-bold mb-1">Resets:</label>
-                  <select id="reset-condition" v-model="formData.resource!.reset"
-                    class="edit-mode-select text-sm w-full">
-                    <option value="long rest">Long Rest</option>
-                    <option value="short rest">Short Rest</option>
-                    <option value="dawn">Dawn</option>
-                    <option value="initiative">Initiative</option>
-                    <option value="turn">Turn</option>
-                    <option value="round">Round</option>
-                    <option value="encounter">Encounter</option>
-                    <option value="day">Day</option>
-                    <option value="week">Week</option>
-                    <option value="special">Special</option>
-                    <option value="none">None</option>
-                  </select>
+                  <div class="flex items-center gap-2">
+                    <select id="reset-condition" v-model="formData.resource!.reset"
+                      class="edit-mode-select text-sm w-full">
+                      <option value="Long Rest">Long Rest</option>
+                      <option value="Short Rest">Short Rest</option>
+                      <option value="Dawn">Dawn</option>
+                      <option value="Initiative">Initiative</option>
+                      <option value="Turn">Turn</option>
+                      <option value="Round">Round</option>
+                      <option value="Encounter">Encounter</option>
+                      <option value="Day">Day</option>
+                      <option value="Week">Week</option>
+                      <option value="Special">Special</option>
+                      <option value="None">None</option>
+                    </select>
+                    <div class="relative inline-flex items-center">
+                      <button class="info-button"
+                        title="Choose when this feature's uses refresh. Use 'Special' for custom conditions."
+                        @click.prevent="toggleHelp('reset')">
+                        <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"></span>
+                      </button>
+                      <div v-if="showHelp.reset"
+                        class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                        <div class="font-bold mb-1">Reset Condition</div>
+                        <div class="text-xs">Choose when this feature's uses refresh. Use 'Special' for custom
+                          conditions.</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Preview -->
@@ -465,5 +528,15 @@ const baseAmount = computed({
   height: 1rem;
   border: 1px solid var(--sheet-border, #d1d5db);
   background-color: white;
+}
+
+.help-popup {
+  min-width: 220px;
+  max-width: 420px;
+  word-break: break-word;
+}
+
+.help-popup p {
+  margin: 0;
 }
 </style>
