@@ -1,19 +1,23 @@
 // Migration helpers for character data
-export function migrateUsesToResource(character: any) {
-  if (!character) return character
+export function migrateUsesToResource(character: unknown) {
+  if (!character || typeof character !== 'object') return character
 
-  if (!Array.isArray(character.features)) return character
+  const ch = character as { features?: unknown[] }
+  if (!Array.isArray(ch.features)) return character
 
-  character.features = character.features.map((f: any) => {
-    if (!f) return f
+  ch.features = ch.features.map((f) => {
+    if (!f || typeof f !== 'object') return f
+
+    const feat = f as Record<string, unknown>
 
     // If feature already has a resource, leave it
-    if (f.resource) return f
+    if (feat.resource) return feat
 
     // If legacy uses exists, convert to resource
-    if (f.uses && typeof f.uses === 'object') {
-      const total = typeof f.uses.total === 'number' ? f.uses.total : undefined
-      const per = typeof f.uses.per === 'string' ? f.uses.per.toLowerCase() : undefined
+    if (feat.uses && typeof feat.uses === 'object') {
+      const uses = feat.uses as Record<string, unknown>
+      const total = typeof uses.total === 'number' ? uses.total : undefined
+      const per = typeof uses.per === 'string' ? (uses.per as string).toLowerCase() : undefined
 
       // Determine reset mapping
       let reset = 'Special'
@@ -31,7 +35,7 @@ export function migrateUsesToResource(character: any) {
 
       const value = typeof total === 'number' ? total : 1
 
-      f.resource = {
+      feat.resource = {
         resourceType: 'static',
         value,
         scalingStat: null,
@@ -39,13 +43,13 @@ export function migrateUsesToResource(character: any) {
       }
 
       // Keep legacy `uses` for backward compatibility but mark it as migrated
-      f._migratedFromUses = true
+      feat._migratedFromUses = true
     }
 
-    return f
+    return feat
   })
 
-  return character
+  return ch
 }
 
 export default migrateUsesToResource

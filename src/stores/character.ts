@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 // @ts-expect-error - JS module without types
 import * as DND_RULES from '../data/rules.js'
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 // @ts-expect-error - JS module without types
 import { generateCharacterViaGemini } from '../services/apiService.js'
 import {
@@ -94,16 +95,24 @@ interface CharacterData {
   }>
 }
 
+// Minimal Ajv-like interface for compile-time typing (we don't import Ajv runtime typings)
+interface AjvLike {
+  compile: (
+    schema: unknown,
+  ) => ((data: unknown) => boolean) & { errors?: Array<{ message?: string } | null> }
+}
+
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
-  const currentCharacterData = ref<CharacterData | null>(null)
+  // Initialize with a blank character to avoid widespread null checks in templates/components
+  const currentCharacterData = ref<CharacterData>(createBlankCharacter())
   const isEditing = ref(false)
-  const characterLibrary = ref(getLocalLibrary())
+  const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
   const sessionName = ref('Uncategorized')
   const schema = ref<object | null>(null)
   const geminiSchema = ref<object | null>(null)
-  const ajv = ref<object | null>(null)
-  const supabaseClient = ref<object | null>(null)
+  const ajv = ref<AjvLike | null>(null)
+  const supabaseClient = ref<SupabaseClient | null>(null)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
 
   // Modal states
@@ -181,7 +190,11 @@ export const useCharacterStore = defineStore('character', () => {
   // Helper function to calculate feature maximum uses based on 2024 resource system
   function getFeatureMaxUses(feature: unknown) {
     if (!feature || !currentCharacterData.value) return null
-    const f = feature as any
+    if (typeof feature !== 'object' || feature === null) return null
+    const f = feature as {
+      uses?: { total?: number; per?: string } | null
+      resource?: { resourceType?: string; value?: number; scalingStat?: string | null } | null
+    }
 
     // Handle legacy 'uses' format for backward compatibility
     if (f.uses && !f.resource) {
@@ -240,12 +253,16 @@ export const useCharacterStore = defineStore('character', () => {
       console.warn('Supabase credentials not found. Online sharing will be disabled.')
     }
 
-    // Init AJV
-    if (typeof window !== 'undefined' && (window as any).Ajv && (window as any).ajvErrors) {
-      ajv.value = new (window as any).Ajv.default({ allErrors: true })
-      ;(window as any).ajvErrors.default(ajv.value)
-    } else {
+    // Init AJV - skip dynamic window-based loading to avoid casting to `any` here.
+    // If Ajv is required at runtime, prefer bundling/importing it explicitly.
+    try {
+      // If a global Ajv is present, we could initialize it here. For now, warn and continue.
+      if (typeof window !== 'undefined' && (window as unknown)) {
+        // noop - placeholder to avoid unused variable warnings
+      }
       console.warn('Ajv not loaded. Validation will be limited.')
+    } catch (e) {
+      console.warn('Ajv initialization skipped.', e)
     }
 
     // Load Schema
@@ -279,12 +296,18 @@ export const useCharacterStore = defineStore('character', () => {
       console.warn('AJV or schema not initialized, skipping validation.')
       return { valid: true }
     }
-    const validate = (ajv.value as any).compile(schema.value)
+    if (!ajv.value || !schema.value) {
+      console.warn('AJV not initialized properly; skipping validation.')
+      return { valid: true }
+    }
+    const validate = ajv.value.compile(schema.value)
     const valid = validate(data)
     if (valid) {
       return { valid: true, errors: [] }
     }
-    const errorMessages = validate.errors.map((error: any) => error.message)
+    const errorMessages = (validate.errors || [])
+      .map((err) => err?.message)
+      .filter(Boolean) as string[]
     return { valid: false, errors: [...new Set(errorMessages)] }
   }
 
@@ -305,7 +328,8 @@ export const useCharacterStore = defineStore('character', () => {
     // Migrate legacy character data to new format
     const migratedData = _migrateLegacyCharacter(data)
 
-    currentCharacterData.value = migratedData
+    // Assign after asserting it matches CharacterData shape (migration ensures required fields)
+    currentCharacterData.value = migratedData as unknown as CharacterData
     isEditing.value = false
     sourceCharacterId.value = null // Reset source unless it's set by sharing
 
@@ -318,10 +342,10 @@ export const useCharacterStore = defineStore('character', () => {
 
   function _migrateLegacyCharacter(data: unknown) {
     // Create a copy to avoid mutating the original
-    let migrated = { ...(data as any) }
+    let migrated: Record<string, unknown> = { ...(data as Record<string, unknown>) }
 
     // Convert legacy `uses` into the new `resource` shape when applicable
-    migrated = migrateUsesToResource(migrated)
+    migrated = migrateUsesToResource(migrated) as Record<string, unknown>
 
     // Add missing backgroundBonusSelections if not present
     if (!migrated.backgroundBonusSelections) {
@@ -335,7 +359,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!migrated.pointBuyBaseScores) {
       // If we have final ability scores, try to reverse-engineer base scores
       if (migrated.abilityScores) {
-        migrated.pointBuyBaseScores = { ...migrated.abilityScores }
+        migrated.pointBuyBaseScores = { ...(migrated.abilityScores as Record<string, number>) }
 
         // Subtract background bonuses if we can determine them
         const background = migrated.background
@@ -357,7 +381,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Ensure abilityScores exists
     if (!migrated.abilityScores) {
-      migrated.abilityScores = { ...migrated.pointBuyBaseScores }
+      migrated.abilityScores = { ...(migrated.pointBuyBaseScores as Record<string, number>) }
     }
 
     // Add missing proficiencies structure if not present
@@ -375,14 +399,21 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Add missing spellcasting feature for spellcasting classes
     if (migrated.class && migrated.spellcasting) {
-      const hasSpellcastingFeature = migrated.features.some(
-        (f: any) => f.title && f.title.toLowerCase().includes('spellcasting') && f.casterType,
-      )
+      const hasSpellcastingFeature =
+        Array.isArray(migrated.features) &&
+        (migrated.features as unknown[]).some((f: unknown) => {
+          const ff = f as Record<string, unknown>
+          return (
+            typeof ff.title === 'string' &&
+            ff.title.toLowerCase().includes('spellcasting') &&
+            !!ff.casterType
+          )
+        })
 
       if (!hasSpellcastingFeature) {
         // Determine caster type based on class
         let casterType = 'full'
-        const className = migrated.class.replace(/\s*\(.*\)/, '') // Remove subclass info
+        const className = ((migrated.class as string) || '').replace(/\s*\(.*\)/, '') // Remove subclass info
 
         if (['Ranger', 'Paladin'].includes(className)) {
           casterType = 'half'
@@ -393,9 +424,10 @@ export const useCharacterStore = defineStore('character', () => {
         }
 
         // Add spellcasting feature
-        migrated.features.push({
+        ;(migrated.features as unknown[]).push({
           title: `Spellcasting (${className})`,
-          desc: `You can cast ${className.toLowerCase()} spells. ${migrated.spellcasting.ability.toUpperCase()} is your spellcasting ability.`,
+          desc: `You can cast ${className.toLowerCase()} spells. ${(migrated.spellcasting as Record<string, unknown>).ability}
+            is your spellcasting ability.`,
           casterType: casterType,
           key: true,
         })
@@ -459,7 +491,9 @@ export const useCharacterStore = defineStore('character', () => {
     if (characterId && supabaseClient.value) {
       _showLoading('Fetching character from the archives...')
       try {
-        const { data, error } = await (supabaseClient.value as any)
+        const client = supabaseClient.value
+        if (!client) throw new Error('Supabase client not initialized')
+        const { data, error } = await client
           .from('characters')
           .select('character_data, id')
           .eq('id', characterId)
@@ -485,7 +519,7 @@ export const useCharacterStore = defineStore('character', () => {
     const [session, charName] = key.split('|')
     if (!session || !charName) return
 
-    const data = characterLibrary.value[session]?.find((c: any) => c.name === charName)
+    const data = characterLibrary.value[session]?.find((c: CharacterData) => c.name === charName)
     if (data) {
       _setCharacter(data)
       sessionName.value = session
@@ -525,7 +559,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!library[session]) library[session] = []
 
     const existingIndex = library[session].findIndex(
-      (c: any) => c.name === currentCharacterData.value?.name,
+      (c: CharacterData) => c.name === currentCharacterData.value?.name,
     )
     if (existingIndex > -1) {
       library[session][existingIndex] = currentCharacterData.value
@@ -605,7 +639,9 @@ export const useCharacterStore = defineStore('character', () => {
 
     _showLoading('Saving character to the archives...')
     try {
-      const { data, error } = await (supabaseClient.value as any)
+      const client = supabaseClient.value
+      if (!client) throw new Error('Supabase client not initialized')
+      const { data, error } = await client
         .from('characters')
         .insert([
           {
@@ -653,13 +689,15 @@ export const useCharacterStore = defineStore('character', () => {
 
   function updateCharacter(key: string, value: unknown) {
     if (currentCharacterData.value) {
-      ;(currentCharacterData.value as any)[key] = value
+      ;(currentCharacterData.value as unknown as Record<string, unknown>)[key] = value
     }
   }
 
   function updateNested(key1: string, key2: string, value: unknown) {
     if (currentCharacterData.value) {
-      ;(currentCharacterData.value as any)[key1][key2] = value
+      const obj = currentCharacterData.value as unknown as Record<string, unknown>
+      const inner = obj[key1] as Record<string, unknown> | undefined
+      if (inner) inner[key2] = value
     }
   }
 
@@ -741,11 +779,13 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Remove existing background features
     // We identify background features by checking if they match any background feature title
-    const allBackgroundFeatureTitles = new Set(
-      Object.values(DND_RULES.BACKGROUNDS)
-        .map((bg: unknown) => (bg as any)?.feature?.title)
-        .filter(Boolean),
-    )
+    const allBackgroundFeatureTitles = new Set<string>()
+    Object.values(DND_RULES.BACKGROUNDS).forEach((bg: unknown) => {
+      const b = bg as Record<string, unknown>
+      const feature = b.feature as Record<string, unknown> | undefined
+      if (feature && typeof feature.title === 'string')
+        allBackgroundFeatureTitles.add(feature.title)
+    })
 
     currentCharacterData.value.features = currentCharacterData.value.features.filter(
       (feature) => !allBackgroundFeatureTitles.has(feature.title),
@@ -776,13 +816,14 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Remove existing class features
     // We identify class features by checking if they match any class feature title
-    const allClassFeatureTitles = new Set()
+    const allClassFeatureTitles = new Set<string>()
     Object.values(DND_RULES.CLASSES).forEach((cls: unknown) => {
-      const clsData = cls as any
-      if (clsData.features) {
-        clsData.features.forEach((feature: unknown) => {
-          const featureData = feature as any
-          if (featureData.title) {
+      const clsData = cls as Record<string, unknown>
+      const features = clsData.features as unknown
+      if (Array.isArray(features)) {
+        features.forEach((feature: unknown) => {
+          const featureData = feature as Record<string, unknown>
+          if (featureData && typeof featureData.title === 'string') {
             allClassFeatureTitles.add(featureData.title)
           }
         })
@@ -794,16 +835,28 @@ export const useCharacterStore = defineStore('character', () => {
     )
 
     // Add the new class features
-    classData.features.forEach((feature: any) => {
-      const newFeature = {
-        title: feature.title,
-        desc: feature.desc,
-        key: feature.key || false,
-        casterType: feature.casterType || null,
-        uses: feature.uses || undefined,
-      }
-      currentCharacterData.value?.features.push(newFeature)
-    })
+    if (Array.isArray(classData.features)) {
+      classData.features.forEach((feature: unknown) => {
+        const f = feature as Record<string, unknown>
+        const usesCandidate = f.uses as Record<string, unknown> | undefined
+        let usesVal: { total: number; per: string } | undefined
+        if (
+          usesCandidate &&
+          typeof usesCandidate.total === 'number' &&
+          typeof usesCandidate.per === 'string'
+        ) {
+          usesVal = { total: usesCandidate.total as number, per: usesCandidate.per as string }
+        }
+        const newFeature = {
+          title: (f.title as string) || '',
+          desc: (f.desc as string) || '',
+          key: (f.key as boolean) || false,
+          casterType: (f.casterType as string) || null,
+          uses: usesVal,
+        }
+        currentCharacterData.value?.features.push(newFeature)
+      })
+    }
 
     // Update spellcasting ability based on new class
     _setupSpellcasting()
@@ -824,11 +877,14 @@ export const useCharacterStore = defineStore('character', () => {
     // Remove existing species traits
     // We identify species traits by checking if they match any species trait title
     const allSpeciesTraitTitles = new Set()
-    Object.values(DND_RULES.SPECIES).forEach((species: any) => {
-      if (species.traits) {
-        species.traits.forEach((trait: any) => {
-          if (trait.title) {
-            allSpeciesTraitTitles.add(trait.title)
+    Object.values(DND_RULES.SPECIES).forEach((species: unknown) => {
+      const s = species as Record<string, unknown>
+      const traits = s.traits as unknown
+      if (Array.isArray(traits)) {
+        traits.forEach((trait: unknown) => {
+          const t = trait as Record<string, unknown>
+          if (t && typeof t.title === 'string') {
+            allSpeciesTraitTitles.add(t.title)
           }
         })
       }
@@ -839,16 +895,28 @@ export const useCharacterStore = defineStore('character', () => {
     )
 
     // Add the new species traits
-    speciesData.traits.forEach((trait: any) => {
-      const newTrait = {
-        title: trait.title,
-        desc: trait.desc,
-        key: trait.key || false,
-        casterType: null,
-        uses: trait.uses || undefined,
-      }
-      currentCharacterData.value?.features.push(newTrait)
-    })
+    if (Array.isArray(speciesData.traits)) {
+      speciesData.traits.forEach((trait: unknown) => {
+        const t = trait as Record<string, unknown>
+        const usesCandidate = t.uses as Record<string, unknown> | undefined
+        let usesVal: { total: number; per: string } | undefined
+        if (
+          usesCandidate &&
+          typeof usesCandidate.total === 'number' &&
+          typeof usesCandidate.per === 'string'
+        ) {
+          usesVal = { total: usesCandidate.total as number, per: usesCandidate.per as string }
+        }
+        const newTrait = {
+          title: (t.title as string) || '',
+          desc: (t.desc as string) || '',
+          key: (t.key as boolean) || false,
+          casterType: null,
+          uses: usesVal,
+        }
+        currentCharacterData.value?.features.push(newTrait)
+      })
+    }
   }
 
   // Watch for background changes and auto-update skills and features

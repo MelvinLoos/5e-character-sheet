@@ -11,7 +11,7 @@ function generateId() {
 
 // Define local Feature interface
 interface Feature {
-  casterType?: string
+  casterType?: string | null
   title?: string
   description?: string
   grantsSpells?: boolean
@@ -19,20 +19,28 @@ interface Feature {
   [key: string]: unknown
 }
 
+interface Spell {
+  id?: string
+  name: string
+  level: number
+  desc: string
+  [key: string]: unknown
+}
+
 const store = useCharacterStore()
 
 // Check if character has spellcasting - show when casterType is set OR when any feature grants spells
 const hasSpellcasting = computed(() => {
-  const features = store.currentCharacterData?.features || []
-  const hasFullCaster = features.some((f: Feature) => f.casterType && f.casterType !== 'none')
+  const features = (store.currentCharacterData?.features || []) as Feature[]
+  const hasFullCaster = features.some((f: Feature) => typeof f.casterType === 'string' && f.casterType !== 'none')
   const hasGranted = features.some((f: Feature) => !!f.grantsSpells)
   return hasFullCaster || hasGranted
 })
 
 // Get the caster type for spell slot calculation
 const casterType = computed(() => {
-  const features = store.currentCharacterData?.features || []
-  const spellcastingFeature = features.find((f: Feature) => f.casterType && f.casterType !== 'none')
+  const features = (store.currentCharacterData?.features || []) as Feature[]
+  const spellcastingFeature = features.find((f: Feature) => typeof f.casterType === 'string' && f.casterType !== 'none')
   if (spellcastingFeature) return spellcastingFeature.casterType || null
 
   // If no full caster type but there are granted-spell features, mark as 'granted' (handled in spellSlots)
@@ -54,7 +62,7 @@ const spellSlots = computed(() => {
 
   // If casterType === 'granted' (feats that grant spells), build slots from grantedSpellLevels
   const grantedLevels = new Set<number>()
-  for (const f of features) {
+  for (const f of features as Feature[]) {
     if (f.grantsSpells && Array.isArray(f.grantedSpellLevels)) {
       for (const lvl of f.grantedSpellLevels || []) {
         // only consider numeric levels 0-9
@@ -76,13 +84,13 @@ const spellSlots = computed(() => {
 // Computed property for draggable spells
 const editableSpells = computed({
   get() {
-    const arr = store.currentCharacterData.spells || []
+    const arr = (store.currentCharacterData.spells || []) as Spell[]
     for (const s of arr) {
       if (!s.id) s.id = generateId()
     }
     return arr
   },
-  set(value) {
+  set(value: Spell[]) {
     store.currentCharacterData.spells = value
   },
 })

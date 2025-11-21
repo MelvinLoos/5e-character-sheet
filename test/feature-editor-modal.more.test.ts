@@ -14,17 +14,17 @@ describe('FeatureEditorModal (more edge cases)', () => {
       props: { isOpen: true, feature: legacyFeature, isNew: false },
     })
 
-  // Trigger the computed setter directly so it creates resource from legacy uses and clears `uses`.
-  // We assign to the computed property on the VM to simulate a user selecting the Max Uses type
-  // even if the UI element isn't rendered yet.
-  ;(wrapper.vm as any).maxUsesType = 'fixed'
-  await wrapper.vm.$nextTick()
-  // Provide the fixed amount
-  const fixedInput = wrapper.find('#fixed-amount')
-  await fixedInput.setValue('3')
-  // Now change to proficiency bonus scaling via the computed setter
-  ;(wrapper.vm as any).maxUsesType = 'pb'
-  await wrapper.vm.$nextTick()
+    // Trigger the computed setter directly so it creates resource from legacy uses and clears `uses`.
+    // We assign to the computed property on the VM to simulate a user selecting the Max Uses type
+    // even if the UI element isn't rendered yet.
+    ;(wrapper.vm as any).maxUsesType = 'fixed'
+    await wrapper.vm.$nextTick()
+    // Provide the fixed amount
+    const fixedInput = wrapper.find('#fixed-amount')
+    await fixedInput.setValue('3')
+    // Now change to proficiency bonus scaling via the computed setter
+    ;(wrapper.vm as any).maxUsesType = 'pb'
+    await wrapper.vm.$nextTick()
 
     // Save
     const saveBtn = wrapper.findAll('button').find((b) => b.text().includes('Save Changes'))
