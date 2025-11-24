@@ -419,3 +419,151 @@ export function mapSpells(fiveToolsSpells: unknown[]): AppSpell[] {
     .map((spell) => mapSpell(spell))
     .filter((spell): spell is AppSpell => spell !== null)
 }
+
+// ============================
+// FEAT/FEATURE MAPPING
+// ============================
+
+/**
+ * 5e.tools feat structure (simplified - we only map what we need)
+ */
+interface FiveToolsFeat {
+  name: string
+  source?: string
+  entries?: unknown[]
+  ability?: unknown[] // ASI/feat bonuses
+  prerequisite?: unknown[] // Prerequisites (we skip parsing for v1)
+  feats?: unknown // Related feats
+}
+
+/**
+ * App feature schema (subset - matching schema.json)
+ */
+interface AppFeature {
+  title: string
+  desc: string
+  source?: string
+  featureType?: string
+  actionType?: string
+  grantsSpells?: boolean
+  key?: boolean
+}
+
+/**
+ * Map a single 5e.tools feat to app feature schema
+ */
+export function mapFeat(fiveToolsFeat: unknown): AppFeature | null {
+  if (!fiveToolsFeat || typeof fiveToolsFeat !== 'object') {
+    return null
+  }
+
+  const feat = fiveToolsFeat as FiveToolsFeat
+
+  // Required: name
+  if (!feat.name || typeof feat.name !== 'string') {
+    return null
+  }
+
+  // Build description from entries
+  const desc = feat.entries && Array.isArray(feat.entries)
+    ? sanitizeText(feat.entries)
+    : 'No description available.'
+
+  // Build the feature object
+  const feature: AppFeature = {
+    title: feat.name,
+    desc,
+  }
+
+  // Map source if available
+  if (feat.source) {
+    feature.source = mapSource(feat.source)
+  }
+
+  // Determine feature type
+  // For feats from 5e.tools, we default to "General Feat"
+  // (could be refined with more logic later)
+  feature.featureType = 'General Feat'
+
+  // Check if feat grants spells (look for spellcasting in entries)
+  if (desc.toLowerCase().includes('spell') || desc.toLowerCase().includes('cantrip')) {
+    feature.grantsSpells = true
+  }
+
+  return feature
+}
+
+/**
+ * Map a 5e.tools class/species/background feature to app feature schema
+ * These have a different structure than feats - they come from class/species JSON
+ */
+export function mapClassFeature(
+  fiveToolsFeature: unknown,
+  featureType: 'Class Feature' | 'Species Trait' | 'Background Feature'
+): AppFeature | null {
+  if (!fiveToolsFeature || typeof fiveToolsFeature !== 'object') {
+    return null
+  }
+
+  const feat = fiveToolsFeature as { name?: string; entries?: unknown[]; source?: string }
+
+  // Required: name
+  if (!feat.name || typeof feat.name !== 'string') {
+    return null
+  }
+
+  // Build description from entries
+  const desc = feat.entries && Array.isArray(feat.entries)
+    ? sanitizeText(feat.entries)
+    : 'No description available.'
+
+  // Build the feature object
+  const feature: AppFeature = {
+    title: feat.name,
+    desc,
+    featureType,
+  }
+
+  // Map source if available
+  if (feat.source) {
+    feature.source = mapSource(feat.source)
+  }
+
+  // Check if feature grants spells
+  if (desc.toLowerCase().includes('spell') || desc.toLowerCase().includes('cantrip')) {
+    feature.grantsSpells = true
+  }
+
+  // Detect action type from common keywords
+  const lowerDesc = desc.toLowerCase()
+  if (lowerDesc.includes('bonus action')) {
+    feature.actionType = 'Bonus Action'
+  } else if (lowerDesc.includes('reaction')) {
+    feature.actionType = 'Reaction'
+  } else if (lowerDesc.includes('as an action') || lowerDesc.includes('use your action')) {
+    feature.actionType = 'Action'
+  }
+
+  return feature
+}
+
+/**
+ * Batch map multiple 5e.tools feats
+ */
+export function mapFeats(fiveToolsFeats: unknown[]): AppFeature[] {
+  return fiveToolsFeats
+    .map((feat) => mapFeat(feat))
+    .filter((feat): feat is AppFeature => feat !== null)
+}
+
+/**
+ * Batch map class/species/background features
+ */
+export function mapClassFeatures(
+  fiveToolsFeatures: unknown[],
+  featureType: 'Class Feature' | 'Species Trait' | 'Background Feature'
+): AppFeature[] {
+  return fiveToolsFeatures
+    .map((feature) => mapClassFeature(feature, featureType))
+    .filter((feature): feature is AppFeature => feature !== null)
+}
