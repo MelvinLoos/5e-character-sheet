@@ -32,6 +32,8 @@ interface Spell {
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
 const showSpellLibrary = ref(false)
+const searchFilter = ref('')
+const filterByLevel = ref<number | null>(null)
 
 // Check if character has spellcasting - show when casterType is set OR when any feature grants spells
 const hasSpellcasting = computed(() => {
@@ -115,7 +117,7 @@ const librarySpells = computed(() => {
     (store.currentCharacterData.spells || []).map((s: Spell) => s.name)
   )
   
-  return availableSpells.value.filter((s: Spell) => {
+  let filtered = availableSpells.value.filter((s: Spell) => {
     // Exclude spells already on character
     if (characterSpellNames.has(s.name)) return false
     
@@ -130,10 +132,36 @@ const librarySpells = computed(() => {
       spellClass.toLowerCase() === characterClass.value.toLowerCase()
     )
   })
+
+  // Apply search filter
+  if (searchFilter.value.trim()) {
+    const search = searchFilter.value.toLowerCase()
+    filtered = filtered.filter((s: Spell) => 
+      s.name.toLowerCase().includes(search) ||
+      (s.desc && s.desc.toLowerCase().includes(search)) ||
+      (typeof s.school === 'string' && s.school.toLowerCase().includes(search))
+    )
+  }
+
+  // Apply level filter
+  if (filterByLevel.value !== null) {
+    filtered = filtered.filter((s: Spell) => s.level === filterByLevel.value)
+  }
+
+  // Sort by level, then name
+  return filtered.sort((a, b) => {
+    if (a.level !== b.level) return a.level - b.level
+    return a.name.localeCompare(b.name)
+  })
 })
 
 function toggleSpellLibrary() {
   showSpellLibrary.value = !showSpellLibrary.value
+  // Reset filters when opening
+  if (showSpellLibrary.value) {
+    searchFilter.value = ''
+    filterByLevel.value = null
+  }
 }
 
 function addSpellFromLibrary(spell: Spell) {
@@ -144,6 +172,26 @@ function addSpellFromLibrary(spell: Spell) {
 
   store.currentCharacterData.spells = store.currentCharacterData.spells || []
   store.currentCharacterData.spells.push(newSpell)
+}
+
+function addManualSpell() {
+  const newSpell = {
+    id: generateId(),
+    name: 'New Spell',
+    level: 1,
+    desc: 'Enter spell description...',
+  }
+
+  store.currentCharacterData.spells = store.currentCharacterData.spells || []
+  store.currentCharacterData.spells.push(newSpell)
+  
+  // Close the library modal
+  showSpellLibrary.value = false
+}
+
+function clearFilters() {
+  searchFilter.value = ''
+  filterByLevel.value = null
 }
 
 function addSpell() {
@@ -257,7 +305,7 @@ function removeSpell(index: number) {
 
     <!-- Spell Library Modal -->
     <div v-if="showSpellLibrary && store.isEditing" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="toggleSpellLibrary">
-      <div class="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto w-full mx-4">
+      <div class="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-hidden flex flex-col w-full mx-4">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold">Spell Library</h3>
           <button @click="toggleSpellLibrary" class="icon-button" title="Close">
@@ -273,36 +321,99 @@ function removeSpell(index: number) {
           </p>
         </div>
 
-        <div v-if="librarySpells.length === 0" class="text-center text-gray-500 py-8">
-          <p class="mb-2">No spells available to add.</p>
-          <p class="text-sm" v-if="characterClass">
-            All {{ characterClass }} spells have been added to your character, or no {{ characterClass }} spells have been imported yet.
-          </p>
-          <p class="text-sm" v-else>
-            All imported spells have been added to your character, or no spells have been imported yet.
-          </p>
-        </div>
-
-        <div v-else class="space-y-2">
-          <div v-for="spell in librarySpells" :key="spell.name" class="border rounded p-3 hover:bg-gray-50">
-            <div class="flex justify-between items-start">
-              <div class="flex-grow">
-                <div class="flex items-baseline gap-2 mb-1">
-                  <span class="font-bold">{{ spell.name }}</span>
-                  <span class="text-xs italic text-gray-600">Level {{ spell.level }}</span>
-                </div>
-                <p class="text-sm text-gray-700 line-clamp-2">{{ spell.desc }}</p>
-                <div v-if="spell.school || spell.castingTime || spell.range" class="text-xs text-gray-500 mt-1">
-                  <span v-if="spell.school">{{ spell.school }}</span>
-                  <span v-if="spell.castingTime"> • {{ spell.castingTime }}</span>
-                  <span v-if="spell.range"> • {{ spell.range }}</span>
-                </div>
-              </div>
-              <button @click="addSpellFromLibrary(spell)" class="ml-3 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600" title="Add to character">
-                Add
-              </button>
+        <!-- Search and Filter Controls -->
+        <div class="mb-4 space-y-3">
+          <div class="flex gap-2">
+            <div class="flex-grow relative">
+              <input 
+                v-model="searchFilter" 
+                type="text" 
+                placeholder="Search spells by name, description, or school..."
+                class="w-full p-2 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <span v-if="searchFilter" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600" @click="searchFilter = ''">
+                <span v-html="feather.icons.x.toSvg({ width: 16, height: 16 })"></span>
+              </span>
             </div>
           </div>
+          
+          <div class="flex gap-2 items-center">
+            <label class="text-sm font-medium text-gray-700">Level:</label>
+            <div class="flex gap-1 flex-wrap">
+              <button 
+                v-for="level in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" 
+                :key="level"
+                @click="filterByLevel = filterByLevel === level ? null : level"
+                :class="[
+                  'px-2 py-1 text-xs rounded border',
+                  filterByLevel === level 
+                    ? 'bg-blue-500 text-white border-blue-600' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ]"
+              >
+                {{ level === 0 ? 'Cantrip' : level }}
+              </button>
+            </div>
+            <button 
+              v-if="searchFilter || filterByLevel !== null"
+              @click="clearFilters" 
+              class="ml-auto text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              Clear filters
+            </button>
+          </div>
+
+          <div class="text-sm text-gray-600">
+            Showing {{ librarySpells.length }} spell{{ librarySpells.length !== 1 ? 's' : '' }}
+          </div>
+        </div>
+
+        <!-- Spell List -->
+        <div class="flex-grow overflow-y-auto">
+          <div v-if="librarySpells.length === 0" class="text-center text-gray-500 py-8">
+            <p class="mb-2">No spells match your filters.</p>
+            <p class="text-sm" v-if="searchFilter || filterByLevel !== null">
+              Try adjusting your search or filter criteria.
+            </p>
+            <p class="text-sm" v-else-if="characterClass">
+              All {{ characterClass }} spells have been added to your character, or no {{ characterClass }} spells have been imported yet.
+            </p>
+            <p class="text-sm" v-else>
+              All imported spells have been added to your character, or no spells have been imported yet.
+            </p>
+          </div>
+
+          <div v-else class="space-y-2">
+            <div v-for="spell in librarySpells" :key="spell.name" class="border rounded p-3 hover:bg-gray-50">
+              <div class="flex justify-between items-start">
+                <div class="flex-grow">
+                  <div class="flex items-baseline gap-2 mb-1">
+                    <span class="font-bold">{{ spell.name }}</span>
+                    <span class="text-xs italic text-gray-600">
+                      {{ spell.level === 0 ? 'Cantrip' : `Level ${spell.level}` }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-gray-700 line-clamp-2">{{ spell.desc }}</p>
+                  <div v-if="spell.school || spell.castingTime || spell.range" class="text-xs text-gray-500 mt-1">
+                    <span v-if="spell.school">{{ spell.school }}</span>
+                    <span v-if="spell.castingTime"> • {{ spell.castingTime }}</span>
+                    <span v-if="spell.range"> • {{ spell.range }}</span>
+                  </div>
+                </div>
+                <button @click="addSpellFromLibrary(spell)" class="ml-3 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600" title="Add to character">
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Manual Spell Button -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <button @click="addManualSpell" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center justify-center gap-2">
+            <span v-html="feather.icons.plus.toSvg({ width: 16, height: 16 })"></span>
+            <span>Add Custom Spell (Manual Entry)</span>
+          </button>
         </div>
       </div>
     </div>
