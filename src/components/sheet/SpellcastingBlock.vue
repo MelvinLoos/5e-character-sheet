@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useRulesStore } from '@/stores/rulesStore'
 import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
@@ -28,6 +29,8 @@ interface Spell {
 }
 
 const store = useCharacterStore()
+const rulesStore = useRulesStore()
+const showSpellLibrary = ref(false)
 
 // Check if character has spellcasting - show when casterType is set OR when any feature grants spells
 const hasSpellcasting = computed(() => {
@@ -95,10 +98,44 @@ const editableSpells = computed({
   },
 })
 
+// Available spells from rulesStore
+const availableSpells = computed(() => {
+  return (rulesStore.allSpells as Spell[]) || []
+})
+
+// Filter out spells already added to character
+const librarySpells = computed(() => {
+  const characterSpellNames = new Set(
+    (store.currentCharacterData.spells || []).map((s: Spell) => s.name)
+  )
+  return availableSpells.value.filter((s: Spell) => !characterSpellNames.has(s.name))
+})
+
+function toggleSpellLibrary() {
+  showSpellLibrary.value = !showSpellLibrary.value
+}
+
+function addSpellFromLibrary(spell: Spell) {
+  const newSpell = {
+    ...spell,
+    id: generateId(),
+  }
+
+  store.currentCharacterData.spells = store.currentCharacterData.spells || []
+  store.currentCharacterData.spells.push(newSpell)
+}
+
 function addSpell() {
   // Only allow adding spells if there's a valid casterType
   if (!hasSpellcasting.value) return
 
+  // If we have spells in the library, show the library instead
+  if (availableSpells.value.length > 0) {
+    showSpellLibrary.value = true
+    return
+  }
+
+  // Otherwise, add a blank spell for manual entry
   const newSpell = {
     id: generateId(),
     name: 'New Spell',
@@ -194,6 +231,45 @@ function removeSpell(index: number) {
             </div>
           </template>
         </draggable>
+      </div>
+    </div>
+
+    <!-- Spell Library Modal -->
+    <div v-if="showSpellLibrary && store.isEditing" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="toggleSpellLibrary">
+      <div class="bg-white rounded-lg p-6 max-w-2xl max-h-[80vh] overflow-y-auto w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Spell Library</h3>
+          <button @click="toggleSpellLibrary" class="icon-button" title="Close">
+            <span v-html="feather.icons.x.toSvg()"></span>
+          </button>
+        </div>
+
+        <div v-if="librarySpells.length === 0" class="text-center text-gray-500 py-8">
+          <p class="mb-2">No spells available to add.</p>
+          <p class="text-sm">All imported spells have been added to your character, or no spells have been imported yet.</p>
+        </div>
+
+        <div v-else class="space-y-2">
+          <div v-for="spell in librarySpells" :key="spell.name" class="border rounded p-3 hover:bg-gray-50">
+            <div class="flex justify-between items-start">
+              <div class="flex-grow">
+                <div class="flex items-baseline gap-2 mb-1">
+                  <span class="font-bold">{{ spell.name }}</span>
+                  <span class="text-xs italic text-gray-600">Level {{ spell.level }}</span>
+                </div>
+                <p class="text-sm text-gray-700 line-clamp-2">{{ spell.desc }}</p>
+                <div v-if="spell.school || spell.castingTime || spell.range" class="text-xs text-gray-500 mt-1">
+                  <span v-if="spell.school">{{ spell.school }}</span>
+                  <span v-if="spell.castingTime"> • {{ spell.castingTime }}</span>
+                  <span v-if="spell.range"> • {{ spell.range }}</span>
+                </div>
+              </div>
+              <button @click="addSpellFromLibrary(spell)" class="ml-3 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600" title="Add to character">
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
