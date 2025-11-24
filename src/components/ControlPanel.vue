@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import ImportModal from '@/components/modals/ImportModal.vue'
 import feather from 'feather-icons'
 
 const store = useCharacterStore()
 const geminiPrompt = ref('')
+const showImportModal = ref(false)
 
 interface Character {
   name: string
@@ -79,6 +81,22 @@ function generate() {
           <button @click="generate" class="gemini-button flex-shrink-0">Generate Character</button>
         </div>
       </div>
+      <div class="border-t border-amber-300 pt-6">
+        <h2 class="font-fell text-2xl text-center text-purple-900 mb-4">
+          📚 Import 5e.tools Data
+        </h2>
+        <div class="text-center">
+          <button @click="showImportModal = true" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            Import Spells/Feats from 5e.tools
+          </button>
+          <p class="text-sm text-gray-600 mt-2">
+            Import spells and feats from 5e.tools JSON files
+          </p>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Import Modal -->
+  <ImportModal :show="showImportModal" @close="showImportModal = false" />
 </template>
