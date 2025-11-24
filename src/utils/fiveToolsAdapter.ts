@@ -171,6 +171,7 @@ interface FiveToolsSpell {
   entriesHigherLevel?: Array<{ type: string; name: string; entries: unknown[] }> | unknown
   source?: string
   meta?: { ritual?: boolean }
+  classes?: { fromClassList?: Array<{ name: string; source: string }> }
   [key: string]: unknown
 }
 
@@ -188,6 +189,7 @@ export interface AppSpell {
   components?: string
   duration?: string
   concentration?: boolean
+  classes?: string[] // Array of class names that can cast this spell
 }
 
 /**
@@ -229,6 +231,16 @@ export function mapSpell(fiveToolsSpell: unknown): AppSpell | null {
     desc = 'No description available.'
   }
 
+  // Extract class list if available
+  const classes: string[] = []
+  if (spell.classes?.fromClassList && Array.isArray(spell.classes.fromClassList)) {
+    for (const classObj of spell.classes.fromClassList) {
+      if (classObj && typeof classObj === 'object' && 'name' in classObj) {
+        classes.push((classObj as { name: string }).name)
+      }
+    }
+  }
+
   return {
     name: spell.name,
     level: spell.level,
@@ -240,6 +252,7 @@ export function mapSpell(fiveToolsSpell: unknown): AppSpell | null {
     components: mapComponents(spell.components),
     duration: mapDuration(spell.duration),
     concentration: checkConcentration(spell.duration),
+    classes: classes.length > 0 ? classes : undefined,
   }
 }
 

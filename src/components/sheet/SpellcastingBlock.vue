@@ -25,6 +25,7 @@ interface Spell {
   name: string
   level: number
   desc: string
+  classes?: string[]
   [key: string]: unknown
 }
 
@@ -103,12 +104,32 @@ const availableSpells = computed(() => {
   return (rulesStore.allSpells as Spell[]) || []
 })
 
-// Filter out spells already added to character
+// Get character's class for filtering
+const characterClass = computed(() => {
+  return store.currentCharacterData?.class || ''
+})
+
+// Filter spells by class and exclude already added spells
 const librarySpells = computed(() => {
   const characterSpellNames = new Set(
     (store.currentCharacterData.spells || []).map((s: Spell) => s.name)
   )
-  return availableSpells.value.filter((s: Spell) => !characterSpellNames.has(s.name))
+  
+  return availableSpells.value.filter((s: Spell) => {
+    // Exclude spells already on character
+    if (characterSpellNames.has(s.name)) return false
+    
+    // If spell has no class restriction, include it
+    if (!s.classes || !Array.isArray(s.classes) || s.classes.length === 0) return true
+    
+    // If character has no class, show all spells
+    if (!characterClass.value) return true
+    
+    // Check if character's class is in the spell's class list
+    return s.classes.some((spellClass: string) => 
+      spellClass.toLowerCase() === characterClass.value.toLowerCase()
+    )
+  })
 })
 
 function toggleSpellLibrary() {
@@ -244,9 +265,22 @@ function removeSpell(index: number) {
           </button>
         </div>
 
+        <div v-if="characterClass" class="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+          <p class="text-sm text-blue-800">
+            <strong>Filtering for {{ characterClass }} spells</strong>
+            <br />
+            Showing only spells available to the {{ characterClass }} class.
+          </p>
+        </div>
+
         <div v-if="librarySpells.length === 0" class="text-center text-gray-500 py-8">
           <p class="mb-2">No spells available to add.</p>
-          <p class="text-sm">All imported spells have been added to your character, or no spells have been imported yet.</p>
+          <p class="text-sm" v-if="characterClass">
+            All {{ characterClass }} spells have been added to your character, or no {{ characterClass }} spells have been imported yet.
+          </p>
+          <p class="text-sm" v-else>
+            All imported spells have been added to your character, or no spells have been imported yet.
+          </p>
         </div>
 
         <div v-else class="space-y-2">
