@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import ImportModal from '@/components/modals/ImportModal.vue'
 import feather from 'feather-icons'
 
 const store = useCharacterStore()
 const geminiPrompt = ref('')
+const showImportModal = ref(false)
 
 interface Character {
   name: string
@@ -64,6 +66,9 @@ function generate() {
           <input type="file" id="char-file-input" @change="onFileChange" accept=".json" class="hidden" />
         </div>
         <div class="flex items-center gap-3">
+          <button @click="showImportModal = true" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors flex-shrink-0">
+            Import 5e.tools
+          </button>
           <label for="session-name" class="font-fell text-lg flex-shrink-0">Session:</label>
           <input type="text" id="session-name" placeholder="E.g., Westmarches" class="flex-grow"
             v-model="store.sessionName" />
@@ -81,4 +86,7 @@ function generate() {
       </div>
     </div>
   </div>
+
+  <!-- Import Modal -->
+  <ImportModal :show="showImportModal" @close="showImportModal = false" />
 </template>

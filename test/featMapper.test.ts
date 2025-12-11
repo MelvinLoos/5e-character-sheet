@@ -16,7 +16,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
         source: 'PHB',
         entries: [
           'You gain the following benefits:',
-          'You can\'t be surprised while you are conscious.',
+          "You can't be surprised while you are conscious.",
           'You gain a +5 bonus to initiative.',
         ],
       }
@@ -37,7 +37,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
         source: 'PHB',
         entries: [
           'You learn two cantrips of your choice from the wizard spell list.',
-          'You also learn one 1st-level spell from that class\'s spell list.',
+          "You also learn one 1st-level spell from that class's spell list.",
         ],
       }
 
@@ -166,9 +166,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
     it('detects reaction from description', () => {
       const feature = {
         name: 'Shield Master',
-        entries: [
-          'If you take the Attack action, you can use a reaction to...',
-        ],
+        entries: ['If you take the Attack action, you can use a reaction to...'],
       }
 
       const result = mapClassFeature(feature, 'Class Feature')
@@ -179,9 +177,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
     it('detects action from description', () => {
       const feature = {
         name: 'Second Wind',
-        entries: [
-          'You can use your action to regain hit points.',
-        ],
+        entries: ['You can use your action to regain hit points.'],
       }
 
       const result = mapClassFeature(feature, 'Class Feature')
@@ -192,9 +188,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
     it('maps species traits correctly', () => {
       const speciesTrait = {
         name: 'Darkvision',
-        entries: [
-          'You can see in dim light within 60 feet as if it were bright light.',
-        ],
+        entries: ['You can see in dim light within 60 feet as if it were bright light.'],
       }
 
       const result = mapClassFeature(speciesTrait, 'Species Trait')
@@ -206,9 +200,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
     it('maps background features correctly', () => {
       const backgroundFeature = {
         name: 'Researcher',
-        entries: [
-          'When you attempt to learn or recall a piece of lore, you know where to look.',
-        ],
+        entries: ['When you attempt to learn or recall a piece of lore, you know where to look.'],
       }
 
       const result = mapClassFeature(backgroundFeature, 'Background Feature')
@@ -306,7 +298,7 @@ describe('Feat/Feature Mapping (5e.tools to App Schema)', () => {
       const results = mapClassFeatures(traits, 'Species Trait')
 
       expect(results).toHaveLength(2)
-      expect(results.every(r => r.featureType === 'Species Trait')).toBe(true)
+      expect(results.every((r) => r.featureType === 'Species Trait')).toBe(true)
     })
 
     it('filters out invalid features', () => {

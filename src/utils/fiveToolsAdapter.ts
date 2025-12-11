@@ -171,6 +171,7 @@ interface FiveToolsSpell {
   entriesHigherLevel?: Array<{ type: string; name: string; entries: unknown[] }> | unknown
   source?: string
   meta?: { ritual?: boolean }
+  classes?: { fromClassList?: Array<{ name: string; source: string }> }
   [key: string]: unknown
 }
 
@@ -188,6 +189,7 @@ export interface AppSpell {
   components?: string
   duration?: string
   concentration?: boolean
+  classes?: string[] // Array of class names that can cast this spell
 }
 
 /**
@@ -229,6 +231,16 @@ export function mapSpell(fiveToolsSpell: unknown): AppSpell | null {
     desc = 'No description available.'
   }
 
+  // Extract class list if available
+  const classes: string[] = []
+  if (spell.classes?.fromClassList && Array.isArray(spell.classes.fromClassList)) {
+    for (const classObj of spell.classes.fromClassList) {
+      if (classObj && typeof classObj === 'object' && 'name' in classObj) {
+        classes.push((classObj as { name: string }).name)
+      }
+    }
+  }
+
   return {
     name: spell.name,
     level: spell.level,
@@ -240,6 +252,7 @@ export function mapSpell(fiveToolsSpell: unknown): AppSpell | null {
     components: mapComponents(spell.components),
     duration: mapDuration(spell.duration),
     concentration: checkConcentration(spell.duration),
+    classes: classes.length > 0 ? classes : undefined,
   }
 }
 
@@ -465,9 +478,10 @@ export function mapFeat(fiveToolsFeat: unknown): AppFeature | null {
   }
 
   // Build description from entries
-  const desc = feat.entries && Array.isArray(feat.entries)
-    ? sanitizeText(feat.entries)
-    : 'No description available.'
+  const desc =
+    feat.entries && Array.isArray(feat.entries)
+      ? sanitizeText(feat.entries)
+      : 'No description available.'
 
   // Build the feature object
   const feature: AppFeature = {
@@ -499,7 +513,7 @@ export function mapFeat(fiveToolsFeat: unknown): AppFeature | null {
  */
 export function mapClassFeature(
   fiveToolsFeature: unknown,
-  featureType: 'Class Feature' | 'Species Trait' | 'Background Feature'
+  featureType: 'Class Feature' | 'Species Trait' | 'Background Feature',
 ): AppFeature | null {
   if (!fiveToolsFeature || typeof fiveToolsFeature !== 'object') {
     return null
@@ -513,9 +527,10 @@ export function mapClassFeature(
   }
 
   // Build description from entries
-  const desc = feat.entries && Array.isArray(feat.entries)
-    ? sanitizeText(feat.entries)
-    : 'No description available.'
+  const desc =
+    feat.entries && Array.isArray(feat.entries)
+      ? sanitizeText(feat.entries)
+      : 'No description available.'
 
   // Build the feature object
   const feature: AppFeature = {
@@ -561,7 +576,7 @@ export function mapFeats(fiveToolsFeats: unknown[]): AppFeature[] {
  */
 export function mapClassFeatures(
   fiveToolsFeatures: unknown[],
-  featureType: 'Class Feature' | 'Species Trait' | 'Background Feature'
+  featureType: 'Class Feature' | 'Species Trait' | 'Background Feature',
 ): AppFeature[] {
   return fiveToolsFeatures
     .map((feature) => mapClassFeature(feature, featureType))
