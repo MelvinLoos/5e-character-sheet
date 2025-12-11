@@ -46,6 +46,7 @@ interface FeatureFormData {
   // For feats that grant individual spells (no full spellcasting)
   grantsSpells?: boolean
   grantedSpellLevels?: number[]
+  abilityModifiers?: Record<string, number>
 }
 
 // Form data - reactive copy of the feature
@@ -60,15 +61,16 @@ const formData = reactive<FeatureFormData>({
   casterType: null,
   grantsSpells: false,
   grantedSpellLevels: [],
+  abilityModifiers: {},
 })
 
 // Validation state
 const errors = ref<string[]>([])
 
 // Local visibility flags for info popups
-const showHelp = ref({ key: false, grants: false, reset: false })
+const showHelp = ref({ key: false, grants: false, reset: false, ability: false })
 
-function toggleHelp(type: 'key' | 'grants' | 'reset') {
+function toggleHelp(type: 'key' | 'grants' | 'reset' | 'ability') {
   // Toggle selected, close others
   Object.keys(showHelp.value).forEach((k) => {
     // @ts-ignore
@@ -88,6 +90,7 @@ function handleDocumentClick(e: MouseEvent) {
   showHelp.value.key = false
   showHelp.value.grants = false
   showHelp.value.reset = false
+  showHelp.value.ability = false
 }
 
 onMounted(() => document.addEventListener('click', handleDocumentClick))
@@ -131,6 +134,7 @@ watch(
         casterType: newFeature.casterType || null,
         grantsSpells: newFeature.grantsSpells || false,
         grantedSpellLevels: newFeature.grantedSpellLevels ? [...newFeature.grantedSpellLevels] : [],
+        abilityModifiers: newFeature.abilityModifiers ? { ...newFeature.abilityModifiers } : {},
       })
     } else if (props.isNew) {
       // Reset form for new feature
@@ -143,6 +147,7 @@ watch(
         resource: null,
         uses: null,
         casterType: null,
+        abilityModifiers: {},
       })
     }
   },
@@ -292,6 +297,35 @@ const baseAmount = computed({
     }
   },
 })
+
+// Ability Modifiers Management
+const abilityOptions = [
+  { value: 'str', label: 'Strength' },
+  { value: 'dex', label: 'Dexterity' },
+  { value: 'con', label: 'Constitution' },
+  { value: 'int', label: 'Intelligence' },
+  { value: 'wis', label: 'Wisdom' },
+  { value: 'cha', label: 'Charisma' },
+]
+
+const newModifier = reactive({ stat: 'str', value: 1 })
+
+function addModifier() {
+  if (!formData.abilityModifiers) formData.abilityModifiers = {}
+  const val = Number(newModifier.value)
+  if (!isNaN(val)) {
+    formData.abilityModifiers[newModifier.stat] = val
+  }
+  // Reset to default
+  newModifier.stat = 'str'
+  newModifier.value = 1
+}
+
+function removeModifier(stat: string) {
+  if (formData.abilityModifiers) {
+    delete formData.abilityModifiers[stat]
+  }
+}
 </script>
 
 <template>
@@ -380,6 +414,54 @@ const baseAmount = computed({
                 {{ type.label }}
               </option>
             </select>
+          </div>
+
+          <!-- Ability Score Modifiers -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-bold">Ability Modifiers:</label>
+              <div class="relative inline-flex items-center">
+                <button class="info-button" title="Add ability score increases granted by this feature."
+                  @click.prevent="toggleHelp('ability')">
+                  <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"></span>
+                </button>
+                <div v-if="showHelp.ability"
+                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                  <div class="font-bold mb-1">Ability Modifiers</div>
+                  <div class="text-xs">Add ability score increases granted by this feature (e.g., +1 Strength).</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 bg-gray-50 p-2 rounded border border-gray-200">
+              <!-- Existing Modifiers -->
+              <div v-if="formData.abilityModifiers && Object.keys(formData.abilityModifiers).length > 0"
+                class="space-y-1 mb-2">
+                <div v-for="(val, stat) in formData.abilityModifiers" :key="stat"
+                  class="flex items-center justify-between bg-white px-2 py-1 rounded border border-gray-200 text-sm">
+                  <span>
+                    <span class="font-bold uppercase">{{ stat }}</span>: {{ val > 0 ? '+' : '' }}{{ val }}
+                  </span>
+                  <button @click="removeModifier(stat as string)" class="text-red-500 hover:text-red-700">
+                    <span v-html="feather.icons?.x?.toSvg({ width: 14, height: 14 })"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Add New Modifier -->
+              <div class="flex items-center gap-1">
+                <select v-model="newModifier.stat" class="edit-mode-select text-xs py-1 px-1 w-20">
+                  <option v-for="opt in abilityOptions" :key="opt.value" :value="opt.value">{{ opt.value.toUpperCase()
+                    }}</option>
+                </select>
+                <input v-model.number="newModifier.value" type="number"
+                  class="edit-mode-input text-xs py-1 px-1 w-12" />
+                <button @click="addModifier" class="bg-blue-500 text-white rounded p-1 hover:bg-blue-600"
+                  title="Add Modifier">
+                  <span v-html="feather.icons?.plus?.toSvg({ width: 14, height: 14 })"></span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Grants Spells (for feats that provide specific spells but not full casting) -->

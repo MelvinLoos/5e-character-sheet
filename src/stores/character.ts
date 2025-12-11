@@ -70,6 +70,7 @@ interface CharacterData {
     casterType?: string | null
     grantsSpells?: boolean
     grantedSpellLevels?: number[]
+    abilityModifiers?: Record<string, number>
     [key: string]: unknown
   }>
   equipment: string
@@ -732,6 +733,22 @@ export const useCharacterStore = defineStore('character', () => {
         finalScores[data.backgroundBonusSelections.plusOne] = score + 1
       }
     }
+
+    // Apply feature bonuses
+    if (data.features) {
+      data.features.forEach((feature) => {
+        if (feature.abilityModifiers) {
+          Object.entries(feature.abilityModifiers).forEach(([stat, bonus]) => {
+            // Normalize stat key to lowercase just in case
+            const normalizedStat = stat.toLowerCase()
+            if (finalScores[normalizedStat] !== undefined && typeof bonus === 'number') {
+              finalScores[normalizedStat] += bonus
+            }
+          })
+        }
+      })
+    }
+
     data.abilityScores = finalScores
 
     // Also recalculate derived stats
