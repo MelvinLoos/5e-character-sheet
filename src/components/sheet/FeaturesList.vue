@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import { useRulesStore } from '@/stores/rulesStore'
 import { watch, computed, ref } from 'vue'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
@@ -26,9 +27,12 @@ interface LocalFeature {
 }
 
 const store = useCharacterStore()
+const rulesStore = useRulesStore()
 
 // Modal state
 const isModalOpen = ref(false)
+const showFeatureLibrary = ref(false)
+const searchFilter = ref('')
 const editingFeature = ref<Record<string, unknown>>({})
 const isNewFeature = ref(false)
 const editingFeatureRef = ref<LocalFeature | null>(null) // Direct reference to the feature being edited
@@ -75,11 +79,64 @@ const editableFeatures = computed<LocalFeature[]>({
   },
 })
 
+// Available features from rulesStore
+const availableFeatures = computed(() => {
+  return (rulesStore.allFeats as LocalFeature[]) || []
+})
+
+// Filter features
+const libraryFeatures = computed(() => {
+  let filtered = availableFeatures.value
+
+  // Apply search filter
+  if (searchFilter.value.trim()) {
+    const search = searchFilter.value.toLowerCase()
+    filtered = filtered.filter((f: LocalFeature) =>
+      f.title.toLowerCase().includes(search) ||
+      (f.desc && f.desc.toLowerCase().includes(search))
+    )
+  }
+
+  // Sort by name
+  return filtered.sort((a, b) => a.title.localeCompare(b.title))
+})
+
 function addFeature() {
+  // If we have features in the library, show the library instead
+  if (availableFeatures.value.length > 0) {
+    showFeatureLibrary.value = true
+    searchFilter.value = '' // Reset filter
+    return
+  }
+
+  addManualFeature()
+}
+
+function addManualFeature() {
   editingFeature.value = {}
   editingFeatureRef.value = null
   isNewFeature.value = true
   isModalOpen.value = true
+  showFeatureLibrary.value = false
+}
+
+function addFeatureFromLibrary(feature: LocalFeature) {
+  // Create a copy of the feature
+  const newFeature = { ...feature }
+
+  // If adding to Key Features, mark it as key
+  if (props.title === 'Key Features') {
+    newFeature.key = true
+  }
+
+  store.currentCharacterData.features = store.currentCharacterData.features || []
+  store.currentCharacterData.features.push(newFeature as any)
+
+  // Trigger recalculation
+  store.recalculateAbilityScores()
+
+  // Close library
+  showFeatureLibrary.value = false
 }
 
 function editFeature(feature: LocalFeature) {
@@ -255,6 +312,74 @@ watch(
     <!-- Feature Editor Modal -->
     <FeatureEditorModal :is-open="isModalOpen" :feature="editingFeature" :is-new="isNewFeature" @save="handleModalSave"
       @cancel="handleModalCancel" @delete="handleModalDelete" />
+
+    <!-- Feature Library Modal -->
+    <div v-if="showFeatureLibrary" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
+          <h3 class="font-bold text-lg">Feature Library</h3>
+          <button @click="showFeatureLibrary = false" class="text-gray-500 hover:text-gray-700">
+            <span v-html="feather.icons.x.toSvg()"></span>
+          </button>
+        </div>
+
+        <div class="p-4 border-b bg-gray-50">
+          <div class="relative">
+            <input
+              v-model="searchFilter"
+              type="text"
+              placeholder="Search features..."
+              class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              autofocus
+            />
+            <span class="absolute left-3 top-2.5 text-gray-400" v-html="feather.icons.search.toSvg({ width: 18, height: 18 })"></span>
+          </div>
+        </div>
+
+        <div class="overflow-y-auto flex-grow p-4">
+          <div v-if="libraryFeatures.length === 0" class="text-center py-8 text-gray-500">
+            <p>No features found matching your search.</p>
+            <button @click="addManualFeature" class="mt-4 text-purple-600 hover:text-purple-800 underline">
+              Add Custom Feature Manually
+            </button>
+          </div>
+
+          <div v-else class="space-y-2">
+            <div
+              v-for="(feature, index) in libraryFeatures"
+              :key="index"
+              class="border rounded-lg p-3 hover:bg-purple-50 cursor-pointer transition-colors group"
+              @click="addFeatureFromLibrary(feature)"
+            >
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-bold text-purple-700 group-hover:text-purple-900">{{ feature.title }}</h4>
+                    <span v-if="feature.source" class="text-xs bg-gray-200 px-1.5 py-0.5 rounded text-gray-600">
+                      {{ feature.source }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ feature.desc }}</p>
+                </div>
+                <button class="text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span v-html="feather.icons['plus-circle'].toSvg()"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 border-t bg-gray-50 flex justify-between items-center rounded-b-lg">
+          <span class="text-sm text-gray-500">{{ libraryFeatures.length }} features available</span>
+          <button
+            @click="addManualFeature"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition-colors text-sm font-medium"
+          >
+            Create Custom Feature
+          </button>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 

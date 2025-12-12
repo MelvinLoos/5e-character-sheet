@@ -16,6 +16,7 @@ type FeatureFormData = {
   casterType: string | null
   grantsSpells?: boolean
   grantedSpellLevels?: number[]
+  abilityModifiers?: Record<string, number>
 }
 
 function normalizeReset(reset?: string | null) {
@@ -50,6 +51,7 @@ export type FeatureOut = {
   uses?: { total: number; per: string }
   grantsSpells: boolean
   grantedSpellLevels: number[]
+  abilityModifiers?: Record<string, number>
   [key: string]: unknown
 }
 
@@ -63,6 +65,9 @@ export function normalizeFeatureForSave(formData: FeatureFormData): FeatureOut {
     casterType: formData.casterType || null,
     grantsSpells: false,
     grantedSpellLevels: [],
+    abilityModifiers: formData.abilityModifiers
+      ? Object.fromEntries(Object.entries(formData.abilityModifiers).map(([k, v]) => [k, Number(v)]))
+      : undefined,
   }
 
   // Normalize resource if present
