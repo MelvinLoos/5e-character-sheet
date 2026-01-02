@@ -20,6 +20,7 @@ declare module '../services/characterService.js' {
     combat: {
       ac: number
       hp_max: number
+      hp_current?: number
       speed: string
     }
     attacks: unknown[]
@@ -73,6 +74,7 @@ declare module '@/services/characterService.js' {
     combat: {
       ac: number
       hp_max: number
+      hp_current?: number
       speed: string
     }
     attacks: unknown[]
