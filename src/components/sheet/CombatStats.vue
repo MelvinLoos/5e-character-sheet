@@ -50,8 +50,16 @@ const store = useCharacterStore()
     <!-- Hit Points Section -->
     <div class="bordered-section text-center">
       <label class="font-fell text-xl text-sheet-red mb-3 block">Hit Points</label>
-      <div class="text-4xl font-bold tracking-wider mb-4 text-sheet-text">
-        {{ store.maxHp }} / {{ store.maxHp }}
+      <div class="text-4xl font-bold tracking-wider mb-4 text-sheet-text flex items-center justify-center gap-2">
+        <input
+          v-model.number="store.currentCharacterData.combat.hp_current"
+          type="number"
+          class="w-24 text-center bg-transparent border-b border-sheet-accent/50 focus:border-sheet-red focus:outline-none no-print"
+          placeholder="Current"
+        />
+        <div class="hidden print:block w-24 h-8 border-b border-black"></div>
+        <span>/</span>
+        <span>{{ store.maxHp }}</span>
       </div>
 
       <div class="pt-3 border-t border-sheet-accent/30">

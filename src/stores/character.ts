@@ -38,6 +38,7 @@ interface CharacterData {
   combat: {
     ac: number
     hp_max: number
+    hp_current?: number
     speed: string
   }
   attacks: Array<{
@@ -445,7 +446,13 @@ export const useCharacterStore = defineStore('character', () => {
       migrated.combat = {
         ac: 10,
         hp_max: 1,
+        hp_current: 1,
         speed: '30ft',
+      }
+    } else {
+      const combat = migrated.combat as Record<string, unknown>
+      if (combat.hp_current === undefined) {
+        combat.hp_current = combat.hp_max || 1
       }
     }
 
