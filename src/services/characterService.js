@@ -61,7 +61,12 @@ export const createBlankCharacter = () => {
           skill.toLowerCase().replace(/ /g, ''),
         ) || [],
     },
-    combat: { ac: 10, hp_max: 1, speed: DND_RULES.SPECIES[defaultSpecies]?.speed || '30ft' },
+    combat: {
+      ac: 10,
+      hp_max: 1,
+      hp_current: 1,
+      speed: DND_RULES.SPECIES[defaultSpecies]?.speed || '30ft',
+    },
     attacks: [],
     features: [...speciesTraits, ...classFeatures, ...backgroundFeature],
     equipment: '',

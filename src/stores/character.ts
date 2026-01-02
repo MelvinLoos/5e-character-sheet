@@ -38,6 +38,7 @@ interface CharacterData {
   combat: {
     ac: number
     hp_max: number
+    hp_current?: number
     speed: string
   }
   attacks: Array<{
@@ -339,6 +340,16 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Ensure background skills are properly applied
     updateBackgroundSkills()
+
+    // Sync HP with calculated values
+    // If hp_current matches the stored hp_max (or is new), update it to the calculated maxHp
+    // This ensures new characters or those at full health get the correct calculated max HP
+    const calculatedMax = maxHp.value
+    const combat = currentCharacterData.value.combat
+    if (combat.hp_current === combat.hp_max || combat.hp_current === undefined) {
+      combat.hp_current = calculatedMax
+    }
+    combat.hp_max = calculatedMax
   }
 
   function _migrateLegacyCharacter(data: unknown) {
@@ -445,7 +456,13 @@ export const useCharacterStore = defineStore('character', () => {
       migrated.combat = {
         ac: 10,
         hp_max: 1,
+        hp_current: 1,
         speed: '30ft',
+      }
+    } else {
+      const combat = migrated.combat as Record<string, unknown>
+      if (combat.hp_current === undefined) {
+        combat.hp_current = combat.hp_max || 1
       }
     }
 
