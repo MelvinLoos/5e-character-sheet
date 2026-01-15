@@ -32,6 +32,17 @@ Visit the [Heroes Guild Westmarches](https://www.westmarches.games/communities/h
 - **Class Features**: Support for character classes with spellcasting integration
 - **Level Progression**: Automatic proficiency bonus and HP calculation
 
+### 🤖 **AI-Powered Generation**
+
+- **Prompt-to-Character**: Generate full character sheets from natural language descriptions using Google Gemini
+- **Intelligent Creation**: Automatically selects appropriate class, race, background, and features
+- **Rules Compliant**: Generates characters adhering to 5e rules (2024 handbook compatible)
+
+### ☁️ **Online Sharing**
+
+- **Shareable Links**: Generate unique URLs to share your characters with other players
+- **Cloud Snapshots**: Character state is saved to Supabase for easy sharing via link
+
 ### 🎛️ **Advanced Features**
 
 - **Drag-and-Drop Reordering**: Organize features, spells, and attacks by dragging
@@ -63,6 +74,9 @@ cd 5e-character-sheet
 # Install dependencies
 npm install
 
+# Configure Environment Variables (create .env or configure in Netlify)
+# GEMINI_API_KEY=your_gemini_api_key
+
 # Start development server
 npm run dev
 
@@ -73,18 +87,30 @@ npm run build
 npm run preview
 ```
 
+## 🧪 Testing
+
+```bash
+# Run Unit Tests
+npm run test:unit
+
+# Run End-to-End Tests
+npm run test:e2e
+```
+
 ## 🎮 Usage
 
 ### Creating a Character
 
-1. **Edit Mode**: Click the edit button to modify character details
-2. **Point Buy**: Allocate ability scores using the intuitive point buy system
-3. **Background**: Select a background to automatically assign skill proficiencies
-4. **Features**: Add class features, feats, and special abilities
-5. **Spells**: Add spells with automatic spell slot calculation
+1. **AI Generation**: Use the "AI Generate" button to create a character from a description (e.g., "A sneaky goblin rogue who loves shiny things")
+2. **Edit Mode**: Click the edit button to manually modify character details
+3. **Point Buy**: Allocate ability scores using the intuitive point buy system
+4. **Background**: Select a background to automatically assign skill proficiencies
+5. **Features**: Add class features, feats, and special abilities
+6. **Spells**: Add spells with automatic spell slot calculation
 
 ### Managing Content
 
+- **Share Online**: Click "Share" to generate a unique URL for your character via Supabase
 - **Drag to Reorder**: In edit mode, drag handles appear on features, spells, and attacks
 - **Auto-Calculations**: Modifiers, proficiency bonuses, and spell save DCs update automatically
 - **Print Layout**: Use your browser's print function for clean character sheets
@@ -92,6 +118,7 @@ npm run preview
 ### Data Management
 
 - **Auto-Save**: Changes are automatically saved to browser storage
+- **Cloud Save**: Characters shared online are preserved in the database
 - **Export**: Download character as JSON file
 - **Import**: Upload previously exported character files
 
@@ -106,10 +133,13 @@ npm run preview
 - **Frontend**: Vue.js 3 with Composition API
 - **State Management**: Pinia
 - **Styling**: Tailwind CSS with custom D&D theming
+- **Backend & Auth**: Supabase
+- **AI Integration**: Google Gemini via Netlify Functions
 - **Drag & Drop**: Vue.draggable.next
 - **Icons**: Feather Icons
 - **Build Tool**: Vite
-- **Type Safety**: JavaScript with JSDoc
+- **Testing**: Playwright (E2E), Vitest (Unit)
+- **Type Safety**: TypeScript & JSDoc
 
 ## 📋 Game System Integration
 
@@ -178,11 +208,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔮 Roadmap
 
-- [ ] PDF export functionality
-- [ ] Multiple character management
+- [x] AI Character Generation
+- [x] Multiple character management
+- [x] Community character sharing (Online via Supabase)
+- [x] PDF export functionality
 - [ ] Heroes Guild campaign integration
 - [ ] Custom background creation
-- [ ] Community character sharing
 - [ ] Session tracking features
 
 ---
