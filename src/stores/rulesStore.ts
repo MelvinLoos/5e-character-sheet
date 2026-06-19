@@ -66,7 +66,7 @@ export const useRulesStore = defineStore('rules', {
 
       // For arrays (spells, feats), replace directly
       if (category === 'spells' || category === 'feats') {
-        ;(this as any)[category] = [...dataArray]
+        ;(this as unknown as Record<string, unknown>)[category] = [...dataArray]
         return
       }
 
@@ -80,7 +80,7 @@ export const useRulesStore = defineStore('rules', {
         }
       }
 
-      ;(this as any)[category] = dataObject
+      ;(this as unknown as Record<string, unknown>)[category] = dataObject
     },
 
     /**
@@ -100,7 +100,7 @@ export const useRulesStore = defineStore('rules', {
       }
 
       if (category in defaults) {
-        ;(this as any)[category] = defaults[category]
+        ;(this as unknown as Record<string, unknown>)[category] = defaults[category]
       }
     },
   },

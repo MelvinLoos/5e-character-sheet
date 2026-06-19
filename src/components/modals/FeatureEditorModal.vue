@@ -72,8 +72,7 @@ const showHelp = ref({ key: false, grants: false, reset: false, ability: false }
 
 function toggleHelp(type: 'key' | 'grants' | 'reset' | 'ability') {
   // Toggle selected, close others
-  Object.keys(showHelp.value).forEach((k) => {
-    // @ts-ignore
+  ;(Object.keys(showHelp.value) as Array<keyof typeof showHelp.value>).forEach((k) => {
     showHelp.value[k] = false
   })
   showHelp.value[type] = !showHelp.value[type]

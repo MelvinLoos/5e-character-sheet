@@ -130,7 +130,9 @@ function addFeatureFromLibrary(feature: LocalFeature) {
   }
 
   store.currentCharacterData.features = store.currentCharacterData.features || []
-  store.currentCharacterData.features.push(newFeature as any)
+  store.currentCharacterData.features.push(
+    newFeature as unknown as (typeof store.currentCharacterData.features)[number],
+  )
 
   // Trigger recalculation
   store.recalculateAbilityScores()

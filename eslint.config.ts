@@ -16,11 +16,41 @@ export default defineConfigWithVueTs(
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  // Migrated from legacy .eslintignore
+  globalIgnores([
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/dist-ssr/**',
+    '**/.netlify/**',
+    '**/.cache/**',
+    '**/.vite/**',
+    '**/coverage/**',
+    '**/.vscode/**',
+    '**/*.log',
+  ]),
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
-  
+
+  // Project defaults; keep strict but allow targeted relaxations in overrides below
+  {
+    name: 'app/rules',
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+
+  // Tests often use `any` for emitted payloads/shorthand and assertion-style
+  // expressions; relax those rules for test files (migrated from .eslintrc.cjs).
+  {
+    name: 'app/test-overrides',
+    files: ['test/**', 'test/**/*.ts', '**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-unused-expressions': 'off',
+    },
+  },
+
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
