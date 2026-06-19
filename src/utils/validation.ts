@@ -3,7 +3,10 @@
 // throughout schema.json to surface human-friendly validation messages.
 import Ajv from 'ajv'
 import type { ValidateFunction } from 'ajv'
-import ajvErrors from 'ajv-errors'
+import ajvErrorsModule from 'ajv-errors'
+
+// Handle esbuild CJS-interop wrapper if present
+const ajvErrors = (ajvErrorsModule as any).default || ajvErrorsModule
 
 // A single shared Ajv instance is reused across the app.
 // - `allErrors: true` is required by ajv-errors so every failing keyword is
