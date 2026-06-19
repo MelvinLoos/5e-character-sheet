@@ -57,16 +57,17 @@ export const useRulesStore = defineStore('rules', {
         'classes',
         'species',
         'backgrounds',
-      ]
+      ] as const
 
-      if (!validCategories.includes(category)) {
+      if (!validCategories.includes(category as typeof validCategories[number])) {
         logger.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
         return
       }
 
       // For arrays (spells, feats), replace directly
       if (category === 'spells' || category === 'feats') {
-        ;(this as unknown as Record<string, unknown>)[category] = [...dataArray]
+        const key = category as 'spells' | 'feats'
+        this[key] = [...dataArray]
         return
       }
 
@@ -80,14 +81,15 @@ export const useRulesStore = defineStore('rules', {
         }
       }
 
-      ;(this as unknown as Record<string, unknown>)[category] = dataObject
+      const key = category as 'classes' | 'species' | 'backgrounds'
+      this[key] = dataObject
     },
 
     /**
      * Reset a category to its original state (from rules.js)
      */
-    resetCategory(category: string) {
-      const defaults: Record<string, unknown> = {
+    resetCategory(category: keyof RulesState) {
+      const defaults: RulesState = {
         abilities: { ...ABILITIES },
         skills: { ...SKILLS },
         proficiencyBonusProgression: { ...PROFICIENCY_BONUS_PROGRESSION },
@@ -100,7 +102,9 @@ export const useRulesStore = defineStore('rules', {
       }
 
       if (category in defaults) {
-        ;(this as unknown as Record<string, unknown>)[category] = defaults[category]
+        // Use a generic typing approach to assign the value based on the key
+        const resetKey = category as keyof RulesState;
+        (this as RulesState)[resetKey] = defaults[resetKey] as never;
       }
     },
   },
