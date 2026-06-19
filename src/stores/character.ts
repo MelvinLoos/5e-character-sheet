@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import * as DND_RULES from '../data/rules'
-import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { generateCharacterViaGemini } from '../services/apiService'
+
 import {
   getLibrary as getLocalLibrary,
   saveLibrary as saveLocalLibrary,
@@ -12,9 +11,13 @@ import {
   pointBuyCosts,
 } from '../services/characterService'
 import type { CharacterData } from '../services/characterService'
+
 import { migrateUsesToResource } from '../utils/migrations'
 import { logger } from '../utils/logger'
-import { validateAgainstSchema } from '../utils/validation'
+
+import { initSupabase, fetchCharacterFromUrl, shareCharacterToSupabase } from '../services/sharingService'
+import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '../services/aiService'
+import { loadSchema, getSchema, validateCharacterData } from '../services/schemaService'
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
@@ -23,8 +26,8 @@ export const useCharacterStore = defineStore('character', () => {
   const isEditing = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
   const sessionName = ref('Uncategorized')
-  const schema = ref<object | null>(null)
-  const geminiSchema = ref<object | null>(null)
+  const schema = computed(() => getSchema())
+  const geminiSchema = computed(() => getAiSchema())
   const supabaseClient = ref<SupabaseClient | null>(null)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
 
@@ -150,52 +153,17 @@ export const useCharacterStore = defineStore('character', () => {
   } // --- ACTIONS (Methods) ---
 
   async function initStore() {
-    // Init Supabase
-    // Credentials are read from Vite env variables. The anon key is a public
-    // client key, but it should still come from config rather than be committed.
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-      try {
-        supabaseClient.value = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-      } catch (e) {
-        logger.error('Error initializing Supabase client:', (e as Error).message)
-      }
-    } else {
-      logger.warn('Supabase credentials not found. Online sharing will be disabled.')
-    }
-
-    // Load Schema
-    try {
-      const response = await fetch('/schema.json')
-      if (!response.ok) throw new Error('Network response was not ok for schema.json')
-      schema.value = await response.json()
-    } catch (e) {
-      logger.error('Error loading schema.json:', e)
-      logger.warn('AI character generation will be disabled.')
-    }
-
-    // Load Gemini-compatible schema
-    try {
-      const response = await fetch('/gemini-schema.json')
-      if (!response.ok) throw new Error('Network response was not ok for gemini-schema.json')
-      geminiSchema.value = await response.json()
-    } catch (e) {
-      logger.error('Error loading gemini-schema.json:', e)
-      logger.warn('AI character generation will be disabled.')
-    }
+    supabaseClient.value = initSupabase()
+    
+    await loadSchema()
+    await loadAiSchema()
 
     // Load character from URL if present
     await loadCharacterFromUrl()
   }
 
   function validateCharacter(data: unknown) {
-    if (!schema.value) {
-      logger.warn('Character schema not loaded, skipping validation.')
-      return { valid: true, errors: [] as string[] }
-    }
-    return validateAgainstSchema(schema.value, data)
+     return validateCharacterData(data)
   }
 
   function _showLoading(text: string) {
@@ -389,32 +357,19 @@ export const useCharacterStore = defineStore('character', () => {
 
   async function loadCharacterFromUrl() {
     const urlParams = new URLSearchParams(window.location.search)
-    const characterId = urlParams.get('id')
-
-    if (characterId && supabaseClient.value) {
-      _showLoading('Fetching character from the archives...')
-      try {
-        const client = supabaseClient.value
-        if (!client) throw new Error('Supabase client not initialized')
-        const { data, error } = await client
-          .from('characters')
-          .select('character_data, id')
-          .eq('id', characterId)
-          .single()
-
-        if (error) throw error
-        if (!data) throw new Error('Character not found.')
-
-        _setCharacter(data.character_data)
-        sourceCharacterId.value = data.id // Set the source ID
-      } catch (error) {
+    try {
+        const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
+        if (result) {
+            _showLoading('Fetching character from the archives...')
+            _setCharacter(result.data)
+            sourceCharacterId.value = result.id
+        }
+    } catch(error) {
         logger.error('Error loading character from URL:', error)
         _showErrorModal([`Could not load character: ${(error as Error).message}`])
-        // Clear the URL query param to avoid confusion
         history.replaceState({}, '', window.location.pathname)
-      } finally {
+    } finally {
         _hideLoading()
-      }
     }
   }
 
@@ -484,19 +439,10 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   async function generateCharacter(userPrompt: string) {
-    if (!userPrompt) {
-      _showErrorModal(['Please describe the character you want to generate.'])
-      return
-    }
-    if (!geminiSchema.value) {
-      _showErrorModal(['Character schema is not loaded. AI generation is disabled.'])
-      return
-    }
-
     _showLoading('The mists of creation are swirling...')
     try {
-      const generatedData = await generateCharacterViaGemini(userPrompt, geminiSchema.value)
-      const { valid, errors } = validateCharacter(generatedData)
+      const generatedData = await aiGenerate(userPrompt)
+      const { valid, errors } = validateCharacter(generatedData.data)
       if (!valid) {
         logger.error('AI generated invalid data:', errors)
         _showErrorModal(
@@ -523,7 +469,7 @@ export const useCharacterStore = defineStore('character', () => {
         )
       }
 
-      _setCharacter({ ...createBlankCharacter(), ...generatedData })
+      _setCharacter({ ...createBlankCharacter(), ...generatedData.data as Record<string, unknown> })
       saveToLibrary()
     } catch (error) {
       logger.error('Error generating character:', error)
@@ -542,23 +488,8 @@ export const useCharacterStore = defineStore('character', () => {
 
     _showLoading('Saving character to the archives...')
     try {
-      const client = supabaseClient.value
-      if (!client) throw new Error('Supabase client not initialized')
-      const { data, error } = await client
-        .from('characters')
-        .insert([
-          {
-            name: currentCharacterData.value.name,
-            character_data: currentCharacterData.value,
-            source_character_id: sourceCharacterId.value,
-          },
-        ])
-        .select()
-        .single()
-
-      if (error) throw error
-
-      const newId = data.id
+      const newId = await shareCharacterToSupabase(supabaseClient.value, currentCharacterData.value, sourceCharacterId.value)
+      
       const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`
 
       shareModal.value.url = newUrl
@@ -939,6 +870,7 @@ export const useCharacterStore = defineStore('character', () => {
     updateNested,
     adjustPointBuyScore,
     recalculateAbilityScores,
+    validateCharacter,
     // Modals
     closeErrorModal: () => (errorModal.value.show = false),
     closeShareModal: () => (shareModal.value.show = false),
