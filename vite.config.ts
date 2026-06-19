@@ -4,10 +4,23 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueJsx(), vueDevTools()],
+  plugins: [
+    vue(),
+    vueJsx(),
+    vueDevTools(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: false,
+      injectRegister: 'inline',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,webmanifest}'],
+      },
+    }),
+  ],
   build: {
     // Encourage Rollup to split large vendor chunks into smaller pieces
     chunkSizeWarningLimit: 800,
