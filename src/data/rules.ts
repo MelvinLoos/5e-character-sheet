@@ -1,6 +1,41 @@
 // A simplified library of D&D 2024 rules for the character sheet creator.
 
-export const ABILITIES = {
+// --- Type definitions for the exported rules data ---
+
+export interface Feature {
+  title: string
+  desc: string
+  key?: boolean
+  featureType?: string
+  actionType?: string
+  casterType?: string | null
+  uses?: { total: number; per: string }
+}
+
+export interface ClassData {
+  description?: string
+  hitDice: number
+  hitDiceAverage: number
+  savingThrows: string[]
+  features: Feature[]
+}
+
+export interface SpeciesData {
+  description?: string
+  speed: string
+  traits: Feature[]
+}
+
+export interface BackgroundData {
+  description?: string
+  skills: string[]
+  abilityScoreIncrease: string[]
+  feature: Feature
+}
+
+export type SpellSlotsByLevel = Record<number, Record<string, number>>
+
+export const ABILITIES: Record<string, string> = {
   str: "Strength",
   dex: "Dexterity",
   con: "Constitution",
@@ -9,7 +44,7 @@ export const ABILITIES = {
   cha: "Charisma",
 };
 
-export const SKILLS = {
+export const SKILLS: Record<string, string> = {
   Acrobatics: "dex",
   "Animal Handling": "wis",
   Arcana: "int",
@@ -30,7 +65,7 @@ export const SKILLS = {
   Survival: "wis",
 };
 
-export const PROFICIENCY_BONUS_PROGRESSION = {
+export const PROFICIENCY_BONUS_PROGRESSION: Record<number, number> = {
   1: 2,
   5: 3,
   9: 4,
@@ -38,7 +73,7 @@ export const PROFICIENCY_BONUS_PROGRESSION = {
   17: 6,
 };
 
-export const SPELL_SLOT_PROGRESSION = {
+export const SPELL_SLOT_PROGRESSION: Record<string, SpellSlotsByLevel> = {
   full: {
     1: { level1: 2 },
     2: { level1: 3 },
@@ -203,7 +238,7 @@ export const SPELL_SLOT_PROGRESSION = {
   },
 };
 
-export const CLASSES = {
+export const CLASSES: Record<string, ClassData> = {
   Barbarian: {
     description: "A fierce warrior who can enter a battle rage.",
     hitDice: 12,
@@ -392,7 +427,7 @@ export const CLASSES = {
   },
 };
 
-export const SPECIES = {
+export const SPECIES: Record<string, SpeciesData> = {
   Human: {
     description:
       "Resourceful and versatile, humans are the most common people in the worlds of D&D.",
@@ -605,7 +640,7 @@ export const SPECIES = {
   },
 };
 
-export const BACKGROUNDS = {
+export const BACKGROUNDS: Record<string, BackgroundData> = {
   Acolyte: {
     description:
       "You have spent your life in the service of a temple to a specific god or pantheon of gods.",

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCharacterStore } from '@/stores/character'
-import * as DND_RULES from '@/data/rules.js'
+import * as DND_RULES from '@/data/rules'
 import feather from 'feather-icons'
 
 const store = useCharacterStore()

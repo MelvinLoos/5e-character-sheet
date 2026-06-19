@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
-import { SPELL_SLOT_PROGRESSION } from '@/data/rules.js'
+import { SPELL_SLOT_PROGRESSION } from '@/data/rules'
 import feather from 'feather-icons'
 import draggable from 'vuedraggable'
 

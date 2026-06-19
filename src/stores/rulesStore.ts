@@ -7,7 +7,7 @@ import {
   CLASSES,
   SPECIES,
   BACKGROUNDS,
-} from '@/data/rules.js'
+} from '@/data/rules'
 import { logger } from '@/utils/logger'
 
 interface RulesState {

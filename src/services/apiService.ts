@@ -1,4 +1,4 @@
-function cleanSchemaForApi(schema) {
+function cleanSchemaForApi(schema: unknown): unknown {
   if (typeof schema !== 'object' || schema === null) {
     return schema
   }
@@ -7,18 +7,18 @@ function cleanSchemaForApi(schema) {
     return schema.map((item) => cleanSchemaForApi(item))
   }
 
-  const newSchema = {}
+  const newSchema: Record<string, unknown> = {}
 
   for (const key in schema) {
     if (key === '$schema' || key === 'errorMessage') {
       continue
     }
 
-    const value = schema[key]
+    const value = (schema as Record<string, unknown>)[key]
 
     if (key === 'type' && Array.isArray(value)) {
       const nonNullType = value.find((t) => t !== 'null')
-      newSchema[key] = (nonNullType || value[0]).toUpperCase()
+      newSchema[key] = String(nonNullType || value[0]).toUpperCase()
     } else if (typeof value === 'object' && value !== null) {
       newSchema[key] = cleanSchemaForApi(value)
     } else {
@@ -29,7 +29,10 @@ function cleanSchemaForApi(schema) {
   return newSchema
 }
 
-export async function generateCharacterViaGemini(userPrompt, schema) {
+export async function generateCharacterViaGemini(
+  userPrompt: string,
+  schema: object,
+): Promise<object> {
   const cleanedSchema = cleanSchemaForApi(schema)
 
   const response = await fetch(`/.netlify/functions/generate-character`, {

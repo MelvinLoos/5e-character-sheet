@@ -1,103 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-// @ts-expect-error - JS module without types
-import * as DND_RULES from '../data/rules.js'
+import * as DND_RULES from '../data/rules'
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
-// @ts-expect-error - JS module without types
-import { generateCharacterViaGemini } from '../services/apiService.js'
+import { generateCharacterViaGemini } from '../services/apiService'
 import {
   getLibrary as getLocalLibrary,
   saveLibrary as saveLocalLibrary,
   createBlankCharacter,
   getMod,
   pointBuyCosts,
-  // @ts-expect-error - JS module without types
-} from '../services/characterService.js'
+} from '../services/characterService'
+import type { CharacterData } from '../services/characterService'
 import { migrateUsesToResource } from '../utils/migrations'
 import { logger } from '../utils/logger'
 import { validateAgainstSchema } from '../utils/validation'
-
-// Type interfaces
-interface CharacterData {
-  name: string
-  title: string
-  class: string | null
-  level: number
-  species: string | null
-  background: string | null
-  pointBuyBaseScores: Record<string, number>
-  backgroundBonusSelections: {
-    plusTwo: string | null
-    plusOne: string | null
-  }
-  abilityScores: Record<string, number>
-  profBonus: number
-  proficiencies: {
-    savingThrows: string[]
-    skills: string[]
-  }
-  combat: {
-    ac: number
-    hp_max: number
-    hp_current?: number
-    speed: string
-  }
-  attacks: Array<{
-    id?: string
-    name: string
-    atkStat?: string | null
-    customAtkValue?: number
-    dmgDie: string
-    dmgStat?: string | null
-    customDmgValue?: number
-    dmgBonus: number
-    type: string
-    notes?: string
-    weaponMastery?: string
-  }>
-  features: Array<{
-    title: string
-    desc: string
-    key?: boolean
-    source?: string
-    featureType?: string
-    actionType?: string
-    uses?: { total: number; per: string } | null
-    resource?: {
-      resourceType: string
-      value?: number
-      scalingStat?: string | null
-      reset?: string
-    } | null
-    casterType?: string | null
-    grantsSpells?: boolean
-    grantedSpellLevels?: number[]
-    abilityModifiers?: Record<string, number>
-    [key: string]: unknown
-  }>
-  equipment: string
-  personality: {
-    traits: string
-    ideal: string
-    bond: string
-    flaw: string
-    notes?: string
-  }
-  spellcasting: { ability?: string } | null
-  spells: Array<{
-    name: string
-    level: number
-    desc: string
-    source?: string
-    school?: string
-    castingTime?: string
-    range?: string
-    components?: string
-    duration?: string
-    concentration?: boolean
-  }>
-}
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
@@ -134,7 +51,7 @@ export const useCharacterStore = defineStore('character', () => {
     let prof = 2
     for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
       if (currentCharacterData.value.level >= parseInt(levelThreshold)) {
-        prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold]
+        prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[parseInt(levelThreshold)] ?? prof
       }
     }
     return prof
@@ -143,10 +60,10 @@ export const useCharacterStore = defineStore('character', () => {
   const maxHp = computed(() => {
     if (!currentCharacterData.value) return 1
     const { level, class: className } = currentCharacterData.value
-    const classData = DND_RULES.CLASSES[className]
+    const classData = className ? DND_RULES.CLASSES[className] : undefined
     if (!classData) return 1
 
-    const conMod = abilityMods.value.con
+    const conMod = abilityMods.value.con ?? 0
     let hp = classData.hitDice + conMod
     if (level > 1) {
       const hpGainPerLevel = classData.hitDiceAverage + conMod
@@ -176,7 +93,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return 0
     let total = 0
     Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
-      (s) => (total += pointBuyCosts[s]),
+      (s) => (total += pointBuyCosts[s] ?? 0),
     )
     return total
   })
@@ -343,7 +260,7 @@ export const useCharacterStore = defineStore('character', () => {
 
         // Subtract background bonuses if we can determine them
         const background = migrated.background
-        if (background && DND_RULES.BACKGROUNDS[background]) {
+        if (typeof background === 'string' && DND_RULES.BACKGROUNDS[background]) {
           // For legacy files, we can't know which bonuses were selected, so leave as-is
         }
       } else {
@@ -693,9 +610,10 @@ export const useCharacterStore = defineStore('character', () => {
     const newScore = currentScore + delta
     let totalCost = 0
     Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
-      (s) => (totalCost += pointBuyCosts[s]),
+      (s) => (totalCost += pointBuyCosts[s] ?? 0),
     )
-    const futureCost = totalCost - pointBuyCosts[currentScore] + pointBuyCosts[newScore]
+    const futureCost =
+      totalCost - (pointBuyCosts[currentScore] ?? 0) + (pointBuyCosts[newScore] ?? 0)
     if (newScore >= 8 && newScore <= 15 && futureCost <= 27) {
       currentCharacterData.value.pointBuyBaseScores[key] = newScore
       recalculateAbilityScores()
