@@ -61,8 +61,8 @@ Visit the [Heroes Guild Westmarches](https://www.westmarches.games/communities/h
 
 ### Prerequisites
 
-- Node.js 16+
-- npm or yarn
+- Node.js `^20.19.0 || >=22.12.0` (see `engines` in `package.json`)
+- npm (this repo uses `package-lock.json`; npm is the supported package manager)
 
 ### Installation
 
@@ -153,16 +153,23 @@ This character sheet implements common tabletop RPG mechanics including:
 
 ## 🎨 Customization
 
-The character sheet uses CSS custom properties for theming:
+The character sheet is themed through custom Tailwind CSS colors defined in `tailwind.config.js`:
 
-```css
-:root {
-  --sheet-bg: #f4f0e6;
-  --sheet-text: #3a2d21;
-  --sheet-accent: #c9b7a2;
-  --sheet-red: #8b4513;
+```js
+// tailwind.config.js
+colors: {
+  'sheet-bg': '#fdf6e3',
+  'sheet-text': '#3a2d21',
+  'sheet-red': '#8c1d1d',
+  'sheet-red-dark': '#6a1616',
+  'sheet-border': '#5c4d3d',
+  'sheet-accent': '#c9b7a2',
+  'sheet-input-bg': '#eaddc7',
 }
 ```
+
+These tokens are consumed via Tailwind utility classes (e.g. `bg-sheet-bg`, `text-sheet-red`) in the
+component styles under `src/assets/main.css`. Adjust the values here to retheme the sheet.
 
 ## 📱 Mobile Features
 
