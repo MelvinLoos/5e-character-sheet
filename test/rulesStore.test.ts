@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useRulesStore } from '../src/stores/rulesStore'
+import 'fake-indexeddb/auto'
 
 describe('rulesStore', () => {
   beforeEach(() => {

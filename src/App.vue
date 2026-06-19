@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
+import { useRulesStore } from './stores/rulesStore'
 import ControlPanel from './components/ControlPanel.vue'
 import CharacterSheet from './components/CharacterSheet.vue'
 
@@ -11,7 +12,8 @@ const ShareModal = defineAsyncComponent(() => import('./components/modals/ShareM
 
 const store = useCharacterStore()
 
-onMounted(() => {
+onMounted(async () => {
+  await useRulesStore().loadFromStorage()
   store.initStore()
 })
 </script>
