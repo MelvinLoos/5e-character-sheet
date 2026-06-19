@@ -1,108 +1,23 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
-// @ts-expect-error - JS module without types
-import * as DND_RULES from '../data/rules.js'
-import { createClient } from '@supabase/supabase-js'
+import { ref, shallowRef, computed, watch } from 'vue'
+import * as DND_RULES from '../data/rules'
 import type { SupabaseClient } from '@supabase/supabase-js'
-// @ts-expect-error - JS module without types
-import { generateCharacterViaGemini } from '../services/apiService.js'
+
 import {
   getLibrary as getLocalLibrary,
   saveLibrary as saveLocalLibrary,
   createBlankCharacter,
   getMod,
   pointBuyCosts,
-  // @ts-expect-error - JS module without types
-} from '../services/characterService.js'
+} from '../services/characterService'
+import type { CharacterData } from '../services/characterService'
+
 import { migrateUsesToResource } from '../utils/migrations'
+import { logger } from '../utils/logger'
 
-// Type interfaces
-interface CharacterData {
-  name: string
-  title: string
-  class: string | null
-  level: number
-  species: string | null
-  background: string | null
-  pointBuyBaseScores: Record<string, number>
-  backgroundBonusSelections: {
-    plusTwo: string | null
-    plusOne: string | null
-  }
-  abilityScores: Record<string, number>
-  profBonus: number
-  proficiencies: {
-    savingThrows: string[]
-    skills: string[]
-  }
-  combat: {
-    ac: number
-    hp_max: number
-    hp_current?: number
-    speed: string
-  }
-  attacks: Array<{
-    id?: string
-    name: string
-    atkStat?: string | null
-    customAtkValue?: number
-    dmgDie: string
-    dmgStat?: string | null
-    customDmgValue?: number
-    dmgBonus: number
-    type: string
-    notes?: string
-    weaponMastery?: string
-  }>
-  features: Array<{
-    title: string
-    desc: string
-    key?: boolean
-    source?: string
-    featureType?: string
-    actionType?: string
-    uses?: { total: number; per: string } | null
-    resource?: {
-      resourceType: string
-      value?: number
-      scalingStat?: string | null
-      reset?: string
-    } | null
-    casterType?: string | null
-    grantsSpells?: boolean
-    grantedSpellLevels?: number[]
-    abilityModifiers?: Record<string, number>
-    [key: string]: unknown
-  }>
-  equipment: string
-  personality: {
-    traits: string
-    ideal: string
-    bond: string
-    flaw: string
-    notes?: string
-  }
-  spellcasting: { ability?: string } | null
-  spells: Array<{
-    name: string
-    level: number
-    desc: string
-    source?: string
-    school?: string
-    castingTime?: string
-    range?: string
-    components?: string
-    duration?: string
-    concentration?: boolean
-  }>
-}
-
-// Minimal Ajv-like interface for compile-time typing (we don't import Ajv runtime typings)
-interface AjvLike {
-  compile: (
-    schema: unknown,
-  ) => ((data: unknown) => boolean) & { errors?: Array<{ message?: string } | null> }
-}
+import { initSupabase, fetchCharacterFromUrl, shareCharacterToSupabase } from '../services/sharingService'
+import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '../services/aiService'
+import { loadSchema, getSchema, validateCharacterData } from '../services/schemaService'
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
@@ -111,10 +26,11 @@ export const useCharacterStore = defineStore('character', () => {
   const isEditing = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
   const sessionName = ref('Uncategorized')
-  const schema = ref<object | null>(null)
-  const geminiSchema = ref<object | null>(null)
-  const ajv = ref<AjvLike | null>(null)
-  const supabaseClient = ref<SupabaseClient | null>(null)
+  const schema = computed(() => getSchema())
+  const geminiSchema = computed(() => getAiSchema())
+  // Use shallowRef so the Supabase client instance is stored as-is without Vue's
+  // deep UnwrapRef expansion, which otherwise strips its nominal type properties.
+  const supabaseClient = shallowRef<SupabaseClient | null>(null)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
 
   // Modal states
@@ -140,7 +56,7 @@ export const useCharacterStore = defineStore('character', () => {
     let prof = 2
     for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
       if (currentCharacterData.value.level >= parseInt(levelThreshold)) {
-        prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[levelThreshold]
+        prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[parseInt(levelThreshold)] ?? prof
       }
     }
     return prof
@@ -149,10 +65,10 @@ export const useCharacterStore = defineStore('character', () => {
   const maxHp = computed(() => {
     if (!currentCharacterData.value) return 1
     const { level, class: className } = currentCharacterData.value
-    const classData = DND_RULES.CLASSES[className]
+    const classData = className ? DND_RULES.CLASSES[className] : undefined
     if (!classData) return 1
 
-    const conMod = abilityMods.value.con
+    const conMod = abilityMods.value.con ?? 0
     let hp = classData.hitDice + conMod
     if (level > 1) {
       const hpGainPerLevel = classData.hitDiceAverage + conMod
@@ -182,7 +98,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return 0
     let total = 0
     Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
-      (s) => (total += pointBuyCosts[s]),
+      (s) => (total += pointBuyCosts[s] ?? 0),
     )
     return total
   })
@@ -233,84 +149,23 @@ export const useCharacterStore = defineStore('character', () => {
       // Fallback for unknown configurations
       return 1
     } catch (error) {
-      console.warn('Error calculating feature max uses:', error)
+      logger.warn('Error calculating feature max uses:', error)
       return 1
     }
   } // --- ACTIONS (Methods) ---
 
   async function initStore() {
-    // Init Supabase
-    const SUPABASE_URL = 'https://hqnxqotwtzeheydnaaio.supabase.co'
-    const SUPABASE_ANON_KEY =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxbnhxb3R3dHplaGV5ZG5hYWlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTk5MjIsImV4cCI6MjA3NjE3NTkyMn0.0zB-cPMBx-SJkZyu0_MgGoz71xvrp-83r1tUEVg9MeQ'
-
-    if ((SUPABASE_URL as string) !== 'YOUR_SUPABASE_PROJECT_URL') {
-      try {
-        supabaseClient.value = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-        console.log('Supabase client initialized.')
-      } catch (e) {
-        console.error('Error initializing Supabase client:', (e as Error).message)
-      }
-    } else {
-      console.warn('Supabase credentials not found. Online sharing will be disabled.')
-    }
-
-    // Init AJV - skip dynamic window-based loading to avoid casting to `any` here.
-    // If Ajv is required at runtime, prefer bundling/importing it explicitly.
-    try {
-      // If a global Ajv is present, we could initialize it here. For now, warn and continue.
-      if (typeof window !== 'undefined' && (window as unknown)) {
-        // noop - placeholder to avoid unused variable warnings
-      }
-      console.warn('Ajv not loaded. Validation will be limited.')
-    } catch (e) {
-      console.warn('Ajv initialization skipped.', e)
-    }
-
-    // Load Schema
-    try {
-      const response = await fetch('/schema.json')
-      if (!response.ok) throw new Error('Network response was not ok for schema.json')
-      schema.value = await response.json()
-      console.log('Character schema loaded.')
-    } catch (e) {
-      console.error('Error loading schema.json:', e)
-      console.warn('AI character generation will be disabled.')
-    }
-
-    // Load Gemini-compatible schema
-    try {
-      const response = await fetch('/gemini-schema.json')
-      if (!response.ok) throw new Error('Network response was not ok for gemini-schema.json')
-      geminiSchema.value = await response.json()
-      console.log('Gemini schema loaded.')
-    } catch (e) {
-      console.error('Error loading gemini-schema.json:', e)
-      console.warn('AI character generation will be disabled.')
-    }
+    supabaseClient.value = initSupabase()
+    
+    await loadSchema()
+    await loadAiSchema()
 
     // Load character from URL if present
     await loadCharacterFromUrl()
   }
 
   function validateCharacter(data: unknown) {
-    if (!ajv.value || !schema.value) {
-      console.warn('AJV or schema not initialized, skipping validation.')
-      return { valid: true }
-    }
-    if (!ajv.value || !schema.value) {
-      console.warn('AJV not initialized properly; skipping validation.')
-      return { valid: true }
-    }
-    const validate = ajv.value.compile(schema.value)
-    const valid = validate(data)
-    if (valid) {
-      return { valid: true, errors: [] }
-    }
-    const errorMessages = (validate.errors || [])
-      .map((err) => err?.message)
-      .filter(Boolean) as string[]
-    return { valid: false, errors: [...new Set(errorMessages)] }
+     return validateCharacterData(data)
   }
 
   function _showLoading(text: string) {
@@ -375,7 +230,7 @@ export const useCharacterStore = defineStore('character', () => {
 
         // Subtract background bonuses if we can determine them
         const background = migrated.background
-        if (background && DND_RULES.BACKGROUNDS[background]) {
+        if (typeof background === 'string' && DND_RULES.BACKGROUNDS[background]) {
           // For legacy files, we can't know which bonuses were selected, so leave as-is
         }
       } else {
@@ -504,32 +359,19 @@ export const useCharacterStore = defineStore('character', () => {
 
   async function loadCharacterFromUrl() {
     const urlParams = new URLSearchParams(window.location.search)
-    const characterId = urlParams.get('id')
-
-    if (characterId && supabaseClient.value) {
-      _showLoading('Fetching character from the archives...')
-      try {
-        const client = supabaseClient.value
-        if (!client) throw new Error('Supabase client not initialized')
-        const { data, error } = await client
-          .from('characters')
-          .select('character_data, id')
-          .eq('id', characterId)
-          .single()
-
-        if (error) throw error
-        if (!data) throw new Error('Character not found.')
-
-        _setCharacter(data.character_data)
-        sourceCharacterId.value = data.id // Set the source ID
-      } catch (error) {
-        console.error('Error loading character from URL:', error)
+    try {
+        const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
+        if (result) {
+            _showLoading('Fetching character from the archives...')
+            _setCharacter(result.data)
+            sourceCharacterId.value = result.id
+        }
+    } catch(error) {
+        logger.error('Error loading character from URL:', error)
         _showErrorModal([`Could not load character: ${(error as Error).message}`])
-        // Clear the URL query param to avoid confusion
         history.replaceState({}, '', window.location.pathname)
-      } finally {
+    } finally {
         _hideLoading()
-      }
     }
   }
 
@@ -564,7 +406,7 @@ export const useCharacterStore = defineStore('character', () => {
         saveToLibrary() // Auto-save imported char
       } catch (error) {
         _showErrorModal([`Error loading file: ${(error as Error).message}`])
-        console.error('File load error:', error)
+        logger.error('File load error:', error)
       }
     }
     reader.readAsText(file)
@@ -599,21 +441,12 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   async function generateCharacter(userPrompt: string) {
-    if (!userPrompt) {
-      _showErrorModal(['Please describe the character you want to generate.'])
-      return
-    }
-    if (!geminiSchema.value) {
-      _showErrorModal(['Character schema is not loaded. AI generation is disabled.'])
-      return
-    }
-
     _showLoading('The mists of creation are swirling...')
     try {
-      const generatedData = await generateCharacterViaGemini(userPrompt, geminiSchema.value)
-      const { valid, errors } = validateCharacter(generatedData)
+      const generatedData = await aiGenerate(userPrompt)
+      const { valid, errors } = validateCharacter(generatedData.data)
       if (!valid) {
-        console.error('AI generated invalid data:', errors)
+        logger.error('AI generated invalid data:', errors)
         _showErrorModal(
           ['The AI generated a character with some inconsistencies, but here it is:'].concat(
             (errors as string[]) || [],
@@ -638,10 +471,10 @@ export const useCharacterStore = defineStore('character', () => {
         )
       }
 
-      _setCharacter({ ...createBlankCharacter(), ...generatedData })
+      _setCharacter({ ...createBlankCharacter(), ...generatedData.data as Record<string, unknown> })
       saveToLibrary()
     } catch (error) {
-      console.error('Error generating character:', error)
+      logger.error('Error generating character:', error)
       _showErrorModal([`Error generating character: ${(error as Error).message}`])
     } finally {
       _hideLoading()
@@ -657,23 +490,8 @@ export const useCharacterStore = defineStore('character', () => {
 
     _showLoading('Saving character to the archives...')
     try {
-      const client = supabaseClient.value
-      if (!client) throw new Error('Supabase client not initialized')
-      const { data, error } = await client
-        .from('characters')
-        .insert([
-          {
-            name: currentCharacterData.value.name,
-            character_data: currentCharacterData.value,
-            source_character_id: sourceCharacterId.value,
-          },
-        ])
-        .select()
-        .single()
-
-      if (error) throw error
-
-      const newId = data.id
+      const newId = await shareCharacterToSupabase(supabaseClient.value, currentCharacterData.value, sourceCharacterId.value)
+      
       const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`
 
       shareModal.value.url = newUrl
@@ -682,7 +500,7 @@ export const useCharacterStore = defineStore('character', () => {
       history.pushState({}, '', newUrl)
       sourceCharacterId.value = newId
     } catch (error) {
-      console.error('Error sharing character:', error)
+      logger.error('Error sharing character:', error)
       _showErrorModal([`Could not share character: ${(error as Error).message}`])
     } finally {
       _hideLoading()
@@ -725,9 +543,10 @@ export const useCharacterStore = defineStore('character', () => {
     const newScore = currentScore + delta
     let totalCost = 0
     Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
-      (s) => (totalCost += pointBuyCosts[s]),
+      (s) => (totalCost += pointBuyCosts[s] ?? 0),
     )
-    const futureCost = totalCost - pointBuyCosts[currentScore] + pointBuyCosts[newScore]
+    const futureCost =
+      totalCost - (pointBuyCosts[currentScore] ?? 0) + (pointBuyCosts[newScore] ?? 0)
     if (newScore >= 8 && newScore <= 15 && futureCost <= 27) {
       currentCharacterData.value.pointBuyBaseScores[key] = newScore
       recalculateAbilityScores()
@@ -1053,6 +872,7 @@ export const useCharacterStore = defineStore('character', () => {
     updateNested,
     adjustPointBuyScore,
     recalculateAbilityScores,
+    validateCharacter,
     // Modals
     closeErrorModal: () => (errorModal.value.show = false),
     closeShareModal: () => (shareModal.value.show = false),

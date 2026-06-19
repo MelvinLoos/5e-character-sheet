@@ -61,8 +61,8 @@ Visit the [Heroes Guild Westmarches](https://www.westmarches.games/communities/h
 
 ### Prerequisites
 
-- Node.js 16+
-- npm or yarn
+- Node.js `^20.19.0 || >=22.12.0` (see `engines` in `package.json`)
+- npm (this repo uses `package-lock.json`; npm is the supported package manager)
 
 ### Installation
 
@@ -74,8 +74,9 @@ cd 5e-character-sheet
 # Install dependencies
 npm install
 
-# Configure Environment Variables (create .env or configure in Netlify)
-# GEMINI_API_KEY=your_gemini_api_key
+# Configure Environment Variables
+# Copy the example file and fill in your own values, or configure them in Netlify.
+cp .env.example .env
 
 # Start development server
 npm run dev
@@ -86,6 +87,18 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and provide values for the following variables. A `.env` file is git-ignored, so secrets are never committed.
+
+| Variable                 | Scope             | Description                                                                                                       |
+| ------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Client (Vite)     | Supabase project URL used for online character sharing. Exposed to the browser via `import.meta.env`.             |
+| `VITE_SUPABASE_ANON_KEY` | Client (Vite)     | Supabase anonymous (public) client key. Public, but kept in config rather than hard-coded.                        |
+| `GEMINI_API_KEY`         | Server (Netlify)  | Google Gemini API key used by the Netlify serverless function for AI generation. A secret, never sent to the browser. |
+
+> **Note:** When the Supabase variables are not set, the app still runs — online sharing is gracefully disabled and a warning is logged to the console.
 
 ## 🧪 Testing
 
@@ -153,16 +166,23 @@ This character sheet implements common tabletop RPG mechanics including:
 
 ## 🎨 Customization
 
-The character sheet uses CSS custom properties for theming:
+The character sheet is themed through custom Tailwind CSS colors defined in `tailwind.config.js`:
 
-```css
-:root {
-  --sheet-bg: #f4f0e6;
-  --sheet-text: #3a2d21;
-  --sheet-accent: #c9b7a2;
-  --sheet-red: #8b4513;
+```js
+// tailwind.config.js
+colors: {
+  'sheet-bg': '#fdf6e3',
+  'sheet-text': '#3a2d21',
+  'sheet-red': '#8c1d1d',
+  'sheet-red-dark': '#6a1616',
+  'sheet-border': '#5c4d3d',
+  'sheet-accent': '#c9b7a2',
+  'sheet-input-bg': '#eaddc7',
 }
 ```
+
+These tokens are consumed via Tailwind utility classes (e.g. `bg-sheet-bg`, `text-sheet-red`) in the
+component styles under `src/assets/main.css`. Adjust the values here to retheme the sheet.
 
 ## 📱 Mobile Features
 

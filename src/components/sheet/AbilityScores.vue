@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
-import * as DND_RULES from '@/data/rules.js'
-import { pointBuyCosts, formatMod } from '@/services/characterService.js'
+import * as DND_RULES from '@/data/rules'
+import { pointBuyCosts, formatMod } from '@/services/characterService'
 
 const store = useCharacterStore()
 
@@ -136,7 +136,7 @@ watch(
         <div class="ability-score text-base">
           {{ store.currentCharacterData.abilityScores[key] }}
         </div>
-        <div class="ability-modifier text-xs w-6 h-6">{{ formatMod(store.abilityMods[key]) }}</div>
+        <div class="ability-modifier text-xs w-6 h-6">{{ formatMod(store.abilityMods[key] ?? 0) }}</div>
       </div>
     </div>
 
@@ -171,7 +171,7 @@ watch(
         key.toUpperCase()
         }}</label>
       <div class="ability-score mb-2">{{ value }}</div>
-      <div class="ability-modifier">{{ formatMod(store.abilityMods[key]) }}</div>
+      <div class="ability-modifier">{{ formatMod(store.abilityMods[key] ?? 0) }}</div>
     </div>
   </section>
 </template>

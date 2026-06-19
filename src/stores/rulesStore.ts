@@ -7,7 +7,8 @@ import {
   CLASSES,
   SPECIES,
   BACKGROUNDS,
-} from '@/data/rules.js'
+} from '@/data/rules'
+import { logger } from '@/utils/logger'
 
 interface RulesState {
   abilities: Record<string, string>
@@ -56,17 +57,17 @@ export const useRulesStore = defineStore('rules', {
         'classes',
         'species',
         'backgrounds',
-      ]
+      ] as const
 
-      if (!validCategories.includes(category)) {
-        console.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
+      if (!validCategories.includes(category as typeof validCategories[number])) {
+        logger.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
         return
       }
 
       // For arrays (spells, feats), replace directly
       if (category === 'spells' || category === 'feats') {
-        ;(this as any)[category] = [...dataArray]
-        console.log(`Imported ${dataArray.length} items into ${category}`)
+        const key = category as 'spells' | 'feats'
+        this[key] = [...dataArray]
         return
       }
 
@@ -80,15 +81,15 @@ export const useRulesStore = defineStore('rules', {
         }
       }
 
-      ;(this as any)[category] = dataObject
-      console.log(`Imported ${Object.keys(dataObject).length} items into ${category}`)
+      const key = category as 'classes' | 'species' | 'backgrounds'
+      this[key] = dataObject
     },
 
     /**
      * Reset a category to its original state (from rules.js)
      */
-    resetCategory(category: string) {
-      const defaults: Record<string, unknown> = {
+    resetCategory(category: keyof RulesState) {
+      const defaults: RulesState = {
         abilities: { ...ABILITIES },
         skills: { ...SKILLS },
         proficiencyBonusProgression: { ...PROFICIENCY_BONUS_PROGRESSION },
@@ -101,8 +102,9 @@ export const useRulesStore = defineStore('rules', {
       }
 
       if (category in defaults) {
-        ;(this as any)[category] = defaults[category]
-        console.log(`Reset ${category} to default`)
+        // Use a generic typing approach to assign the value based on the key
+        const resetKey = category as keyof RulesState;
+        (this as RulesState)[resetKey] = defaults[resetKey] as never;
       }
     },
   },

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
-import * as DND_RULES from '@/data/rules.js'
+import * as DND_RULES from '@/data/rules'
 
 const store = useCharacterStore()
 </script>
@@ -18,7 +18,7 @@ const store = useCharacterStore()
 
       <div class="stat-box shadow-sm">
         <div class="ability-score">
-          {{ store.abilityMods.dex >= 0 ? '+' : '' }}{{ store.abilityMods.dex }}
+          {{ (store.abilityMods.dex ?? 0) >= 0 ? '+' : '' }}{{ store.abilityMods.dex ?? 0 }}
         </div>
         <div class="font-fell text-xs font-semibold text-sheet-red mt-1">INITIATIVE</div>
       </div>

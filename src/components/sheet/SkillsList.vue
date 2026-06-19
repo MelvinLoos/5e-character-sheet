@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
-import * as DND_RULES from '@/data/rules.js'
-import { formatMod } from '@/services/characterService.js'
+import * as DND_RULES from '@/data/rules'
+import { formatMod } from '@/services/characterService'
 
 const store = useCharacterStore()
 </script>
@@ -26,7 +26,7 @@ const store = useCharacterStore()
         <strong>
           {{
             formatMod(
-              store.abilityMods[stat] +
+              (store.abilityMods[stat] ?? 0) +
                 (store.currentCharacterData.proficiencies.skills.includes(
                   name.toLowerCase().replace(/ /g, ''),
                 )
