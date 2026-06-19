@@ -16,6 +16,7 @@ import {
 } from '../services/characterService.js'
 import { migrateUsesToResource } from '../utils/migrations'
 import { logger } from '../utils/logger'
+import { validateAgainstSchema } from '../utils/validation'
 
 // Type interfaces
 interface CharacterData {
@@ -98,13 +99,6 @@ interface CharacterData {
   }>
 }
 
-// Minimal Ajv-like interface for compile-time typing (we don't import Ajv runtime typings)
-interface AjvLike {
-  compile: (
-    schema: unknown,
-  ) => ((data: unknown) => boolean) & { errors?: Array<{ message?: string } | null> }
-}
-
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
   // Initialize with a blank character to avoid widespread null checks in templates/components
@@ -114,7 +108,6 @@ export const useCharacterStore = defineStore('character', () => {
   const sessionName = ref('Uncategorized')
   const schema = ref<object | null>(null)
   const geminiSchema = ref<object | null>(null)
-  const ajv = ref<AjvLike | null>(null)
   const supabaseClient = ref<SupabaseClient | null>(null)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
 
@@ -256,18 +249,6 @@ export const useCharacterStore = defineStore('character', () => {
       logger.warn('Supabase credentials not found. Online sharing will be disabled.')
     }
 
-    // Init AJV - skip dynamic window-based loading to avoid casting to `any` here.
-    // If Ajv is required at runtime, prefer bundling/importing it explicitly.
-    try {
-      // If a global Ajv is present, we could initialize it here. For now, warn and continue.
-      if (typeof window !== 'undefined' && (window as unknown)) {
-        // noop - placeholder to avoid unused variable warnings
-      }
-      logger.warn('Ajv not loaded. Validation will be limited.')
-    } catch (e) {
-      logger.warn('Ajv initialization skipped.', e)
-    }
-
     // Load Schema
     try {
       const response = await fetch('/schema.json')
@@ -293,23 +274,11 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   function validateCharacter(data: unknown) {
-    if (!ajv.value || !schema.value) {
-      logger.warn('AJV or schema not initialized, skipping validation.')
-      return { valid: true }
+    if (!schema.value) {
+      logger.warn('Character schema not loaded, skipping validation.')
+      return { valid: true, errors: [] as string[] }
     }
-    if (!ajv.value || !schema.value) {
-      logger.warn('AJV not initialized properly; skipping validation.')
-      return { valid: true }
-    }
-    const validate = ajv.value.compile(schema.value)
-    const valid = validate(data)
-    if (valid) {
-      return { valid: true, errors: [] }
-    }
-    const errorMessages = (validate.errors || [])
-      .map((err) => err?.message)
-      .filter(Boolean) as string[]
-    return { valid: false, errors: [...new Set(errorMessages)] }
+    return validateAgainstSchema(schema.value, data)
   }
 
   function _showLoading(text: string) {
