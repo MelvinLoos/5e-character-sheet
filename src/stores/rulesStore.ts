@@ -119,8 +119,11 @@ export const useRulesStore = defineStore('rules', {
       try {
         const storedState = await get<RulesState>('dndRulesLibrary')
         if (storedState) {
-          // Merge stored state with current state
-          this.$patch(storedState)
+          // Merge stored state with current state utilizing the mutator function
+          // to bypass TypeScript TS2769 generic DeepPartial incompatibility
+          this.$patch((state) => {
+            Object.assign(state, storedState)
+          })
         }
       } catch (err) {
         logger.error('Failed to load rules store from IDB:', err)
