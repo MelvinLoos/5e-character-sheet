@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, shallowRef, computed, watch } from 'vue'
 import * as DND_RULES from '../data/rules'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -28,7 +28,9 @@ export const useCharacterStore = defineStore('character', () => {
   const sessionName = ref('Uncategorized')
   const schema = computed(() => getSchema())
   const geminiSchema = computed(() => getAiSchema())
-  const supabaseClient = ref<SupabaseClient | null>(null)
+  // Use shallowRef so the Supabase client instance is stored as-is without Vue's
+  // deep UnwrapRef expansion, which otherwise strips its nominal type properties.
+  const supabaseClient = shallowRef<SupabaseClient | null>(null)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
 
   // Modal states
