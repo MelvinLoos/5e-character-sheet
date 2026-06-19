@@ -9,6 +9,7 @@ import {
   BACKGROUNDS,
 } from '@/data/rules'
 import { logger } from '@/utils/logger'
+import { get, set } from 'idb-keyval'
 
 interface RulesState {
   abilities: Record<string, string>
@@ -68,6 +69,7 @@ export const useRulesStore = defineStore('rules', {
       if (category === 'spells' || category === 'feats') {
         const key = category as 'spells' | 'feats'
         this[key] = [...dataArray]
+        set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
         return
       }
 
@@ -83,6 +85,7 @@ export const useRulesStore = defineStore('rules', {
 
       const key = category as 'classes' | 'species' | 'backgrounds'
       this[key] = dataObject
+      set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
     },
 
     /**
@@ -105,7 +108,26 @@ export const useRulesStore = defineStore('rules', {
         // Use a generic typing approach to assign the value based on the key
         const resetKey = category as keyof RulesState;
         (this as RulesState)[resetKey] = defaults[resetKey] as never;
+        set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
       }
     },
+
+    /**
+     * Load data from IndexedDB
+     */
+    async loadFromStorage(): Promise<void> {
+      try {
+        const storedState = await get<RulesState>('dndRulesLibrary')
+        if (storedState) {
+          // Merge stored state with current state utilizing the mutator function
+          // to bypass TypeScript TS2769 generic DeepPartial incompatibility
+          this.$patch((state) => {
+            Object.assign(state, storedState)
+          })
+        }
+      } catch (err) {
+        logger.error('Failed to load rules store from IDB:', err)
+      }
+    }
   },
 })
