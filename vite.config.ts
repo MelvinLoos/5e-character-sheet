@@ -16,8 +16,7 @@ export default defineConfig({
         manualChunks(id: string) {
           if (id.includes('node_modules')) {
             if (id.includes('node_modules/vue')) return 'vendor_vue'
-            if (id.includes('node_modules/pinia') || id.includes('node_modules/vue-router'))
-              return 'vendor_state'
+            if (id.includes('node_modules/pinia')) return 'vendor_state'
             if (id.includes('node_modules/@supabase') || id.includes('@supabase'))
               return 'vendor_supabase'
             if (id.includes('node_modules/ajv')) return 'vendor_ajv'
