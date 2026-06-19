@@ -74,8 +74,9 @@ cd 5e-character-sheet
 # Install dependencies
 npm install
 
-# Configure Environment Variables (create .env or configure in Netlify)
-# GEMINI_API_KEY=your_gemini_api_key
+# Configure Environment Variables
+# Copy the example file and fill in your own values, or configure them in Netlify.
+cp .env.example .env
 
 # Start development server
 npm run dev
@@ -86,6 +87,18 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and provide values for the following variables. A `.env` file is git-ignored, so secrets are never committed.
+
+| Variable                 | Scope             | Description                                                                                                       |
+| ------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Client (Vite)     | Supabase project URL used for online character sharing. Exposed to the browser via `import.meta.env`.             |
+| `VITE_SUPABASE_ANON_KEY` | Client (Vite)     | Supabase anonymous (public) client key. Public, but kept in config rather than hard-coded.                        |
+| `GEMINI_API_KEY`         | Server (Netlify)  | Google Gemini API key used by the Netlify serverless function for AI generation. A secret, never sent to the browser. |
+
+> **Note:** When the Supabase variables are not set, the app still runs — online sharing is gracefully disabled and a warning is logged to the console.
 
 ## 🧪 Testing
 

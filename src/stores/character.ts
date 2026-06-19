@@ -240,11 +240,12 @@ export const useCharacterStore = defineStore('character', () => {
 
   async function initStore() {
     // Init Supabase
-    const SUPABASE_URL = 'https://hqnxqotwtzeheydnaaio.supabase.co'
-    const SUPABASE_ANON_KEY =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhxbnhxb3R3dHplaGV5ZG5hYWlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1OTk5MjIsImV4cCI6MjA3NjE3NTkyMn0.0zB-cPMBx-SJkZyu0_MgGoz71xvrp-83r1tUEVg9MeQ'
+    // Credentials are read from Vite env variables. The anon key is a public
+    // client key, but it should still come from config rather than be committed.
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-    if ((SUPABASE_URL as string) !== 'YOUR_SUPABASE_PROJECT_URL') {
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       try {
         supabaseClient.value = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
         console.log('Supabase client initialized.')
