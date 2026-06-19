@@ -8,6 +8,7 @@ import {
   SPECIES,
   BACKGROUNDS,
 } from '@/data/rules.js'
+import { logger } from '@/utils/logger'
 
 interface RulesState {
   abilities: Record<string, string>
@@ -59,14 +60,13 @@ export const useRulesStore = defineStore('rules', {
       ]
 
       if (!validCategories.includes(category)) {
-        console.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
+        logger.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
         return
       }
 
       // For arrays (spells, feats), replace directly
       if (category === 'spells' || category === 'feats') {
         ;(this as any)[category] = [...dataArray]
-        console.log(`Imported ${dataArray.length} items into ${category}`)
         return
       }
 
@@ -81,7 +81,6 @@ export const useRulesStore = defineStore('rules', {
       }
 
       ;(this as any)[category] = dataObject
-      console.log(`Imported ${Object.keys(dataObject).length} items into ${category}`)
     },
 
     /**
@@ -102,7 +101,6 @@ export const useRulesStore = defineStore('rules', {
 
       if (category in defaults) {
         ;(this as any)[category] = defaults[category]
-        console.log(`Reset ${category} to default`)
       }
     },
   },

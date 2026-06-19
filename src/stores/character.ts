@@ -15,6 +15,7 @@ import {
   // @ts-expect-error - JS module without types
 } from '../services/characterService.js'
 import { migrateUsesToResource } from '../utils/migrations'
+import { logger } from '../utils/logger'
 
 // Type interfaces
 interface CharacterData {
@@ -233,7 +234,7 @@ export const useCharacterStore = defineStore('character', () => {
       // Fallback for unknown configurations
       return 1
     } catch (error) {
-      console.warn('Error calculating feature max uses:', error)
+      logger.warn('Error calculating feature max uses:', error)
       return 1
     }
   } // --- ACTIONS (Methods) ---
@@ -248,12 +249,11 @@ export const useCharacterStore = defineStore('character', () => {
     if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       try {
         supabaseClient.value = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-        console.log('Supabase client initialized.')
       } catch (e) {
-        console.error('Error initializing Supabase client:', (e as Error).message)
+        logger.error('Error initializing Supabase client:', (e as Error).message)
       }
     } else {
-      console.warn('Supabase credentials not found. Online sharing will be disabled.')
+      logger.warn('Supabase credentials not found. Online sharing will be disabled.')
     }
 
     // Init AJV - skip dynamic window-based loading to avoid casting to `any` here.
@@ -263,9 +263,9 @@ export const useCharacterStore = defineStore('character', () => {
       if (typeof window !== 'undefined' && (window as unknown)) {
         // noop - placeholder to avoid unused variable warnings
       }
-      console.warn('Ajv not loaded. Validation will be limited.')
+      logger.warn('Ajv not loaded. Validation will be limited.')
     } catch (e) {
-      console.warn('Ajv initialization skipped.', e)
+      logger.warn('Ajv initialization skipped.', e)
     }
 
     // Load Schema
@@ -273,10 +273,9 @@ export const useCharacterStore = defineStore('character', () => {
       const response = await fetch('/schema.json')
       if (!response.ok) throw new Error('Network response was not ok for schema.json')
       schema.value = await response.json()
-      console.log('Character schema loaded.')
     } catch (e) {
-      console.error('Error loading schema.json:', e)
-      console.warn('AI character generation will be disabled.')
+      logger.error('Error loading schema.json:', e)
+      logger.warn('AI character generation will be disabled.')
     }
 
     // Load Gemini-compatible schema
@@ -284,10 +283,9 @@ export const useCharacterStore = defineStore('character', () => {
       const response = await fetch('/gemini-schema.json')
       if (!response.ok) throw new Error('Network response was not ok for gemini-schema.json')
       geminiSchema.value = await response.json()
-      console.log('Gemini schema loaded.')
     } catch (e) {
-      console.error('Error loading gemini-schema.json:', e)
-      console.warn('AI character generation will be disabled.')
+      logger.error('Error loading gemini-schema.json:', e)
+      logger.warn('AI character generation will be disabled.')
     }
 
     // Load character from URL if present
@@ -296,11 +294,11 @@ export const useCharacterStore = defineStore('character', () => {
 
   function validateCharacter(data: unknown) {
     if (!ajv.value || !schema.value) {
-      console.warn('AJV or schema not initialized, skipping validation.')
+      logger.warn('AJV or schema not initialized, skipping validation.')
       return { valid: true }
     }
     if (!ajv.value || !schema.value) {
-      console.warn('AJV not initialized properly; skipping validation.')
+      logger.warn('AJV not initialized properly; skipping validation.')
       return { valid: true }
     }
     const validate = ajv.value.compile(schema.value)
@@ -524,7 +522,7 @@ export const useCharacterStore = defineStore('character', () => {
         _setCharacter(data.character_data)
         sourceCharacterId.value = data.id // Set the source ID
       } catch (error) {
-        console.error('Error loading character from URL:', error)
+        logger.error('Error loading character from URL:', error)
         _showErrorModal([`Could not load character: ${(error as Error).message}`])
         // Clear the URL query param to avoid confusion
         history.replaceState({}, '', window.location.pathname)
@@ -565,7 +563,7 @@ export const useCharacterStore = defineStore('character', () => {
         saveToLibrary() // Auto-save imported char
       } catch (error) {
         _showErrorModal([`Error loading file: ${(error as Error).message}`])
-        console.error('File load error:', error)
+        logger.error('File load error:', error)
       }
     }
     reader.readAsText(file)
@@ -614,7 +612,7 @@ export const useCharacterStore = defineStore('character', () => {
       const generatedData = await generateCharacterViaGemini(userPrompt, geminiSchema.value)
       const { valid, errors } = validateCharacter(generatedData)
       if (!valid) {
-        console.error('AI generated invalid data:', errors)
+        logger.error('AI generated invalid data:', errors)
         _showErrorModal(
           ['The AI generated a character with some inconsistencies, but here it is:'].concat(
             (errors as string[]) || [],
@@ -642,7 +640,7 @@ export const useCharacterStore = defineStore('character', () => {
       _setCharacter({ ...createBlankCharacter(), ...generatedData })
       saveToLibrary()
     } catch (error) {
-      console.error('Error generating character:', error)
+      logger.error('Error generating character:', error)
       _showErrorModal([`Error generating character: ${(error as Error).message}`])
     } finally {
       _hideLoading()
@@ -683,7 +681,7 @@ export const useCharacterStore = defineStore('character', () => {
       history.pushState({}, '', newUrl)
       sourceCharacterId.value = newId
     } catch (error) {
-      console.error('Error sharing character:', error)
+      logger.error('Error sharing character:', error)
       _showErrorModal([`Could not share character: ${(error as Error).message}`])
     } finally {
       _hideLoading()
