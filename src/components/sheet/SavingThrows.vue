@@ -36,14 +36,14 @@ function toggleProficiency(key: string) {
     >
       Saving Throws
     </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-card-gap pb-4">
+    <div style="gap: 1em;" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-0">
       <div
         v-for="[key, name] in Object.entries(DND_RULES.ABILITIES)"
         :key="key"
-        class="bg-surface-container border rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group"
+        class="bg-surface-container border rounded-lg p-2 flex items-center justify-between hover:bg-surface-variant transition-colors group gap-0"
         :class="'border-primary-container'"
       >
-        <div class="flex items-center gap-4 flex-1">
+        <div class="flex items-center gap-2 flex-1">
           <div
             class="w-12 h-12 rounded bg-surface-dim border flex items-center justify-center font-headline-md text-headline-md transition-colors"
             :class="

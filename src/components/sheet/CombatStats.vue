@@ -49,7 +49,6 @@ const store = useCharacterStore()
             class="font-label-md text-label-md text-on-surface-variant uppercase flex items-center gap-1"
             ><span class="material-symbols-outlined text-sm">favorite</span> HP</span
           >
-          <span class="font-label-md text-label-md text-tertiary">Max {{ store.maxHp }}</span>
         </div>
         <div class="flex items-end gap-2 border-b border-surface-variant pb-2 mb-2">
           <input

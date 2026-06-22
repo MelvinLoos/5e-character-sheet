@@ -41,11 +41,11 @@ function toggleProficiency(name: string) {
     >
       Skills
     </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-card-gap pb-4">
+    <div style="gap: 1em;" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-card-gap pb-4">
       <div
         v-for="[name, stat] in Object.entries(DND_RULES.SKILLS)"
         :key="name"
-        class="bg-surface-container border rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group"
+        class="bg-surface-container border rounded-lg p-2 flex items-center justify-between hover:bg-surface-variant transition-colors group"
         :class="'border-primary-container'"
       >
         <div class="flex items-center gap-4 flex-1">

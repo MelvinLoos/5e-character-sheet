@@ -198,8 +198,8 @@ const librarySpells = computed(() => {
 const filteredActiveSpells = computed(() => {
   if (!searchFilter.value) return editableSpells.value
   const query = searchFilter.value.toLowerCase()
-  return editableSpells.value.filter(s => 
-    s.name.toLowerCase().includes(query) || 
+  return editableSpells.value.filter(s =>
+    s.name.toLowerCase().includes(query) ||
     s.desc.toLowerCase().includes(query) ||
     s.school?.toLowerCase().includes(query)
   )
@@ -336,14 +336,14 @@ function formatLevel(level: number) {
       <div class="flex flex-col md:flex-row gap-4 mb-6 items-center">
         <div class="relative flex-1 w-full">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-          <input 
+          <input
             v-model="searchFilter"
-            class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary" 
-            placeholder="Search Spells..." 
+            class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary"
+            placeholder="Search Spells..."
             type="text"
           >
         </div>
-        <button 
+        <button
           v-if="store.isEditing"
           @click="addSpell"
           class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors whitespace-nowrap"
@@ -354,14 +354,14 @@ function formatLevel(level: number) {
 
       <!-- Spell Slot Counters -->
       <div v-if="Object.keys(spellSlots).length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <div 
-          v-for="[levelKey, max] in Object.entries(spellSlots)" 
+        <div
+          v-for="[levelKey, max] in Object.entries(spellSlots)"
           :key="levelKey"
           class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center"
         >
           <span class="font-label-md text-label-md text-primary mb-2">{{ formatLevel(parseInt(levelKey.replace('level', ''))) }} Level</span>
           <div class="flex items-center gap-2">
-            <button 
+            <button
               @click="setSpent(parseInt(levelKey.replace('level', '')), getSpent(parseInt(levelKey.replace('level', ''))) - 1)"
               class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container hover:bg-tertiary/10 transition-colors cursor-pointer"
               title="Click to decrement used slots"
@@ -373,7 +373,7 @@ function formatLevel(level: number) {
               {{ max }}
             </div>
           </div>
-          <button 
+          <button
             @click="setSpent(parseInt(levelKey.replace('level', '')), getSpent(parseInt(levelKey.replace('level', ''))) + 1)"
             class="mt-2 text-[10px] uppercase font-bold text-tertiary/60 hover:text-tertiary transition-colors cursor-pointer"
           >
@@ -393,7 +393,7 @@ function formatLevel(level: number) {
         ghost-class="opacity-50"
       >
         <template #item="{ element: spell }">
-          <div 
+          <div
             :class="[
               'rounded border p-4 relative overflow-hidden transition-all group duration-200',
               spell.prepared ? 'parchment-bg border-secondary-container shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:-translate-y-1' : 'bg-primary-container border-outline-variant hover:-translate-y-1'
@@ -401,18 +401,18 @@ function formatLevel(level: number) {
           >
             <!-- Preparation Toggle Gradient/Corner -->
             <div v-if="spell.prepared" class="absolute top-0 right-0 w-16 h-16 bg-tertiary/20 rounded-bl-full border-l border-b border-tertiary/30"></div>
-            
+
             <div class="flex justify-between items-start mb-2 relative z-10">
               <div class="flex items-center">
                 <!-- Drag handle -->
                 <span v-if="store.isEditing" class="spell-drag-handle material-symbols-outlined text-sm cursor-move opacity-0 group-hover:opacity-50 mr-1 text-inherit">drag_indicator</span>
-                
-                <button 
+
+                <button
                   @click="togglePrepared(spell)"
                   :class="[
                     'transition-colors mr-2',
                     spell.prepared ? 'text-on-secondary-fixed-variant hover:text-on-secondary-fixed' : 'text-on-surface-variant hover:text-primary'
-                  ]" 
+                  ]"
                   :title="spell.prepared ? 'Unprepare Spell' : 'Prepare Spell'"
                 >
                   <span class="material-symbols-outlined" :style="spell.prepared ? 'font-variation-settings: \'FILL\' 1' : ''">
@@ -421,7 +421,7 @@ function formatLevel(level: number) {
                 </button>
               </div>
 
-              <h4 
+              <h4
                 class="font-headline-md text-headline-md flex-grow"
                 :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-primary'"
               >
@@ -432,14 +432,14 @@ function formatLevel(level: number) {
               </span>
             </div>
 
-            <p 
+            <p
               class="font-label-md text-label-md italic mb-3"
               :class="spell.prepared ? 'text-on-secondary-fixed-variant' : 'text-on-primary-container'"
             >
               {{ spell.school || 'General' }} <span v-if="spell.ritual">(Ritual)</span>
             </p>
 
-            <div 
+            <div
               class="grid grid-cols-2 gap-2 mb-4 text-sm font-label-md border-y py-2"
               :class="spell.prepared ? 'border-outline/30' : 'border-outline-variant/50'"
             >
@@ -449,7 +449,7 @@ function formatLevel(level: number) {
               <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"><span class="opacity-70">Dur:</span> {{ spell.duration || 'Instant' }}</div>
             </div>
 
-            <p 
+            <p
               class="font-body-md text-body-md leading-snug line-clamp-4"
               :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"
             >
@@ -457,7 +457,7 @@ function formatLevel(level: number) {
             </p>
 
             <!-- Delete button -->
-            <button 
+            <button
               v-if="store.isEditing"
               @click="removeSpell(spell.id!)"
               class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error/10 rounded"
@@ -549,7 +549,7 @@ function formatLevel(level: number) {
                 <span class="text-xs font-bold text-tertiary">{{ spell.level === 0 ? 'Cantrip' : `Level ${spell.level}` }}</span>
               </div>
               <p class="text-xs text-on-surface-variant line-clamp-2 mb-3">{{ spell.desc }}</p>
-              
+
               <div class="flex justify-between items-end">
                 <div class="flex gap-2 text-[10px] text-primary/70 uppercase font-bold tracking-tighter">
                   <span v-if="spell.school">{{ spell.school }}</span>
@@ -579,6 +579,25 @@ function formatLevel(level: number) {
                 Custom Spell
             </button>
         </div>
+      </div>
+    </div>
+  </div>
+  <div v-else>
+    <div
+      class="bg-secondary-container rounded-lg p-5 border border-tertiary-container/30 flex items-start gap-4 shadow-md w-full wood-bg text-on-surface"
+    >
+      <span
+        class="material-symbols-outlined text-tertiary text-3xl shrink-0 mt-1"
+        style="font-variation-settings: 'FILL' 1"
+        >info</span
+      >
+      <div>
+        <h4 class="font-headline-md text-headline-md text-on-surface mb-1">
+          No Spellcasting Ability
+        </h4>
+        <p class="font-body-md text-body-md text-on-surface/90 leading-relaxed">
+          You do not posses any spellcasting abilities
+        </p>
       </div>
     </div>
   </div>

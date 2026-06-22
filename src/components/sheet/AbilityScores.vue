@@ -138,7 +138,7 @@ watch(
       <div
         v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
         :key="key"
-        class="stat-orb-gradient rounded-full p-2 border border-primary-container shadow-lg flex flex-col items-center relative aspect-[3/4] justify-center group hover:border-tertiary/50 transition-colors"
+        class="stat-orb-gradient rounded-full p-2 border border-primary-container shadow-lg flex flex-col items-center relative aspect-[1] justify-center group hover:border-tertiary/50 transition-colors"
         :class="{ 'opacity-70': (store.abilityMods[key] ?? 0) < 0 }"
       >
         <div

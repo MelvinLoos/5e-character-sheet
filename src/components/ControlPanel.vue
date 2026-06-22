@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 import ImportModal from '@/components/modals/ImportModal.vue'
+import SheetControls from './SheetControls.vue'
 
 const store = useCharacterStore()
 const route = useRoute()
@@ -39,10 +40,10 @@ function generate() {
 const navLinks = [
   { name: 'identity', label: 'Identity', icon: 'person' },
   { name: 'skills', label: 'Skills', icon: 'school' },
-  { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
-  { name: 'inventory', label: 'Inventory', icon: 'backpack' },
   { name: 'feats', label: 'Feats', icon: 'military_tech' },
   { name: 'spells', label: 'Spells', icon: 'auto_stories' },
+  { name: 'inventory', label: 'Inventory', icon: 'backpack' },
+  { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
 ]
 
 const queryParams = computed(() => {
@@ -96,6 +97,8 @@ const queryParams = computed(() => {
         </router-link>
       </li>
     </ul>
+
+    <SheetControls class="print:hidden" />
 
     <ul class="flex flex-col gap-2 flex-grow mt-4 overflow-y-auto px-2">
       <!-- AI Generator -->
