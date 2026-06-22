@@ -2,7 +2,6 @@
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
 import { watch, computed, ref } from 'vue'
-import feather from 'feather-icons'
 import draggable from 'vuedraggable'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
@@ -18,7 +17,12 @@ interface LocalFeature {
   // Match store.Feature typing: casterType may be string|null
   casterType?: string | null
   // Resource follows store shape or can be null/undefined
-  resource?: { resourceType: string; value?: number; scalingStat?: string | null; reset?: string } | null
+  resource?: {
+    resourceType: string
+    value?: number
+    scalingStat?: string | null
+    reset?: string
+  } | null
   // uses legacy shape
   uses?: { total?: number; per?: string } | null
   grantsSpells?: boolean
@@ -36,6 +40,17 @@ const searchFilter = ref('')
 const editingFeature = ref<Record<string, unknown>>({})
 const isNewFeature = ref(false)
 const editingFeatureRef = ref<LocalFeature | null>(null) // Direct reference to the feature being edited
+
+// Expansion state
+const expandedFeatures = ref<Set<string>>(new Set())
+
+function toggleExpand(title: string) {
+  if (expandedFeatures.value.has(title)) {
+    expandedFeatures.value.delete(title)
+  } else {
+    expandedFeatures.value.add(title)
+  }
+}
 
 const props = defineProps({
   features: {
@@ -64,7 +79,9 @@ const editableFeatures = computed<LocalFeature[]>({
       const otherFeatures = allFeatures.filter((f: LocalFeature) => !f.key)
       const normalized = value.map((v) => ({
         ...v,
-        uses: v.uses ? { total: (v.uses.total as number) || 0, per: (v.uses.per as string) || '' } : undefined,
+        uses: v.uses
+          ? { total: (v.uses.total as number) || 0, per: (v.uses.per as string) || '' }
+          : undefined,
       })) as unknown as typeof store.currentCharacterData.features
       store.currentCharacterData.features = [...normalized, ...otherFeatures]
     } else {
@@ -72,7 +89,9 @@ const editableFeatures = computed<LocalFeature[]>({
       const keyFeatures = allFeatures.filter((f: LocalFeature) => f.key)
       const normalized = value.map((v) => ({
         ...v,
-        uses: v.uses ? { total: (v.uses.total as number) || 0, per: (v.uses.per as string) || '' } : undefined,
+        uses: v.uses
+          ? { total: (v.uses.total as number) || 0, per: (v.uses.per as string) || '' }
+          : undefined,
       })) as unknown as typeof store.currentCharacterData.features
       store.currentCharacterData.features = [...keyFeatures, ...normalized]
     }
@@ -91,9 +110,9 @@ const libraryFeatures = computed(() => {
   // Apply search filter
   if (searchFilter.value.trim()) {
     const search = searchFilter.value.toLowerCase()
-    filtered = filtered.filter((f: LocalFeature) =>
-      f.title.toLowerCase().includes(search) ||
-      (f.desc && f.desc.toLowerCase().includes(search))
+    filtered = filtered.filter(
+      (f: LocalFeature) =>
+        f.title.toLowerCase().includes(search) || (f.desc && f.desc.toLowerCase().includes(search)),
     )
   }
 
@@ -160,9 +179,12 @@ function handleModalSave(featureData: LocalFeature) {
     const normalizedFeature = {
       ...featureData,
       uses: featureData.uses
-        ? { total: (featureData.uses.total as number) || 0, per: (featureData.uses.per as string) || '' }
+        ? {
+            total: (featureData.uses.total as number) || 0,
+            per: (featureData.uses.per as string) || '',
+          }
         : undefined,
-    } as unknown as typeof store.currentCharacterData.features[number]
+    } as unknown as (typeof store.currentCharacterData.features)[number]
     store.currentCharacterData.features.push(normalizedFeature)
   } else {
     // Update existing feature using direct reference
@@ -178,9 +200,12 @@ function handleModalSave(featureData: LocalFeature) {
         const normalizedFeature = {
           ...featureData,
           uses: featureData.uses
-            ? { total: (featureData.uses.total as number) || 0, per: (featureData.uses.per as string) || '' }
+            ? {
+                total: (featureData.uses.total as number) || 0,
+                per: (featureData.uses.per as string) || '',
+              }
             : undefined,
-        } as unknown as typeof store.currentCharacterData.features[number]
+        } as unknown as (typeof store.currentCharacterData.features)[number]
         allFeatures[featureIndex] = normalizedFeature
       }
     }
@@ -245,139 +270,271 @@ watch(
 
 <template>
   <section v-if="props.features.length > 0 || store.isEditing">
-    <div class="flex items-center justify-between mb-3">
-      <h2 class="section-header mb-0">{{ props.title }}</h2>
-      <button v-if="store.isEditing && props.editable" @click="addFeature" class="icon-button text-xs p-1"
-        title="Add Feature">
-        <span v-html="feather.icons?.plus?.toSvg({ width: 14, height: 14 })"></span>
+    <div class="flex items-center justify-between mb-4 border-b border-outline-variant/50 pb-2">
+      <h2
+        class="font-headline-md text-headline-md text-primary flex items-center gap-2 m-0 bg-transparent"
+      >
+        <span class="material-symbols-outlined">{{
+          props.title === 'Key Features' ? 'star' : 'library_books'
+        }}</span>
+        {{ props.title }}
+      </h2>
+      <button
+        v-if="store.isEditing && props.editable"
+        @click="addFeature"
+        class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors active:scale-95 shadow-sm"
+        title="Add Feature"
+      >
+        <span class="material-symbols-outlined text-[18px]">add</span>
       </button>
     </div>
-    <draggable v-model="editableFeatures" item-key="title" tag="div" class="space-y-3 text-sm"
-      :disabled="!store.isEditing" handle=".drag-handle" ghost-class="ghost-item" chosen-class="chosen-item"
-      drag-class="drag-item">
+
+    <draggable
+      v-model="editableFeatures"
+      item-key="title"
+      tag="div"
+      class="space-y-4"
+      :disabled="!store.isEditing"
+      handle=".drag-handle"
+      ghost-class="ghost-item"
+      chosen-class="chosen-item"
+      drag-class="drag-item"
+    >
       <template #item="{ element: feature, index }">
-        <div class="feature-box relative">
+        <div
+          class="bg-surface-container border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors group relative shadow-sm"
+        >
           <!-- Drag handle - only show in edit mode -->
-          <div v-if="store.isEditing"
-            class="drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
-            title="Drag to reorder">
-            <span v-html="feather.icons?.['move']?.toSvg({ width: 16, height: 16 })"></span>
+          <div
+            v-if="store.isEditing"
+            class="drag-handle absolute -left-2 top-4 lg:-left-4 lg:hidden group-hover:flex cursor-move text-outline-variant hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
+            title="Drag to reorder"
+          >
+            <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
           </div>
 
-          <div class="flex items-start justify-between" :class="{ 'ml-6': store.isEditing }">
-            <div class="flex-grow">
-              <div class="flex items-center flex-wrap gap-2">
-                <p class="feature-title">{{ feature.title }}</p>
-                <!-- Action Economy Badge -->
-                <ActionBadge v-if="feature.actionType" :action-type="feature.actionType" size="md" />
-                <!-- Resource usage display - using new schema format -->
-                <div v-if="feature.resource" class="usage-tracker">
-                  <div class="flex items-center gap-2">
-                    <input v-for="n in store.getFeatureMaxUses(feature)" :key="n" type="checkbox" class="usage-box" />
-                    <span class="text-xs italic text-gray-500">per {{ feature.resource.reset }}</span>
-                  </div>
+          <div class="flex flex-col gap-2 relative z-0">
+            <!-- Header section -->
+            <div class="flex items-start justify-between">
+              <div class="flex-1 cursor-pointer select-none" @click="toggleExpand(feature.title)">
+                <div
+                  class="flex items-center gap-2 group-hover:text-tertiary transition-colors mb-2"
+                >
+                  <span
+                    class="material-symbols-outlined text-outline text-[20px] transition-transform"
+                    :class="{ 'rotate-90': expandedFeatures.has(feature.title) }"
+                    >chevron_right</span
+                  >
+                  <h3 class="font-headline-md text-headline-md text-tertiary m-0">
+                    {{ feature.title }}
+                  </h3>
                 </div>
-                <!-- Legacy uses format for backward compatibility -->
-                <div v-else-if="feature.uses" class="usage-tracker">
-                  <div class="flex items-center gap-2">
-                    <input v-for="n in feature.uses.total" :key="n" type="checkbox" class="usage-box" />
-                    <span class="text-xs italic text-gray-500">per {{ feature.uses.per }}</span>
+
+                <!-- Chips section -->
+                <div class="flex flex-wrap gap-2 pl-7">
+                  <ActionBadge
+                    v-if="feature.actionType"
+                    :action-type="feature.actionType"
+                    size="sm"
+                    class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+                  />
+
+                  <!-- Resource usage display -->
+                  <div
+                    v-if="feature.resource"
+                    class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+                  >
+                    <div class="flex items-center gap-1" @click.stop>
+                      <input
+                        v-for="n in store.getFeatureMaxUses(feature)"
+                        :key="n"
+                        type="checkbox"
+                        class="w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
+                      />
+                    </div>
+                    <span v-if="feature.resource.reset" class="opacity-80"
+                      >/ {{ feature.resource.reset }}</span
+                    >
+                  </div>
+                  <!-- Legacy uses format -->
+                  <div
+                    v-else-if="feature.uses"
+                    class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+                  >
+                    <div class="flex items-center gap-1" @click.stop>
+                      <input
+                        v-for="n in feature.uses.total"
+                        :key="n"
+                        type="checkbox"
+                        class="w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
+                      />
+                    </div>
+                    <span v-if="feature.uses.per" class="opacity-80">/ {{ feature.uses.per }}</span>
                   </div>
                 </div>
               </div>
 
-              <p class="feature-desc" v-html="feature.desc.replace(/<li>/g, '<li class=\'list-disc list-inside\'>')">
-              </p>
+              <!-- Action buttons -->
+              <div
+                v-if="store.isEditing && props.editable"
+                class="flex flex-col sm:flex-row items-center gap-2 ml-4"
+              >
+                <button
+                  @click.stop="editFeature(feature)"
+                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary transition-colors active:scale-95"
+                  title="Edit Feature"
+                >
+                  <span class="material-symbols-outlined text-[16px]">edit</span>
+                </button>
+                <button
+                  @click.stop="removeFeature(index)"
+                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-error/20 hover:text-error transition-colors active:scale-95"
+                  title="Remove Feature"
+                >
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </div>
             </div>
 
-            <!-- Action buttons -->
-            <div v-if="store.isEditing && props.editable" class="flex items-center gap-1 ml-2">
-              <button @click="editFeature(feature)" class="icon-button text-xs p-1 bg-blue-600 hover:bg-blue-700"
-                title="Edit Feature">
-                <span v-html="feather.icons?.['edit-2']?.toSvg({ width: 12, height: 12 })"></span>
-              </button>
-              <button @click="removeFeature(index)" class="icon-button text-xs p-1 bg-red-600 hover:bg-red-700"
-                title="Remove Feature">
-                <span v-html="feather.icons?.x?.toSvg({ width: 12, height: 12 })"></span>
-              </button>
+            <!-- Description (Expandable) -->
+            <div
+              v-show="expandedFeatures.has(feature.title)"
+              class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
+            >
+              <div
+                v-html="
+                  feature.desc
+                    .replace(
+                      /<li>/g,
+                      '<li class=\'pl-4 relative before:content-[&quot;&quot;] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full\'>',
+                    )
+                    .replace(/<ul>/g, '<ul class=\'list-none space-y-2 relative my-2\'>')
+                "
+              ></div>
             </div>
           </div>
         </div>
       </template>
     </draggable>
 
-    <div v-if="store.isEditing && props.features.length === 0" class="text-center text-gray-500 italic py-4">
-      No {{ props.title.toLowerCase() }} defined. Click the + button to add
-      {{ props.title.toLowerCase() }}.
+    <div
+      v-if="store.isEditing && props.features.length === 0"
+      class="text-center font-body-md text-on-surface-variant italic py-8 border border-dashed border-outline-variant/30 rounded-lg mt-4"
+    >
+      No {{ props.title.toLowerCase() }} transcribed. Click the + icon to catalog a new entry.
     </div>
 
     <!-- Feature Editor Modal -->
-    <FeatureEditorModal :is-open="isModalOpen" :feature="editingFeature" :is-new="isNewFeature" @save="handleModalSave"
-      @cancel="handleModalCancel" @delete="handleModalDelete" />
+    <FeatureEditorModal
+      :is-open="isModalOpen"
+      :feature="editingFeature"
+      :is-new="isNewFeature"
+      @save="handleModalSave"
+      @cancel="handleModalCancel"
+      @delete="handleModalDelete"
+    />
 
     <!-- Feature Library Modal -->
-    <div v-if="showFeatureLibrary" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-        <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
-          <h3 class="font-bold text-lg">Feature Library</h3>
-          <button @click="showFeatureLibrary = false" class="text-gray-500 hover:text-gray-700">
-            <span v-html="feather.icons.x.toSvg()"></span>
+    <div
+      v-if="showFeatureLibrary"
+      class="fixed inset-0 bg-surface/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-surface-container rounded-lg shadow-xl border border-outline-variant/30 w-full max-w-2xl max-h-[80vh] flex flex-col"
+      >
+        <div
+          class="p-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low rounded-t-lg"
+        >
+          <h3
+            class="font-headline-md text-headline-md text-tertiary flex items-center gap-2 m-0 bg-transparent"
+          >
+            <span class="material-symbols-outlined">library_books</span>
+            Feature Archives
+          </h3>
+          <button
+            @click="showFeatureLibrary = false"
+            class="text-outline-variant hover:text-on-surface transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50"
+          >
+            <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div class="p-4 border-b bg-gray-50">
+        <div class="p-4 border-b border-outline-variant/30 bg-surface-container-low">
           <div class="relative">
+            <span
+              class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+              >search</span
+            >
             <input
               v-model="searchFilter"
               type="text"
-              placeholder="Search features..."
-              class="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              placeholder="Search the archives..."
+              class="w-full bg-surface-container border border-outline-variant rounded py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
               autofocus
             />
-            <span class="absolute left-3 top-2.5 text-gray-400" v-html="feather.icons.search.toSvg({ width: 18, height: 18 })"></span>
           </div>
         </div>
 
-        <div class="overflow-y-auto flex-grow p-4">
-          <div v-if="libraryFeatures.length === 0" class="text-center py-8 text-gray-500">
-            <p>No features found matching your search.</p>
-            <button @click="addManualFeature" class="mt-4 text-purple-600 hover:text-purple-800 underline">
-              Add Custom Feature Manually
+        <div class="overflow-y-auto flex-grow p-4 bg-surface-container">
+          <div
+            v-if="libraryFeatures.length === 0"
+            class="text-center py-8 font-body-md text-on-surface-variant"
+          >
+            <p>No archives match your inquiry.</p>
+            <button
+              @click="addManualFeature"
+              class="mt-4 text-tertiary hover:text-tertiary-fixed underline underline-offset-4"
+            >
+              Transcribe a Custom Entry
             </button>
           </div>
 
-          <div v-else class="space-y-2">
+          <div v-else class="space-y-4">
             <div
               v-for="(feature, index) in libraryFeatures"
               :key="index"
-              class="border rounded-lg p-3 hover:bg-purple-50 cursor-pointer transition-colors group"
+              class="bg-surface-container-low border border-primary-container p-4 rounded-lg flex flex-col gap-2 hover:border-tertiary/50 transition-colors group relative shadow-sm cursor-pointer"
               @click="addFeatureFromLibrary(feature)"
             >
-              <div class="flex justify-between items-start">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h4 class="font-bold text-purple-700 group-hover:text-purple-900">{{ feature.title }}</h4>
-                    <span v-if="feature.source" class="text-xs bg-gray-200 px-1.5 py-0.5 rounded text-gray-600">
+              <div class="flex justify-between items-start gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-1">
+                    <h4 class="font-headline-md text-tertiary m-0">{{ feature.title }}</h4>
+                    <span
+                      v-if="feature.source"
+                      class="text-[12px] bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md"
+                    >
                       {{ feature.source }}
                     </span>
                   </div>
-                  <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ feature.desc }}</p>
+                  <p
+                    class="font-body-md text-body-md text-on-surface-variant leading-relaxed line-clamp-2"
+                  >
+                    {{ feature.desc }}
+                  </p>
                 </div>
-                <button class="text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span v-html="feather.icons['plus-circle'].toSvg()"></span>
+                <button
+                  class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm opacity-0 group-hover:opacity-100 flex-shrink-0"
+                  title="Transcribe Feat"
+                >
+                  <span class="material-symbols-outlined">add</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="p-4 border-t bg-gray-50 flex justify-between items-center rounded-b-lg">
-          <span class="text-sm text-gray-500">{{ libraryFeatures.length }} features available</span>
+        <div
+          class="p-4 border-t border-outline-variant/30 bg-surface-container-low flex justify-between items-center rounded-b-lg"
+        >
+          <span class="font-label-md text-on-surface-variant"
+            >{{ libraryFeatures.length }} entries available</span
+          >
           <button
             @click="addManualFeature"
-            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition-colors text-sm font-medium"
+            class="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-variant-high border border-outline-variant/50 hover:border-outline font-label-md rounded transition-colors shadow-sm"
           >
-            Create Custom Feature
+            Create Custom Entry
           </button>
         </div>
       </div>
@@ -393,17 +550,17 @@ watch(
 
 .ghost-item {
   opacity: 0.5;
-  background: rgba(59, 130, 246, 0.1);
-  border: 2px dashed #3b82f6;
+  background: var(--surface-container-high, rgba(44, 42, 33, 0.4));
+  border: 1px dashed var(--tertiary, #eac249);
 }
 
 .chosen-item {
-  transform: scale(1.02);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: scale(1.01);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  z-index: 10;
 }
 
 .drag-item {
-  transform: rotate(2deg);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 </style>
