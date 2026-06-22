@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
+import decorativeBackdrop from '@/assets/decorative-backdrop.png'
 
 const store = useCharacterStore()
 const showInfo = ref<Record<string, boolean>>({ class: false, species: false, background: false })
@@ -138,10 +139,10 @@ function incrementTier() {
     <!-- Decorative backdrop -->
     <div
       class="absolute right-0 top-0 w-1/3 h-full opacity-5 pointer-events-none"
-      style="
-        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKR448jVj2qwVcIQlrT2ETRMPCxlUUegXoQDE3qgV3caQWplM_7YJo0MLFghV9GpK8WIxvMp8TgK0UVUrh_4TAs6uYjJ1OOo5Cc_5lWH6xOFdnyUWASJ4vKi1K3OgOPn9oIF_tIpNAJNRHPW6GvZIXoIc3Sx8HokddNXDrsNUrHWMeyjP12G7mO6BQ1rDqY8i-Knu7FVR7UrPFiCaXg5F8bMcJouK3ofhWEjC6zgNhOi9ayjAO6TkEqbrKgAfJuLCUhWkZoKRTrkS5');
-        background-size: cover;
-      "
+      :style="{
+        backgroundImage: `url(${decorativeBackdrop})`,
+        backgroundSize: 'cover'
+      }"
     ></div>
 
     <div class="relative z-10 flex flex-col md:flex-row gap-6 md:items-end">
