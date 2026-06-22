@@ -27,6 +27,7 @@ export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
   // Initialize with a blank character to avoid widespread null checks in templates/components
   const currentCharacterData = ref<CharacterData>(createBlankCharacter())
+  const currentUserData = computed(() => currentCharacterData.value)
   const isEditing = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
   const sessionName = ref('Uncategorized')
@@ -856,6 +857,7 @@ export const useCharacterStore = defineStore('character', () => {
   return {
     // State
     currentCharacterData,
+    currentUserData,
     isEditing,
     characterLibrary,
     sessionName,

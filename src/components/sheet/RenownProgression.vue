@@ -20,7 +20,7 @@ function incrementMilestones() {
 
   const currentData = getMilestoneData()
   let milestones = store.currentCharacterData.milestones || 0
-  let tier = store.currentCharacterData.renownTier || 1
+  const tier = store.currentCharacterData.renownTier || 1
 
   if (tier >= 4) return
 
