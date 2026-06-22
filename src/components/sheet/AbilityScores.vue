@@ -84,47 +84,110 @@ watch(
   <section class="flex flex-col gap-6">
     <div class="flex justify-between items-end border-b border-primary-container pb-2">
       <h3 class="font-headline-md text-headline-md text-primary">Ability Scores</h3>
-      <span v-if="store.isEditing" class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30" :class="{'text-error border-error/30 bg-error/10': store.pointBuyPointsRemaining < 0, 'text-primary border-primary/30 bg-primary/10': store.pointBuyPointsRemaining === 0}">
+      <span
+        v-if="store.isEditing"
+        class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30"
+        :class="{
+          'text-error border-error/30 bg-error/10': store.pointBuyPointsRemaining < 0,
+          'text-primary border-primary/30 bg-primary/10': store.pointBuyPointsRemaining === 0,
+        }"
+      >
         Point Buy: {{ 27 - store.pointBuyPointsRemaining }}/27
       </span>
     </div>
 
     <!-- Background Bonus Selections -->
-    <div v-if="store.isEditing && DND_RULES.BACKGROUNDS[currentBackground] && store.currentCharacterData.backgroundBonusSelections"
-      class="bg-surface-container rounded-lg p-4 border border-outline-variant flex flex-col gap-4">
+    <div
+      v-if="
+        store.isEditing &&
+        DND_RULES.BACKGROUNDS[currentBackground] &&
+        store.currentCharacterData.backgroundBonusSelections
+      "
+      class="bg-surface-container rounded-lg p-4 border border-outline-variant flex flex-col gap-4"
+    >
       <div class="text-sm font-label-md text-on-surface-variant">Background Bonuses</div>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block font-label-sm text-label-sm text-tertiary mb-1">+2 Bonus</label>
-          <select v-model="store.currentCharacterData.backgroundBonusSelections.plusTwo" class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary">
+          <select
+            v-model="store.currentCharacterData.backgroundBonusSelections.plusTwo"
+            class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+          >
             <option value="">Select ability...</option>
-            <option v-for="opt in plusTwoOptions" :key="opt" :value="opt">{{ DND_RULES.ABILITIES[opt] }}</option>
+            <option v-for="opt in plusTwoOptions" :key="opt" :value="opt">
+              {{ DND_RULES.ABILITIES[opt] }}
+            </option>
           </select>
         </div>
         <div>
           <label class="block font-label-sm text-label-sm text-tertiary mb-1">+1 Bonus</label>
-          <select v-model="store.currentCharacterData.backgroundBonusSelections.plusOne" class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary">
+          <select
+            v-model="store.currentCharacterData.backgroundBonusSelections.plusOne"
+            class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+          >
             <option value="">Select ability...</option>
-            <option v-for="opt in plusOneOptions" :key="opt" :value="opt">{{ DND_RULES.ABILITIES[opt] }}</option>
+            <option v-for="opt in plusOneOptions" :key="opt" :value="opt">
+              {{ DND_RULES.ABILITIES[opt] }}
+            </option>
           </select>
         </div>
       </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
-      <div v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})" :key="key" 
-           class="stat-orb-gradient rounded-full p-2 border border-primary-container shadow-lg flex flex-col items-center relative aspect-[3/4] justify-center group hover:border-tertiary/50 transition-colors"
-           :class="{'opacity-70': (store.abilityMods[key] ?? 0) < 0}">
-        <div class="absolute inset-2 rounded-full border border-tertiary pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity" :class="{'opacity-20': (store.abilityMods[key] ?? 0) < 0}"></div>
-        <span class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-4" :class="{'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0}">{{ key.toUpperCase() }}</span>
-        <div class="font-display-lg text-[56px] leading-none text-on-surface font-bold my-2" :class="{'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0}">{{ formatMod(store.abilityMods[key] ?? 0) }}</div>
-        
-        <div v-if="store.isEditing" class="flex items-center gap-2 bg-background/50 rounded-full px-2 py-1 mb-4 border border-outline-variant z-10 backdrop-blur-sm">
-          <button @click="store.adjustPointBuyScore(key, -1)" :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8) <= 8" class="text-outline hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-surface-variant disabled:opacity-50"><span class="material-symbols-outlined text-sm">remove</span></button>
-          <span class="font-body-md text-body-md font-bold text-on-surface min-w-[2ch] text-center" :class="{'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0}">{{ store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8 }}</span>
-          <button @click="store.adjustPointBuyScore(key, 1)" :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 15) >= 15 || store.pointBuyPointsRemaining <= 0" class="text-outline hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-surface-variant disabled:opacity-50"><span class="material-symbols-outlined text-sm">add</span></button>
+      <div
+        v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
+        :key="key"
+        class="stat-orb-gradient rounded-full p-2 border border-primary-container shadow-lg flex flex-col items-center relative aspect-[3/4] justify-center group hover:border-tertiary/50 transition-colors"
+        :class="{ 'opacity-70': (store.abilityMods[key] ?? 0) < 0 }"
+      >
+        <div
+          class="absolute inset-2 rounded-full border border-tertiary pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity"
+          :class="{ 'opacity-20': (store.abilityMods[key] ?? 0) < 0 }"
+        ></div>
+        <span
+          class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-4"
+          :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
+          >{{ key.toUpperCase() }}</span
+        >
+        <div
+          class="font-display-lg text-[56px] leading-none text-on-surface font-bold my-2"
+          :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
+        >
+          {{ formatMod(store.abilityMods[key] ?? 0) }}
         </div>
-        <div v-else class="font-body-lg text-body-lg text-on-surface-variant mb-4 font-bold border border-outline-variant/30 rounded-full px-4 py-1 bg-background/30 backdrop-blur-sm">
+
+        <div
+          v-if="store.isEditing"
+          class="flex items-center gap-2 bg-background/50 rounded-full px-2 py-1 mb-4 border border-outline-variant z-10 backdrop-blur-sm"
+        >
+          <button
+            @click="store.adjustPointBuyScore(key, -1)"
+            :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8) <= 8"
+            class="text-outline hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-surface-variant disabled:opacity-50"
+          >
+            <span class="material-symbols-outlined text-sm">remove</span>
+          </button>
+          <span
+            class="font-body-md text-body-md font-bold text-on-surface min-w-[2ch] text-center"
+            :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
+            >{{ store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8 }}</span
+          >
+          <button
+            @click="store.adjustPointBuyScore(key, 1)"
+            :disabled="
+              (store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 15) >= 15 ||
+              store.pointBuyPointsRemaining <= 0
+            "
+            class="text-outline hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-surface-variant disabled:opacity-50"
+          >
+            <span class="material-symbols-outlined text-sm">add</span>
+          </button>
+        </div>
+        <div
+          v-else
+          class="font-body-lg text-body-lg text-on-surface-variant mb-4 font-bold border border-outline-variant/30 rounded-full px-4 py-1 bg-background/30 backdrop-blur-sm"
+        >
           {{ value }}
         </div>
       </div>

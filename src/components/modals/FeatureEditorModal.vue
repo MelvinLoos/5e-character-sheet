@@ -339,7 +339,10 @@ function removeModifier(stat: string) {
       </div>
 
       <!-- Error Messages -->
-      <div v-if="errors.length > 0" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      <div
+        v-if="errors.length > 0"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+      >
         <ul class="list-disc list-inside">
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>
@@ -353,19 +356,31 @@ function removeModifier(stat: string) {
           <div class="flex items-center gap-4">
             <div class="flex-grow">
               <label for="feature-title" class="block text-sm font-bold mb-1">Feature Title:</label>
-              <input id="feature-title" v-model="formData.title" type="text" class="edit-mode-input"
-                placeholder="Enter feature name" />
+              <input
+                id="feature-title"
+                v-model="formData.title"
+                type="text"
+                class="edit-mode-input"
+                placeholder="Enter feature name"
+              />
             </div>
             <div class="flex items-center gap-2 mt-6">
               <input id="key-feature" v-model="formData.key" type="checkbox" class="usage-box" />
               <label for="key-feature" class="text-sm font-bold">Key Feature</label>
               <div class="relative inline-flex items-center">
-                <button class="info-button" title="Key features appear on the front page"
-                  @click.prevent="toggleHelp('key')">
-                  <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"></span>
+                <button
+                  class="info-button"
+                  title="Key features appear on the front page"
+                  @click.prevent="toggleHelp('key')"
+                >
+                  <span
+                    v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"
+                  ></span>
                 </button>
-                <div v-if="showHelp.key"
-                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                <div
+                  v-if="showHelp.key"
+                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                >
                   <div class="font-bold mb-1">Key Feature</div>
                   <div class="text-xs">Key features appear on the front page.</div>
                 </div>
@@ -376,8 +391,13 @@ function removeModifier(stat: string) {
           <!-- Description -->
           <div>
             <label for="feature-desc" class="block text-sm font-bold mb-1">Description:</label>
-            <textarea id="feature-desc" v-model="formData.desc" class="edit-mode-textarea" rows="6"
-              placeholder="Describe what this feature does..."></textarea>
+            <textarea
+              id="feature-desc"
+              v-model="formData.desc"
+              class="edit-mode-textarea"
+              rows="6"
+              placeholder="Describe what this feature does..."
+            ></textarea>
           </div>
         </div>
 
@@ -409,7 +429,11 @@ function removeModifier(stat: string) {
           <div>
             <label for="caster-type" class="block text-sm font-bold mb-1">Spellcasting:</label>
             <select id="caster-type" v-model="formData.casterType" class="edit-mode-select">
-              <option v-for="(type, index) in casterTypes" :key="`caster-${index}`" :value="type.value">
+              <option
+                v-for="(type, index) in casterTypes"
+                :key="`caster-${index}`"
+                :value="type.value"
+              >
                 {{ type.label }}
               </option>
             </select>
@@ -420,28 +444,48 @@ function removeModifier(stat: string) {
             <div class="flex items-center justify-between mb-1">
               <label class="block text-sm font-bold">Ability Modifiers:</label>
               <div class="relative inline-flex items-center">
-                <button class="info-button" title="Add ability score increases granted by this feature."
-                  @click.prevent="toggleHelp('ability')">
-                  <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"></span>
+                <button
+                  class="info-button"
+                  title="Add ability score increases granted by this feature."
+                  @click.prevent="toggleHelp('ability')"
+                >
+                  <span
+                    v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"
+                  ></span>
                 </button>
-                <div v-if="showHelp.ability"
-                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                <div
+                  v-if="showHelp.ability"
+                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                >
                   <div class="font-bold mb-1">Ability Modifiers</div>
-                  <div class="text-xs">Add ability score increases granted by this feature (e.g., +1 Strength).</div>
+                  <div class="text-xs">
+                    Add ability score increases granted by this feature (e.g., +1 Strength).
+                  </div>
                 </div>
               </div>
             </div>
 
             <div class="space-y-2 bg-gray-50 p-2 rounded border border-gray-200">
               <!-- Existing Modifiers -->
-              <div v-if="formData.abilityModifiers && Object.keys(formData.abilityModifiers).length > 0"
-                class="space-y-1 mb-2">
-                <div v-for="(val, stat) in formData.abilityModifiers" :key="stat"
-                  class="flex items-center justify-between bg-white px-2 py-1 rounded border border-gray-200 text-sm">
+              <div
+                v-if="
+                  formData.abilityModifiers && Object.keys(formData.abilityModifiers).length > 0
+                "
+                class="space-y-1 mb-2"
+              >
+                <div
+                  v-for="(val, stat) in formData.abilityModifiers"
+                  :key="stat"
+                  class="flex items-center justify-between bg-white px-2 py-1 rounded border border-gray-200 text-sm"
+                >
                   <span>
-                    <span class="font-bold uppercase">{{ stat }}</span>: {{ val > 0 ? '+' : '' }}{{ val }}
+                    <span class="font-bold uppercase">{{ stat }}</span
+                    >: {{ val > 0 ? '+' : '' }}{{ val }}
                   </span>
-                  <button @click="removeModifier(stat as string)" class="text-red-500 hover:text-red-700">
+                  <button
+                    @click="removeModifier(stat as string)"
+                    class="text-red-500 hover:text-red-700"
+                  >
                     <span v-html="feather.icons?.x?.toSvg({ width: 14, height: 14 })"></span>
                   </button>
                 </div>
@@ -450,13 +494,20 @@ function removeModifier(stat: string) {
               <!-- Add New Modifier -->
               <div class="flex items-center gap-1">
                 <select v-model="newModifier.stat" class="edit-mode-select text-xs py-1 px-1 w-20">
-                  <option v-for="opt in abilityOptions" :key="opt.value" :value="opt.value">{{ opt.value.toUpperCase()
-                    }}</option>
+                  <option v-for="opt in abilityOptions" :key="opt.value" :value="opt.value">
+                    {{ opt.value.toUpperCase() }}
+                  </option>
                 </select>
-                <input v-model.number="newModifier.value" type="number"
-                  class="edit-mode-input text-xs py-1 px-1 w-12" />
-                <button @click="addModifier" class="bg-blue-500 text-white rounded p-1 hover:bg-blue-600"
-                  title="Add Modifier">
+                <input
+                  v-model.number="newModifier.value"
+                  type="number"
+                  class="edit-mode-input text-xs py-1 px-1 w-12"
+                />
+                <button
+                  @click="addModifier"
+                  class="bg-blue-500 text-white rounded p-1 hover:bg-blue-600"
+                  title="Add Modifier"
+                >
                   <span v-html="feather.icons?.plus?.toSvg({ width: 14, height: 14 })"></span>
                 </button>
               </div>
@@ -467,28 +518,47 @@ function removeModifier(stat: string) {
           <div>
             <label class="block text-sm font-bold mb-1">Grant Spells:</label>
             <div class="flex items-center gap-2">
-              <input id="grants-spells" v-model="formData.grantsSpells" type="checkbox" class="usage-box" />
-              <label for="grants-spells" class="text-sm">This feature grants specific spells (no full
-                spellcasting)</label>
+              <input
+                id="grants-spells"
+                v-model="formData.grantsSpells"
+                type="checkbox"
+                class="usage-box"
+              />
+              <label for="grants-spells" class="text-sm"
+                >This feature grants specific spells (no full spellcasting)</label
+              >
             </div>
 
             <div v-if="formData.grantsSpells" class="mt-2 ml-4 text-xs">
               <div class="flex items-center justify-between">
                 <label class="text-xs font-bold mb-1">Granted Spell Levels</label>
                 <div class="relative inline-flex items-center">
-                  <button class="info-button" title="Select one or more spell levels granted by this feature."
-                    @click.prevent="toggleHelp('grants')">
-                    <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"></span>
+                  <button
+                    class="info-button"
+                    title="Select one or more spell levels granted by this feature."
+                    @click.prevent="toggleHelp('grants')"
+                  >
+                    <span
+                      v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"
+                    ></span>
                   </button>
-                  <div v-if="showHelp.grants"
-                    class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                  <div
+                    v-if="showHelp.grants"
+                    class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                  >
                     <div class="font-bold mb-1">Granted Spell Levels</div>
-                    <div class="text-xs">Select one or more spell levels granted by this feature.</div>
+                    <div class="text-xs">
+                      Select one or more spell levels granted by this feature.
+                    </div>
                   </div>
                 </div>
               </div>
               <div class="flex flex-wrap gap-2 mt-2">
-                <label v-for="lvl in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="lvl" class="inline-flex items-center gap-1">
+                <label
+                  v-for="lvl in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]"
+                  :key="lvl"
+                  class="inline-flex items-center gap-1"
+                >
                   <input type="checkbox" :value="lvl" v-model="formData.grantedSpellLevels" />
                   <span>{{ lvl === 0 ? 'Cantrip (0)' : 'Level ' + lvl }}</span>
                 </label>
@@ -509,7 +579,11 @@ function removeModifier(stat: string) {
                 <!-- Max Uses (Hybrid Input) -->
                 <div>
                   <label for="max-uses-type" class="block text-xs font-bold mb-1">Max Uses:</label>
-                  <select id="max-uses-type" v-model="maxUsesType" class="edit-mode-select text-sm w-full">
+                  <select
+                    id="max-uses-type"
+                    v-model="maxUsesType"
+                    class="edit-mode-select text-sm w-full"
+                  >
                     <option value="fixed">Fixed Value</option>
                     <option value="pb">Equal to Proficiency Bonus</option>
                     <option value="str">Equal to STR Modifier</option>
@@ -524,17 +598,28 @@ function removeModifier(stat: string) {
 
                 <!-- Manual Input (only show if "Fixed Value" selected) -->
                 <div v-if="maxUsesType === 'fixed'">
-                  <label for="fixed-amount" class="block text-xs font-bold mb-1">Enter Amount:</label>
-                  <input id="fixed-amount" v-model="baseAmount" type="number" min="1"
-                    class="edit-mode-input text-sm w-full" placeholder="Enter number of uses" />
+                  <label for="fixed-amount" class="block text-xs font-bold mb-1"
+                    >Enter Amount:</label
+                  >
+                  <input
+                    id="fixed-amount"
+                    v-model="baseAmount"
+                    type="number"
+                    min="1"
+                    class="edit-mode-input text-sm w-full"
+                    placeholder="Enter number of uses"
+                  />
                 </div>
 
                 <!-- Reset Condition -->
                 <div>
                   <label for="reset-condition" class="block text-xs font-bold mb-1">Resets:</label>
                   <div class="flex items-center gap-2">
-                    <select id="reset-condition" v-model="formData.resource!.reset"
-                      class="edit-mode-select text-sm w-full">
+                    <select
+                      id="reset-condition"
+                      v-model="formData.resource!.reset"
+                      class="edit-mode-select text-sm w-full"
+                    >
                       <option value="Long Rest">Long Rest</option>
                       <option value="Short Rest">Short Rest</option>
                       <option value="Dawn">Dawn</option>
@@ -548,16 +633,24 @@ function removeModifier(stat: string) {
                       <option value="None">None</option>
                     </select>
                     <div class="relative inline-flex items-center">
-                      <button class="info-button"
+                      <button
+                        class="info-button"
                         title="Choose when this feature's uses refresh. Use 'Special' for custom conditions."
-                        @click.prevent="toggleHelp('reset')">
-                        <span v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"></span>
+                        @click.prevent="toggleHelp('reset')"
+                      >
+                        <span
+                          v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"
+                        ></span>
                       </button>
-                      <div v-if="showHelp.reset"
-                        class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm">
+                      <div
+                        v-if="showHelp.reset"
+                        class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                      >
                         <div class="font-bold mb-1">Reset Condition</div>
-                        <div class="text-xs">Choose when this feature's uses refresh. Use 'Special' for custom
-                          conditions.</div>
+                        <div class="text-xs">
+                          Choose when this feature's uses refresh. Use 'Special' for custom
+                          conditions.
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -583,7 +676,11 @@ function removeModifier(stat: string) {
       <!-- Modal Actions -->
       <div class="flex items-center justify-between mt-8 pt-4 border-t border-sheet-border">
         <div>
-          <button v-if="!isNew" @click="handleDelete" class="icon-button bg-red-600 text-white hover:bg-red-700">
+          <button
+            v-if="!isNew"
+            @click="handleDelete"
+            class="icon-button bg-red-600 text-white hover:bg-red-700"
+          >
             <span v-html="feather.icons?.trash?.toSvg({ width: 16, height: 16 })"></span>
             Delete
           </button>
@@ -593,7 +690,10 @@ function removeModifier(stat: string) {
             <span v-html="feather.icons?.x?.toSvg({ width: 16, height: 16 })"></span>
             Cancel
           </button>
-          <button @click="handleSave" class="icon-button bg-green-600 text-white hover:bg-green-700">
+          <button
+            @click="handleSave"
+            class="icon-button bg-green-600 text-white hover:bg-green-700"
+          >
             <span v-html="feather.icons?.save?.toSvg({ width: 16, height: 16 })"></span>
             {{ isNew ? 'Add Feature' : 'Save Changes' }}
           </button>

@@ -20,7 +20,7 @@ export function initSupabase(): SupabaseClient | null {
   } else {
     logger.warn('Supabase credentials not found. Online sharing will be disabled.')
   }
-  
+
   return supabaseClient
 }
 
@@ -28,27 +28,34 @@ export function getSupabaseClient(): SupabaseClient | null {
   return supabaseClient
 }
 
-export async function fetchCharacterFromUrl(client: SupabaseClient | null, urlParams: URLSearchParams): Promise<{ data: CharacterData, id: string } | null> {
+export async function fetchCharacterFromUrl(
+  client: SupabaseClient | null,
+  urlParams: URLSearchParams,
+): Promise<{ data: CharacterData; id: string } | null> {
   const characterId = urlParams.get('id')
-  
+
   if (!characterId) return null
   if (!client) throw new Error('Supabase client not initialized')
-  
+
   const { data, error } = await client
     .from('characters')
     .select('character_data, id')
     .eq('id', characterId)
     .single()
-    
+
   if (error) throw error
   if (!data) throw new Error('Character not found.')
-  
+
   return { data: data.character_data as CharacterData, id: data.id }
 }
 
-export async function shareCharacterToSupabase(client: SupabaseClient | null, characterData: CharacterData, sourceCharacterId: string | null): Promise<string> {
+export async function shareCharacterToSupabase(
+  client: SupabaseClient | null,
+  characterData: CharacterData,
+  sourceCharacterId: string | null,
+): Promise<string> {
   if (!client) throw new Error('Supabase client not initialized')
-  
+
   const { data, error } = await client
     .from('characters')
     .insert([

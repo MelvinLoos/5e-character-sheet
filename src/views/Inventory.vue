@@ -7,4 +7,3 @@ import EquipmentBlock from '@/components/sheet/EquipmentBlock.vue'
     <EquipmentBlock />
   </div>
 </template>
-

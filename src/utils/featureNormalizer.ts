@@ -66,7 +66,9 @@ export function normalizeFeatureForSave(formData: FeatureFormData): FeatureOut {
     grantsSpells: false,
     grantedSpellLevels: [],
     abilityModifiers: formData.abilityModifiers
-      ? Object.fromEntries(Object.entries(formData.abilityModifiers).map(([k, v]) => [k, Number(v)]))
+      ? Object.fromEntries(
+          Object.entries(formData.abilityModifiers).map(([k, v]) => [k, Number(v)]),
+        )
       : undefined,
   }
 

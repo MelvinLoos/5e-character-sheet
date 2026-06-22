@@ -3,7 +3,6 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
 
-
 const store = useCharacterStore()
 const showInfo = ref<Record<string, boolean>>({ class: false, species: false, background: false })
 
@@ -133,21 +132,34 @@ function decrementLevel() {
 </script>
 
 <template>
-  <section class="bg-surface-container rounded-xl p-6 border border-primary-container shadow-sm relative overflow-hidden">
+  <section
+    class="bg-surface-container rounded-xl p-6 border border-primary-container shadow-sm relative overflow-hidden"
+  >
     <!-- Decorative backdrop -->
-    <div class="absolute right-0 top-0 w-1/3 h-full opacity-5 pointer-events-none" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKR448jVj2qwVcIQlrT2ETRMPCxlUUegXoQDE3qgV3caQWplM_7YJo0MLFghV9GpK8WIxvMp8TgK0UVUrh_4TAs6uYjJ1OOo5Cc_5lWH6xOFdnyUWASJ4vKi1K3OgOPn9oIF_tIpNAJNRHPW6GvZIXoIc3Sx8HokddNXDrsNUrHWMeyjP12G7mO6BQ1rDqY8i-Knu7FVR7UrPFiCaXg5F8bMcJouK3ofhWEjC6zgNhOi9ayjAO6TkEqbrKgAfJuLCUhWkZoKRTrkS5'); background-size: cover;"></div>
-    
+    <div
+      class="absolute right-0 top-0 w-1/3 h-full opacity-5 pointer-events-none"
+      style="
+        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKR448jVj2qwVcIQlrT2ETRMPCxlUUegXoQDE3qgV3caQWplM_7YJo0MLFghV9GpK8WIxvMp8TgK0UVUrh_4TAs6uYjJ1OOo5Cc_5lWH6xOFdnyUWASJ4vKi1K3OgOPn9oIF_tIpNAJNRHPW6GvZIXoIc3Sx8HokddNXDrsNUrHWMeyjP12G7mO6BQ1rDqY8i-Knu7FVR7UrPFiCaXg5F8bMcJouK3ofhWEjC6zgNhOi9ayjAO6TkEqbrKgAfJuLCUhWkZoKRTrkS5');
+        background-size: cover;
+      "
+    ></div>
+
     <div class="relative z-10 flex flex-col md:flex-row gap-6 md:items-end">
       <div class="flex-grow w-full md:w-auto">
-        <label class="block font-label-md text-label-md text-on-surface-variant mb-2">Character Name</label>
-        <input 
+        <label class="block font-label-md text-label-md text-on-surface-variant mb-2"
+          >Character Name</label
+        >
+        <input
           v-if="store.isEditing"
           v-model="store.currentCharacterData.name"
-          class="w-full bg-transparent border-b-2 border-surface-variant focus:border-tertiary focus:ring-0 font-display-lg text-display-lg text-on-surface p-0 pb-2 placeholder-on-surface-variant/50 transition-colors" 
-          placeholder="Enter Name..." 
+          class="w-full bg-transparent border-b-2 border-surface-variant focus:border-tertiary focus:ring-0 font-display-lg text-display-lg text-on-surface p-0 pb-2 placeholder-on-surface-variant/50 transition-colors"
+          placeholder="Enter Name..."
           type="text"
         />
-        <div v-else class="w-full border-b-2 border-transparent font-display-lg text-display-lg text-on-surface p-0 pb-2">
+        <div
+          v-else
+          class="w-full border-b-2 border-transparent font-display-lg text-display-lg text-on-surface p-0 pb-2"
+        >
           {{ store.currentCharacterData.name || 'Unnamed' }}
         </div>
 
@@ -161,78 +173,169 @@ function decrementLevel() {
           {{ store.currentCharacterData.title }}
         </div>
       </div>
-      
+
       <div class="flex flex-wrap md:flex-nowrap gap-4 w-full md:w-auto">
         <!-- Level & Experience -->
         <div class="flex-1 min-w-[100px]">
-          <label class="block font-label-md text-label-md text-on-surface-variant mb-1">Level</label>
-          <div v-if="store.isEditing" class="flex items-center w-full bg-surface-container-high border border-outline-variant rounded focus-within:border-tertiary focus-within:ring-1 focus-within:ring-tertiary">
-             <button @click="decrementLevel" class="px-2 py-2 text-on-surface hover:text-tertiary" type="button">−</button>
-             <input v-model.number="store.currentCharacterData.level" type="number" min="1" max="20" class="w-full bg-transparent border-none text-center font-body-md text-on-surface p-2 focus:ring-0" />
-             <button @click="incrementLevel" class="px-2 py-2 text-on-surface hover:text-tertiary" type="button">+</button>
+          <label class="block font-label-md text-label-md text-on-surface-variant mb-1"
+            >Level</label
+          >
+          <div
+            v-if="store.isEditing"
+            class="flex items-center w-full bg-surface-container-high border border-outline-variant rounded focus-within:border-tertiary focus-within:ring-1 focus-within:ring-tertiary"
+          >
+            <button
+              @click="decrementLevel"
+              class="px-2 py-2 text-on-surface hover:text-tertiary"
+              type="button"
+            >
+              −
+            </button>
+            <input
+              v-model.number="store.currentCharacterData.level"
+              type="number"
+              min="1"
+              max="20"
+              class="w-full bg-transparent border-none text-center font-body-md text-on-surface p-2 focus:ring-0"
+            />
+            <button
+              @click="incrementLevel"
+              class="px-2 py-2 text-on-surface hover:text-tertiary"
+              type="button"
+            >
+              +
+            </button>
           </div>
-          <div v-else class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md text-center">
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md text-center"
+          >
             {{ store.currentCharacterData.level }}
           </div>
         </div>
 
         <!-- Species -->
         <div class="flex-1 min-w-[140px] relative">
-          <label class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1">
+          <label
+            class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1"
+          >
             Species
-            <button v-if="store.isEditing" @click="toggleInfo('species')" class="hover:text-tertiary transition-colors" type="button">
+            <button
+              v-if="store.isEditing"
+              @click="toggleInfo('species')"
+              class="hover:text-tertiary transition-colors"
+              type="button"
+            >
               <span class="material-symbols-outlined text-[16px]">info</span>
             </button>
           </label>
-          <select v-if="store.isEditing" v-model="store.currentCharacterData.species" class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary">
-            <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">{{ key }}</option>
+          <select
+            v-if="store.isEditing"
+            v-model="store.currentCharacterData.species"
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+          >
+            <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
+              {{ key }}
+            </option>
           </select>
-          <div v-else class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md">
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md"
+          >
             {{ store.currentCharacterData.species }}
           </div>
-          <div v-if="showInfo.species && store.currentCharacterData.species" class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface">
-             <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.species }}</div>
-             <div class="whitespace-pre-line text-xs">{{ getSpeciesInfo(store.currentCharacterData.species) }}</div>
+          <div
+            v-if="showInfo.species && store.currentCharacterData.species"
+            class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface"
+          >
+            <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.species }}</div>
+            <div class="whitespace-pre-line text-xs">
+              {{ getSpeciesInfo(store.currentCharacterData.species) }}
+            </div>
           </div>
         </div>
-        
+
         <!-- Class -->
         <div class="flex-1 min-w-[140px] relative">
-          <label class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1">
+          <label
+            class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1"
+          >
             Class
-            <button v-if="store.isEditing" @click="toggleInfo('class')" class="hover:text-tertiary transition-colors" type="button">
+            <button
+              v-if="store.isEditing"
+              @click="toggleInfo('class')"
+              class="hover:text-tertiary transition-colors"
+              type="button"
+            >
               <span class="material-symbols-outlined text-[16px]">info</span>
             </button>
           </label>
-          <select v-if="store.isEditing" v-model="store.currentCharacterData.class" class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary">
-            <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">{{ key }}</option>
+          <select
+            v-if="store.isEditing"
+            v-model="store.currentCharacterData.class"
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+          >
+            <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
+              {{ key }}
+            </option>
           </select>
-          <div v-else class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md">
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md"
+          >
             {{ store.currentCharacterData.class }}
           </div>
-          <div v-if="showInfo.class && store.currentCharacterData.class" class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface">
-             <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.class }}</div>
-             <div class="whitespace-pre-line text-xs">{{ getClassInfo(store.currentCharacterData.class) }}</div>
+          <div
+            v-if="showInfo.class && store.currentCharacterData.class"
+            class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface"
+          >
+            <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.class }}</div>
+            <div class="whitespace-pre-line text-xs">
+              {{ getClassInfo(store.currentCharacterData.class) }}
+            </div>
           </div>
         </div>
 
         <!-- Background -->
         <div class="flex-1 min-w-[140px] relative">
-          <label class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1">
+          <label
+            class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1"
+          >
             Background
-            <button v-if="store.isEditing" @click="toggleInfo('background')" class="hover:text-tertiary transition-colors" type="button">
+            <button
+              v-if="store.isEditing"
+              @click="toggleInfo('background')"
+              class="hover:text-tertiary transition-colors"
+              type="button"
+            >
               <span class="material-symbols-outlined text-[16px]">info</span>
             </button>
           </label>
-          <select v-if="store.isEditing" v-model="store.currentCharacterData.background" class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary">
-            <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">{{ key }}</option>
+          <select
+            v-if="store.isEditing"
+            v-model="store.currentCharacterData.background"
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+          >
+            <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">
+              {{ key }}
+            </option>
           </select>
-          <div v-else class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md">
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md"
+          >
             {{ store.currentCharacterData.background }}
           </div>
-          <div v-if="showInfo.background && store.currentCharacterData.background" class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface">
-             <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.background }}</div>
-             <div class="whitespace-pre-line text-xs">{{ getBackgroundInfo(store.currentCharacterData.background) }}</div>
+          <div
+            v-if="showInfo.background && store.currentCharacterData.background"
+            class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface"
+          >
+            <div class="font-bold text-tertiary mb-2">
+              {{ store.currentCharacterData.background }}
+            </div>
+            <div class="whitespace-pre-line text-xs">
+              {{ getBackgroundInfo(store.currentCharacterData.background) }}
+            </div>
           </div>
         </div>
       </div>

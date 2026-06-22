@@ -112,7 +112,9 @@ export const createBlankCharacter = (): CharacterData => {
     plusOne: null,
   }
   const backgroundFeature: Feature[] = []
-  const defaultBackgroundData = defaultBackground ? DND_RULES.BACKGROUNDS[defaultBackground] : undefined
+  const defaultBackgroundData = defaultBackground
+    ? DND_RULES.BACKGROUNDS[defaultBackground]
+    : undefined
   if (defaultBackgroundData) {
     const bonusOptions = defaultBackgroundData.abilityScoreIncrease
     defaultSelections = { plusTwo: bonusOptions[0] ?? null, plusOne: bonusOptions[1] ?? null }
@@ -165,7 +167,11 @@ export const createBlankCharacter = (): CharacterData => {
       speed: defaultSpeciesData?.speed || '30ft',
     },
     attacks: [],
-    features: [...speciesTraits, ...classFeatures, ...backgroundFeature] as CharacterData['features'],
+    features: [
+      ...speciesTraits,
+      ...classFeatures,
+      ...backgroundFeature,
+    ] as CharacterData['features'],
     equipment: '',
     personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
     spellcasting: null,

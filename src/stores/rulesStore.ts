@@ -52,15 +52,9 @@ export const useRulesStore = defineStore('rules', {
      * @param dataArray - The array of data to import
      */
     importData(category: string, dataArray: unknown[]) {
-      const validCategories = [
-        'spells',
-        'feats',
-        'classes',
-        'species',
-        'backgrounds',
-      ] as const
+      const validCategories = ['spells', 'feats', 'classes', 'species', 'backgrounds'] as const
 
-      if (!validCategories.includes(category as typeof validCategories[number])) {
+      if (!validCategories.includes(category as (typeof validCategories)[number])) {
         logger.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
         return
       }
@@ -106,8 +100,8 @@ export const useRulesStore = defineStore('rules', {
 
       if (category in defaults) {
         // Use a generic typing approach to assign the value based on the key
-        const resetKey = category as keyof RulesState;
-        (this as RulesState)[resetKey] = defaults[resetKey] as never;
+        const resetKey = category as keyof RulesState
+        ;(this as RulesState)[resetKey] = defaults[resetKey] as never
         set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
       }
     },
@@ -128,6 +122,6 @@ export const useRulesStore = defineStore('rules', {
       } catch (err) {
         logger.error('Failed to load rules store from IDB:', err)
       }
-    }
+    },
   },
 })

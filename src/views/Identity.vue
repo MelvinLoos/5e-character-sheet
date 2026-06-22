@@ -20,4 +20,3 @@ const store = useCharacterStore()
     </div>
   </div>
 </template>
-

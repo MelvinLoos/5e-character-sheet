@@ -15,7 +15,11 @@ import type { CharacterData } from '../services/characterService'
 import { migrateUsesToResource } from '../utils/migrations'
 import { logger } from '../utils/logger'
 
-import { initSupabase, fetchCharacterFromUrl, shareCharacterToSupabase } from '../services/sharingService'
+import {
+  initSupabase,
+  fetchCharacterFromUrl,
+  shareCharacterToSupabase,
+} from '../services/sharingService'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '../services/aiService'
 import { loadSchema, getSchema, validateCharacterData } from '../services/schemaService'
 
@@ -156,7 +160,7 @@ export const useCharacterStore = defineStore('character', () => {
 
   async function initStore() {
     supabaseClient.value = initSupabase()
-    
+
     await loadSchema()
     await loadAiSchema()
 
@@ -165,7 +169,7 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   function validateCharacter(data: unknown) {
-     return validateCharacterData(data)
+    return validateCharacterData(data)
   }
 
   function _showLoading(text: string) {
@@ -360,18 +364,18 @@ export const useCharacterStore = defineStore('character', () => {
   async function loadCharacterFromUrl() {
     const urlParams = new URLSearchParams(window.location.search)
     try {
-        const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
-        if (result) {
-            _showLoading('Fetching character from the archives...')
-            _setCharacter(result.data)
-            sourceCharacterId.value = result.id
-        }
-    } catch(error) {
-        logger.error('Error loading character from URL:', error)
-        _showErrorModal([`Could not load character: ${(error as Error).message}`])
-        history.replaceState({}, '', window.location.pathname)
+      const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
+      if (result) {
+        _showLoading('Fetching character from the archives...')
+        _setCharacter(result.data)
+        sourceCharacterId.value = result.id
+      }
+    } catch (error) {
+      logger.error('Error loading character from URL:', error)
+      _showErrorModal([`Could not load character: ${(error as Error).message}`])
+      history.replaceState({}, '', window.location.pathname)
     } finally {
-        _hideLoading()
+      _hideLoading()
     }
   }
 
@@ -471,7 +475,10 @@ export const useCharacterStore = defineStore('character', () => {
         )
       }
 
-      _setCharacter({ ...createBlankCharacter(), ...generatedData.data as Record<string, unknown> })
+      _setCharacter({
+        ...createBlankCharacter(),
+        ...(generatedData.data as Record<string, unknown>),
+      })
       saveToLibrary()
     } catch (error) {
       logger.error('Error generating character:', error)
@@ -490,8 +497,12 @@ export const useCharacterStore = defineStore('character', () => {
 
     _showLoading('Saving character to the archives...')
     try {
-      const newId = await shareCharacterToSupabase(supabaseClient.value, currentCharacterData.value, sourceCharacterId.value)
-      
+      const newId = await shareCharacterToSupabase(
+        supabaseClient.value,
+        currentCharacterData.value,
+        sourceCharacterId.value,
+      )
+
       const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`
 
       shareModal.value.url = newUrl

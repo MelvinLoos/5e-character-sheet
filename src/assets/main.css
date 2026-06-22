@@ -19,7 +19,11 @@
 
 @layer components {
   .stat-orb-gradient {
-    background: linear-gradient(145deg, theme('colors.surface-container-high') 0%, theme('colors.surface-container') 100%);
+    background: linear-gradient(
+      145deg,
+      theme('colors.surface-container-high') 0%,
+      theme('colors.surface-container') 100%
+    );
   }
   .sheet-wrapper {
     @apply max-w-4xl mx-auto relative;

@@ -6,40 +6,39 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/identity'
+      redirect: '/identity',
     },
     {
       path: '/identity',
       name: 'identity',
-      component: Identity
+      component: Identity,
     },
     {
       path: '/skills',
       name: 'skills',
-      component: () => import('../views/Skills.vue')
+      component: () => import('../views/Skills.vue'),
     },
     {
       path: '/combat',
       name: 'combat',
-      component: () => import('../views/Combat.vue')
+      component: () => import('../views/Combat.vue'),
     },
     {
       path: '/spells',
       name: 'spells',
-      component: () => import('../views/Spells.vue')
+      component: () => import('../views/Spells.vue'),
     },
     {
       path: '/inventory',
       name: 'inventory',
-      component: () => import('../views/Inventory.vue')
+      component: () => import('../views/Inventory.vue'),
     },
     {
       path: '/feats',
       name: 'feats',
-      component: () => import('../views/Feats.vue')
-    }
-  ]
+      component: () => import('../views/Feats.vue'),
+    },
+  ],
 })
 
 export default router
-
