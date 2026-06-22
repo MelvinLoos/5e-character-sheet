@@ -12,6 +12,11 @@
       "type": "string",
       "description": "An optional title or epithet for the character."
     },
+    "jobInParty": {
+      "type": "string",
+      "description": "The character's job or role in the party.",
+      "default": ""
+    },
     "class": {
       "type": "string",
       "description": "The character's class."

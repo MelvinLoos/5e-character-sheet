@@ -4,6 +4,7 @@ import type { Feature } from '../data/rules'
 export interface CharacterData {
   name: string
   title: string
+  jobInParty: string
   class: string | null
   renownTier: number
   renownMilestones: number
@@ -118,7 +119,8 @@ export const getLibrary = (): Record<string, CharacterData[]> => {
       influence: char.influence ?? 0,
       inventorySlots: char.inventorySlots ?? Math.max(10, char.abilityScores?.str || 10),
       equippedGear: char.equippedGear ?? [],
-      consumables: char.consumables ?? []
+      consumables: char.consumables ?? [],
+      jobInParty: char.jobInParty ?? ''
     }))
   })
   
@@ -182,6 +184,7 @@ export const createBlankCharacter = (): CharacterData => {
   return {
     name: 'New Character',
     title: '',
+    jobInParty: '',
     class: defaultClass,
     renownTier: 1,
     renownMilestones: 0,

@@ -228,6 +228,9 @@ export const useCharacterStore = defineStore('character', () => {
     migrated = migrateUsesToResource(migrated) as Record<string, unknown>
     migrated = migrateLevelToRenown(migrated) as Record<string, unknown>
 
+    // Ensure jobInParty exists
+    migrated.jobInParty = (migrated.jobInParty as string) ?? ''
+
     // Add missing backgroundBonusSelections if not present
     if (!migrated.backgroundBonusSelections) {
       migrated.backgroundBonusSelections = {
