@@ -109,9 +109,9 @@ export const saveLibrary = (library: Record<string, CharacterData[]>): void =>
   localStorage.setItem(STORAGE_KEY, JSON.stringify(library))
 export const getLibrary = (): Record<string, CharacterData[]> => {
   const library = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}
-  
+
   // Migrate characters in library to have the new fields
-  Object.keys(library).forEach(key => {
+  Object.keys(library).forEach((key) => {
     library[key] = library[key].map((char: CharacterData) => ({
       ...char,
       gold: char.gold ?? 0,
@@ -120,10 +120,10 @@ export const getLibrary = (): Record<string, CharacterData[]> => {
       inventorySlots: char.inventorySlots ?? Math.max(10, char.abilityScores?.str || 10),
       equippedGear: char.equippedGear ?? [],
       consumables: char.consumables ?? [],
-      jobInParty: char.jobInParty ?? ''
+      jobInParty: char.jobInParty ?? '',
     }))
   })
-  
+
   return library
 }
 

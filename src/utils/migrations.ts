@@ -54,9 +54,9 @@ export function migrateUsesToResource(character: unknown) {
 
 export function migrateLevelToRenown(character: unknown) {
   if (!character || typeof character !== 'object') return character
-  
+
   const ch = character as Record<string, unknown>
-  
+
   if (ch.renownTier === undefined) {
     if (typeof ch.level === 'number') {
       const level = ch.level
@@ -74,9 +74,8 @@ export function migrateLevelToRenown(character: unknown) {
       ch.renownMilestones = 0
     }
   }
-  
+
   return ch
 }
 
 export default migrateUsesToResource
-

@@ -198,9 +198,7 @@ const queryParams = computed(() => {
         @click="showMobileMenu = false"
         class="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md"
         :class="[
-          route.name === link.name
-            ? 'text-primary'
-            : 'bg-surface-variant text-on-surface-variant',
+          route.name === link.name ? 'text-primary' : 'bg-surface-variant text-on-surface-variant',
         ]"
       >
         <span class="material-symbols-outlined text-[1.1rem]">{{ link.icon }}</span>
@@ -213,8 +211,8 @@ const queryParams = computed(() => {
     ></div>
     <button
       @click="
-        store.handleNewCharacter();
-        showMobileMenu = false;
+        store.handleNewCharacter()
+        showMobileMenu = false
       "
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
     >
@@ -222,8 +220,8 @@ const queryParams = computed(() => {
     </button>
     <button
       @click="
-        showImportModal = true;
-        showMobileMenu = false;
+        showImportModal = true
+        showMobileMenu = false
       "
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
     >
