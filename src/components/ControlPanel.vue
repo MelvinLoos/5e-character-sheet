@@ -2,11 +2,11 @@
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import ImportModal from '@/components/modals/ImportModal.vue'
-import feather from 'feather-icons'
 
 const store = useCharacterStore()
 const geminiPrompt = ref('')
 const showImportModal = ref(false)
+const showMobileMenu = ref(false)
 
 interface Character {
   name: string
@@ -29,15 +29,6 @@ const selectedCharacter = computed({
   set: (value) => store.loadCharacterFromLibrary(value),
 })
 
-function onFileChange(event: Event) {
-  store.handleFileLoad(event)
-  // Reset file input
-  const target = event.target as HTMLInputElement
-  if (target) {
-    target.value = ''
-  }
-}
-
 function generate() {
   store.generateCharacter(geminiPrompt.value)
   geminiPrompt.value = ''
@@ -45,48 +36,78 @@ function generate() {
 </script>
 
 <template>
-  <div class="control-panel w-full mx-auto p-6 mb-6 no-print bg-amber-50 rounded-lg shadow-md border border-amber-200">
-    <h1 class="font-fell text-4xl text-sheet-red text-center mb-6">Character Sheet Creator</h1>
-    <div class="space-y-6">
-      <div class="grid lg:grid-cols-2 gap-6 items-center">
-        <div class="flex flex-wrap items-center gap-3">
-          <button @click="store.handleNewCharacter()" title="New Character" class="icon-button flex-shrink-0"
-            v-html="feather.icons['file-plus'].toSvg()"></button>
-          <label for="character-select" class="font-fell text-lg flex-shrink-0">Load:</label>
-          <select id="character-select" class="flex-grow min-w-0" v-model="selectedCharacter">
-            <option value="">Select a character...</option>
+  <!-- SideNavBar -->
+  <nav class="h-screen w-64 fixed left-0 top-0 bg-primary-container dark:bg-primary-container shadow-sm flex flex-col py-container-padding z-50 md:flex hidden min-h-screen bottom-0 print:hidden">
+    <div class="px-6 mb-8 flex flex-col items-center gap-4" v-if="store.currentCharacterData">
+      <div class="relative w-24 h-24 rounded-full border-2 border-tertiary overflow-hidden flex-shrink-0 bg-surface-variant flex items-center justify-center">
+        <span class="material-symbols-outlined text-5xl text-on-surface-variant">account_circle</span>
+      </div>
+      <div class="text-center">
+        <h2 class="font-headline-lg text-headline-lg text-tertiary leading-tight">{{ store.currentCharacterData.name || 'Unknown' }}</h2>
+        <p class="font-label-md text-label-md text-on-surface-variant mt-1">Level {{ store.currentCharacterData.level || 1 }} {{ store.currentCharacterData.class || 'Aspirant' }}</p>
+      </div>
+    </div>
+    
+    <div class="px-6 mb-8 text-center" v-else>
+      <h2 class="font-headline-md text-tertiary mb-2">Midnight Scholar</h2>
+      <p class="font-label-md text-on-surface-variant">Character Manager</p>
+    </div>
+
+    <ul class="flex flex-col gap-2 flex-grow mt-4 overflow-y-auto px-2">
+      <!-- AI Generator -->
+      <li class="mb-4" v-if="store.geminiSchema">
+        <div class="px-4 py-3 bg-surface-variant/30 rounded-lg border border-tertiary/30">
+          <label class="block font-label-md text-label-md text-tertiary mb-2">✨ AI Generate</label>
+          <input type="text" v-model="geminiPrompt" @keyup.enter="generate" class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm mb-2 focus:border-tertiary focus:ring-1 focus:ring-tertiary" placeholder="e.g. 'grumpy dwarf cleric'" />
+          <button @click="generate" class="w-full bg-tertiary/20 text-tertiary hover:bg-tertiary hover:text-on-tertiary font-label-md text-sm py-2 rounded transition-colors">Generate</button>
+        </div>
+      </li>
+
+      <!-- Manual Controls -->
+      <li>
+        <div class="px-4 py-2">
+          <label class="block font-label-md text-label-md text-on-surface-variant mb-1">Load Character</label>
+          <select class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary" v-model="selectedCharacter">
+            <option value="">Select...</option>
             <optgroup v-for="group in characterSelectOptions" :key="group.label" :label="group.label">
               <option v-for="char in group.options" :key="char.value" :value="char.value">
                 {{ char.text }}
               </option>
             </optgroup>
           </select>
-          <label for="char-file-input" class="icon-button flex-shrink-0" title="Load character from file"
-            v-html="feather.icons.folder.toSvg()"></label>
-          <input type="file" id="char-file-input" @change="onFileChange" accept=".json" class="hidden" />
         </div>
-        <div class="flex items-center gap-3">
-          <button @click="showImportModal = true" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors flex-shrink-0">
-            Import 5e.tools
-          </button>
-          <label for="session-name" class="font-fell text-lg flex-shrink-0">Session:</label>
-          <input type="text" id="session-name" placeholder="E.g., Westmarches" class="flex-grow"
-            v-model="store.sessionName" />
+      </li>
+      <li>
+        <div class="px-4 py-2 flex justify-between gap-2">
+           <button @click="store.handleNewCharacter()" class="flex-1 bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md py-2 rounded text-sm transition-colors">New</button>
+           <button @click="showImportModal = true" class="flex-1 bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md py-2 rounded text-sm transition-colors">Import</button>
         </div>
-      </div>
-      <div class="border-t border-amber-300 pt-6" v-if="store.geminiSchema">
-        <h2 class="font-fell text-2xl text-center text-purple-900 mb-4">
-          ✨ AI Character Generator ✨
-        </h2>
-        <div class="flex flex-col sm:flex-row items-center gap-4">
-          <input type="text" v-model="geminiPrompt" @keyup.enter="generate" class="flex-grow w-full sm:w-auto"
-            placeholder="Describe a character, e.g., 'a grumpy dwarf cleric'" />
-          <button @click="generate" class="gemini-button flex-shrink-0">Generate Character</button>
-        </div>
-      </div>
-    </div>
-  </div>
+      </li>
+    </ul>
 
+    <div class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30">
+      <button onclick="window.print()" class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">download</span>
+        Export Character
+      </button>
+    </div>
+  </nav>
+
+  <!-- TopAppBar Mobile -->
+  <header class="md:hidden flex justify-between items-center px-4 py-3 w-full top-0 bg-primary-container dark:bg-primary-container shadow-sm z-40 fixed print:hidden">
+    <span class="font-headline-md text-tertiary">Midnight Scholar</span>
+    <div class="flex gap-4">
+      <button @click="showMobileMenu = !showMobileMenu" class="text-on-surface-variant hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+  
+  <div v-if="showMobileMenu" class="md:hidden fixed top-14 left-0 w-full bg-surface-container z-30 p-4 border-b border-outline-variant shadow-lg print:hidden">
+     <button @click="store.handleNewCharacter(); showMobileMenu=false" class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md">New Character</button>
+     <button @click="showImportModal = true; showMobileMenu=false" class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md">Import</button>
+  </div>
+  
   <!-- Import Modal -->
   <ImportModal :show="showImportModal" @close="showImportModal = false" />
 </template>

@@ -1,0 +1,437 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Midnight Scholar - Inventory Workspace</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Config injected from system prompt -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#2c150e",
+                      "secondary": "#e7bdb1",
+                      "surface-container-lowest": "#100e07",
+                      "secondary-container": "#604239",
+                      "on-surface": "#e8e2d4",
+                      "surface-dim": "#15130b",
+                      "tertiary-container": "#cca72f",
+                      "outline": "#8b9293",
+                      "primary-fixed-dim": "#aacdd1",
+                      "inverse-primary": "#436467",
+                      "background": "#15130b",
+                      "surface-container-highest": "#37352b",
+                      "inverse-on-surface": "#333027",
+                      "surface-bright": "#3c392f",
+                      "on-tertiary-fixed-variant": "#574400",
+                      "on-primary-container": "#84a6aa",
+                      "primary-fixed": "#c5e9ed",
+                      "on-surface-variant": "#c1c8c9",
+                      "surface-variant": "#37352b",
+                      "surface-container-low": "#1e1c13",
+                      "surface-container-high": "#2c2a21",
+                      "on-error": "#690005",
+                      "secondary-fixed": "#ffdbd0",
+                      "surface-container": "#222017",
+                      "surface-tint": "#aacdd1",
+                      "error-container": "#93000a",
+                      "on-tertiary-fixed": "#241a00",
+                      "on-primary-fixed-variant": "#2b4c4f",
+                      "on-secondary-fixed-variant": "#5d4037",
+                      "outline-variant": "#414849",
+                      "on-secondary": "#442a22",
+                      "inverse-surface": "#e8e2d4",
+                      "on-background": "#e8e2d4",
+                      "secondary-fixed-dim": "#e7bdb1",
+                      "on-tertiary-container": "#4f3d00",
+                      "on-primary": "#123539",
+                      "primary-container": "#1a3c40",
+                      "tertiary-fixed": "#ffe08a",
+                      "tertiary": "#eac249",
+                      "on-tertiary": "#3d2f00",
+                      "tertiary-fixed-dim": "#eac249",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary-container": "#d8afa4",
+                      "primary": "#aacdd1",
+                      "surface": "#15130b",
+                      "on-primary-fixed": "#002023",
+                      "error": "#ffb4ab"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "gutter": "16px",
+                      "container-padding": "24px",
+                      "card-gap": "20px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "EB Garamond"
+                      ],
+                      "display-lg": [
+                              "EB Garamond"
+                      ],
+                      "label-md": [
+                              "Manrope"
+                      ],
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "headline-md": [
+                              "EB Garamond"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .parchment-bg {
+            background-color: #e8e2d4;
+            color: #15130b;
+        }
+        .deep-teal-bg {
+            background-color: theme('colors.primary-container');
+            color: theme('colors.on-primary-container');
+        }
+        .stat-orb {
+            background: linear-gradient(145deg, #37352b, #1e1c13);
+            border: 1px solid theme('colors.tertiary-container');
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-primary-container dark:bg-primary-container shadow-sm flex flex-col py-container-padding z-50 md:flex hidden min-h-screen bottom-0 h-screen">
+<div class="px-6 mb-8 flex flex-col items-center gap-4">
+<div class="relative w-24 h-24 rounded-full border-2 border-tertiary overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A detailed digital painting portrait of a scholarly adventurer character in the style of fantasy tabletop RPGs. Deep teal and parchment tones. Focus on intellectual curiosity and quiet confidence. Modern cozy study aesthetic with soft directional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvw8eHT7ZQhew15VOGN7aDSwH8TZPvJCn8z8FdR9T8zBNFFRa_yABwGfz4kDS1DLLE7R1350Hsdap-ufOA8oen3fOdcAbnJOY5fPA4yMPL2Ti-bG-UzOeMN08ynkQc-bncsp33wiqnkRGfL0Pb3zwB7NXeJom-tIYUPC0tuJtvYXe2N8GCKuzC_okO0M3lh9oZdJWTiXOoFhMw2uZdvd2hMjshrV4oTvqXN7alzeOUCDGO_XeoPRnEb2o6mKebYjFYBjN-5tXXYNZr">
+</div>
+<div class="text-center">
+<h2 class="font-headline-lg text-headline-lg text-tertiary">The Archivist</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Level 1 Aspirant</p>
+</div>
+</div>
+<ul class="flex flex-col gap-2 flex-grow mt-4"><li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_35}}">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Identity</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_14}}">
+<span class="material-symbols-outlined">school</span>
+<span class="font-label-md text-label-md">Skills</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_56}}">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-label-md text-label-md">Narrative</span>
+</a>
+</li>
+<li class="">
+<a class="text-primary font-bold border-r-4 border-tertiary flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all bg-surface-variant/30" href="{{DATA:SCREEN:SCREEN_50}}">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">backpack</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_29}}">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="font-label-md text-label-md">Feats</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_34}}">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-label-md">Spells</span>
+</a>
+</li></ul>
+<div class="px-6 mt-auto">
+<button class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                Export Character
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full overflow-y-auto bg-background min-h-screen">
+<!-- TopAppBar (Mobile Only) -->
+<header class="md:hidden flex justify-between items-center px-gutter py-unit w-full bg-background dark:bg-background docked full-width top-0 mb-6">
+<span class="font-display-lg text-display-lg text-tertiary dark:text-tertiary">Midnight Scholar</span>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-primary hover:text-primary transition-colors cursor-pointer scale-95 duration-150">account_circle</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer">settings</span>
+</div>
+</header>
+<!-- Tri-Currency Dashboard -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-card-gap mb-8 lg:grid-cols-3">
+<!-- Gold -->
+<div class="bg-surface-container p-4 rounded border border-[#1A3C40] flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 stat-orb rounded-full flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">monetization_on</span>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-on-surface-variant">Gold (GP)</h2>
+<span class="font-headline-lg text-headline-lg text-tertiary">145</span>
+</div>
+</div>
+</div>
+<!-- Supply -->
+<div class="bg-surface-container p-4 rounded border border-[#1A3C40] flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full flex items-center justify-center bg-secondary-container text-secondary border border-secondary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-on-surface-variant">Supply</h2>
+<span class="font-headline-lg text-headline-lg text-secondary">7</span>
+</div>
+</div>
+<button class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded font-label-md text-label-md hover:bg-secondary hover:text-on-secondary transition-colors border border-outline-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                    Buy Supply (-1 GP)
+                </button>
+</div>
+<!-- Influence -->
+<div class="bg-surface-container p-4 rounded border border-[#1A3C40] flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-container text-primary border border-primary">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-on-surface-variant">Influence</h2>
+<span class="font-headline-lg text-headline-lg text-primary">3</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Slot Meter -->
+<section class="mb-8">
+<div class="flex justify-between items-end mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface">Inventory Slots</h3>
+<span class="font-label-md text-label-md text-tertiary">Used: 8 / Max: 12 (STR)</span>
+</div>
+<div class="h-4 bg-surface-container-highest rounded-full overflow-hidden border border-[#1A3C40] flex">
+<!-- Filled slots -->
+<div class="h-full bg-tertiary w-[66.6%] border-r border-[#15130b]"></div>
+<!-- Empty slots -->
+<div class="h-full w-[33.4%]"></div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 text-sm italic">Slots determined by current Strength Score.</p>
+</section>
+<!-- Tactile Item Grid -->
+<section class="mb-10">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4 border-b border-[#1A3C40] pb-2">Equipped Gear &amp; Artifacts</h3>
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-card-gap">
+<!-- Featured Item (Parchment) -->
+<div class="parchment-bg p-5 rounded border border-[#1A3C40] relative shadow-md">
+<div class="absolute top-0 right-0 bg-surface-container text-tertiary font-label-md text-label-md px-3 py-1 rounded-bl border-l border-b border-[#1A3C40]">
+                        Cost: 2 Slots
+                    </div>
+<div class="flex items-start gap-4 mb-3">
+<div class="w-10 h-10 rounded bg-[#15130b] flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">swords</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-[#15130b] leading-tight">Masterwork Longsword</h4>
+<span class="font-label-md text-label-md text-[#604239]">Weapon (Melee)</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-[#2c150e]">A beautifully balanced blade forged by the dwarven smiths of Karak-Hirn. Grants +1 to attack rolls.</p>
+</div>
+<!-- Regular Item -->
+<div class="bg-surface-container p-5 rounded border border-[#1A3C40] relative">
+<div class="absolute top-0 right-0 bg-surface-variant text-on-surface font-label-md text-label-md px-3 py-1 rounded-bl border-l border-b border-[#1A3C40]">
+                        Cost: 1 Slot
+                    </div>
+<div class="flex items-start gap-4 mb-3">
+<div class="w-10 h-10 rounded bg-surface-variant flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">shield</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface leading-tight">Iron Buckler</h4>
+<span class="font-label-md text-label-md text-on-surface-variant">Armor (Shield)</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">A simple, sturdy iron buckler. Provides basic defense in close combat.</p>
+</div>
+<!-- System Item (Deep Teal) -->
+<div class="deep-teal-bg p-5 rounded border border-[#1A3C40] relative">
+<div class="absolute top-0 right-0 bg-background text-primary font-label-md text-label-md px-3 py-1 rounded-bl border-l border-b border-[#1A3C40]">
+                        Cost: 3 Slots
+                    </div>
+<div class="flex items-start gap-4 mb-3">
+<div class="w-10 h-10 rounded bg-background flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">camping</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-primary-container leading-tight">Heavy Explorer's Tent</h4>
+<span class="font-label-md text-label-md text-primary-fixed-dim">Survival Gear</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-primary-container opacity-80">Essential for surviving the harsh nights in the Shattered Isles. Bulky and difficult to carry.</p>
+</div>
+</div>
+</section>
+<!-- Consumables / Usage Dice -->
+<section>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4 border-b border-[#1A3C40] pb-2 flex items-center gap-2">
+<span class="material-symbols-outlined">casino</span>
+                Consumables &amp; Usage Dice
+            </h3>
+<div class="bg-surface-container rounded border border-[#1A3C40] overflow-hidden">
+<!-- Header Row -->
+<div class="grid grid-cols-12 gap-4 p-4 border-b border-surface-variant bg-surface-container-high font-label-md text-label-md text-on-surface-variant">
+<div class="col-span-6">Item</div>
+<div class="col-span-3 text-center">Cost</div>
+<div class="col-span-3 text-right">Usage Die</div>
+</div>
+<!-- Row 1 -->
+<div class="grid grid-cols-12 gap-4 p-4 border-b border-surface-variant items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">flare</span>
+<div>
+<div class="font-body-lg text-body-lg text-on-surface">Torches</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Light source (1hr)</div>
+</div>
+</div>
+<div class="col-span-3 text-center font-body-md text-body-md text-on-surface-variant">1 Slot</div>
+<div class="col-span-3 text-right">
+<select class="bg-surface-variant border border-outline-variant text-on-surface text-sm rounded focus:ring-tertiary focus:border-tertiary p-2">
+<option value="d12">Ud12</option>
+<option value="d10">Ud10</option>
+<option selected="" value="d8">Ud8</option>
+<option value="d6">Ud6</option>
+<option value="d4">Ud4</option>
+<option value="depleted">Depleted</option>
+</select>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 gap-4 p-4 border-b border-surface-variant items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">restaurant</span>
+<div>
+<div class="font-body-lg text-body-lg text-on-surface">Iron Rations</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Prevents starvation</div>
+</div>
+</div>
+<div class="col-span-3 text-center font-body-md text-body-md text-on-surface-variant">1 Slot</div>
+<div class="col-span-3 text-right">
+<select class="bg-surface-variant border border-outline-variant text-on-surface text-sm rounded focus:ring-tertiary focus:border-tertiary p-2">
+<option value="d12">Ud12</option>
+<option selected="" value="d10">Ud10</option>
+<option value="d8">Ud8</option>
+<option value="d6">Ud6</option>
+<option value="d4">Ud4</option>
+<option value="depleted">Depleted</option>
+</select>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 gap-4 p-4 items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">join_right</span>
+<div>
+<div class="font-body-lg text-body-lg text-on-surface">Arrows</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Ammunition</div>
+</div>
+</div>
+<div class="col-span-3 text-center font-body-md text-body-md text-on-surface-variant">1 Slot</div>
+<div class="col-span-3 text-right">
+<select class="bg-surface-variant border border-outline-variant text-error text-sm rounded focus:ring-tertiary focus:border-tertiary p-2">
+<option value="d12">Ud12</option>
+<option value="d10">Ud10</option>
+<option value="d8">Ud8</option>
+<option value="d6">Ud6</option>
+<option selected="" value="d4">Ud4</option>
+<option value="depleted">Depleted</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

@@ -1,13 +1,58 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      fontFamily: {
-        fell: ['"IM Fell English SC"', 'serif'],
-        garamond: ['"EB Garamond"', 'serif'],
-      },
       colors: {
+        "on-secondary-fixed": "#2c150e",
+        "secondary": "#e7bdb1",
+        "surface-container-lowest": "#100e07",
+        "secondary-container": "#604239",
+        "on-surface": "#e8e2d4",
+        "surface-dim": "#15130b",
+        "tertiary-container": "#cca72f",
+        "outline": "#8b9293",
+        "primary-fixed-dim": "#aacdd1",
+        "inverse-primary": "#436467",
+        "background": "#15130b",
+        "surface-container-highest": "#37352b",
+        "inverse-on-surface": "#333027",
+        "surface-bright": "#3c392f",
+        "on-tertiary-fixed-variant": "#574400",
+        "on-primary-container": "#84a6aa",
+        "primary-fixed": "#c5e9ed",
+        "on-surface-variant": "#c1c8c9",
+        "surface-variant": "#37352b",
+        "surface-container-low": "#1e1c13",
+        "surface-container-high": "#2c2a21",
+        "on-error": "#690005",
+        "secondary-fixed": "#ffdbd0",
+        "surface-container": "#222017",
+        "surface-tint": "#aacdd1",
+        "error-container": "#93000a",
+        "on-tertiary-fixed": "#241a00",
+        "on-primary-fixed-variant": "#2b4c4f",
+        "on-secondary-fixed-variant": "#5d4037",
+        "outline-variant": "#414849",
+        "on-secondary": "#442a22",
+        "inverse-surface": "#e8e2d4",
+        "on-background": "#e8e2d4",
+        "secondary-fixed-dim": "#e7bdb1",
+        "on-tertiary-container": "#4f3d00",
+        "on-primary": "#123539",
+        "primary-container": "#1a3c40",
+        "tertiary-fixed": "#ffe08a",
+        "tertiary": "#eac249",
+        "on-tertiary": "#3d2f00",
+        "tertiary-fixed-dim": "#eac249",
+        "on-error-container": "#ffdad6",
+        "on-secondary-container": "#d8afa4",
+        "primary": "#aacdd1",
+        "surface": "#15130b",
+        "on-primary-fixed": "#002023",
+        "error": "#ffb4ab",
+        // KEEP OLD COLORS TEMPORARILY DURING TRANSITION
         'sheet-bg': '#fdf6e3',
         'sheet-text': '#3a2d21',
         'sheet-red': '#8c1d1d',
@@ -16,7 +61,39 @@ module.exports = {
         'sheet-accent': '#c9b7a2',
         'sheet-input-bg': '#eaddc7',
       },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      spacing: {
+        "unit": "8px",
+        "gutter": "16px",
+        "container-padding": "24px",
+        "card-gap": "20px"
+      },
+      fontFamily: {
+        "headline-lg": ["EB Garamond", "serif"],
+        "display-lg": ["EB Garamond", "serif"],
+        "label-md": ["Manrope", "sans-serif"],
+        "body-md": ["Manrope", "sans-serif"],
+        "headline-md": ["EB Garamond", "serif"],
+        "body-lg": ["Manrope", "sans-serif"],
+        "fell": ['"IM Fell English SC"', 'serif'],
+        "garamond": ['"EB Garamond"', 'serif']
+      },
+      fontSize: {
+        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+      }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/container-queries')
+  ],
 }

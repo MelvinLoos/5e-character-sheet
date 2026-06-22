@@ -19,54 +19,46 @@ const store = useCharacterStore()
 </script>
 
 <template>
-  <div class="sheet-wrapper w-full max-w-none">
-    <!-- Front Page -->
-    <div class="sheet-container p-6 mb-6 flex flex-col page-break">
-      <SheetControls />
-      <SheetHeader />
-      <main class="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-grow mt-6">
-        <!-- Left Column - Ability Scores & Skills -->
-        <div class="space-y-6 flex flex-col">
-          <AbilityScores />
-          <div class="text-center py-2 bg-white/20">
-            <span class="font-bold text-xl block">{{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}</span>
-            <label class="font-fell text-sm text-sheet-red">Proficiency Bonus</label>
-          </div>
-          <SkillsList />
+  <div class="w-full flex flex-col gap-8">
+    <SheetControls class="print:hidden" />
+    <SheetHeader />
+    
+    <!-- Primary Layout Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-card-gap items-start">
+      <!-- Left Column - Ability Scores & Skills -->
+      <div class="xl:col-span-3 flex flex-col gap-card-gap">
+        <AbilityScores />
+        <div class="text-center py-3 bg-surface-container rounded-xl border border-outline-variant">
+          <span class="font-bold text-2xl block text-primary">{{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}</span>
+          <label class="font-label-md text-on-surface-variant uppercase tracking-wider text-xs">Proficiency</label>
         </div>
+        <SavingThrows />
+        <SkillsList />
+      </div>
 
-        <!-- Middle Column - Combat Stats -->
-        <div class="space-y-6 flex flex-col">
-          <CombatStats />
-          <DeathSaves />
-          <SavingThrows />
-          <AttacksList />
-        </div>
+      <!-- Center Column - Combat Stats -->
+      <div class="xl:col-span-5 flex flex-col gap-card-gap">
+        <CombatStats />
+        <DeathSaves />
+        <AttacksList />
+      </div>
 
-        <!-- Right Column - Key Features -->
-        <div class="space-y-6">
-          <FeaturesList :features="store.keyFeatures" title="Key Features" />
-        </div>
-      </main>
+      <!-- Right Column - Key Features -->
+      <div class="xl:col-span-4 flex flex-col gap-card-gap">
+        <FeaturesList :features="store.keyFeatures" title="Key Features" />
+      </div>
     </div>
 
-    <!-- Back Page -->
-    <div class="sheet-container p-6 flex flex-col">
-      <header class="flex justify-between items-baseline border-b-2 border-black pb-3 mb-6">
-        <h1 class="text-4xl font-fell">{{ store.currentCharacterData.name }}</h1>
-        <p class="text-lg italic">Character Details</p>
-      </header>
-      <main class="flex-grow grid lg:grid-cols-2 gap-8">
-        <div class="space-y-6">
-          <PersonalityBlock />
-          <EquipmentBlock />
-          <FeaturesList :features="store.otherFeatures" title="Features & Traits" />
-          <SpellcastingBlock />
-        </div>
-        <div class="space-y-6 print-hidden">
-          <!-- This column is hidden in print mode - CSS columns handle layout -->
-        </div>
-      </main>
+    <!-- Secondary Layout Grid (Back Page equivalent) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-card-gap items-start pt-8 border-t border-outline-variant/30">
+      <div class="flex flex-col gap-card-gap">
+        <PersonalityBlock />
+        <EquipmentBlock />
+      </div>
+      <div class="flex flex-col gap-card-gap">
+        <FeaturesList :features="store.otherFeatures" title="Features & Traits" />
+        <SpellcastingBlock />
+      </div>
     </div>
   </div>
 </template>

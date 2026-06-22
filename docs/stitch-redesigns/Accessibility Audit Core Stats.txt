@@ -1,0 +1,37 @@
+# Accessibility Audit: Midnight Scholar - Guided Builder: Core Stats
+
+**Screen Target:** Guided Builder: Core Stats ({{DATA:SCREEN:SCREEN_8}})
+**Date:** May 2024
+**Standard:** WCAG 2.1 AA
+
+## 1. Visual Design & Contrast
+*   **Color Contrast (Pass/Fail):** **FAIL**. 
+    *   The primary text color (#d4af37 gold) on the deep teal background (#1a3c40) provides a contrast ratio of approximately 3.1:1. For normal text (under 18pt), WCAG AA requires 4.5:1. For large text/headings, it requires 3:1.
+    *   The "Standard Array Generation" info box background vs. text contrast is also borderline.
+*   **Recommendation:** Darken the background or brighten the gold accent color to achieve a minimum 4.5:1 ratio for body text and 3:1 for headings.
+
+## 2. Semantic Structure
+*   **Landmarks:** The sidebar uses a `<nav>` element, which is correct. The main content should be wrapped in a `<main>` tag if not already present.
+*   **Headings:** The hierarchy flows from "New Character" (H1) to "Determine Core Stats" (H2). Ensure sub-labels in cards are H3s or appropriately associated labels.
+*   **Recommendation:** Ensure all interactive cards for stats use ARIA labels to describe their purpose (e.g., `aria-label="Strength score: 18"`).
+
+## 3. Form & Interactive Elements
+*   **Labels:** The "Core Stats" cards (STR, DEX, etc.) rely heavily on visual layout. They need explicit labels or `aria-labelledby` associations so screen readers understand the relationship between the label (STR) and the value (18).
+*   **Focus Indicators:** The current design uses custom rounded buttons and cards. Ensure a high-contrast focus ring is visible when navigating via keyboard (TAB key).
+*   **Recommendation:** Implement `aria-describedby` for the "Standard Array" hint to ensure the instructional text is read when the stat fields are focused.
+
+## 4. Imagery & Icons
+*   **Alt Text:** Decorative icons (like the lightbulb in the info box) should have `aria-hidden="true"`. Functional icons (like the info "i" and PDF export) must have descriptive `alt` or `aria-label` text.
+*   **Recommendation:** Audit all `<img>` and `<svg>` tags for appropriate alt text.
+
+## 5. Summary Table
+| Category | Status | Priority |
+| :--- | :--- | :--- |
+| Contrast | Issues Found | High |
+| Semantics | Good | Medium |
+| Keyboard Nav | Borderline | High |
+| ARIA Labels | Missing | Medium |
+
+---
+**Overall Status: Needs Improvement.**
+The "Midnight Scholar" theme is visually stunning and professional, but it requires contrast adjustments and ARIA labeling to be fully inclusive for users with visual impairments or those using assistive technologies.

@@ -1,0 +1,21 @@
+{
+  "name": "Character Creator: Midnight Scholar",
+  "short_name": "CharCreator",
+  "description": "A modern, professional, and cozy TTRPG character creator and sheet generator.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#15130b",
+  "theme_color": "#1a3c40",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
