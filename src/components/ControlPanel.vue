@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 import ImportModal from '@/components/modals/ImportModal.vue'
 
 const store = useCharacterStore()
+const route = useRoute()
 const geminiPrompt = ref('')
 const showImportModal = ref(false)
 const showMobileMenu = ref(false)
@@ -33,7 +35,21 @@ function generate() {
   store.generateCharacter(geminiPrompt.value)
   geminiPrompt.value = ''
 }
+
+const navLinks = [
+  { name: 'identity', label: 'Identity', icon: 'badge' },
+  { name: 'skills', label: 'Skills', icon: 'psychology' },
+  { name: 'combat', label: 'Combat', icon: 'swords' },
+  { name: 'spells', label: 'Spells', icon: 'auto_awesome' },
+  { name: 'inventory', label: 'Inventory', icon: 'backpack' },
+  { name: 'feats', label: 'Feats', icon: 'military_tech' },
+]
+
+const queryParams = computed(() => {
+  return route.query.id ? { query: { id: route.query.id } } : {}
+})
 </script>
+
 
 <template>
   <!-- SideNavBar -->
@@ -52,6 +68,24 @@ function generate() {
       <h2 class="font-headline-md text-tertiary mb-2">Midnight Scholar</h2>
       <p class="font-label-md text-on-surface-variant">Character Manager</p>
     </div>
+
+    <!-- Navigation Links -->
+    <ul v-if="store.currentCharacterData" class="flex flex-col gap-1 px-4 mb-6">
+      <li v-for="link in navLinks" :key="link.name">
+        <router-link
+          :to="{ name: link.name, ...queryParams }"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-label-lg"
+          :class="[
+            route.name === link.name
+              ? 'bg-primary text-on-primary'
+              : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface'
+          ]"
+        >
+          <span class="material-symbols-outlined text-[1.25rem]">{{ link.icon }}</span>
+          {{ link.label }}
+        </router-link>
+      </li>
+    </ul>
 
     <ul class="flex flex-col gap-2 flex-grow mt-4 overflow-y-auto px-2">
       <!-- AI Generator -->
@@ -104,6 +138,25 @@ function generate() {
   </header>
   
   <div v-if="showMobileMenu" class="md:hidden fixed top-14 left-0 w-full bg-surface-container z-30 p-4 border-b border-outline-variant shadow-lg print:hidden">
+     <!-- Mobile Navigation Links -->
+     <div v-if="store.currentCharacterData" class="mb-4 grid grid-cols-2 gap-2">
+       <router-link
+         v-for="link in navLinks"
+         :key="link.name"
+         :to="{ name: link.name, ...queryParams }"
+         @click="showMobileMenu = false"
+         class="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md"
+         :class="[
+           route.name === link.name
+             ? 'bg-primary text-on-primary'
+             : 'bg-surface-variant text-on-surface-variant'
+         ]"
+       >
+         <span class="material-symbols-outlined text-[1.1rem]">{{ link.icon }}</span>
+         {{ link.label }}
+       </router-link>
+     </div>
+     <div v-if="store.currentCharacterData" class="border-t border-outline-variant/30 pt-4 mb-2"></div>
      <button @click="store.handleNewCharacter(); showMobileMenu=false" class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md">New Character</button>
      <button @click="showImportModal = true; showMobileMenu=false" class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md">Import</button>
   </div>

@@ -349,7 +349,7 @@ watch(
                         v-for="n in store.getFeatureMaxUses(feature)"
                         :key="n"
                         type="checkbox"
-                        class="w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
+                        class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
                       />
                     </div>
                     <span v-if="feature.resource.reset" class="opacity-80"
@@ -366,7 +366,7 @@ watch(
                         v-for="n in feature.uses.total"
                         :key="n"
                         type="checkbox"
-                        class="w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
+                        class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
                       />
                     </div>
                     <span v-if="feature.uses.per" class="opacity-80">/ {{ feature.uses.per }}</span>
