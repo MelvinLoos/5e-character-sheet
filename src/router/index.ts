@@ -19,14 +19,9 @@ const router = createRouter({
       component: () => import('../views/Skills.vue'),
     },
     {
-      path: '/combat',
-      name: 'combat',
-      component: () => import('../views/Combat.vue'),
-    },
-    {
-      path: '/spells',
-      name: 'spells',
-      component: () => import('../views/Spells.vue'),
+      path: '/narrative',
+      name: 'narrative',
+      component: () => import('../views/Narrative.vue'),
     },
     {
       path: '/inventory',
@@ -37,6 +32,11 @@ const router = createRouter({
       path: '/feats',
       name: 'feats',
       component: () => import('../views/Feats.vue'),
+    },
+    {
+      path: '/spells',
+      name: 'spells',
+      component: () => import('../views/Spells.vue'),
     },
   ],
 })

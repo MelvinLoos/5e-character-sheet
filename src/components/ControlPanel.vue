@@ -37,12 +37,12 @@ function generate() {
 }
 
 const navLinks = [
-  { name: 'identity', label: 'Identity', icon: 'badge' },
-  { name: 'skills', label: 'Skills', icon: 'psychology' },
-  { name: 'combat', label: 'Combat', icon: 'swords' },
-  { name: 'spells', label: 'Spells', icon: 'auto_awesome' },
+  { name: 'identity', label: 'Identity', icon: 'person' },
+  { name: 'skills', label: 'Skills', icon: 'school' },
+  { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
   { name: 'inventory', label: 'Inventory', icon: 'backpack' },
   { name: 'feats', label: 'Feats', icon: 'military_tech' },
+  { name: 'spells', label: 'Spells', icon: 'auto_stories' },
 ]
 
 const queryParams = computed(() => {
@@ -84,10 +84,10 @@ const queryParams = computed(() => {
       <li v-for="link in navLinks" :key="link.name">
         <router-link
           :to="{ name: link.name, ...queryParams }"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-label-lg"
+          class="flex items-center gap-3 px-4 py-3 transition-colors font-label-lg"
           :class="[
             route.name === link.name
-              ? 'bg-primary text-on-primary'
+              ? 'border-r-4 border-tertiary bg-surface-variant/30 text-primary font-bold'
               : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface',
           ]"
         >
@@ -199,7 +199,7 @@ const queryParams = computed(() => {
         class="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md"
         :class="[
           route.name === link.name
-            ? 'bg-primary text-on-primary'
+            ? 'text-primary'
             : 'bg-surface-variant text-on-surface-variant',
         ]"
       >
