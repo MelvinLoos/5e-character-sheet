@@ -211,8 +211,8 @@ const queryParams = computed(() => {
     ></div>
     <button
       @click="
-        store.handleNewCharacter()
-        showMobileMenu = false
+        store.handleNewCharacter();
+        showMobileMenu = false;
       "
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
     >
@@ -220,8 +220,8 @@ const queryParams = computed(() => {
     </button>
     <button
       @click="
-        showImportModal = true
-        showMobileMenu = false
+        showImportModal = true;
+        showMobileMenu = false;
       "
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
     >

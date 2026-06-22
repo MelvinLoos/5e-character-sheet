@@ -3,23 +3,30 @@ import { useCharacterStore } from '@/stores/character'
 
 const store = useCharacterStore()
 
-const renownMilestones = [
+interface MilestoneData {
+  tier: number
+  maxMilestones: number
+  title: string
+  label: string
+}
+
+const renownMilestones: MilestoneData[] = [
   { tier: 1, maxMilestones: 3, title: 'Tier 1 Aspirant', label: 'Progress to Tier 2' },
   { tier: 2, maxMilestones: 4, title: 'Tier 2 Adept', label: 'Progress to Tier 3' },
   { tier: 3, maxMilestones: 5, title: 'Tier 3 Luminary', label: 'Progress to Tier 4' },
   { tier: 4, maxMilestones: 0, title: 'Tier 4 Paragon', label: 'Max Tier Reached' },
 ]
 
-function getMilestoneData() {
-  const currentTier = store.currentCharacterData.renownTier || 1
-  return renownMilestones.find((m) => m.tier === currentTier) || renownMilestones[0]
+function getMilestoneData(): MilestoneData {
+  const currentTier = store.currentCharacterData?.renownTier || 1
+  return renownMilestones.find((m) => m.tier === currentTier) || renownMilestones[0]!
 }
 
 function incrementMilestones() {
-  if (!store.isEditing) return
+  if (!store.isEditing || !store.currentCharacterData) return
 
   const currentData = getMilestoneData()
-  let milestones = store.currentCharacterData.milestones || 0
+  let milestones = store.currentCharacterData.renownMilestones || 0
   const tier = store.currentCharacterData.renownTier || 1
 
   if (tier >= 4) return
@@ -29,14 +36,14 @@ function incrementMilestones() {
   if (milestones >= currentData.maxMilestones) {
     if (tier < 4) {
       store.currentCharacterData.renownTier = tier + 1
-      store.currentCharacterData.milestones = 0
+      store.currentCharacterData.renownMilestones = 0
     }
   } else {
-    store.currentCharacterData.milestones = milestones
+    store.currentCharacterData.renownMilestones = milestones
   }
 }
 
-function getProgressText(data: any, milestones: number) {
+function getProgressText(data: MilestoneData, milestones: number) {
   if (data.tier >= 4) return 'Maximum Renown Achieved'
   const left = data.maxMilestones - milestones
   return `Complete ${left} more major scholarly contribution${left > 1 ? 's' : ''} to ascend to the next Tier.`
@@ -69,7 +76,7 @@ function getProgressText(data: any, milestones: number) {
           v-if="getMilestoneData().tier < 4"
           class="font-headline-md text-headline-md text-tertiary"
         >
-          {{ store.currentCharacterData.milestones || 0 }} / {{ getMilestoneData().maxMilestones }}
+          {{ store.currentCharacterData?.renownMilestones || 0 }} / {{ getMilestoneData().maxMilestones }}
         </span>
         <span v-else class="font-headline-md text-headline-md text-tertiary">MAX</span>
       </div>
@@ -81,7 +88,7 @@ function getProgressText(data: any, milestones: number) {
           @click="store.isEditing ? incrementMilestones() : null"
           class="flex-1 h-4 rounded-full relative group transition-colors cursor-pointer"
           :class="[
-            (store.currentCharacterData.milestones || 0) >= i
+            (store.currentCharacterData?.renownMilestones || 0) >= i
               ? 'bg-tertiary border border-tertiary shadow-[0_0_10px_rgba(234,194,73,0.3)]'
               : 'bg-surface-container border border-outline-variant hover:border-tertiary/50',
           ]"
@@ -92,7 +99,7 @@ function getProgressText(data: any, milestones: number) {
             <span
               class="text-[8px] uppercase font-bold"
               :class="
-                (store.currentCharacterData.milestones || 0) >= i
+                (store.currentCharacterData?.renownMilestones || 0) >= i
                   ? 'text-on-tertiary'
                   : 'text-outline'
               "
@@ -104,7 +111,7 @@ function getProgressText(data: any, milestones: number) {
       </div>
 
       <p class="text-center text-sm font-body-md text-on-surface-variant italic">
-        {{ getProgressText(getMilestoneData(), store.currentCharacterData.milestones || 0) }}
+        {{ getProgressText(getMilestoneData(), store.currentCharacterData?.renownMilestones || 0) }}
       </p>
     </div>
   </section>

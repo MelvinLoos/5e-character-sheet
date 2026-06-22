@@ -117,6 +117,18 @@ function getBackgroundInfo(backgroundName: string) {
 
   return info
 }
+
+function decrementTier() {
+  if (store.currentCharacterData) {
+    store.currentCharacterData.renownTier = Math.max(1, (store.currentCharacterData.renownTier || 1) - 1)
+  }
+}
+
+function incrementTier() {
+  if (store.currentCharacterData) {
+    store.currentCharacterData.renownTier = Math.min(4, (store.currentCharacterData.renownTier || 1) + 1)
+  }
+}
 </script>
 
 <template>
