@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
 import { SPELL_SLOT_PROGRESSION } from '@/data/rules'
-import feather from 'feather-icons'
+
+
 import draggable from 'vuedraggable'
 
 function generateId() {
@@ -249,7 +250,7 @@ function removeSpell(index: number) {
           <h3 class="font-bold mb-0">Spells</h3>
           <button v-if="store.isEditing && hasSpellcasting" @click="addSpell" class="icon-button text-xs p-1"
             title="Add Spell">
-            <span v-html="feather.icons.plus.toSvg({ width: 14, height: 14 })"></span>
+            <span class="material-symbols-outlined text-[14px]">add<></span>
           </button>
         </div>
 
@@ -272,7 +273,7 @@ function removeSpell(index: number) {
               <div v-if="store.isEditing"
                 class="spell-drag-handle absolute left-2 top-2 cursor-move opacity-40 hover:opacity-70 z-10"
                 title="Drag to reorder">
-                <span v-html="feather.icons['move'].toSvg({ width: 16, height: 16 })"></span>
+                <span class="material-symbols-outlined text-[16px]">drag_indicator<></span>
               </div>
 
               <div class="flex justify-between items-start" :class="{ 'ml-6': store.isEditing }">
@@ -294,7 +295,7 @@ function removeSpell(index: number) {
 
                 <button v-if="store.isEditing" @click="removeSpell(index)"
                   class="icon-button text-xs p-1 ml-2 bg-red-600 hover:bg-red-700" title="Remove Spell">
-                  <span v-html="feather.icons.x.toSvg({ width: 12, height: 12 })"></span>
+                  <span class="material-symbols-outlined text-[12px]">close<></span>
                 </button>
               </div>
             </div>
@@ -309,7 +310,7 @@ function removeSpell(index: number) {
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold">Spell Library</h3>
           <button @click="toggleSpellLibrary" class="icon-button" title="Close">
-            <span v-html="feather.icons.x.toSvg()"></span>
+            <span class="material-symbols-outlined">close<></span>
           </button>
         </div>
 
@@ -332,7 +333,7 @@ function removeSpell(index: number) {
                 class="w-full p-2 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <span v-if="searchFilter" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600" @click="searchFilter = ''">
-                <span v-html="feather.icons.x.toSvg({ width: 16, height: 16 })"></span>
+                <span class="material-symbols-outlined text-[16px]">close<></span>
               </span>
             </div>
           </div>
@@ -411,7 +412,7 @@ function removeSpell(index: number) {
         <!-- Add Manual Spell Button -->
         <div class="mt-4 pt-4 border-t border-gray-200">
           <button @click="addManualSpell" class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center justify-center gap-2">
-            <span v-html="feather.icons.plus.toSvg({ width: 16, height: 16 })"></span>
+            <span class="material-symbols-outlined text-[16px]">add<></span>
             <span>Add Custom Spell (Manual Entry)</span>
           </button>
         </div>

@@ -54,8 +54,8 @@ function removeAttack(index: number) {
   <section class="flex flex-col gap-4 mt-6">
     <div class="flex items-center justify-between border-b border-primary-container pb-2">
       <h2 class="font-headline-md text-headline-md text-primary">Attacks</h2>
-      <button v-if="store.isEditing" @click="addAttack" class="text-tertiary hover:text-white transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant" title="Add Attack">
-        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+      <button v-if="store.isEditing" @click="addAttack" class="bg-primary-container text-primary border border-primary/30 px-3 py-1 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors text-sm" title="Add Attack">
+        <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Attack
       </button>
     </div>
     <div v-if="store.currentCharacterData.attacks.length === 0" class="italic text-center font-body-md text-on-surface-variant p-4 bg-surface-container-high rounded-lg border border-outline-variant">
