@@ -80,14 +80,50 @@ export interface CharacterData {
     duration?: string
     concentration?: boolean
   }>
+  gold: number
+  supply: number
+  influence: number
+  inventorySlots: number
+  equippedGear: Array<{
+    id: string
+    name: string
+    type: string
+    description: string
+    slotCost: number
+    rarity?: string
+    theme?: string
+  }>
+  consumables: Array<{
+    id: string
+    name: string
+    type: string
+    slotCost: number
+    usageDie: string
+  }>
 }
 
 const STORAGE_KEY = 'dndCharacterLibrary'
 
-export const getLibrary = (): Record<string, CharacterData[]> =>
-  JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}
 export const saveLibrary = (library: Record<string, CharacterData[]>): void =>
   localStorage.setItem(STORAGE_KEY, JSON.stringify(library))
+export const getLibrary = (): Record<string, CharacterData[]> => {
+  const library = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}
+  
+  // Migrate characters in library to have the new fields
+  Object.keys(library).forEach(key => {
+    library[key] = library[key].map((char: CharacterData) => ({
+      ...char,
+      gold: char.gold ?? 0,
+      supply: char.supply ?? 0,
+      influence: char.influence ?? 0,
+      inventorySlots: char.inventorySlots ?? Math.max(10, char.abilityScores?.str || 10),
+      equippedGear: char.equippedGear ?? [],
+      consumables: char.consumables ?? []
+    }))
+  })
+  
+  return library
+}
 
 export const getMod = (score: number): number => Math.floor((score - 10) / 2)
 export const formatMod = (mod: number): string => (mod >= 0 ? `+${mod}` : mod.toString())
@@ -175,6 +211,12 @@ export const createBlankCharacter = (): CharacterData => {
       ...backgroundFeature,
     ] as CharacterData['features'],
     equipment: '',
+    gold: 0,
+    supply: 0,
+    influence: 0,
+    inventorySlots: Math.max(10, finalScores.str || 10), // Base slot calculation, can be updated later
+    equippedGear: [],
+    consumables: [],
     personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
     spellcasting: null,
     spells: [],
