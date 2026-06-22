@@ -64,8 +64,8 @@ const spellSlots = computed(() => {
 
   // Full/half/third/pact casters use the predefined progression
   if (casterType.value && casterType.value !== 'granted') {
-    if (!store.currentCharacterData?.level) return {}
-    const level = store.currentCharacterData.level
+    if (!store.currentCharacterData?.renownTier) return {}
+    const level = store.currentCharacterData.renownTier
     const progression =
       SPELL_SLOT_PROGRESSION[casterType.value as keyof typeof SPELL_SLOT_PROGRESSION]
     return progression?.[level] || {}

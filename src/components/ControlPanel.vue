@@ -68,7 +68,7 @@ const queryParams = computed(() => {
           {{ store.currentCharacterData.name || 'Unknown' }}
         </h2>
         <p class="font-label-md text-label-md text-on-surface-variant mt-1">
-          Level {{ store.currentCharacterData.level || 1 }}
+          Tier {{ store.currentCharacterData.renownTier || 1 }}
           {{ store.currentCharacterData.class || 'Aspirant' }}
         </p>
       </div>

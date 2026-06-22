@@ -82,7 +82,7 @@ const store = useCharacterStore()
         >
         <div class="flex items-center gap-3">
           <div class="font-headline-md text-headline-md text-on-surface">
-            {{ store.currentCharacterData.level
+            {{ store.currentCharacterData.renownTier
             }}<span class="text-on-surface-variant text-lg"
               >d{{
                 store.currentCharacterData.class

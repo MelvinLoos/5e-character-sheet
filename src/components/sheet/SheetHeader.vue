@@ -118,17 +118,6 @@ function getBackgroundInfo(backgroundName: string) {
   return info
 }
 
-function incrementLevel() {
-  if (store.currentCharacterData.level < 20) {
-    store.currentCharacterData.level++
-  }
-}
-
-function decrementLevel() {
-  if (store.currentCharacterData.level > 1) {
-    store.currentCharacterData.level--
-  }
-}
 </script>
 
 <template>
@@ -175,31 +164,32 @@ function decrementLevel() {
       </div>
 
       <div class="flex flex-wrap md:flex-nowrap gap-4 w-full md:w-auto">
-        <!-- Level & Experience -->
-        <div class="flex-1 min-w-[100px]">
+        <!-- Tier & Experience -->
+        
+        <div class="flex-1 min-w-[100px] hidden">
           <label class="block font-label-md text-label-md text-on-surface-variant mb-1"
-            >Level</label
+            >Tier</label
           >
           <div
             v-if="store.isEditing"
             class="flex items-center w-full bg-surface-container-high border border-outline-variant rounded focus-within:border-tertiary focus-within:ring-1 focus-within:ring-tertiary"
           >
             <button
-              @click="decrementLevel"
+              @click="decrementTier"
               class="px-2 py-2 text-on-surface hover:text-tertiary"
               type="button"
             >
               −
             </button>
             <input
-              v-model.number="store.currentCharacterData.level"
+              v-model.number="store.currentCharacterData.renownTier"
               type="number"
               min="1"
               max="20"
               class="w-full bg-transparent border-none text-center font-body-md text-on-surface p-2 focus:ring-0"
             />
             <button
-              @click="incrementLevel"
+              @click="incrementTier"
               class="px-2 py-2 text-on-surface hover:text-tertiary"
               type="button"
             >
@@ -210,7 +200,7 @@ function decrementLevel() {
             v-else
             class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md text-center"
           >
-            {{ store.currentCharacterData.level }}
+            {{ store.currentCharacterData.renownTier }}
           </div>
         </div>
 

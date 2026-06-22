@@ -469,7 +469,7 @@ export const useCharacterStore = defineStore('character', () => {
 
         // Recalculate derived stats when level changes (ensures profBonus, HP, spell slots, etc. update)
         watch(
-          () => currentCharacterData.value?.level,
+          () => currentCharacterData.value?.renownTier,
           () => {
             recalculateAbilityScores()
           },

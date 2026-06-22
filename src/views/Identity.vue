@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import RenownProgression from '@/components/sheet/RenownProgression.vue'
 import SheetHeader from '@/components/sheet/SheetHeader.vue'
 import AbilityScores from '@/components/sheet/AbilityScores.vue'
 import SavingThrows from '@/components/sheet/SavingThrows.vue'
@@ -19,6 +20,7 @@ const store = useCharacterStore()
       <section class="lg:col-span-5 flex flex-col gap-8 w-full">
         <CombatStats class="w-full" />
         <DeathSaves class="w-full" />
+        <RenownProgression />
         <AbilityScores />
       </section>
       
