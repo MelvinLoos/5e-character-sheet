@@ -6,16 +6,16 @@ const store = useCharacterStore()
 
 <template>
   <section class="mb-10">
-    <div class="flex items-center gap-2 mb-4 border-b border-primary-container pb-2">
-      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">backpack</span>
-      <h3 class="font-headline-md text-headline-md text-primary m-0">Equipment</h3>
-    </div>
+    <h3 class="font-headline-md text-headline-md text-on-surface mb-4 border-b border-[#1A3C40] pb-2 flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">backpack</span>
+      Equipment
+    </h3>
     
-    <div class="bg-surface-container p-5 rounded-lg border border-outline-variant relative">
+    <div class="bg-surface-container p-5 rounded-2xl border border-[#1A3C40] shadow-md relative">
       <textarea
         v-if="store.isEditing"
         v-model="store.currentCharacterData.equipment"
-        class="w-full bg-background border border-outline-variant rounded p-3 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary min-h-[150px]"
+        class="w-full bg-background border border-[#1A3C40] rounded-xl p-3 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary min-h-[150px]"
         placeholder="List your equipment here..."
       ></textarea>
       <div v-else class="font-body-md text-body-md text-on-surface-variant whitespace-pre-wrap leading-relaxed">
