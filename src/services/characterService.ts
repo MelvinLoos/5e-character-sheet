@@ -68,8 +68,9 @@ export interface CharacterData {
     flaw: string
     notes?: string
   }
-  spellcasting: { ability?: string } | null
+  spellcasting: { ability?: string; slotsSpent?: Record<string, number> } | null
   spells: Array<{
+    id?: string
     name: string
     level: number
     desc: string
