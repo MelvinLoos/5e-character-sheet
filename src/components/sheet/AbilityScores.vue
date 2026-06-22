@@ -2,7 +2,7 @@
 import { computed, watch, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
-import { pointBuyCosts, formatMod } from '@/services/characterService'
+import { formatMod } from '@/services/characterService'
 
 const store = useCharacterStore()
 

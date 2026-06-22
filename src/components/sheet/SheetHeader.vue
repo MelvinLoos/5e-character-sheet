@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
-import feather from 'feather-icons'
+
 
 const store = useCharacterStore()
 const showInfo = ref<Record<string, boolean>>({ class: false, species: false, background: false })
