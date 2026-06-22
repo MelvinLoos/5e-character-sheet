@@ -24,20 +24,19 @@ const store = useCharacterStore()
           >shield</span
         >
         <span
-          class="font-label-md text-label-md text-secondary-fixed-dim uppercase tracking-wider relative z-10 text-center"
+          class="font-label-md text-label-md text-secondary-fixed-dim uppercase tracking-wider relative z-10"
           >Armor Class</span
         >
-        <input
-          v-if="store.isEditing"
-          v-model.number="store.currentCharacterData.combat.ac"
-          type="number"
-          class="w-16 bg-transparent border-b-2 border-secondary-fixed-dim focus:border-white focus:ring-0 text-center font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold p-0"
-        />
-        <div
-          v-else
-          class="font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold"
-        >
-          {{ store.currentCharacterData.combat.ac }}
+        <div class="font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold">
+          <input
+            v-if="store.isEditing"
+            v-model.number="store.currentCharacterData.combat.ac"
+            type="number"
+            class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0"
+          />
+          <template v-else>
+            {{ store.currentCharacterData.combat.ac }}
+          </template>
         </div>
       </div>
 
