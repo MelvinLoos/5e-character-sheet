@@ -5,7 +5,8 @@ export interface CharacterData {
   name: string
   title: string
   class: string | null
-  level: number
+  renownTier: number
+  renownMilestones: number
   species: string | null
   background: string | null
   pointBuyBaseScores: Record<string, number>
@@ -146,7 +147,8 @@ export const createBlankCharacter = (): CharacterData => {
     name: 'New Character',
     title: '',
     class: defaultClass,
-    level: 1,
+    renownTier: 1,
+    renownMilestones: 0,
     species: defaultSpecies,
     background: defaultBackground,
     pointBuyBaseScores: baseScores,

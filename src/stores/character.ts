@@ -12,7 +12,7 @@ import {
 } from '../services/characterService'
 import type { CharacterData } from '../services/characterService'
 
-import { migrateUsesToResource } from '../utils/migrations'
+import { migrateUsesToResource, migrateLevelToRenown } from '../utils/migrations'
 import { logger } from '../utils/logger'
 
 import {
@@ -45,6 +45,15 @@ export const useCharacterStore = defineStore('character', () => {
 
   // --- GETTERS (Computed Properties) ---
 
+  const derivedLevel = computed(() => {
+    if (!currentCharacterData.value) return 3
+    const tier = currentCharacterData.value.renownTier || 1
+    if (tier === 1) return 3
+    if (tier === 2) return 6
+    if (tier === 3) return 10
+    return 3
+  })
+
   const abilityMods = computed(() => {
     if (!currentCharacterData.value) return {}
     return Object.fromEntries(
@@ -59,7 +68,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return 2
     let prof = 2
     for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
-      if (currentCharacterData.value.level >= parseInt(levelThreshold)) {
+      if (derivedLevel.value >= parseInt(levelThreshold)) {
         prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[parseInt(levelThreshold)] ?? prof
       }
     }
@@ -68,15 +77,15 @@ export const useCharacterStore = defineStore('character', () => {
 
   const maxHp = computed(() => {
     if (!currentCharacterData.value) return 1
-    const { level, class: className } = currentCharacterData.value
+    const { class: className } = currentCharacterData.value
     const classData = className ? DND_RULES.CLASSES[className] : undefined
     if (!classData) return 1
 
     const conMod = abilityMods.value.con ?? 0
     let hp = classData.hitDice + conMod
-    if (level > 1) {
+    if (derivedLevel.value > 1) {
       const hpGainPerLevel = classData.hitDiceAverage + conMod
-      hp += (level - 1) * Math.max(1, hpGainPerLevel)
+      hp += (derivedLevel.value - 1) * Math.max(1, hpGainPerLevel)
     }
     return hp
   })
@@ -217,6 +226,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Convert legacy `uses` into the new `resource` shape when applicable
     migrated = migrateUsesToResource(migrated) as Record<string, unknown>
+    migrated = migrateLevelToRenown(migrated) as Record<string, unknown>
 
     // Add missing backgroundBonusSelections if not present
     if (!migrated.backgroundBonusSelections) {

@@ -52,4 +52,31 @@ export function migrateUsesToResource(character: unknown) {
   return ch
 }
 
+export function migrateLevelToRenown(character: unknown) {
+  if (!character || typeof character !== 'object') return character
+  
+  const ch = character as Record<string, unknown>
+  
+  if (ch.renownTier === undefined) {
+    if (typeof ch.level === 'number') {
+      const level = ch.level
+      let tier = 1
+      if (level >= 5 && level <= 8) {
+        tier = 2
+      } else if (level >= 9) {
+        tier = 3
+      }
+      ch.renownTier = tier
+      ch.renownMilestones = 0
+      delete ch.level
+    } else {
+      ch.renownTier = 1
+      ch.renownMilestones = 0
+    }
+  }
+  
+  return ch
+}
+
 export default migrateUsesToResource
+
