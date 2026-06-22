@@ -7,22 +7,23 @@ const store = useCharacterStore()
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-      <div class="flex flex-col gap-8">
-        <div class="text-center py-3 bg-surface-container rounded-xl border border-outline-variant">
-          <span class="font-bold text-2xl block text-primary"
-            >{{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}</span
-          >
-          <label class="font-label-md text-on-surface-variant uppercase tracking-wider text-xs"
-            >Proficiency Bonus</label
-          >
+  <div class="flex flex-col h-full">
+    <header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
+      <div>
+        <h2 class="font-display-lg text-display-lg text-on-background">Skills & Proficiencies</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Determine your scholarly expertise and practical aptitudes.</p>
+      </div>
+      <div class="flex gap-6">
+        <div class="bg-surface-container border border-primary-container rounded p-3 text-center min-w-[80px]">
+          <p class="font-label-md text-label-md text-on-surface-variant uppercase text-[10px]">Proficiency</p>
+          <p class="font-headline-lg text-headline-lg text-tertiary">{{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}</p>
         </div>
-        <SavingThrows />
       </div>
-      <div class="flex flex-col gap-8">
-        <SkillsList />
-      </div>
+    </header>
+
+    <div class="flex flex-col gap-8 flex-1">
+      <SavingThrows />
+      <SkillsList />
     </div>
   </div>
 </template>
