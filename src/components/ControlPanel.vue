@@ -98,8 +98,6 @@ const queryParams = computed(() => {
       </li>
     </ul>
 
-    <SheetControls class="print:hidden" />
-
     <ul class="flex flex-col gap-2 flex-grow mt-4 overflow-y-auto px-2">
       <!-- AI Generator -->
       <li class="mb-4" v-if="store.geminiSchema">
@@ -161,6 +159,8 @@ const queryParams = computed(() => {
         </div>
       </li>
     </ul>
+
+    <SheetControls class="print:hidden" />
 
     <div class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30">
       <button
