@@ -1,0 +1,264 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Character Sheet - Midnight Scholar (Print-Ready)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#000000",
+                        "inverse-primary": "#000000",
+                        "on-secondary": "#000000",
+                        "outline": "#000000",
+                        "tertiary-fixed": "#ffffff",
+                        "primary": "#000000",
+                        "on-tertiary-fixed": "#000000",
+                        "inverse-on-surface": "#ffffff",
+                        "surface-bright": "#ffffff",
+                        "secondary-fixed": "#ffffff",
+                        "primary-container": "#ffffff",
+                        "surface-container-highest": "#ffffff",
+                        "surface-container-low": "#ffffff",
+                        "on-secondary-fixed-variant": "#000000",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#ffffff",
+                        "on-secondary-container": "#000000",
+                        "on-primary-container": "#000000",
+                        "on-tertiary-container": "#000000",
+                        "outline-variant": "#000000",
+                        "on-surface": "#000000",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ffffff",
+                        "on-primary-fixed": "#000000",
+                        "error-container": "#ffffff",
+                        "surface-dim": "#ffffff",
+                        "tertiary-fixed-dim": "#ffffff",
+                        "on-primary-fixed-variant": "#000000",
+                        "primary-fixed-dim": "#ffffff",
+                        "inverse-surface": "#000000",
+                        "on-surface-variant": "#000000",
+                        "on-error-container": "#000000",
+                        "on-secondary-fixed": "#000000",
+                        "on-tertiary": "#000000",
+                        "surface-tint": "#000000",
+                        "background": "#ffffff",
+                        "surface": "#ffffff",
+                        "tertiary": "#000000",
+                        "surface-variant": "#ffffff",
+                        "on-error": "#ffffff",
+                        "secondary": "#000000",
+                        "surface-container-high": "#ffffff",
+                        "primary-fixed": "#ffffff",
+                        "error": "#000000",
+                        "surface-container": "#ffffff",
+                        "secondary-container": "#ffffff",
+                        "on-tertiary-fixed-variant": "#000000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Manrope"],
+                        "headline-lg": ["EB Garamond"],
+                        "body-lg": ["Manrope"],
+                        "headline-md": ["EB Garamond"],
+                        "body-md": ["Manrope"],
+                        "display-lg": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Printable specific styles */
+        @media print {
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .a4-container { border: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; box-shadow: none !important; }
+            .no-print { display: none; }
+        }
+        /* A4 Size constraints for display */
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white !important;
+            color: black !important;
+        }
+        /* Force black borders and text override for all states */
+        * {
+            border-color: black !important;
+            color: black !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body class="bg-white text-black p-container-padding flex justify-center min-h-screen">
+<!-- Main Printable Area -->
+<main class="a4-container md:mt-0 p-8 border-black font-body-md text-body-md" style="width: 794px; min-height: 1123px; margin: 0 auto;">
+<!-- Header Section -->
+<header class="border-b-4 border-black pb-4 mb-8 flex justify-between items-end">
+<div>
+<h1 class="font-display-lg text-display-lg leading-none mb-1 tracking-tight">Elara Vance</h1>
+<h2 class="font-headline-md text-headline-md"><span style="font-family: Manrope, sans-serif; font-size: 18px;">Wizard - School of Evocation</span></h2>
+</div>
+<div class="text-right">
+<div class="font-headline-md text-headline-md uppercase tracking-widest">Tier 1</div>
+<div class="font-label-md text-label-md uppercase">Aspirant</div>
+</div>
+</header>
+<div class="grid grid-cols-12 gap-6">
+<!-- Left Column: Stats & Vitals -->
+<div class="col-span-4 flex flex-col gap-8">
+<!-- Ability Scores -->
+<section class="border-2 border-black p-4 rounded-lg">
+<h3 class="font-headline-md text-headline-md border-b-2 border-black mb-4 pb-1 text-left">Abilities</h3>
+<div class="space-y-4">
+<!-- STR -->
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg">8</div>
+<div class="text-center w-16">
+<div class="font-label-md text-label-md uppercase text-xs">STR</div>
+<div class="font-headline-md text-headline-md">-1</div>
+</div>
+</div>
+<!-- DEX -->
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg">14</div>
+<div class="text-center w-16">
+<div class="font-label-md text-label-md uppercase text-xs">DEX</div>
+<div class="font-headline-md text-headline-md">+2</div>
+</div>
+</div>
+<!-- CON -->
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg">12</div>
+<div class="text-center w-16">
+<div class="font-label-md text-label-md uppercase text-xs">CON</div>
+<div class="font-headline-md text-headline-md">+1</div>
+</div>
+</div>
+<!-- INT -->
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full border-4 border-black flex items-center justify-center font-headline-lg text-headline-lg font-bold">16</div>
+<div class="text-center w-16">
+<div class="font-label-md text-label-md uppercase text-xs">INT</div>
+<div class="font-headline-md text-headline-md font-bold">+3</div>
+</div>
+</div>
+<!-- WIS -->
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg">14</div>
+<div class="text-center w-16">
+<div class="font-label-md text-label-md uppercase text-xs">WIS</div>
+<div class="font-headline-md text-headline-md">+2</div>
+</div>
+</div>
+<!-- CHA -->
+<div class="flex items-center justify-between">
+<div class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg">10</div>
+<div class="text-center w-16">
+<div class="font-label-md text-label-md uppercase text-xs">CHA</div>
+<div class="font-headline-md text-headline-md">+0</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Vitals -->
+<section class="grid grid-cols-2 gap-2">
+<div class="border-2 border-black p-2 text-center rounded">
+<div class="font-label-md text-label-md text-xs uppercase">Armor Class</div>
+<div class="font-headline-lg text-headline-lg">13</div>
+</div>
+<div class="border-2 border-black p-2 text-center rounded">
+<div class="font-label-md text-label-md text-xs uppercase">Initiative</div>
+<div class="font-headline-lg text-headline-lg">+2</div>
+</div>
+<div class="border-2 border-black p-2 text-center rounded">
+<div class="font-label-md text-label-md text-xs uppercase">Speed</div>
+<div class="font-headline-lg text-headline-lg">30ft</div>
+</div>
+<div class="border-2 border-black p-2 text-center rounded">
+<div class="font-label-md text-label-md text-xs uppercase">Proficiency</div>
+<div class="font-headline-lg text-headline-lg">+2</div>
+</div>
+<div class="col-span-2 border-2 border-black p-3 text-center rounded">
+<div class="font-label-md text-label-md text-xs uppercase mb-1">Hit Points</div>
+<div class="flex justify-center items-end gap-2">
+<span class="font-headline-lg text-headline-lg leading-none">9</span>
+<span class="text-black font-bold pb-1">/ 9</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Middle & Right Columns: Skills & Talents -->
+<div class="col-span-8 flex flex-col gap-8">
+<!-- The Ledger of Expertise (Skills) -->
+<section class="border-2 border-black p-4 rounded-lg">
+<h3 class="font-headline-md text-headline-md border-b-2 border-black mb-4 pb-1">Skills</h3>
+<div class="columns-2 gap-6 space-y-1">
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Acrobatics <span class="text-xs">(Dex)</span></span> <span class="">+2</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Animal Handling <span class="text-xs">(Wis)</span></span> <span class="">+2</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-black inline-block"></span> Arcana <span class="text-xs">(Int)</span></span> <span class="font-bold">+5</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Athletics <span class="text-xs">(Str)</span></span> <span class="">-1</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Deception <span class="text-xs">(Cha)</span></span> <span class="">+0</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-black inline-block"></span> History <span class="text-xs">(Int)</span></span> <span class="font-bold">+5</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-black inline-block"></span> Insight <span class="text-xs">(Wis)</span></span> <span class="font-bold">+4</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Intimidation <span class="text-xs">(Cha)</span></span> <span class="">+0</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-black inline-block"></span> Investigation <span class="text-xs">(Int)</span></span> <span class="font-bold">+5</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Medicine <span class="text-xs">(Wis)</span></span> <span class="">+2</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Nature <span class="text-xs">(Int)</span></span> <span class="">+3</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Perception <span class="text-xs">(Wis)</span></span> <span class="">+2</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Performance <span class="text-xs">(Cha)</span></span> <span class="">+0</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Persuasion <span class="text-xs">(Cha)</span></span> <span class="">+0</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Religion <span class="text-xs">(Int)</span></span> <span class="">+3</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Sleight of Hand <span class="text-xs">(Dex)</span></span> <span class="">+2</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Stealth <span class="text-xs">(Dex)</span></span> <span class="">+2</span></div>
+<div class="flex justify-between border-b border-black pb-1"><span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-black inline-block"></span> Survival <span class="text-xs">(Wis)</span></span> <span class="">+2</span></div>
+</div>
+</section>
+<!-- The Archive of Talents -->
+<section class="border-2 border-black p-4 rounded-lg flex-1">
+<h3 class="font-headline-md text-headline-md border-b-2 border-black mb-4 pb-1">Feats</h3>
+<div class="space-y-4">
+<div class="border-2 border-black p-3 rounded">
+<h4 class="font-label-md text-label-md uppercase font-bold flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">psychology</span> Keen Mind</h4>
+<p class="text-sm mt-1">You have a mind that can track time, direction, and detail with uncanny precision. You always know which way is north, you always know the number of hours left before the next sunrise or sunset, and you can accurately recall anything you have seen or heard within the past month.</p>
+</div>
+<div class="border-2 border-black p-3 rounded">
+<h4 class="font-label-md text-label-md uppercase font-bold flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> Observant</h4>
+<p class="text-sm mt-1">Quick to notice details of your environment. If you can see a creature's mouth while it is speaking a language you understand, you can read its lips. You have a +5 bonus to your passive Wisdom (Perception) and passive Intelligence (Investigation) scores.</p>
+</div>
+<div class="border-2 border-black p-3 rounded border-dashed flex items-center justify-center min-h-[80px]">
+<span class="text-black italic font-body-md text-body-md">Empty Talent Slot (Level 4)</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+
+
+</body></html>
