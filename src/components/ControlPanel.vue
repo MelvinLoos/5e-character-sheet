@@ -29,7 +29,13 @@ const characterSelectOptions = computed(() => {
 const selectedCharacter = computed({
   get: () =>
     store.currentCharacterData ? `${store.sessionName}|${store.currentCharacterData.name}` : '',
-  set: (value) => store.loadCharacterFromLibrary(value),
+  set: (value) => {
+    if (value === 'new') {
+      store.handleNewCharacter()
+    } else if (value) {
+      store.loadCharacterFromLibrary(value)
+    }
+  },
 })
 
 function generate() {
@@ -64,10 +70,36 @@ const queryParams = computed(() => {
           >account_circle</span
         >
       </div>
-      <div class="text-center">
-        <h2 class="font-headline-lg text-headline-lg text-tertiary leading-tight">
-          {{ store.currentCharacterData.name || 'Unknown' }}
-        </h2>
+      <div class="text-center w-full px-2">
+        <select
+          class="font-headline-lg text-headline-lg text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full"
+          v-model="selectedCharacter"
+        >
+          <option
+            v-if="store.currentCharacterData"
+            :value="`${store.sessionName}|${store.currentCharacterData.name}`"
+            disabled
+            class="hidden"
+          >
+            {{ store.currentCharacterData.name }}
+          </option>
+          <option value="new" class="bg-primary-container text-tertiary font-body-md text-sm font-bold">+ New Character</option>
+          <optgroup
+            v-for="group in characterSelectOptions"
+            :key="group.label"
+            :label="group.label"
+            class="bg-primary-container text-on-surface-variant font-body-md text-sm"
+          >
+            <option
+              v-for="char in group.options"
+              :key="char.value"
+              :value="char.value"
+              class="bg-primary-container text-on-surface font-body-md text-sm"
+            >
+              {{ char.text }}
+            </option>
+          </optgroup>
+        </select>
         <p class="font-label-md text-label-md text-on-surface-variant mt-1">
           Tier {{ store.currentCharacterData.renownTier || 1 }}
           {{ store.currentCharacterData.class || 'Aspirant' }}
@@ -75,8 +107,29 @@ const queryParams = computed(() => {
       </div>
     </div>
 
-    <div class="px-6 mb-8 text-center" v-else>
-      <h2 class="font-headline-md text-tertiary mb-2">Midnight Scholar</h2>
+    <div class="px-6 mb-8 text-center w-full" v-else>
+      <select
+        class="font-headline-md text-headline-md text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full mb-2"
+        v-model="selectedCharacter"
+      >
+        <option value="" disabled class="bg-primary-container text-on-surface font-body-md text-sm">Midnight Scholar</option>
+        <option value="new" class="bg-primary-container text-tertiary font-body-md text-sm font-bold">+ New Character</option>
+        <optgroup
+          v-for="group in characterSelectOptions"
+          :key="group.label"
+          :label="group.label"
+          class="bg-primary-container text-on-surface-variant font-body-md text-sm"
+        >
+          <option
+            v-for="char in group.options"
+            :key="char.value"
+            :value="char.value"
+            class="bg-primary-container text-on-surface font-body-md text-sm"
+          >
+            {{ char.text }}
+          </option>
+        </optgroup>
+      </select>
       <p class="font-label-md text-on-surface-variant">Character Manager</p>
     </div>
 
@@ -122,39 +175,11 @@ const queryParams = computed(() => {
       <!-- Manual Controls -->
       <li>
         <div class="px-4 py-2">
-          <label class="block font-label-md text-label-md text-on-surface-variant mb-1"
-            >Load Character</label
-          >
-          <select
-            class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
-            v-model="selectedCharacter"
-          >
-            <option value="">Select...</option>
-            <optgroup
-              v-for="group in characterSelectOptions"
-              :key="group.label"
-              :label="group.label"
-            >
-              <option v-for="char in group.options" :key="char.value" :value="char.value">
-                {{ char.text }}
-              </option>
-            </optgroup>
-          </select>
-        </div>
-      </li>
-      <li>
-        <div class="px-4 py-2 flex justify-between gap-2">
-          <button
-            @click="store.handleNewCharacter()"
-            class="flex-1 bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md py-2 rounded text-sm transition-colors"
-          >
-            New
-          </button>
           <button
             @click="showImportModal = true"
-            class="flex-1 bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md py-2 rounded text-sm transition-colors"
+            class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md py-2 rounded text-sm transition-colors"
           >
-            Import
+            Import Data
           </button>
         </div>
       </li>
