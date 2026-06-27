@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 import ImportModal from '@/components/modals/ImportModal.vue'
-import SheetControls from './SheetControls.vue'
 
 const store = useCharacterStore()
 const route = useRoute()
@@ -41,6 +40,27 @@ const selectedCharacter = computed({
 function generate() {
   store.generateCharacter(geminiPrompt.value)
   geminiPrompt.value = ''
+}
+
+function handlePrint() {
+  const wasEditing = store.isEditing
+  if (wasEditing) {
+    store.toggleEdit()
+  }
+
+  // Use setTimeout to ensure DOM is updated before printing
+  setTimeout(() => {
+    window.onbeforeprint = () => {
+      // This logic is tricky. We'll set it back after print.
+    }
+    window.onafterprint = () => {
+      if (wasEditing) {
+        store.toggleEdit()
+      }
+      window.onafterprint = null
+    }
+    window.print()
+  }, 100)
 }
 
 const navLinks = [
@@ -185,12 +205,53 @@ const queryParams = computed(() => {
       </li>
     </ul>
 
-    <SheetControls class="print:hidden" />
-
-    <div class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30">
+    <div class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30 flex flex-col gap-2 print:hidden">
+      <!-- Edit/View Mode -->
       <button
-        onclick="window.print()"
+        @click="store.toggleEdit()"
+        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        :title="store.isEditing ? 'View Mode' : 'Edit Mode'"
+      >
+        <span class="material-symbols-outlined">{{ store.isEditing ? 'visibility' : 'edit' }}</span>
+        {{ store.isEditing ? 'View Mode' : 'Edit Mode' }}
+      </button>
+
+      <!-- Save -->
+      <button
+        @click="store.saveToLibrary()"
+        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
+      >
+        <span class="material-symbols-outlined">{{ store.sourceCharacterId ? 'content_copy' : 'save' }}</span>
+        {{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}
+      </button>
+
+      <!-- Share -->
+      <button
+        @click="store.shareCharacter()"
+        :disabled="!store.supabaseClient"
+        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Share Online"
+      >
+        <span class="material-symbols-outlined">share</span>
+        Share Online
+      </button>
+
+      <!-- Export -->
+      <button
+        @click="store.exportCharacter()"
+        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        title="Export JSON"
+      >
+        <span class="material-symbols-outlined">download</span>
+        Export JSON
+      </button>
+
+      <!-- Print -->
+      <button
+        @click="handlePrint"
         class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2"
+        title="Print Sheet"
       >
         <span class="material-symbols-outlined">print</span>
         Print Sheet
@@ -202,7 +263,7 @@ const queryParams = computed(() => {
   <header
     class="md:hidden flex justify-between items-center px-4 py-3 w-full top-0 bg-primary-container dark:bg-primary-container shadow-sm z-40 fixed print:hidden"
   >
-    <span class="font-headline-md text-tertiary">Midnight Scholar</span>
+    <span class="font-headline-md text-tertiary">Character Sheet</span>
     <div class="flex gap-4">
       <button
         @click="showMobileMenu = !showMobileMenu"
