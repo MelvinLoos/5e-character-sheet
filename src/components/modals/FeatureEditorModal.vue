@@ -499,7 +499,7 @@ function removeModifier(stat: string) {
                   </option>
                 </select>
                 <input
-                  v-model.number="newModifier.value"
+                  v-model.number="newModifier.value" min="-10" max="4"
                   type="number"
                   class="edit-mode-input text-xs py-1 px-1 w-12"
                 />

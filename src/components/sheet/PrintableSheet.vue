@@ -209,8 +209,8 @@ const attacks = computed(() => {
             <div class="col-span-2 border-2 border-black p-3 text-center rounded bg-white">
               <div class="font-label-md text-label-md text-xs uppercase mb-1 text-black">Hit Points</div>
               <div class="flex justify-center items-end gap-2">
-                <span class="font-headline-lg text-headline-lg leading-none text-black">{{ char.combat.hp_current }}</span>
-                <span class="text-black font-bold pb-1">/ {{ char.combat.hp_max }}</span>
+                <span class="font-headline-lg text-headline-lg leading-none text-black"><span class="w-8 inline-block"></span></span>
+                <span class="text-black font-bold pb-1">/ {{ store.maxHp }}</span>
               </div>
             </div>
           </section>

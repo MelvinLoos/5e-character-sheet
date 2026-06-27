@@ -613,7 +613,14 @@ export const useCharacterStore = defineStore('character', () => {
     data.abilityScores = finalScores
 
     // Also recalculate derived stats
+    const oldMax = data.combat.hp_max
+    const wasAtMax = data.combat.hp_current === oldMax || data.combat.hp_current === undefined || data.combat.hp_current === 1
+    
     data.combat.hp_max = maxHp.value
+
+    if (wasAtMax || (data.combat.hp_current ?? 0) > data.combat.hp_max) {
+      data.combat.hp_current = data.combat.hp_max
+    }
 
     // Setup spellcasting based on current features
     _setupSpellcasting()
