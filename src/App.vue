@@ -4,6 +4,7 @@ import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import ControlPanel from './components/ControlPanel.vue'
 import CharacterSheet from './components/CharacterSheet.vue'
+import PrintableSheet from './components/sheet/PrintableSheet.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -19,11 +20,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="antialiased min-h-screen flex text-on-background bg-background">
+  <div class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0">
     <ControlPanel />
 
     <main
-      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter"
+      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
     >
       <div
         v-if="!store.currentCharacterData"
@@ -40,6 +41,8 @@ onMounted(async () => {
 
       <CharacterSheet v-if="store.currentCharacterData" />
     </main>
+
+    <PrintableSheet v-if="store.currentCharacterData" />
 
     <LoadingModal />
     <ErrorModal />

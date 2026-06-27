@@ -167,8 +167,8 @@ const queryParams = computed(() => {
         onclick="window.print()"
         class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2"
       >
-        <span class="material-symbols-outlined">download</span>
-        Export Character
+        <span class="material-symbols-outlined">print</span>
+        Print Sheet
       </button>
     </div>
   </nav>

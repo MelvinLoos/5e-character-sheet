@@ -198,6 +198,14 @@
     margin: 0.5in;
   }
 
+  html,
+  body,
+  #app {
+    background: white !important;
+    background-color: white !important;
+    color: black !important;
+  }
+
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
