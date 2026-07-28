@@ -35,6 +35,28 @@ export interface BackgroundData {
 
 export type SpellSlotsByLevel = Record<number, Record<string, number>>
 
+/**
+ * Maps a Renown Tier to its equivalent standard D&D 5.5e character level.
+ * Used to translate the West Marches "Tiers of Renown" system into
+ * standard spell slot / proficiency / hit-dice progression tables.
+ */
+export const TIER_TO_LEVEL: Record<number, number> = {
+  1: 3,
+  2: 6,
+  3: 10,
+}
+
+/**
+ * Translates a character's Renown Tier (1-3) into an effective caster level
+ * suitable for querying SPELL_SLOT_PROGRESSION, PROFICIENCY_BONUS_PROGRESSION,
+ * and other level-keyed rule tables.
+ *
+ * Returns 3 for any out-of-bounds or unknown tier value.
+ */
+export function getEffectiveLevel(tier: number): number {
+  return TIER_TO_LEVEL[tier] ?? 3
+}
+
 export const ABILITIES: Record<string, string> = {
   str: 'Strength',
   dex: 'Dexterity',
