@@ -49,10 +49,7 @@ export const useCharacterStore = defineStore('character', () => {
   const derivedLevel = computed(() => {
     if (!currentCharacterData.value) return 3
     const tier = currentCharacterData.value.renownTier || 1
-    if (tier === 1) return 3
-    if (tier === 2) return 6
-    if (tier === 3) return 10
-    return 3
+    return DND_RULES.getEffectiveLevel(tier)
   })
 
   const abilityMods = computed(() => {
@@ -118,6 +115,23 @@ export const useCharacterStore = defineStore('character', () => {
   })
 
   const pointBuyPointsRemaining = computed(() => 27 - pointBuyPointsUsed.value)
+
+  const spellSlots = computed<Record<string, number>>(() => {
+    if (!currentCharacterData.value) return {}
+
+    const features = currentCharacterData.value.features || []
+    const spellcastingFeature = features.find(
+      (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
+    )
+    if (!spellcastingFeature?.casterType) return {}
+
+    const level = derivedLevel.value
+    const progression =
+      DND_RULES.SPELL_SLOT_PROGRESSION[
+        spellcastingFeature.casterType as keyof typeof DND_RULES.SPELL_SLOT_PROGRESSION
+      ]
+    return (progression?.[level] || {}) as Record<string, number>
+  })
 
   // Helper function to calculate feature maximum uses based on 2024 resource system
   function getFeatureMaxUses(feature: unknown) {
@@ -891,6 +905,8 @@ export const useCharacterStore = defineStore('character', () => {
     spellAttack,
     pointBuyPointsUsed,
     pointBuyPointsRemaining,
+    derivedLevel,
+    spellSlots,
     // Helper functions
     getFeatureMaxUses,
     // Actions
