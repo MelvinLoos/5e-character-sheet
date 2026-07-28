@@ -103,7 +103,12 @@ const queryParams = computed(() => {
           >
             {{ store.currentCharacterData.name }}
           </option>
-          <option value="new" class="bg-primary-container text-tertiary font-body-md text-sm font-bold">+ New Character</option>
+          <option
+            value="new"
+            class="bg-primary-container text-tertiary font-body-md text-sm font-bold"
+          >
+            + New Character
+          </option>
           <optgroup
             v-for="group in characterSelectOptions"
             :key="group.label"
@@ -132,8 +137,15 @@ const queryParams = computed(() => {
         class="font-headline-md text-headline-md text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full mb-2"
         v-model="selectedCharacter"
       >
-        <option value="" disabled class="bg-primary-container text-on-surface font-body-md text-sm">Midnight Scholar</option>
-        <option value="new" class="bg-primary-container text-tertiary font-body-md text-sm font-bold">+ New Character</option>
+        <option value="" disabled class="bg-primary-container text-on-surface font-body-md text-sm">
+          Midnight Scholar
+        </option>
+        <option
+          value="new"
+          class="bg-primary-container text-tertiary font-body-md text-sm font-bold"
+        >
+          + New Character
+        </option>
         <optgroup
           v-for="group in characterSelectOptions"
           :key="group.label"
@@ -205,7 +217,9 @@ const queryParams = computed(() => {
       </li>
     </ul>
 
-    <div class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30 flex flex-col gap-2 print:hidden">
+    <div
+      class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30 flex flex-col gap-2 print:hidden"
+    >
       <!-- Edit/View Mode -->
       <button
         @click="store.toggleEdit()"
@@ -222,7 +236,9 @@ const queryParams = computed(() => {
         class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
         :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
       >
-        <span class="material-symbols-outlined">{{ store.sourceCharacterId ? 'content_copy' : 'save' }}</span>
+        <span class="material-symbols-outlined">{{
+          store.sourceCharacterId ? 'content_copy' : 'save'
+        }}</span>
         {{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}
       </button>
 
@@ -299,19 +315,13 @@ const queryParams = computed(() => {
       class="border-t border-outline-variant/30 pt-4 mb-2"
     ></div>
     <button
-      @click="
-        store.handleNewCharacter();
-        showMobileMenu = false;
-      "
+      @click="store.handleNewCharacter(), (showMobileMenu = false)"
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
     >
       New Character
     </button>
     <button
-      @click="
-        showImportModal = true;
-        showMobileMenu = false;
-      "
+      @click="showImportModal = true, (showMobileMenu = false)"
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
     >
       Import
