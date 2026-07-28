@@ -2,31 +2,24 @@ import { test, expect } from '@playwright/test'
 import { createRequire } from 'module'
 
 const require = createRequire(import.meta.url)
-const pdf = require('pdf-parse')
+const { PDFParse } = require('pdf-parse')
 
 test('generates a PDF with exactly 2 pages', async ({ page }, testInfo) => {
-  // page.pdf is only supported in Headless Chromium
-  if (testInfo.project.name !== 'chromium') {
-    test.skip()
-    return
-  }
+  test.skip(testInfo.project.name !== 'chromium', 'PDF generation requires Chromium')
 
-  // Navigate to the app
   await page.goto('/')
 
-  // If the welcome screen is shown, click "new character" to load default data
   const newCharButton = page.locator('button:has-text("new character")')
-  if (await newCharButton.isVisible()) {
+  const isNewCharVisible = await newCharButton.isVisible().catch(() => false)
+  if (isNewCharVisible) {
     await newCharButton.click()
   }
 
-  // Wait for the character sheet to load
-  await page.waitForSelector('.printable-sheet-container', { state: 'attached' })
+  const printable = page.locator('.printable-sheet-container')
+  await printable.waitFor({ state: 'attached' })
 
-  // Emulate print media
   await page.emulateMedia({ media: 'print' })
 
-  // Generate PDF buffer
   const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
@@ -38,10 +31,11 @@ test('generates a PDF with exactly 2 pages', async ({ page }, testInfo) => {
     },
   })
 
-  // Parse PDF to get page count
-  const parser = new pdf.PDFParse({ data: pdfBuffer })
+  // Parse PDF to get page count and verify non-empty text
+  const parser = new PDFParse({ data: pdfBuffer })
   const result = await parser.getText()
-  
+
   console.log(`Generated PDF has ${result.total} pages.`)
   expect(result.total).toBe(2)
+  expect(result.text.trim().length).toBeGreaterThan(0)
 })
