@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
-import { SPELL_SLOT_PROGRESSION } from '@/data/rules'
 
 import draggable from 'vuedraggable'
 
@@ -75,7 +74,7 @@ function setSpent(level: number, val: number) {
   if (!store.currentCharacterData.spellcasting.slotsSpent) {
     store.currentCharacterData.spellcasting.slotsSpent = {}
   }
-  const max = spellSlots.value[`level${level}`] || 0
+  const max = displaySpellSlots.value[`level${level}`] || 0
   const validated = Math.min(max, Math.max(0, val))
   store.currentCharacterData.spellcasting.slotsSpent[`level${level}`] = validated
 }
@@ -103,38 +102,44 @@ const casterType = computed(() => {
   return hasGranted ? 'granted' : null
 })
 
-// Calculate spell slots based on caster type and level
-const spellSlots = computed<Record<string, number>>(() => {
-  const features = store.currentCharacterData?.features || []
+// Calculate spell slots via the Pinia store for full/half/third/pact casters.
+// For feat-granted spells (e.g. Magic Initiate) we build slots locally.
+const grantedSpellSlots = computed<Record<string, number>>(() => {
+  if (casterType.value !== 'granted') return {}
 
-  // Full/half/third/pact casters use the predefined progression
-  if (casterType.value && casterType.value !== 'granted') {
-    if (!store.currentCharacterData?.renownTier) return {}
-    const level = store.currentCharacterData.renownTier
-    const progression =
-      SPELL_SLOT_PROGRESSION[casterType.value as keyof typeof SPELL_SLOT_PROGRESSION]
-    return (progression?.[level] || {}) as Record<string, number>
-  }
-
-  // If casterType === 'granted' (feats that grant spells), build slots from grantedSpellLevels
+  const features = (store.currentCharacterData?.features || []) as Feature[]
   const grantedLevels = new Set<number>()
-  for (const f of features as Feature[]) {
+  for (const f of features) {
     if (f.grantsSpells && Array.isArray(f.grantedSpellLevels)) {
       for (const lvl of f.grantedSpellLevels || []) {
-        // only consider numeric levels 0-9
         if (typeof lvl === 'number' && lvl >= 0 && lvl <= 9) grantedLevels.add(lvl)
       }
     }
   }
 
-  // Build an object like { level1: 1, level2: 1 } - give one slot per granted level (exclude cantrips)
+  // Build { level1: 1, level2: 1 } — one slot per granted level (exclude cantrips)
   const slots: Record<string, number> = {}
   for (const lvl of Array.from(grantedLevels).sort((a, b) => a - b)) {
-    if (lvl === 0) continue // cantrips don't use slots
+    if (lvl === 0) continue
     slots[`level${lvl}`] = (slots[`level${lvl}`] || 0) + 1
   }
-
   return slots
+})
+
+// Combined slots used in the template and clamp logic
+const displaySpellSlots = computed<Record<string, number>>(() => {
+  return { ...store.spellSlots, ...grantedSpellSlots.value }
+})
+
+// Clamp spent slots when tier decreases (new max may be lower)
+watch(displaySpellSlots, (newSlots) => {
+  if (!store.currentCharacterData.spellcasting?.slotsSpent) return
+  for (const [key, max] of Object.entries(newSlots)) {
+    const spent = store.currentCharacterData.spellcasting.slotsSpent[key] || 0
+    if (spent > max) {
+      store.currentCharacterData.spellcasting.slotsSpent[key] = max
+    }
+  }
 })
 // Computed property for draggable spells
 const editableSpells = computed({
@@ -374,11 +379,11 @@ function formatLevel(level: number) {
 
       <!-- Spell Slot Counters -->
       <div
-        v-if="Object.keys(spellSlots).length > 0"
+        v-if="Object.keys(displaySpellSlots).length > 0"
         class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"
       >
         <div
-          v-for="[levelKey, max] in Object.entries(spellSlots)"
+          v-for="[levelKey, max] in Object.entries(displaySpellSlots)"
           :key="levelKey"
           class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center"
         >
