@@ -5,6 +5,7 @@ import { useRulesStore } from './stores/rulesStore'
 import ControlPanel from './components/ControlPanel.vue'
 import CharacterSheet from './components/CharacterSheet.vue'
 import PrintableSheet from './components/sheet/PrintableSheet.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -20,7 +21,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0">
+  <div
+    class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0"
+  >
     <ControlPanel />
 
     <main
@@ -47,5 +50,7 @@ onMounted(async () => {
     <LoadingModal />
     <ErrorModal />
     <ShareModal />
+
+    <ThemeToggle />
   </div>
 </template>
