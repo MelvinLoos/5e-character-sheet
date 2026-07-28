@@ -419,8 +419,9 @@ function formatLevel(level: number) {
         </div>
       </div>
 
-      <!-- Spell Cards Grid -->
+      <!-- Spell Cards Grid (draggable when not searching) -->
       <draggable
+        v-if="!searchFilter"
         v-model="editableSpells"
         item-key="id"
         tag="div"
@@ -531,6 +532,107 @@ function formatLevel(level: number) {
           </div>
         </template>
       </draggable>
+
+      <!-- Static filtered grid (when searching — drag disabled) -->
+      <div
+        v-else
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <div
+          v-for="spell in filteredActiveSpells"
+          :key="spell.id"
+          :class="[
+            'rounded border p-4 relative overflow-hidden transition-all group duration-200',
+            spell.prepared
+              ? 'parchment-bg border-secondary-container shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:-translate-y-1'
+              : 'bg-primary-container border-outline-variant hover:-translate-y-1',
+          ]"
+        >
+          <!-- Preparation Toggle Gradient/Corner -->
+          <div
+            v-if="spell.prepared"
+            class="absolute top-0 right-0 w-16 h-16 bg-tertiary/20 rounded-bl-full border-l border-b border-tertiary/30"
+          ></div>
+
+          <div class="flex justify-between items-start mb-2 relative z-10">
+            <div class="flex items-center">
+              <button
+                @click="togglePrepared(spell)"
+                :class="[
+                  'transition-colors mr-2',
+                  spell.prepared
+                    ? 'text-on-secondary-fixed-variant hover:text-on-secondary-fixed'
+                    : 'text-on-surface-variant hover:text-primary',
+                ]"
+                :title="spell.prepared ? 'Unprepare Spell' : 'Prepare Spell'"
+              >
+                <span
+                  class="material-symbols-outlined"
+                  :style="spell.prepared ? 'font-variation-settings: \'FILL\' 1' : ''"
+                >
+                  {{ spell.prepared ? 'check_circle' : 'radio_button_unchecked' }}
+                </span>
+              </button>
+            </div>
+
+            <h4
+              class="font-headline-md text-headline-md flex-grow"
+              :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-primary'"
+            >
+              {{ spell.name }}
+            </h4>
+            <span
+              class="bg-surface-container text-tertiary px-2 py-0.5 rounded text-xs font-bold border border-tertiary-container shadow-sm"
+            >
+              Lvl {{ spell.level }}
+            </span>
+          </div>
+
+          <p
+            class="font-label-md text-label-md italic mb-3"
+            :class="
+              spell.prepared ? 'text-on-secondary-fixed-variant' : 'text-on-primary-container'
+            "
+          >
+            {{ spell.school || 'General' }} <span v-if="spell.ritual">(Ritual)</span>
+          </p>
+
+          <div
+            class="grid grid-cols-2 gap-2 mb-4 text-sm font-label-md border-y py-2"
+            :class="spell.prepared ? 'border-outline/30' : 'border-outline-variant/50'"
+          >
+            <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+              <span class="opacity-70">Time:</span> {{ spell.castingTime || '1 Action' }}
+            </div>
+            <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+              <span class="opacity-70">Range:</span> {{ spell.range || 'Touch' }}
+            </div>
+            <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+              <span class="opacity-70">Comp:</span> {{ spell.components || 'V, S' }}
+            </div>
+            <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+              <span class="opacity-70">Dur:</span> {{ spell.duration || 'Instant' }}
+            </div>
+          </div>
+
+          <p
+            class="font-body-md text-body-md leading-snug line-clamp-4"
+            :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"
+          >
+            {{ spell.desc }}
+          </p>
+
+          <!-- Delete button -->
+          <button
+            v-if="store.isEditing"
+            @click="removeSpell(spell.id!)"
+            class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error/10 rounded"
+            title="Remove Spell"
+          >
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>
+      </div>
 
       <div
         v-if="filteredActiveSpells.length === 0"
