@@ -550,8 +550,8 @@ watch(
 
 .ghost-item {
   opacity: 0.5;
-  background: var(--surface-container-high, rgba(44, 42, 33, 0.4));
-  border: 1px dashed var(--tertiary, #eac249);
+  background: var(--color-surface-container-high);
+  border: 1px dashed var(--color-tertiary);
 }
 
 .chosen-item {

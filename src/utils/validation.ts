@@ -5,8 +5,15 @@ import Ajv from 'ajv'
 import type { ValidateFunction } from 'ajv'
 import ajvErrorsModule from 'ajv-errors'
 
-// Handle esbuild CJS-interop wrapper if present
-const ajvErrors = (ajvErrorsModule as any).default || ajvErrorsModule
+// Handle esbuild CJS-interop wrapper if present.
+// ajv-errors may be shipped either as an ESM default export or a callable CJS
+// module, so we normalise it to a callable function.
+interface AjvErrorsCallable {
+  (ajv: Ajv): Ajv
+}
+const ajvErrors =
+  (ajvErrorsModule as unknown as { default?: AjvErrorsCallable }).default ??
+  (ajvErrorsModule as AjvErrorsCallable)
 
 // A single shared Ajv instance is reused across the app.
 // - `allErrors: true` is required by ajv-errors so every failing keyword is

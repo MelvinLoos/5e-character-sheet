@@ -36,7 +36,7 @@ function toggleProficiency(key: string) {
     >
       Saving Throws
     </h3>
-    <div style="gap: 1em;" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-0">
+    <div style="gap: 1em" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-0">
       <div
         v-for="[key, name] in Object.entries(DND_RULES.ABILITIES)"
         :key="key"

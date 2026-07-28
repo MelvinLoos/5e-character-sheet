@@ -16,7 +16,12 @@ const usedSlots = computed(() => {
   return cost
 })
 
+// Note: slotPercentage is referenced dynamically in the template via the
+// string interpolation `\${slotPercentage}%`, so ESLint does not detect the
+// reference. We expose it as a public computed property for the template.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const slotPercentage = computed(() => {
+  if (maxSlots.value === 0) return 0
   const percent = (usedSlots.value / maxSlots.value) * 100
   return Math.min(100, Math.max(0, percent))
 })

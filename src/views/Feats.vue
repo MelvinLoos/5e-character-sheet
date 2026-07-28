@@ -21,7 +21,7 @@ interface LocalFeature {
   actionType?: string
   prerequisite?: string
   casterType?: string | null
-  uses?: { total?: number; per?: string } | null
+  uses?: { total: number; per: string } | null
   [key: string]: unknown
 }
 
@@ -60,7 +60,7 @@ function addFeat(feat: LocalFeature) {
     store.currentCharacterData.features = []
   }
 
-  store.currentCharacterData.features.push(newFeat as any)
+  store.currentCharacterData.features.push(newFeat)
   store.recalculateAbilityScores()
 }
 

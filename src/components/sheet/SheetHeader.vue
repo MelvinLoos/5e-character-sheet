@@ -121,13 +121,19 @@ function getBackgroundInfo(backgroundName: string) {
 
 function decrementTier() {
   if (store.currentCharacterData) {
-    store.currentCharacterData.renownTier = Math.max(1, (store.currentCharacterData.renownTier || 1) - 1)
+    store.currentCharacterData.renownTier = Math.max(
+      1,
+      (store.currentCharacterData.renownTier || 1) - 1,
+    )
   }
 }
 
 function incrementTier() {
   if (store.currentCharacterData) {
-    store.currentCharacterData.renownTier = Math.min(4, (store.currentCharacterData.renownTier || 1) + 1)
+    store.currentCharacterData.renownTier = Math.min(
+      4,
+      (store.currentCharacterData.renownTier || 1) + 1,
+    )
   }
 }
 </script>
@@ -141,7 +147,7 @@ function incrementTier() {
       class="absolute right-0 top-0 w-1/3 h-full opacity-5 pointer-events-none"
       :style="{
         backgroundImage: `url(${decorativeBackdrop})`,
-        backgroundSize: 'cover'
+        backgroundSize: 'cover',
       }"
     ></div>
 

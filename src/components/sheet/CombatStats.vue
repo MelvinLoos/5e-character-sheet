@@ -55,7 +55,12 @@ const store = useCharacterStore()
             class="w-16 bg-transparent border-none text-right font-headline-lg text-headline-lg text-on-surface p-0 focus:ring-0"
             type="number"
             v-model.number="store.currentCharacterData.combat.hp_current"
-            @input="() => { if ((store.currentCharacterData?.combat?.hp_current ?? 0) > store.maxHp) store.currentCharacterData.combat.hp_current = store.maxHp; }"
+            @input="
+              () => {
+                if ((store.currentCharacterData?.combat?.hp_current ?? 0) > store.maxHp)
+                  store.currentCharacterData.combat.hp_current = store.maxHp
+              }
+            "
           />
           <span class="font-body-md text-body-md text-on-surface-variant pb-1 whitespace-nowrap"
             >/ {{ store.maxHp }}</span

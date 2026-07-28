@@ -76,7 +76,8 @@ function getProgressText(data: MilestoneData, milestones: number) {
           v-if="getMilestoneData().tier < 4"
           class="font-headline-md text-headline-md text-tertiary"
         >
-          {{ store.currentCharacterData?.renownMilestones || 0 }} / {{ getMilestoneData().maxMilestones }}
+          {{ store.currentCharacterData?.renownMilestones || 0 }} /
+          {{ getMilestoneData().maxMilestones }}
         </span>
         <span v-else class="font-headline-md text-headline-md text-tertiary">MAX</span>
       </div>

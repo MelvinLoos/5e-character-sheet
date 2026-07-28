@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
 import { SPELL_SLOT_PROGRESSION } from '@/data/rules'
@@ -44,15 +44,25 @@ const searchFilter = ref('')
 const filterByLevel = ref<number | null>(null)
 
 // Initialize slotsSpent object in character spellcasting data if not present
-if (store.currentCharacterData.spellcasting && !store.currentCharacterData.spellcasting.slotsSpent) {
+if (
+  store.currentCharacterData.spellcasting &&
+  !store.currentCharacterData.spellcasting.slotsSpent
+) {
   store.currentCharacterData.spellcasting.slotsSpent = {}
 }
 
-const slotsSpent = computed(() => {
-  if (!store.currentCharacterData.spellcasting) return {}
-  if (!store.currentCharacterData.spellcasting.slotsSpent) {
+function ensureSlotsSpent() {
+  if (
+    store.currentCharacterData.spellcasting &&
+    !store.currentCharacterData.spellcasting.slotsSpent
+  ) {
     store.currentCharacterData.spellcasting.slotsSpent = {}
   }
+}
+
+const slotsSpent = computed(() => {
+  ensureSlotsSpent()
+  if (!store.currentCharacterData.spellcasting) return {}
   return store.currentCharacterData.spellcasting.slotsSpent as Record<string, number>
 })
 
@@ -198,10 +208,11 @@ const librarySpells = computed(() => {
 const filteredActiveSpells = computed(() => {
   if (!searchFilter.value) return editableSpells.value
   const query = searchFilter.value.toLowerCase()
-  return editableSpells.value.filter(s =>
-    s.name.toLowerCase().includes(query) ||
-    s.desc.toLowerCase().includes(query) ||
-    s.school?.toLowerCase().includes(query)
+  return editableSpells.value.filter(
+    (s) =>
+      s.name.toLowerCase().includes(query) ||
+      s.desc.toLowerCase().includes(query) ||
+      s.school?.toLowerCase().includes(query),
   )
 })
 
@@ -218,7 +229,7 @@ function addSpellFromLibrary(spell: Spell) {
   const newSpell = {
     ...spell,
     id: generateId(),
-    prepared: false
+    prepared: false,
   }
 
   store.currentCharacterData.spells = store.currentCharacterData.spells || []
@@ -231,7 +242,7 @@ function addManualSpell() {
     name: 'New Spell',
     level: 1,
     desc: 'Enter spell description...',
-    prepared: false
+    prepared: false,
   }
 
   store.currentCharacterData.spells = store.currentCharacterData.spells || []
@@ -262,7 +273,7 @@ function addSpell() {
     name: 'New Spell',
     level: 1,
     desc: 'Enter spell description...',
-    prepared: false
+    prepared: false,
   }
 
   store.currentCharacterData.spells = store.currentCharacterData.spells || []
@@ -270,7 +281,7 @@ function addSpell() {
 }
 
 function removeSpell(id: string) {
-  const idx = store.currentCharacterData.spells.findIndex(s => s.id === id)
+  const idx = store.currentCharacterData.spells.findIndex((s) => s.id === id)
   if (idx !== -1) {
     store.currentCharacterData.spells.splice(idx, 1)
   }
@@ -287,8 +298,6 @@ function formatLevel(level: number) {
   if (level === 3) return '3rd'
   return `${level}th`
 }
-
-
 </script>
 
 <template>
@@ -315,16 +324,24 @@ function formatLevel(level: number) {
     </div>
 
     <!-- Spell Grimoire -->
-    <section class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1">
+    <section
+      class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
+    >
       <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
         <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2">
           <span class="material-symbols-outlined text-3xl">menu_book</span> Spell Grimoire
         </h3>
         <div class="text-right">
-          <span class="font-label-md text-label-md text-on-surface-variant block uppercase tracking-wider mb-1">Spell Attack / DC</span>
+          <span
+            class="font-label-md text-label-md text-on-surface-variant block uppercase tracking-wider mb-1"
+            >Spell Attack / DC</span
+          >
           <div class="flex gap-4">
             <div class="bg-surface-container-high px-3 py-1 rounded border border-outline-variant">
-              <span class="text-tertiary font-bold">{{ store.spellAttack >= 0 ? '+' : '' }}{{ store.spellAttack }}</span> ATK
+              <span class="text-tertiary font-bold"
+                >{{ store.spellAttack >= 0 ? '+' : '' }}{{ store.spellAttack }}</span
+              >
+              ATK
             </div>
             <div class="bg-surface-container-high px-3 py-1 rounded border border-outline-variant">
               <span class="text-tertiary font-bold">{{ store.spellSaveDC }}</span> DC
@@ -335,13 +352,16 @@ function formatLevel(level: number) {
 
       <div class="flex flex-col md:flex-row gap-4 mb-6 items-center">
         <div class="relative flex-1 w-full">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+          <span
+            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+            >search</span
+          >
           <input
             v-model="searchFilter"
             class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary"
             placeholder="Search Spells..."
             type="text"
-          >
+          />
         </div>
         <button
           v-if="store.isEditing"
@@ -353,28 +373,45 @@ function formatLevel(level: number) {
       </div>
 
       <!-- Spell Slot Counters -->
-      <div v-if="Object.keys(spellSlots).length > 0" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div
+        v-if="Object.keys(spellSlots).length > 0"
+        class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"
+      >
         <div
           v-for="[levelKey, max] in Object.entries(spellSlots)"
           :key="levelKey"
           class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center"
         >
-          <span class="font-label-md text-label-md text-primary mb-2">{{ formatLevel(parseInt(levelKey.replace('level', ''))) }} Level</span>
+          <span class="font-label-md text-label-md text-primary mb-2"
+            >{{ formatLevel(parseInt(levelKey.replace('level', ''))) }} Level</span
+          >
           <div class="flex items-center gap-2">
             <button
-              @click="setSpent(parseInt(levelKey.replace('level', '')), getSpent(parseInt(levelKey.replace('level', ''))) - 1)"
+              @click="
+                setSpent(
+                  parseInt(levelKey.replace('level', '')),
+                  getSpent(parseInt(levelKey.replace('level', ''))) - 1,
+                )
+              "
               class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container hover:bg-tertiary/10 transition-colors cursor-pointer"
               title="Click to decrement used slots"
             >
               {{ max - getSpent(parseInt(levelKey.replace('level', ''))) }}
             </button>
             <span class="text-outline-variant">/</span>
-            <div class="w-8 h-8 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant select-none">
+            <div
+              class="w-8 h-8 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant select-none"
+            >
               {{ max }}
             </div>
           </div>
           <button
-            @click="setSpent(parseInt(levelKey.replace('level', '')), getSpent(parseInt(levelKey.replace('level', ''))) + 1)"
+            @click="
+              setSpent(
+                parseInt(levelKey.replace('level', '')),
+                getSpent(parseInt(levelKey.replace('level', ''))) + 1,
+              )
+            "
             class="mt-2 text-[10px] uppercase font-bold text-tertiary/60 hover:text-tertiary transition-colors cursor-pointer"
           >
             Spend Slot
@@ -396,26 +433,40 @@ function formatLevel(level: number) {
           <div
             :class="[
               'rounded border p-4 relative overflow-hidden transition-all group duration-200',
-              spell.prepared ? 'parchment-bg border-secondary-container shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:-translate-y-1' : 'bg-primary-container border-outline-variant hover:-translate-y-1'
+              spell.prepared
+                ? 'parchment-bg border-secondary-container shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:-translate-y-1'
+                : 'bg-primary-container border-outline-variant hover:-translate-y-1',
             ]"
           >
             <!-- Preparation Toggle Gradient/Corner -->
-            <div v-if="spell.prepared" class="absolute top-0 right-0 w-16 h-16 bg-tertiary/20 rounded-bl-full border-l border-b border-tertiary/30"></div>
+            <div
+              v-if="spell.prepared"
+              class="absolute top-0 right-0 w-16 h-16 bg-tertiary/20 rounded-bl-full border-l border-b border-tertiary/30"
+            ></div>
 
             <div class="flex justify-between items-start mb-2 relative z-10">
               <div class="flex items-center">
                 <!-- Drag handle -->
-                <span v-if="store.isEditing" class="spell-drag-handle material-symbols-outlined text-sm cursor-move opacity-0 group-hover:opacity-50 mr-1 text-inherit">drag_indicator</span>
+                <span
+                  v-if="store.isEditing"
+                  class="spell-drag-handle material-symbols-outlined text-sm cursor-move opacity-0 group-hover:opacity-50 mr-1 text-inherit"
+                  >drag_indicator</span
+                >
 
                 <button
                   @click="togglePrepared(spell)"
                   :class="[
                     'transition-colors mr-2',
-                    spell.prepared ? 'text-on-secondary-fixed-variant hover:text-on-secondary-fixed' : 'text-on-surface-variant hover:text-primary'
+                    spell.prepared
+                      ? 'text-on-secondary-fixed-variant hover:text-on-secondary-fixed'
+                      : 'text-on-surface-variant hover:text-primary',
                   ]"
                   :title="spell.prepared ? 'Unprepare Spell' : 'Prepare Spell'"
                 >
-                  <span class="material-symbols-outlined" :style="spell.prepared ? 'font-variation-settings: \'FILL\' 1' : ''">
+                  <span
+                    class="material-symbols-outlined"
+                    :style="spell.prepared ? 'font-variation-settings: \'FILL\' 1' : ''"
+                  >
                     {{ spell.prepared ? 'check_circle' : 'radio_button_unchecked' }}
                   </span>
                 </button>
@@ -427,14 +478,18 @@ function formatLevel(level: number) {
               >
                 {{ spell.name }}
               </h4>
-              <span class="bg-surface-container text-tertiary px-2 py-0.5 rounded text-xs font-bold border border-tertiary-container shadow-sm">
+              <span
+                class="bg-surface-container text-tertiary px-2 py-0.5 rounded text-xs font-bold border border-tertiary-container shadow-sm"
+              >
                 Lvl {{ spell.level }}
               </span>
             </div>
 
             <p
               class="font-label-md text-label-md italic mb-3"
-              :class="spell.prepared ? 'text-on-secondary-fixed-variant' : 'text-on-primary-container'"
+              :class="
+                spell.prepared ? 'text-on-secondary-fixed-variant' : 'text-on-primary-container'
+              "
             >
               {{ spell.school || 'General' }} <span v-if="spell.ritual">(Ritual)</span>
             </p>
@@ -443,10 +498,18 @@ function formatLevel(level: number) {
               class="grid grid-cols-2 gap-2 mb-4 text-sm font-label-md border-y py-2"
               :class="spell.prepared ? 'border-outline/30' : 'border-outline-variant/50'"
             >
-              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"><span class="opacity-70">Time:</span> {{ spell.castingTime || '1 Action' }}</div>
-              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"><span class="opacity-70">Range:</span> {{ spell.range || 'Touch' }}</div>
-              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"><span class="opacity-70">Comp:</span> {{ spell.components || 'V, S' }}</div>
-              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"><span class="opacity-70">Dur:</span> {{ spell.duration || 'Instant' }}</div>
+              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+                <span class="opacity-70">Time:</span> {{ spell.castingTime || '1 Action' }}
+              </div>
+              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+                <span class="opacity-70">Range:</span> {{ spell.range || 'Touch' }}
+              </div>
+              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+                <span class="opacity-70">Comp:</span> {{ spell.components || 'V, S' }}
+              </div>
+              <div :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'">
+                <span class="opacity-70">Dur:</span> {{ spell.duration || 'Instant' }}
+              </div>
             </div>
 
             <p
@@ -469,7 +532,10 @@ function formatLevel(level: number) {
         </template>
       </draggable>
 
-      <div v-if="filteredActiveSpells.length === 0" class="text-center py-12 text-on-surface-variant italic">
+      <div
+        v-if="filteredActiveSpells.length === 0"
+        class="text-center py-12 text-on-surface-variant italic"
+      >
         No spells found matching your search.
       </div>
     </section>
@@ -485,21 +551,31 @@ function formatLevel(level: number) {
       >
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-2xl font-headline-lg text-tertiary">Spell Library</h3>
-          <button @click="toggleSpellLibrary" class="p-2 hover:bg-surface-variant rounded-full transition-colors">
+          <button
+            @click="toggleSpellLibrary"
+            class="p-2 hover:bg-surface-variant rounded-full transition-colors"
+          >
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div v-if="characterClass" class="bg-primary-container/30 border border-primary/20 rounded-lg p-3 mb-6">
+        <div
+          v-if="characterClass"
+          class="bg-primary-container/30 border border-primary/20 rounded-lg p-3 mb-6"
+        >
           <p class="text-sm text-primary">
-            Showing spells available to the <strong class="uppercase tracking-wider">{{ characterClass }}</strong> class.
+            Showing spells available to the
+            <strong class="uppercase tracking-wider">{{ characterClass }}</strong> class.
           </p>
         </div>
 
         <!-- Library Controls -->
         <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+            <span
+              class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+              >search</span
+            >
             <input
               v-model="searchFilter"
               type="text"
@@ -534,8 +610,11 @@ function formatLevel(level: number) {
 
         <!-- Library Scroll Area -->
         <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar">
-          <div v-if="librarySpells.length === 0" class="text-center text-on-surface-variant py-12 italic border border-dashed border-outline-variant rounded-xl">
-             No spells found matching your criteria.
+          <div
+            v-if="librarySpells.length === 0"
+            class="text-center text-on-surface-variant py-12 italic border border-dashed border-outline-variant rounded-xl"
+          >
+            No spells found matching your criteria.
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -545,13 +624,19 @@ function formatLevel(level: number) {
               class="bg-surface-container-high border border-outline-variant rounded-lg p-4 hover:border-tertiary/50 transition-colors group relative"
             >
               <div class="flex justify-between items-start mb-1">
-                <h5 class="font-bold text-on-surface group-hover:text-tertiary transition-colors">{{ spell.name }}</h5>
-                <span class="text-xs font-bold text-tertiary">{{ spell.level === 0 ? 'Cantrip' : `Level ${spell.level}` }}</span>
+                <h5 class="font-bold text-on-surface group-hover:text-tertiary transition-colors">
+                  {{ spell.name }}
+                </h5>
+                <span class="text-xs font-bold text-tertiary">{{
+                  spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`
+                }}</span>
               </div>
               <p class="text-xs text-on-surface-variant line-clamp-2 mb-3">{{ spell.desc }}</p>
 
               <div class="flex justify-between items-end">
-                <div class="flex gap-2 text-[10px] text-primary/70 uppercase font-bold tracking-tighter">
+                <div
+                  class="flex gap-2 text-[10px] text-primary/70 uppercase font-bold tracking-tighter"
+                >
                   <span v-if="spell.school">{{ spell.school }}</span>
                   <span v-if="spell.castingTime">{{ spell.castingTime }}</span>
                 </div>
@@ -568,16 +653,16 @@ function formatLevel(level: number) {
 
         <!-- Footer -->
         <div class="mt-6 pt-4 border-t border-outline-variant flex justify-between items-center">
-            <div class="text-xs text-on-surface-variant font-medium">
-               Found {{ librarySpells.length }} potential spells
-            </div>
-            <button
-                @click="addManualSpell"
-                class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 px-4 py-2 rounded-lg transition-colors cursor-pointer"
-            >
-                <span class="material-symbols-outlined text-base">edit_note</span>
-                Custom Spell
-            </button>
+          <div class="text-xs text-on-surface-variant font-medium">
+            Found {{ librarySpells.length }} potential spells
+          </div>
+          <button
+            @click="addManualSpell"
+            class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-base">edit_note</span>
+            Custom Spell
+          </button>
         </div>
       </div>
     </div>
@@ -605,13 +690,13 @@ function formatLevel(level: number) {
 
 <style scoped>
 .wood-bg {
-  background-color: #5d4037;
+  background-color: var(--color-secondary-container);
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
 }
 
 .parchment-bg {
-  background-color: #e8e2d4;
-  color: #15130b;
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-background);
 }
 
 /* Custom scrollbar for library */
