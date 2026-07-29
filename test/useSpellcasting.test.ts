@@ -297,4 +297,52 @@ describe('useSpellcasting', () => {
       expect(names).not.toContain('Cure Wounds') // Cleric/Druid only
     })
   })
+
+  // -----------------------------------------------------------------------
+  // Regression: applyClassChange must unlock spellcasting
+  // -----------------------------------------------------------------------
+
+  describe('applyClassChange triggers spellcasting detection', () => {
+    it('hasSpellcasting becomes true after switching from Fighter to Wizard', () => {
+      characterStore.currentCharacterData = createFighterCharacter()
+      const { hasSpellcasting } = useSpellcasting(characterStore, rulesStore)
+      expect(hasSpellcasting.value).toBe(false)
+
+      // Simulate what SheetHeader does: call the action
+      characterStore.applyClassChange('Wizard')
+
+      // After the pipeline runs, features now include Spellcasting (Wizard)
+      expect(hasSpellcasting.value).toBe(true)
+    })
+
+    it('hasSpellcasting becomes false after switching from Wizard back to Fighter', () => {
+      characterStore.currentCharacterData = createWizardCharacter()
+      const { hasSpellcasting } = useSpellcasting(characterStore, rulesStore)
+      expect(hasSpellcasting.value).toBe(true)
+
+      characterStore.applyClassChange('Fighter')
+
+      expect(hasSpellcasting.value).toBe(false)
+    })
+
+    it('hasSpellcasting is true for a half-caster (Ranger)', () => {
+      characterStore.currentCharacterData = createFighterCharacter()
+      const { hasSpellcasting, casterType } = useSpellcasting(characterStore, rulesStore)
+
+      characterStore.applyClassChange('Ranger')
+
+      expect(hasSpellcasting.value).toBe(true)
+      expect(casterType.value).toBe('half')
+    })
+
+    it('hasSpellcasting is true for a pact-caster (Warlock)', () => {
+      characterStore.currentCharacterData = createFighterCharacter()
+      const { hasSpellcasting, casterType } = useSpellcasting(characterStore, rulesStore)
+
+      characterStore.applyClassChange('Warlock')
+
+      expect(hasSpellcasting.value).toBe(true)
+      expect(casterType.value).toBe('pact')
+    })
+  })
 })
