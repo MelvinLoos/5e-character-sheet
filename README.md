@@ -4,6 +4,7 @@ A modern, responsive digital character sheet designed specifically for the **Her
 
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.5.22-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b8a04a80-1349-4a79-a3ce-c1d997e3bc9d/deploy-status)](https://app.netlify.com/projects/5e-character-sheet/deploys)
+[![CI](https://github.com/MelvinLoos/5e-character-sheet/actions/workflows/ci.yml/badge.svg)](https://github.com/MelvinLoos/5e-character-sheet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Heroes Guild](https://img.shields.io/badge/Heroes_Guild-Westmarches-8B4513?logo=castle&logoColor=white)](https://www.westmarches.games/communities/heroes-guild)
 
