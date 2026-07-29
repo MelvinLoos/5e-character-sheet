@@ -50,7 +50,7 @@ const plusOneOptions = computed(() => {
   return allOptions.filter((opt: string) => opt !== selectedPlusTwo)
 })
 
-// Watch for conflicts and resolve them automatically
+// Watch for conflicts and resolve them automatically, then recalculate
 watch(
   () => store.currentCharacterData.backgroundBonusSelections?.plusTwo,
   (newPlusTwo) => {
@@ -63,6 +63,7 @@ watch(
         store.currentCharacterData.backgroundBonusSelections.plusOne = ''
       }
     }
+    store.recalculateAbilityScores()
   },
 )
 
@@ -78,6 +79,7 @@ watch(
         store.currentCharacterData.backgroundBonusSelections.plusTwo = ''
       }
     }
+    store.recalculateAbilityScores()
   },
 )
 </script>
@@ -173,7 +175,7 @@ watch(
           <span
             class="font-body-md text-body-md font-bold text-on-surface min-w-[2ch] text-center"
             :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
-            >{{ store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8 }}</span
+            >{{ value }}</span
           >
           <button
             @click="store.adjustPointBuyScore(key, 1)"
