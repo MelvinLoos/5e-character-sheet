@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm install --frozen-lockfile
       - run: npm run type-check
 
   lint:
@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm install --frozen-lockfile
       - run: npm run lint
 
   unit-tests:
@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm install --frozen-lockfile
       - run: npm run test:unit -- --run
 
   e2e-tests:
@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm install --frozen-lockfile
       - name: Run E2E tests
         run: npm run test:e2e
 
@@ -70,5 +70,5 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm install --frozen-lockfile
       - run: npm run build
