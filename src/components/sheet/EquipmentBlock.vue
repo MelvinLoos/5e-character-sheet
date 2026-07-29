@@ -69,7 +69,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
             >
           </div>
           <div>
-            <h2 class="font-label-md text-label-md text-on-surface-variant">Supply</h2>
+            <h2 class="font-label-md text-label-md text-on-surface-variant">Supply<InfoButton topic="supply-currency" /></h2>
             <input
               v-if="store.isEditing"
               type="number"
@@ -105,7 +105,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
             >
           </div>
           <div>
-            <h2 class="font-label-md text-label-md text-on-surface-variant">Influence</h2>
+            <h2 class="font-label-md text-label-md text-on-surface-variant">Influence<InfoButton topic="influence-currency" /></h2>
             <input
               v-if="store.isEditing"
               type="number"
@@ -123,7 +123,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
     <!-- Slot Meter -->
     <section>
       <div class="flex justify-between items-end mb-2">
-        <h3 class="font-headline-md text-headline-md text-on-surface">Inventory Slots</h3>
+        <h3 class="font-headline-md text-headline-md text-on-surface">Inventory Slots<InfoButton topic="inventory-slots" /></h3>
         <span class="font-label-md text-label-md text-tertiary"
           >Used: {{ usedSlots }} / Max: {{ maxSlots }} (STR)</span
         >
@@ -261,7 +261,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
     <section>
       <div class="flex justify-between items-center mb-4 border-b border-[#1A3C40] pb-2">
         <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-          <span class="material-symbols-outlined">casino</span> Consumables
+          <span class="material-symbols-outlined">casino</span> Consumables<InfoButton topic="usage-dice" />
         </h3>
         <button
           v-if="store.isEditing"

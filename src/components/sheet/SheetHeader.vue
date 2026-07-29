@@ -182,7 +182,7 @@ function incrementTier() {
         <!-- Tier & Experience -->
 
         <div class="flex-1 min-w-[100px] hidden">
-          <label class="block font-label-md text-label-md text-on-surface-variant mb-1">Tier</label>
+          <label class="block font-label-md text-label-md text-on-surface-variant mb-1">Tier<InfoButton topic="great-work-progression" /></label>
           <div
             v-if="store.isEditing"
             class="flex items-center w-full bg-surface-container-high border border-outline-variant rounded focus-within:border-tertiary focus-within:ring-1 focus-within:ring-tertiary"
