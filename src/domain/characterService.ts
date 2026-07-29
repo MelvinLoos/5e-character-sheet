@@ -1,115 +1,29 @@
 import * as DND_RULES from '../data/rules'
-import type { Feature } from '../data/rules'
+import type { RulesFeature } from '../types/rules'
+import type {
+  CharacterData,
+} from '../types/character'
+import { STORAGE_KEYS } from '../constants/storage-keys'
 
-export interface CharacterData {
-  name: string
-  title: string
-  jobInParty: string
-  class: string | null
-  renownTier: number
-  renownMilestones: number
-  species: string | null
-  background: string | null
-  pointBuyBaseScores: Record<string, number>
-  backgroundBonusSelections: {
-    plusTwo: string | null
-    plusOne: string | null
+// Re-export CharacterData for backward compatibility (all consumers import from here)
+export type { CharacterData } from '../types/character'
+
+/**
+ * Automatically migrates legacy character library storage to the new snake_case key.
+ */
+function migrateLegacyStorage(): void {
+  const legacyData = localStorage.getItem('dndCharacterLibrary')
+  if (legacyData && !localStorage.getItem(STORAGE_KEYS.CHARACTER_LIBRARY)) {
+    localStorage.setItem(STORAGE_KEYS.CHARACTER_LIBRARY, legacyData)
+    localStorage.removeItem('dndCharacterLibrary')
   }
-  abilityScores: Record<string, number>
-  profBonus: number
-  proficiencies: {
-    savingThrows: string[]
-    skills: string[]
-  }
-  combat: {
-    ac: number
-    hp_max: number
-    hp_current?: number
-    speed: string
-  }
-  attacks: Array<{
-    id?: string
-    name: string
-    atkStat?: string | null
-    customAtkValue?: number
-    dmgDie: string
-    dmgStat?: string | null
-    customDmgValue?: number
-    dmgBonus: number
-    type: string
-    notes?: string
-    weaponMastery?: string
-  }>
-  features: Array<{
-    title: string
-    desc: string
-    key?: boolean
-    source?: string
-    featureType?: string
-    actionType?: string
-    uses?: { total: number; per: string } | null
-    resource?: {
-      resourceType: string
-      value?: number
-      scalingStat?: string | null
-      reset?: string
-    } | null
-    casterType?: string | null
-    grantsSpells?: boolean
-    grantedSpellLevels?: number[]
-    abilityModifiers?: Record<string, number>
-    [key: string]: unknown
-  }>
-  equipment: string
-  personality: {
-    traits: string
-    ideal: string
-    bond: string
-    flaw: string
-    notes?: string
-  }
-  spellcasting: { ability?: string; slotsSpent?: Record<string, number> } | null
-  spells: Array<{
-    id?: string
-    name: string
-    level: number
-    desc: string
-    source?: string
-    school?: string
-    castingTime?: string
-    range?: string
-    components?: string
-    duration?: string
-    concentration?: boolean
-  }>
-  gold: number
-  supply: number
-  influence: number
-  inventorySlots: number
-  equippedGear: Array<{
-    id: string
-    name: string
-    type: string
-    description: string
-    slotCost: number
-    rarity?: string
-    theme?: string
-  }>
-  consumables: Array<{
-    id: string
-    name: string
-    type: string
-    slotCost: number
-    usageDie: string
-  }>
 }
 
-const STORAGE_KEY = 'dndCharacterLibrary'
-
 export const saveLibrary = (library: Record<string, CharacterData[]>): void =>
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(library))
+  localStorage.setItem(STORAGE_KEYS.CHARACTER_LIBRARY, JSON.stringify(library))
 export const getLibrary = (): Record<string, CharacterData[]> => {
-  const library = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}
+  migrateLegacyStorage()
+  const library = JSON.parse(localStorage.getItem(STORAGE_KEYS.CHARACTER_LIBRARY) || 'null') || {}
 
   // Migrate characters in library to have the new fields
   Object.keys(library).forEach((key) => {
@@ -151,7 +65,7 @@ export const createBlankCharacter = (): CharacterData => {
     plusTwo: null,
     plusOne: null,
   }
-  const backgroundFeature: Feature[] = []
+  const backgroundFeature: RulesFeature[] = []
   const defaultBackgroundData = defaultBackground
     ? DND_RULES.BACKGROUNDS[defaultBackground]
     : undefined
@@ -161,13 +75,13 @@ export const createBlankCharacter = (): CharacterData => {
     if (defaultBackgroundData.feature) backgroundFeature.push(defaultBackgroundData.feature)
   }
 
-  let classFeatures: Feature[] = []
+  let classFeatures: RulesFeature[] = []
   const defaultClassData = defaultClass ? DND_RULES.CLASSES[defaultClass] : undefined
   if (defaultClassData?.features) {
     classFeatures = defaultClassData.features
   }
 
-  let speciesTraits: Feature[] = []
+  let speciesTraits: RulesFeature[] = []
   const defaultSpeciesData = defaultSpecies ? DND_RULES.SPECIES[defaultSpecies] : undefined
   if (defaultSpeciesData?.traits) {
     speciesTraits = defaultSpeciesData.traits

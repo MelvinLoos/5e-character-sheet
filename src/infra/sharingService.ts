@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logger } from '../utils/logger'
-import type { CharacterData } from './characterService'
+import type { CharacterData } from '@/domain'
 
 let supabaseClient: SupabaseClient | null = null
 

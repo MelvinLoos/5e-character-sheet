@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
-import { formatMod } from '@/services/characterService'
+import { formatMod } from '@/domain'
 
 const store = useCharacterStore()
 

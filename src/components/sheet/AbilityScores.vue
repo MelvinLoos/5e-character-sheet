@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
-import { formatMod } from '@/services/characterService'
+import { formatMod } from '@/domain'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
 
 // Animation state for points counter
 const pointsAnimationClass = ref('')
 
 // Watch for point changes and trigger animation
 watch(
-  () => store.pointBuyPointsRemaining,
+  () => progression.pointBuyPointsRemaining,
   (newPoints, oldPoints) => {
     if (oldPoints !== undefined && newPoints !== oldPoints) {
       pointsAnimationClass.value = 'points-highlight'

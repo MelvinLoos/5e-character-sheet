@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { STORAGE_KEYS } from '../constants/storage-keys'
 
-const STORAGE_KEY = 'heroes-guild-theme'
 const isDark = ref(true)
+
+function loadTheme(): string {
+  const legacyTheme = localStorage.getItem('heroes-guild-theme')
+  if (legacyTheme) {
+    localStorage.setItem(STORAGE_KEYS.APP_THEME, legacyTheme)
+    localStorage.removeItem('heroes-guild-theme')
+    return legacyTheme
+  }
+  return localStorage.getItem(STORAGE_KEYS.APP_THEME) || 'dark'
+}
 
 function applyTheme(dark: boolean) {
   const html = document.documentElement
@@ -19,7 +29,7 @@ function toggleTheme() {
   isDark.value = !isDark.value
   applyTheme(isDark.value)
   try {
-    localStorage.setItem(STORAGE_KEY, isDark.value ? 'dark' : 'light')
+    localStorage.setItem(STORAGE_KEYS.APP_THEME, isDark.value ? 'dark' : 'light')
   } catch {
     // Storage may be unavailable in private mode or restricted contexts.
   }
@@ -28,7 +38,7 @@ function toggleTheme() {
 onMounted(() => {
   let preferred: string | null = null
   try {
-    preferred = localStorage.getItem(STORAGE_KEY)
+    preferred = loadTheme()
   } catch {
     // Ignore storage errors.
   }

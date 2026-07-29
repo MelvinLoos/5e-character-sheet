@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { getEffectiveLevel, TIER_TO_LEVEL } from '../src/data/rules'
 import { useCharacterStore } from '../src/stores/character'
-import type { CharacterData } from '../src/services/characterService'
+import type { CharacterData } from '@/domain'
 
 // ────────────────────────────────────────────────────
 // Pure function tests — getEffectiveLevel

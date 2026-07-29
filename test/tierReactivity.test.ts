@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { nextTick } from 'vue'
 import { useCharacterStore } from '../src/stores/character'
-import type { CharacterData } from '../src/services/characterService'
+import type { CharacterData } from '@/domain'
 
 function makeChar(overrides: Partial<CharacterData> = {}): CharacterData {
   return {

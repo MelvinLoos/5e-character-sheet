@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { migrateUsesToResource } from '../src/utils/migrations'
-import { createBlankCharacter, getLibrary, saveLibrary } from '../src/services/characterService'
+import { createBlankCharacter, getLibrary, saveLibrary } from '@/domain'
 
 describe('migrateUsesToResource', () => {
   it('converts legacy uses.total and uses.per (short rest) to resource', () => {
