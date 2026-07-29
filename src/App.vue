@@ -7,6 +7,7 @@ import { useRulesStore } from './stores/rulesStore'
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
 const ErrorModal = defineAsyncComponent(() => import('./components/modals/ErrorModal.vue'))
 const ShareModal = defineAsyncComponent(() => import('./components/modals/ShareModal.vue'))
+const UpdateNotification = defineAsyncComponent(() => import('./components/UpdateNotification.vue'))
 
 const store = useCharacterStore()
 
@@ -48,5 +49,6 @@ onMounted(async () => {
     <ShareModal />
 
     <ThemeToggle />
+    <UpdateNotification />
   </div>
 </template>
