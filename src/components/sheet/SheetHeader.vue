@@ -234,7 +234,8 @@ function incrementTier() {
           </label>
           <select
             v-if="store.isEditing"
-            v-model="store.currentCharacterData.species"
+            :value="store.currentCharacterData.species"
+            @change="store.applySpeciesChange(($event.target as HTMLSelectElement).value)"
             class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >
             <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
@@ -275,7 +276,8 @@ function incrementTier() {
           </label>
           <select
             v-if="store.isEditing"
-            v-model="store.currentCharacterData.class"
+            :value="store.currentCharacterData.class"
+            @change="store.applyClassChange(($event.target as HTMLSelectElement).value)"
             class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >
             <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
@@ -316,7 +318,8 @@ function incrementTier() {
           </label>
           <select
             v-if="store.isEditing"
-            v-model="store.currentCharacterData.background"
+            :value="store.currentCharacterData.background"
+            @change="store.applyBackgroundChange(($event.target as HTMLSelectElement).value)"
             class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >
             <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">
