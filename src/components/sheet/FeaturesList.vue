@@ -3,32 +3,7 @@ import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
 import { watch, computed, ref } from 'vue'
 import draggable from 'vuedraggable'
-import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
-import ActionBadge from '@/components/ui/ActionBadge.vue'
-
-// Define Feature interface
-interface LocalFeature {
-  title: string
-  desc: string
-  key?: boolean
-  source?: string
-  featureType?: string
-  actionType?: string
-  // Match store.Feature typing: casterType may be string|null
-  casterType?: string | null
-  // Resource follows store shape or can be null/undefined
-  resource?: {
-    resourceType: string
-    value?: number
-    scalingStat?: string | null
-    reset?: string
-  } | null
-  // uses legacy shape
-  uses?: { total?: number; per?: string } | null
-  grantsSpells?: boolean
-  grantedSpellLevels?: number[]
-  [key: string]: unknown
-}
+import type { CharacterFeature } from '@/types/character'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
@@ -39,7 +14,7 @@ const showFeatureLibrary = ref(false)
 const searchFilter = ref('')
 const editingFeature = ref<Record<string, unknown>>({})
 const isNewFeature = ref(false)
-const editingFeatureRef = ref<LocalFeature | null>(null) // Direct reference to the feature being edited
+const editingFeatureRef = ref<CharacterFeature | null>(null) // Direct reference to the feature being edited
 
 // Expansion state
 const expandedFeatures = ref<Set<string>>(new Set())
@@ -68,15 +43,15 @@ const props = defineProps({
 })
 
 // Create a computed property for draggable features
-const editableFeatures = computed<LocalFeature[]>({
+const editableFeatures = computed<CharacterFeature[]>({
   get() {
-    return props.features as LocalFeature[]
+    return props.features as CharacterFeature[]
   },
-  set(value: LocalFeature[]) {
+  set(value: CharacterFeature[]) {
     // Update the main features array in the store based on feature type
     if (props.title === 'Key Features') {
       const allFeatures = store.currentCharacterData.features || []
-      const otherFeatures = allFeatures.filter((f: LocalFeature) => !f.key)
+      const otherFeatures = allFeatures.filter((f: CharacterFeature) => !f.key)
       const normalized = value.map((v) => ({
         ...v,
         uses: v.uses
@@ -86,7 +61,7 @@ const editableFeatures = computed<LocalFeature[]>({
       store.currentCharacterData.features = [...normalized, ...otherFeatures]
     } else {
       const allFeatures = store.currentCharacterData.features || []
-      const keyFeatures = allFeatures.filter((f: LocalFeature) => f.key)
+      const keyFeatures = allFeatures.filter((f: CharacterFeature) => f.key)
       const normalized = value.map((v) => ({
         ...v,
         uses: v.uses
@@ -100,7 +75,7 @@ const editableFeatures = computed<LocalFeature[]>({
 
 // Available features from rulesStore
 const availableFeatures = computed(() => {
-  return (rulesStore.allFeats as LocalFeature[]) || []
+  return (rulesStore.allFeats as CharacterFeature[]) || []
 })
 
 // Filter features
@@ -111,7 +86,7 @@ const libraryFeatures = computed(() => {
   if (searchFilter.value.trim()) {
     const search = searchFilter.value.toLowerCase()
     filtered = filtered.filter(
-      (f: LocalFeature) =>
+      (f: CharacterFeature) =>
         f.title.toLowerCase().includes(search) || (f.desc && f.desc.toLowerCase().includes(search)),
     )
   }
@@ -139,7 +114,7 @@ function addManualFeature() {
   showFeatureLibrary.value = false
 }
 
-function addFeatureFromLibrary(feature: LocalFeature) {
+function addFeatureFromLibrary(feature: CharacterFeature): void {
   // Create a copy of the feature
   const newFeature = { ...feature }
 
@@ -160,14 +135,14 @@ function addFeatureFromLibrary(feature: LocalFeature) {
   showFeatureLibrary.value = false
 }
 
-function editFeature(feature: LocalFeature) {
+function editFeature(feature: CharacterFeature): void {
   editingFeature.value = { ...feature }
   editingFeatureRef.value = feature // Keep direct reference to original feature
   isNewFeature.value = false
   isModalOpen.value = true
 }
 
-function handleModalSave(featureData: LocalFeature) {
+function handleModalSave(featureData: CharacterFeature): void {
   if (isNewFeature.value) {
     // Add new feature
     if (props.title === 'Key Features') {
@@ -191,7 +166,7 @@ function handleModalSave(featureData: LocalFeature) {
     if (editingFeatureRef.value) {
       // Find the feature in the main array and update it
       const allFeatures = store.currentCharacterData.features || []
-      const featureIndex = allFeatures.findIndex((f: LocalFeature) => f === editingFeatureRef.value)
+      const featureIndex = allFeatures.findIndex((f: CharacterFeature) => f === editingFeatureRef.value)
       if (featureIndex !== -1) {
         // Preserve the key property for Key Features
         if (props.title === 'Key Features') {
@@ -220,10 +195,10 @@ function handleModalCancel() {
   editingFeatureRef.value = null
 }
 
-function handleModalDelete() {
+function handleModalDelete(): void {
   if (!isNewFeature.value && editingFeatureRef.value) {
     const allFeatures = store.currentCharacterData.features || []
-    const featureIndex = allFeatures.findIndex((f: LocalFeature) => f === editingFeatureRef.value)
+    const featureIndex = allFeatures.findIndex((f: CharacterFeature) => f === editingFeatureRef.value)
     if (featureIndex !== -1) {
       allFeatures.splice(featureIndex, 1)
     }
@@ -236,17 +211,17 @@ function handleModalDelete() {
 function removeFeature(index: number) {
   if (props.title === 'Key Features') {
     const allFeatures = store.currentCharacterData.features || []
-    const keyFeatures = allFeatures.filter((f: LocalFeature) => f.key)
+    const keyFeatures = allFeatures.filter((f: CharacterFeature) => f.key)
     const featureToRemove = keyFeatures[index]
-    const featureIndex = allFeatures.findIndex((f: LocalFeature) => f === featureToRemove)
+    const featureIndex = allFeatures.findIndex((f: CharacterFeature) => f === featureToRemove)
     if (featureIndex !== -1) {
       allFeatures.splice(featureIndex, 1)
     }
   } else {
     const allFeatures = store.currentCharacterData.features || []
-    const otherFeatures = allFeatures.filter((f: LocalFeature) => !f.key)
+    const otherFeatures = allFeatures.filter((f: CharacterFeature) => !f.key)
     const featureToRemove = otherFeatures[index]
-    const featureIndex = allFeatures.findIndex((f: LocalFeature) => f === featureToRemove)
+    const featureIndex = allFeatures.findIndex((f: CharacterFeature) => f === featureToRemove)
     if (featureIndex !== -1) {
       allFeatures.splice(featureIndex, 1)
     }

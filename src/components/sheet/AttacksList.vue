@@ -1,53 +1,10 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
-import { computed } from 'vue'
+import { useCombat } from '@/composables/useCombat'
 import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
-
-function generateId() {
-  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
-}
-
-// Computed property for draggable attacks
-const editableAttacks = computed({
-  get() {
-    const arr = store.currentCharacterData.attacks || []
-    // ensure each attack has a stable id to avoid re-keying while editing
-    for (const a of arr) {
-      if (!a.id) a.id = generateId()
-    }
-    return arr
-  },
-  set(value) {
-    store.currentCharacterData.attacks = value
-  },
-})
-
-function addAttack() {
-  const newAttack = {
-    id: generateId(),
-    name: 'New Attack',
-    atkStat: '',
-    // when 'custom' is selected, use this manual numeric modifier
-    customAtkValue: 0,
-    dmgStat: '',
-    // when 'custom' is selected for damage, use this manual numeric modifier
-    customDmgValue: 0,
-    dmgDie: '1d8',
-    dmgBonus: 0,
-    type: 'slashing',
-    weaponMastery: '',
-    notes: '',
-  }
-
-  store.currentCharacterData.attacks = store.currentCharacterData.attacks || []
-  store.currentCharacterData.attacks.push(newAttack)
-}
-
-function removeAttack(index: number) {
-  store.currentCharacterData.attacks.splice(index, 1)
-}
+const { editableAttacks, addAttack, removeAttack } = useCombat()
 </script>
 
 <template>

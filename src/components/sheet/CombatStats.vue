@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
+import { useCombat } from '@/composables/useCombat'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
+const { clampCurrentHp } = useCombat()
 </script>
 
 <template>
@@ -55,15 +59,10 @@ const store = useCharacterStore()
             class="w-16 bg-transparent border-none text-right font-headline-lg text-headline-lg text-on-surface p-0 focus:ring-0"
             type="number"
             v-model.number="store.currentCharacterData.combat.hp_current"
-            @input="
-              () => {
-                if ((store.currentCharacterData?.combat?.hp_current ?? 0) > store.maxHp)
-                  store.currentCharacterData.combat.hp_current = store.maxHp
-              }
-            "
+            @input="clampCurrentHp()"
           />
           <span class="font-body-md text-body-md text-on-surface-variant pb-1 whitespace-nowrap"
-            >/ {{ store.maxHp }}</span
+            >/ {{ progression.maxHp }}</span
           >
         </div>
         <div class="flex justify-between items-center">
@@ -86,7 +85,7 @@ const store = useCharacterStore()
         >
         <div class="flex items-center gap-3">
           <div class="font-headline-md text-headline-md text-on-surface">
-            {{ store.derivedLevel
+            {{ progression.derivedLevel
             }}<span class="text-on-surface-variant text-lg"
               >d{{
                 store.currentCharacterData.class
@@ -107,8 +106,8 @@ const store = useCharacterStore()
             >Initiative</span
           >
           <span class="font-headline-md text-headline-md text-on-surface"
-            >{{ (store.abilityMods.dex ?? 0) >= 0 ? '+' : ''
-            }}{{ store.abilityMods.dex ?? 0 }}</span
+            >{{ (progression.abilityMods.dex ?? 0) >= 0 ? '+' : ''
+            }}{{ progression.abilityMods.dex ?? 0 }}</span
           >
         </div>
         <div

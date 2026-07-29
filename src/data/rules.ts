@@ -1,39 +1,25 @@
 // A simplified library of D&D 2024 rules for the character sheet creator.
 
 // --- Type definitions for the exported rules data ---
+// All canonical interfaces are now defined in @/types/rules and re-exported here.
 
-export interface Feature {
-  title: string
-  desc: string
-  key?: boolean
-  featureType?: string
-  actionType?: string
-  casterType?: string | null
-  uses?: { total: number; per: string }
-}
+// Re-export types that other files import from this module.
+// RulesFeature is aliased as Feature for backward compatibility.
+export type {
+  RulesFeature as Feature,
+  ClassData,
+  SpeciesData,
+  BackgroundData,
+  SpellSlotsByLevel,
+} from '@/types/rules'
 
-export interface ClassData {
-  description?: string
-  hitDice: number
-  hitDiceAverage: number
-  savingThrows: string[]
-  features: Feature[]
-}
-
-export interface SpeciesData {
-  description?: string
-  speed: string
-  traits: Feature[]
-}
-
-export interface BackgroundData {
-  description?: string
-  skills: string[]
-  abilityScoreIncrease: string[]
-  feature: Feature
-}
-
-export type SpellSlotsByLevel = Record<number, Record<string, number>>
+// Also import for internal use
+import type {
+  ClassData,
+  SpeciesData,
+  BackgroundData,
+  SpellSlotsByLevel,
+} from '@/types/rules'
 
 /**
  * Maps a Renown Tier to its equivalent standard D&D 5.5e character level.

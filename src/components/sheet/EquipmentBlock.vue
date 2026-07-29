@@ -1,73 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useInventory } from '@/composables/useInventory'
 
 const store = useCharacterStore()
-
-const strScore = computed(() => store.currentCharacterData.abilityScores['str'] || 10)
-const maxSlots = computed(() => Math.max(10, strScore.value))
-
-const usedSlots = computed(() => {
-  let cost = 0
-  const gear = store.currentCharacterData.equippedGear || []
-  const consumables = store.currentCharacterData.consumables || []
-  gear.forEach((item) => (cost += item.slotCost || 0))
-  consumables.forEach((item) => (cost += item.slotCost || 0))
-  return cost
-})
-
-// Note: slotPercentage is referenced dynamically in the template via the
-// string interpolation `\${slotPercentage}%`, so ESLint does not detect the
-// reference. We expose it as a public computed property for the template.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const slotPercentage = computed(() => {
-  if (maxSlots.value === 0) return 0
-  const percent = (usedSlots.value / maxSlots.value) * 100
-  return Math.min(100, Math.max(0, percent))
-})
-
-const buySupply = () => {
-  if (store.currentCharacterData.gold >= 1) {
-    store.currentCharacterData.gold -= 1
-    store.currentCharacterData.supply = (store.currentCharacterData.supply || 0) + 1
-  }
-}
-
-const addConsumable = () => {
-  store.currentCharacterData.consumables.push({
-    id: crypto.randomUUID(),
-    name: 'New Consumable',
-    type: 'Item',
-    slotCost: 1,
-    usageDie: 'd8',
-  })
-}
-
-const removeConsumable = (idx: number) => {
-  store.currentCharacterData.consumables.splice(idx, 1)
-}
-
-const addGear = () => {
-  store.currentCharacterData.equippedGear.push({
-    id: crypto.randomUUID(),
-    name: 'New Item',
-    type: 'Gear',
-    description: 'Description',
-    slotCost: 1,
-    theme: 'default',
-  })
-}
-
-const removeGear = (idx: number) => {
-  store.currentCharacterData.equippedGear.splice(idx, 1)
-}
-
-const getGearBgClass = (theme?: string) => {
-  if (theme === 'parchment-bg' || theme === 'parchment') return 'parchment-bg text-[#15130b]'
-  if (theme === 'deep-teal-bg' || theme === 'deep-teal')
-    return 'deep-teal-bg text-on-primary-container'
-  return 'bg-surface-container text-on-surface'
-}
+const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, addConsumable, removeConsumable, getGearBgClass } = useInventory()
 </script>
 
 <style scoped>
