@@ -27,14 +27,17 @@ function handlePrint() {
 </script>
 
 <template>
-  <div class="flex justify-center mb-4 no-print space-x-2 z-10">
+  <div class="flex flex-wrap justify-center items-center gap-2 mb-4 no-print z-10 px-2">
     <button
       @click="store.toggleEdit()"
-      class="icon-button"
-      :title="store.isEditing ? 'View Mode' : 'Edit Mode'"
+      class="edit-toggle-btn"
+      :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
+      :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+      :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
     >
-      <span v-if="store.isEditing" v-html="feather.icons.eye.toSvg()"></span>
+      <span v-if="store.isEditing" v-html="feather.icons['edit-3'].toSvg()"></span>
       <span v-else v-html="feather.icons['edit-2'].toSvg()"></span>
+      <span class="hidden sm:inline">{{ store.isEditing ? 'Editing…' : 'Edit' }}</span>
     </button>
     <button
       @click="store.saveToLibrary()"
@@ -55,7 +58,7 @@ function handlePrint() {
     <button @click="store.exportCharacter()" class="icon-button" title="Export JSON">
       <span v-html="feather.icons.download.toSvg()"></span>
     </button>
-    <button @click="handlePrint" class="icon-button" title="Print Sheet">
+    <button @click="handlePrint" class="icon-button" title="Print Sheet" aria-label="Print Sheet">
       <span v-html="feather.icons.printer.toSvg()"></span>
     </button>
   </div>
