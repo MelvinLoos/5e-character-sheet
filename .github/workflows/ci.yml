@@ -15,7 +15,29 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run type-check
+      - run: npm run type-check 2>&1 | tee type-check-output.txt
+        continue-on-error: true
+      - name: Type-check Summary
+        if: always()
+        run: |
+          if [ -f type-check-output.txt ] && [ -s type-check-output.txt ]; then
+            node -e "
+              const fs = require('fs');
+              const out = fs.readFileSync('type-check-output.txt','utf8').trim();
+              const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
+              if (!out) write('## ✅ TypeScript Type Check\n\nNo type errors found.');
+              else write('## ❌ TypeScript Type Check\n\n```\n' + out + '\n```');
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ TypeScript Type Check" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No type errors found." >> $GITHUB_STEP_SUMMARY
+          fi
+      - run: |
+          if [ -f type-check-output.txt ] && [ -s type-check-output.txt ]; then
+            cat type-check-output.txt
+            exit 1
+          fi
 
   lint:
     name: ESLint
@@ -27,7 +49,23 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run lint
+      - run: npm run lint 2>&1 | tee lint-output.txt
+        continue-on-error: true
+      - name: ESLint Summary
+        if: always()
+        run: |
+          node -e "
+            const fs = require('fs');
+            const out = fs.readFileSync('lint-output.txt','utf8').trim();
+            const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
+            if (!out) write('## ✅ ESLint\n\nNo linting errors found.');
+            else write('## ❌ ESLint\n\n```\n' + out + '\n```');
+          " >> $GITHUB_STEP_SUMMARY
+      - run: |
+          if [ -f lint-output.txt ] && [ -s lint-output.txt ]; then
+            cat lint-output.txt
+            exit 1
+          fi
 
   unit-tests:
     name: Vitest Unit Tests
@@ -39,7 +77,55 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run test:unit -- --run
+      - run: npx vitest --run --reporter=json > vitest-results.json 2>vitest-stderr.txt
+        continue-on-error: true
+      - name: Vitest Summary
+        if: always()
+        run: |
+          node -e "
+            const fs = require('fs');
+            const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
+
+            if (!fs.existsSync('vitest-results.json') || !fs.statSync('vitest-results.json').size) {
+              const stderr = fs.existsSync('vitest-stderr.txt') ? fs.readFileSync('vitest-stderr.txt','utf8').trim() : 'No output';
+              write('## ❌ Unit Tests\n\nFailed to produce results.\n\n```\n' + stderr + '\n```');
+              process.exit(0);
+            }
+
+            const data = JSON.parse(fs.readFileSync('vitest-results.json','utf8'));
+            const failed = data.numFailedTests || 0;
+            const passed = data.numPassedTests || 0;
+            const total = data.numTotalTests || 0;
+            const icon = failed === 0 ? '✅' : '❌';
+            write('## ' + icon + ' Unit Tests (' + passed + '/' + total + ' passed)');
+            write('');
+
+            (data.testResults || []).forEach(file => {
+              const fIcon = file.assertionResults.every(t => t.status === 'passed') ? '✅' : '❌';
+              write('### ' + fIcon + ' ' + (file.name || ''));
+              (file.assertionResults || []).forEach(test => {
+                const sym = test.status === 'passed' ? '✅' : test.status === 'failed' ? '❌' : '⏭️';
+                write('- ' + sym + ' ' + test.title);
+                if (test.status === 'failed' && test.failureMessages) {
+                  test.failureMessages.forEach(msg => {
+                    const lines = msg.split('\n').slice(0, 4);
+                    write('  ```\n  ' + lines.join('\n  ') + '\n  ```');
+                  });
+                }
+              });
+              write('');
+            });
+          " >> $GITHUB_STEP_SUMMARY
+      - run: |
+          node -e "
+            const fs = require('fs');
+            if (fs.existsSync('vitest-results.json') && fs.statSync('vitest-results.json').size) {
+              const data = JSON.parse(fs.readFileSync('vitest-results.json','utf8'));
+              if (data.numFailedTests > 0) process.exit(1);
+            } else {
+              process.exit(1);
+            }
+          "
 
   e2e-tests:
     name: Playwright E2E Tests
@@ -59,7 +145,55 @@ jobs:
       - name: Build for preview
         run: npm run build
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npx playwright test --reporter=json > pw-results.json 2>pw-stderr.txt
+        continue-on-error: true
+      - name: Playwright Summary
+        if: always()
+        run: |
+          node -e "
+            const fs = require('fs');
+            const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
+
+            if (!fs.existsSync('pw-results.json') || !fs.statSync('pw-results.json').size) {
+              const stderr = fs.existsSync('pw-stderr.txt') ? fs.readFileSync('pw-stderr.txt','utf8').trim() : 'No output';
+              write('## ❌ E2E Tests\n\nFailed to produce results.\n\n```\n' + stderr + '\n```');
+              process.exit(0);
+            }
+
+            const result = JSON.parse(fs.readFileSync('pw-results.json','utf8'));
+            const suites = result.suites || [];
+            const allSpecs = suites.flatMap(s => s.specs || []);
+            const failed = allSpecs.filter(s => !s.ok).length;
+            const passed = allSpecs.length - failed;
+            const icon = failed === 0 ? '✅' : '❌';
+            write('## ' + icon + ' E2E Tests (' + passed + '/' + allSpecs.length + ' passed)');
+            write('');
+
+            suites.forEach(suite => {
+              write('### ' + (suite.title || 'Tests'));
+              (suite.specs || []).forEach(spec => {
+                const project = spec.tests?.[0]?.projectName || '?';
+                const sym = spec.ok ? '✅' : '❌';
+                write('- ' + sym + ' [' + project + '] ' + spec.title);
+                if (!spec.ok && spec.tests?.[0]?.results?.[0]?.error?.message) {
+                  const lines = spec.tests[0].results[0].error.message.split('\n').slice(0, 3);
+                  write('  ```\n  ' + lines.join('\n  ') + '\n  ```');
+                }
+              });
+              write('');
+            });
+          " >> $GITHUB_STEP_SUMMARY
+      - run: |
+          node -e "
+            const fs = require('fs');
+            if (fs.existsSync('pw-results.json') && fs.statSync('pw-results.json').size) {
+              const result = JSON.parse(fs.readFileSync('pw-results.json','utf8'));
+              const failed = (result.suites || []).flatMap(s => s.specs || []).filter(s => !s.ok).length;
+              if (failed > 0) process.exit(1);
+            } else {
+              process.exit(1);
+            }
+          "
 
   build:
     name: Vite Build
@@ -71,4 +205,22 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run build
+      - run: npm run build 2>&1 | tee build-output.txt
+        continue-on-error: true
+      - name: Build Summary
+        if: always()
+        run: |
+          if [ -f build-output.txt ] && grep -q "error" build-output.txt; then
+            node -e "
+              const fs = require('fs');
+              const out = fs.readFileSync('build-output.txt','utf8').trim();
+              const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
+              write('## ❌ Vite Build\n\n```\n' + out + '\n```');
+            " >> $GITHUB_STEP_SUMMARY
+            cat build-output.txt
+            exit 1
+          else
+            echo "## ✅ Vite Build" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Build succeeded — \`dist/\` output ready." >> $GITHUB_STEP_SUMMARY
+          fi
