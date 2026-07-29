@@ -222,11 +222,13 @@ const queryParams = computed(() => {
       <!-- Edit/View Mode -->
       <button
         @click="store.toggleEdit()"
-        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
-        :title="store.isEditing ? 'View Mode' : 'Edit Mode'"
+        class="edit-toggle-btn w-full"
+        :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
+        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
       >
-        <span class="material-symbols-outlined">{{ store.isEditing ? 'visibility' : 'edit' }}</span>
-        {{ store.isEditing ? 'View Mode' : 'Edit Mode' }}
+        <span class="material-symbols-outlined">{{ store.isEditing ? 'edit' : 'visibility' }}</span>
+        {{ store.isEditing ? 'Editing…' : 'Edit Mode' }}
       </button>
 
       <!-- Save -->
@@ -312,7 +314,19 @@ const queryParams = computed(() => {
     <div
       v-if="store.currentCharacterData"
       class="border-t border-outline-variant/30 pt-4 mb-2"
-    ></div>
+    >
+      <!-- Mobile Edit Toggle -->
+      <button
+        @click="store.toggleEdit()"
+        class="edit-toggle-btn w-full mb-2"
+        :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
+        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+      >
+        <span class="material-symbols-outlined">{{ store.isEditing ? 'edit' : 'visibility' }}</span>
+        {{ store.isEditing ? 'Editing…' : 'Edit Mode' }}
+      </button>
+    </div>
     <button
       @click="store.handleNewCharacter(), (showMobileMenu = false)"
       class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"

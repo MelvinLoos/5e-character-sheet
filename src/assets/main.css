@@ -264,6 +264,45 @@ html.light {
   .editor-button:disabled {
     @apply bg-gray-400 cursor-not-allowed;
   }
+
+  /* Edit toggle button — stands out clearly when editing */
+  .edit-toggle-btn {
+    @apply flex items-center justify-center gap-2 font-label-md rounded-lg transition-all duration-300 border-2 select-none cursor-pointer;
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+  }
+  .edit-toggle-btn--inactive {
+    background-color: var(--color-surface-variant);
+    color: var(--color-on-surface-variant);
+    border-color: var(--color-outline-variant);
+  }
+  .edit-toggle-btn--inactive:hover {
+    background-color: var(--color-surface-bright);
+    border-color: var(--color-outline);
+    color: var(--color-on-surface);
+  }
+  .edit-toggle-btn--active {
+    background-color: var(--color-tertiary);
+    color: var(--color-on-tertiary);
+    border-color: var(--color-tertiary-fixed-dim);
+    box-shadow: 0 0 12px rgba(234, 194, 73, 0.5), 0 0 24px rgba(234, 194, 73, 0.25);
+    animation: editPulse 2s ease-in-out infinite;
+  }
+  .edit-toggle-btn--active:hover {
+    background-color: var(--color-tertiary-fixed);
+    border-color: var(--color-tertiary-fixed-dim);
+    box-shadow: 0 0 18px rgba(234, 194, 73, 0.6), 0 0 32px rgba(234, 194, 73, 0.35);
+  }
+
+  @keyframes editPulse {
+    0%, 100% {
+      box-shadow: 0 0 12px rgba(234, 194, 73, 0.5), 0 0 24px rgba(234, 194, 73, 0.25);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(234, 194, 73, 0.7), 0 0 36px rgba(234, 194, 73, 0.4);
+    }
+  }
   .control-panel select,
   .control-panel input[type='text'] {
     @apply bg-sheet-input-bg border border-sheet-border p-2 rounded-sm;
