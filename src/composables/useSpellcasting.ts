@@ -132,6 +132,16 @@ export function useSpellcasting(
     return { ...progression.spellSlots, ...grantedSpellSlots.value }
   })
 
+  /**
+   * The highest spell level for which the character has at least one slot.
+   * Returns 0 when there are no slots at all (only cantrips are allowed).
+   */
+  const maxSpellSlotLevel: ComputedRef<number> = computed(() => {
+    const keys = Object.keys(displaySpellSlots.value)
+    if (keys.length === 0) return 0
+    return Math.max(...keys.map((k) => parseInt(k.replace('level', ''))))
+  })
+
   // ---------------------------------------------------------------------------
   // Slot Tracking
   // ---------------------------------------------------------------------------
@@ -258,6 +268,9 @@ export function useSpellcasting(
       filtered = filtered.filter((s) => s.level === filterByLevel.value)
     }
 
+    // Auto-filter: exclude spells above the character's max spell slot level
+    filtered = filtered.filter((s) => s.level <= maxSpellSlotLevel.value)
+
     // Sort by level, then name
     return filtered.sort((a, b) => {
       if (a.level !== b.level) return a.level - b.level
@@ -349,6 +362,7 @@ export function useSpellcasting(
     // Slot calculation
     grantedSpellSlots,
     displaySpellSlots,
+    maxSpellSlotLevel,
     // Slot tracking
     ensureSlotsSpent,
     slotsSpent,

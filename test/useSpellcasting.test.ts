@@ -288,12 +288,16 @@ describe('useSpellcasting', () => {
       characterStore.currentCharacterData = createTestCharacter({
         class: 'Wizard',
         spells: [],
+        features: [
+          { title: 'Spellcasting (Wizard)', desc: '', casterType: 'full', key: true },
+        ] as CharacterFeature[],
       } as Partial<CharacterData> as CharacterData)
       const { librarySpells } = useSpellcasting(characterStore, rulesStore)
 
       const names = librarySpells.value.map((s) => s.name)
-      expect(names).toContain('Fireball')
+      // Wizard with full casting at tier 1 (effective level 3) has slots up to level 2
       expect(names).toContain('Magic Missile')
+      expect(names).not.toContain('Fireball') // level 3, above max spell slot
       expect(names).not.toContain('Cure Wounds') // Cleric/Druid only
     })
   })

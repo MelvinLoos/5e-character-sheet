@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 
@@ -11,6 +12,7 @@ const {
   filterByLevel,
   hasSpellcasting,
   displaySpellSlots,
+  maxSpellSlotLevel,
   getSpent,
   setSpent,
   editableSpells,
@@ -26,6 +28,12 @@ const {
   clearFilters,
   formatLevel,
 } = useSpellcasting()
+
+const allowedLevels = computed(() => {
+  const max = maxSpellSlotLevel.value
+  // Generate array [0, 1, 2, ..., max] — cantrip is always shown
+  return Array.from({ length: max + 1 }, (_, i) => i)
+})
 </script>
 
 <template>
@@ -395,7 +403,7 @@ const {
 
           <div class="flex gap-1 flex-wrap items-center">
             <button
-              v-for="level in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]"
+              v-for="level in allowedLevels"
               :key="level"
               @click="filterByLevel = filterByLevel === level ? null : level"
               :class="[
