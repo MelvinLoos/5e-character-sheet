@@ -4,16 +4,14 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const { PDFParse } = require('pdf-parse')
 
-test('generates a PDF with exactly 2 pages', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'chromium', 'PDF generation requires Chromium')
-
+// This test only runs on Chromium (configured in playwright.config.ts)
+test('generates a PDF with exactly 2 pages', async ({ page }) => {
   await page.goto('/')
 
   const newCharButton = page.locator('button:has-text("new character")')
-  const isNewCharVisible = await newCharButton.isVisible().catch(() => false)
-  if (isNewCharVisible) {
-    await newCharButton.click()
-  }
+  await newCharButton.click({ timeout: 3000 }).catch(() => {
+    // Button may not exist if character is already loaded
+  })
 
   const printable = page.locator('.printable-sheet-container')
   await printable.waitFor({ state: 'attached' })

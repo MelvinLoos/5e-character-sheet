@@ -53,12 +53,14 @@ export default defineConfig({
     },
     {
       name: 'firefox',
+      testIgnore: ['**/print.spec.ts'],
       use: {
         ...devices['Desktop Firefox'],
       },
     },
     {
       name: 'webkit',
+      testIgnore: ['**/print.spec.ts'],
       use: {
         ...devices['Desktop Safari'],
       },
