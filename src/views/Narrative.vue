@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PersonalityBlock from '@/components/sheet/PersonalityBlock.vue'
 </script>
 
 <template>

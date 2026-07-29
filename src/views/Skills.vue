@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
-import SkillsList from '@/components/sheet/SkillsList.vue'
-import SavingThrows from '@/components/sheet/SavingThrows.vue'
-
 const store = useCharacterStore()
 </script>
 

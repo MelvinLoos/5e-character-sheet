@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import EquipmentBlock from '@/components/sheet/EquipmentBlock.vue'
 </script>
 
 <template>

@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
-import ImportModal from '@/components/modals/ImportModal.vue'
 
 const store = useCharacterStore()
 const route = useRoute()

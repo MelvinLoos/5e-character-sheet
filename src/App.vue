@@ -2,10 +2,6 @@
 import { onMounted, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
-import ControlPanel from './components/ControlPanel.vue'
-import CharacterSheet from './components/CharacterSheet.vue'
-import PrintableSheet from './components/sheet/PrintableSheet.vue'
-import ThemeToggle from './components/ThemeToggle.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))

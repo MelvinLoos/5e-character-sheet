@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import RenownProgression from '@/components/sheet/RenownProgression.vue'
-import SheetHeader from '@/components/sheet/SheetHeader.vue'
-import AbilityScores from '@/components/sheet/AbilityScores.vue'
-import CombatStats from '@/components/sheet/CombatStats.vue'
 </script>
 
 <template>
