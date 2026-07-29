@@ -4,11 +4,25 @@ import feather from 'feather-icons';
 import { RULE_GLOSSARY, type GlossaryTopic } from '@/domain/rule-glossary';
 
 const props = defineProps<{
-  topic: GlossaryTopic;
+  /** Predefined glossary topic — mutually exclusive with title+content */
+  topic?: GlossaryTopic;
+  /** Custom title — used when topic is not provided */
+  title?: string;
+  /** Custom content — used when topic is not provided */
+  content?: string;
 }>();
 
 const isOpen = ref(false);
-const rule = computed(() => RULE_GLOSSARY[props.topic]);
+
+const rule = computed(() => {
+  if (props.topic) {
+    return RULE_GLOSSARY[props.topic] ?? null;
+  }
+  if (props.title || props.content) {
+    return { title: props.title ?? '', content: props.content ?? '' };
+  }
+  return null;
+});
 
 const helpIcon = computed(() =>
   feather.icons['help-circle']?.toSvg({ width: 16, height: 16 }),
@@ -45,7 +59,7 @@ const closeIcon = computed(() =>
         >
           <div class="flex justify-between items-start mb-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {{ rule.title }}
+              {{ rule?.title }}
             </h3>
             <button
               @click="isOpen = false"
@@ -55,9 +69,9 @@ const closeIcon = computed(() =>
             ></button>
           </div>
           <div
-            class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed"
+            class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line"
           >
-            {{ rule.content }}
+            {{ rule?.content }}
           </div>
         </div>
       </div>
