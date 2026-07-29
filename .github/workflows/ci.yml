@@ -1,8 +1,6 @@
 name: CI - Quad-Check Pipeline
 
 on:
-  push:
-    branches: [main, feat/redesign]
   pull_request:
     branches: [main, feat/redesign]
 
