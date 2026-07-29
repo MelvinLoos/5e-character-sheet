@@ -9,20 +9,34 @@ import {
   createBlankCharacter,
   getMod,
   pointBuyCosts,
-} from '../services/characterService'
-import type { CharacterData } from '../services/characterService'
+} from '@/domain'
+import type { CharacterData } from '@/domain'
 
-import { migrateUsesToResource } from '../utils/migrations'
 import { logger } from '../utils/logger'
+import {
+  migrateCharacterData,
+  applyBackgroundSkills,
+  applyBackgroundFeature,
+  applyClassFeatures,
+  applySpeciesTraits,
+  applyBackgroundBonuses,
+  calculateDerivedStats,
+  applyAllChanges,
+} from '../utils/characterMutations'
 
-import { initSupabase, fetchCharacterFromUrl, shareCharacterToSupabase } from '../services/sharingService'
-import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '../services/aiService'
-import { loadSchema, getSchema, validateCharacterData } from '../services/schemaService'
+import {
+  initSupabase,
+  fetchCharacterFromUrl,
+  shareCharacterToSupabase,
+} from '@/infra'
+import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
+import { loadSchema, getSchema, validateCharacterData } from '@/domain'
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
   // Initialize with a blank character to avoid widespread null checks in templates/components
   const currentCharacterData = ref<CharacterData>(createBlankCharacter())
+  const currentUserData = computed(() => currentCharacterData.value)
   const isEditing = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
   const sessionName = ref('Uncategorized')
@@ -40,6 +54,14 @@ export const useCharacterStore = defineStore('character', () => {
   const shareModal = ref({ show: false, url: '' })
 
   // --- GETTERS (Computed Properties) ---
+  // These are INTERNAL-ONLY computed properties used by the store's own actions.
+  // External consumers must use useProgressionStore and useSpellStore instead.
+
+  const derivedLevel = computed(() => {
+    if (!currentCharacterData.value) return 3
+    const tier = currentCharacterData.value.renownTier || 1
+    return DND_RULES.getEffectiveLevel(tier)
+  })
 
   const abilityMods = computed(() => {
     if (!currentCharacterData.value) return {}
@@ -55,7 +77,7 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return 2
     let prof = 2
     for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
-      if (currentCharacterData.value.level >= parseInt(levelThreshold)) {
+      if (derivedLevel.value >= parseInt(levelThreshold)) {
         prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[parseInt(levelThreshold)] ?? prof
       }
     }
@@ -64,99 +86,95 @@ export const useCharacterStore = defineStore('character', () => {
 
   const maxHp = computed(() => {
     if (!currentCharacterData.value) return 1
-    const { level, class: className } = currentCharacterData.value
+    const { class: className } = currentCharacterData.value
     const classData = className ? DND_RULES.CLASSES[className] : undefined
     if (!classData) return 1
-
     const conMod = abilityMods.value.con ?? 0
     let hp = classData.hitDice + conMod
-    if (level > 1) {
+    if (derivedLevel.value > 1) {
       const hpGainPerLevel = classData.hitDiceAverage + conMod
-      hp += (level - 1) * Math.max(1, hpGainPerLevel)
+      hp += (derivedLevel.value - 1) * Math.max(1, hpGainPerLevel)
     }
     return hp
   })
 
-  const keyFeatures = computed(
-    () => currentCharacterData.value?.features.filter((f) => f.key) || [],
-  )
-  const otherFeatures = computed(
-    () => currentCharacterData.value?.features.filter((f) => !f.key) || [],
-  )
+  const spellSlots = computed<Record<string, number>>(() => {
+    if (!currentCharacterData.value) return {}
+    const features = currentCharacterData.value.features || []
+    const spellcastingFeature = features.find(
+      (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
+    )
+    if (!spellcastingFeature?.casterType) return {}
+    const level = derivedLevel.value
+    const progression =
+      DND_RULES.SPELL_SLOT_PROGRESSION[
+        spellcastingFeature.casterType as keyof typeof DND_RULES.SPELL_SLOT_PROGRESSION
+      ]
+    return (progression?.[level] || {}) as Record<string, number>
+  })
 
-  const spellcastingAbility = computed(
-    () => currentCharacterData.value?.spellcasting?.ability || 'int',
-  )
+  const keyFeatures = computed(() => currentCharacterData.value?.features.filter((f) => f.key) || [])
+  const otherFeatures = computed(() => currentCharacterData.value?.features.filter((f) => !f.key) || [])
 
+  const spellcastingAbility = computed(() => currentCharacterData.value?.spellcasting?.ability || 'int')
   const spellMod = computed(() => abilityMods.value[spellcastingAbility.value] || 0)
-
   const spellSaveDC = computed(() => 8 + profBonus.value + spellMod.value)
-
   const spellAttack = computed(() => profBonus.value + spellMod.value)
 
   const pointBuyPointsUsed = computed(() => {
     if (!currentCharacterData.value) return 0
     let total = 0
-    Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
-      (s) => (total += pointBuyCosts[s] ?? 0),
-    )
+    Object.values(currentCharacterData.value.pointBuyBaseScores).forEach((s) => (total += pointBuyCosts[s] ?? 0))
     return total
   })
-
   const pointBuyPointsRemaining = computed(() => 27 - pointBuyPointsUsed.value)
+  const pointBuyCostForScore = computed(() => (score: number): number => pointBuyCosts[score] ?? 0)
+  const pointBuyMaxForScore = computed(() => (score: number): boolean => {
+    if (score < 8 || score >= 15) return false
+    const cur = pointBuyCosts[score] ?? 0
+    const nxt = pointBuyCosts[score + 1] ?? 0
+    return pointBuyPointsUsed.value - cur + nxt <= 27
+  })
+  const isValidBonusSelection = computed(() => (stat: string, bonusType: '+2' | '+1'): boolean => {
+    const s = currentCharacterData.value?.backgroundBonusSelections
+    if (!s) return true
+    return bonusType === '+2' ? s.plusOne !== stat : s.plusTwo !== stat
+  })
 
-  // Helper function to calculate feature maximum uses based on 2024 resource system
-  function getFeatureMaxUses(feature: unknown) {
-    if (!feature || !currentCharacterData.value) return null
-    if (typeof feature !== 'object' || feature === null) return null
+  const initiativeMod = computed(() => abilityMods.value.dex ?? 0)
+  const walkingSpeed = computed(() => {
+    const spd = currentCharacterData.value?.combat.speed
+    if (spd) return spd
+    const sp = currentCharacterData.value?.species
+    return sp ? DND_RULES.SPECIES[sp]?.speed ?? '30ft' : '30ft'
+  })
+
+  function getFeatureMaxUses(feature: unknown): number | null {
+    if (!feature || typeof feature !== 'object' || feature === null) return null
     const f = feature as {
       uses?: { total?: number; per?: string } | null
       resource?: { resourceType?: string; value?: number; scalingStat?: string | null } | null
     }
-
-    // Handle legacy 'uses' format for backward compatibility
-    if (f.uses && !f.resource) {
-      return f.uses.total || null
-    }
-
-    // Handle new 'resource' format
-    if (!f.resource || !f.resource.resourceType) {
-      return null // No resource tracking
-    }
-
+    if (f.uses && !f.resource) return f.uses.total || null
+    if (!f.resource || !f.resource.resourceType) return null
     const { resourceType, value, scalingStat } = f.resource
-
     try {
-      if (resourceType === 'static') {
-        return Math.max(0, value || 0)
-      }
-
+      if (resourceType === 'static') return Math.max(0, value || 0)
       if (resourceType === 'scaling') {
-        if (!scalingStat) return 1 // Fallback if stat not specified
-
-        if (scalingStat === 'pb') {
-          return profBonus.value || 2 // Fallback to level 1 PB
-        }
-
-        // Handle ability score scaling
-        const validAbilities = ['str', 'dex', 'con', 'int', 'wis', 'cha']
-        if (validAbilities.includes(scalingStat)) {
-          const abilityMod = abilityMods.value[scalingStat] || 0
-          return Math.max(1, abilityMod) // Minimum 1 use
-        }
+        if (!scalingStat) return 1
+        if (scalingStat === 'pb') return profBonus.value || 2
+        const valid = ['str', 'dex', 'con', 'int', 'wis', 'cha']
+        if (valid.includes(scalingStat)) return Math.max(1, abilityMods.value[scalingStat] || 0)
       }
-
-      // Fallback for unknown configurations
       return 1
-    } catch (error) {
-      logger.warn('Error calculating feature max uses:', error)
-      return 1
-    }
-  } // --- ACTIONS (Methods) ---
+    } catch { return 1 }
+  }
 
-  async function initStore() {
+  // --- ACTIONS (Methods) ---
+
+  async function initStore(): Promise<void> {
     supabaseClient.value = initSupabase()
-    
+
     await loadSchema()
     await loadAiSchema()
 
@@ -164,24 +182,24 @@ export const useCharacterStore = defineStore('character', () => {
     await loadCharacterFromUrl()
   }
 
-  function validateCharacter(data: unknown) {
-     return validateCharacterData(data)
+  function validateCharacter(data: unknown): { valid: boolean; errors: string[] } {
+    return validateCharacterData(data)
   }
 
-  function _showLoading(text: string) {
+  function _showLoading(text: string): void {
     isLoading.value = true
     loadingText.value = text
   }
-  function _hideLoading() {
+  function _hideLoading(): void {
     isLoading.value = false
   }
 
-  function _showErrorModal(errors: string[]) {
+  function _showErrorModal(errors: string[]): void {
     errorModal.value.errors = errors
     errorModal.value.show = true
   }
 
-  function _setCharacter(data: unknown) {
+  function _setCharacter(data: unknown): void {
     // Migrate legacy character data to new format
     const migratedData = _migrateLegacyCharacter(data)
 
@@ -207,140 +225,11 @@ export const useCharacterStore = defineStore('character', () => {
     combat.hp_max = calculatedMax
   }
 
-  function _migrateLegacyCharacter(data: unknown) {
-    // Create a copy to avoid mutating the original
-    let migrated: Record<string, unknown> = { ...(data as Record<string, unknown>) }
-
-    // Convert legacy `uses` into the new `resource` shape when applicable
-    migrated = migrateUsesToResource(migrated) as Record<string, unknown>
-
-    // Add missing backgroundBonusSelections if not present
-    if (!migrated.backgroundBonusSelections) {
-      migrated.backgroundBonusSelections = {
-        plusTwo: null,
-        plusOne: null,
-      }
-    }
-
-    // Add missing pointBuyBaseScores if not present
-    if (!migrated.pointBuyBaseScores) {
-      // If we have final ability scores, try to reverse-engineer base scores
-      if (migrated.abilityScores) {
-        migrated.pointBuyBaseScores = { ...(migrated.abilityScores as Record<string, number>) }
-
-        // Subtract background bonuses if we can determine them
-        const background = migrated.background
-        if (typeof background === 'string' && DND_RULES.BACKGROUNDS[background]) {
-          // For legacy files, we can't know which bonuses were selected, so leave as-is
-        }
-      } else {
-        // Fallback to default 8s
-        migrated.pointBuyBaseScores = {
-          str: 8,
-          dex: 8,
-          con: 8,
-          int: 8,
-          wis: 8,
-          cha: 8,
-        }
-      }
-    }
-
-    // Ensure abilityScores exists
-    if (!migrated.abilityScores) {
-      migrated.abilityScores = { ...(migrated.pointBuyBaseScores as Record<string, number>) }
-    }
-
-    // Add missing proficiencies structure if not present
-    if (!migrated.proficiencies) {
-      migrated.proficiencies = {
-        skills: migrated.skills || [],
-        savingThrows: migrated.savingThrows || [],
-      }
-    }
-
-    // Ensure features array exists
-    if (!migrated.features) {
-      migrated.features = []
-    }
-
-    // Add missing spellcasting feature for spellcasting classes
-    if (migrated.class && migrated.spellcasting) {
-      const hasSpellcastingFeature =
-        Array.isArray(migrated.features) &&
-        (migrated.features as unknown[]).some((f: unknown) => {
-          const ff = f as Record<string, unknown>
-          return (
-            typeof ff.title === 'string' &&
-            ff.title.toLowerCase().includes('spellcasting') &&
-            !!ff.casterType
-          )
-        })
-
-      if (!hasSpellcastingFeature) {
-        // Determine caster type based on class
-        let casterType = 'full'
-        const className = ((migrated.class as string) || '').replace(/\s*\(.*\)/, '') // Remove subclass info
-
-        if (['Ranger', 'Paladin'].includes(className)) {
-          casterType = 'half'
-        } else if (['Eldritch Knight', 'Arcane Trickster'].includes(className)) {
-          casterType = 'third'
-        } else if (className === 'Warlock') {
-          casterType = 'pact'
-        }
-
-        // Add spellcasting feature
-        ;(migrated.features as unknown[]).push({
-          title: `Spellcasting (${className})`,
-          desc: `You can cast ${className.toLowerCase()} spells. ${(migrated.spellcasting as Record<string, unknown>).ability}
-            is your spellcasting ability.`,
-          casterType: casterType,
-          key: true,
-        })
-      }
-    }
-
-    // Ensure spells array exists
-    if (!migrated.spells) {
-      migrated.spells = []
-    }
-
-    // Ensure combat object exists
-    if (!migrated.combat) {
-      migrated.combat = {
-        ac: 10,
-        hp_max: 1,
-        hp_current: 1,
-        speed: '30ft',
-      }
-    } else {
-      const combat = migrated.combat as Record<string, unknown>
-      if (combat.hp_current === undefined) {
-        combat.hp_current = combat.hp_max || 1
-      }
-    }
-
-    // Ensure attacks array exists
-    if (!migrated.attacks) {
-      migrated.attacks = []
-    }
-
-    // Ensure personality object exists
-    if (!migrated.personality) {
-      migrated.personality = {
-        traits: '',
-        ideal: '',
-        bond: '',
-        flaw: '',
-        notes: '',
-      }
-    }
-
-    return migrated
+  function _migrateLegacyCharacter(data: unknown): CharacterData {
+    return migrateCharacterData(data)
   }
 
-  function _setupSpellcasting() {
+  function _setupSpellcasting(): void {
     if (!currentCharacterData.value) return
 
     const features = currentCharacterData.value.features || []
@@ -357,25 +246,25 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  async function loadCharacterFromUrl() {
+  async function loadCharacterFromUrl(): Promise<void> {
     const urlParams = new URLSearchParams(window.location.search)
     try {
-        const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
-        if (result) {
-            _showLoading('Fetching character from the archives...')
-            _setCharacter(result.data)
-            sourceCharacterId.value = result.id
-        }
-    } catch(error) {
-        logger.error('Error loading character from URL:', error)
-        _showErrorModal([`Could not load character: ${(error as Error).message}`])
-        history.replaceState({}, '', window.location.pathname)
+      const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
+      if (result) {
+        _showLoading('Fetching character from the archives...')
+        _setCharacter(result.data)
+        sourceCharacterId.value = result.id
+      }
+    } catch (error) {
+      logger.error('Error loading character from URL:', error)
+      _showErrorModal([`Could not load character: ${(error as Error).message}`])
+      history.replaceState({}, '', window.location.pathname)
     } finally {
-        _hideLoading()
+      _hideLoading()
     }
   }
 
-  function loadCharacterFromLibrary(key: string) {
+  function loadCharacterFromLibrary(key: string): void {
     const [session, charName] = key.split('|')
     if (!session || !charName) return
 
@@ -386,7 +275,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  function handleFileLoad(event: Event) {
+  function handleFileLoad(event: Event): void {
     const target = event.target as HTMLInputElement
     const file = target?.files?.[0]
     if (!file) return
@@ -412,7 +301,7 @@ export const useCharacterStore = defineStore('character', () => {
     reader.readAsText(file)
   }
 
-  function saveToLibrary() {
+  function saveToLibrary(): void {
     if (!currentCharacterData.value) return
     const session = sessionName.value.trim() || 'Uncategorized'
     const library = getLocalLibrary() // Get fresh copy
@@ -431,16 +320,16 @@ export const useCharacterStore = defineStore('character', () => {
     characterLibrary.value = library // Update reactive state
   }
 
-  function handleNewCharacter() {
+  function handleNewCharacter(): void {
     _setCharacter(createBlankCharacter())
     isEditing.value = true
   }
 
-  function toggleEdit() {
+  function toggleEdit(): void {
     isEditing.value = !isEditing.value
   }
 
-  async function generateCharacter(userPrompt: string) {
+  async function generateCharacter(userPrompt: string): Promise<void> {
     _showLoading('The mists of creation are swirling...')
     try {
       const generatedData = await aiGenerate(userPrompt)
@@ -455,7 +344,7 @@ export const useCharacterStore = defineStore('character', () => {
 
         // Recalculate derived stats when level changes (ensures profBonus, HP, spell slots, etc. update)
         watch(
-          () => currentCharacterData.value?.level,
+          () => currentCharacterData.value?.renownTier,
           () => {
             recalculateAbilityScores()
           },
@@ -471,7 +360,10 @@ export const useCharacterStore = defineStore('character', () => {
         )
       }
 
-      _setCharacter({ ...createBlankCharacter(), ...generatedData.data as Record<string, unknown> })
+      _setCharacter({
+        ...createBlankCharacter(),
+        ...(generatedData.data as Record<string, unknown>),
+      })
       saveToLibrary()
     } catch (error) {
       logger.error('Error generating character:', error)
@@ -481,7 +373,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  async function shareCharacter() {
+  async function shareCharacter(): Promise<void> {
     if (!supabaseClient.value) {
       _showErrorModal(['Online sharing is not configured.'])
       return
@@ -490,8 +382,12 @@ export const useCharacterStore = defineStore('character', () => {
 
     _showLoading('Saving character to the archives...')
     try {
-      const newId = await shareCharacterToSupabase(supabaseClient.value, currentCharacterData.value, sourceCharacterId.value)
-      
+      const newId = await shareCharacterToSupabase(
+        supabaseClient.value,
+        currentCharacterData.value,
+        sourceCharacterId.value,
+      )
+
       const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`
 
       shareModal.value.url = newUrl
@@ -507,7 +403,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  function exportCharacter() {
+  function exportCharacter(): void {
     if (!currentCharacterData.value) return
     const jsonString = JSON.stringify(currentCharacterData.value, null, 2)
     const blob = new Blob([jsonString], { type: 'application/json' })
@@ -523,13 +419,13 @@ export const useCharacterStore = defineStore('character', () => {
 
   // --- Direct Data Mutations ---
 
-  function updateCharacter(key: string, value: unknown) {
+  function updateCharacter(key: string, value: unknown): void {
     if (currentCharacterData.value) {
       ;(currentCharacterData.value as unknown as Record<string, unknown>)[key] = value
     }
   }
 
-  function updateNested(key1: string, key2: string, value: unknown) {
+  function updateNested(key1: string, key2: string, value: unknown): void {
     if (currentCharacterData.value) {
       const obj = currentCharacterData.value as unknown as Record<string, unknown>
       const inner = obj[key1] as Record<string, unknown> | undefined
@@ -537,7 +433,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  function adjustPointBuyScore(key: string, delta: number) {
+  function adjustPointBuyScore(key: string, delta: number): void {
     if (!currentCharacterData.value) return
     const currentScore = currentCharacterData.value.pointBuyBaseScores[key] || 8
     const newScore = currentScore + delta
@@ -553,7 +449,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  function recalculateAbilityScores() {
+  function recalculateAbilityScores(): void {
     const data = currentCharacterData.value
     if (!data) return
     const finalScores = { ...data.pointBuyBaseScores }
@@ -588,14 +484,24 @@ export const useCharacterStore = defineStore('character', () => {
     data.abilityScores = finalScores
 
     // Also recalculate derived stats
+    const oldMax = data.combat.hp_max
+    const wasAtMax =
+      data.combat.hp_current === oldMax ||
+      data.combat.hp_current === undefined ||
+      data.combat.hp_current === 1
+
     data.combat.hp_max = maxHp.value
+
+    if (wasAtMax || (data.combat.hp_current ?? 0) > data.combat.hp_max) {
+      data.combat.hp_current = data.combat.hp_max
+    }
 
     // Setup spellcasting based on current features
     _setupSpellcasting()
   }
 
   // Helper function to update background skills
-  function updateBackgroundSkills() {
+  function updateBackgroundSkills(): void {
     if (!currentCharacterData.value || !currentCharacterData.value.background) return
 
     const backgroundData = DND_RULES.BACKGROUNDS[currentCharacterData.value.background]
@@ -618,220 +524,67 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value.proficiencies.skills = Array.from(currentSkills)
   }
 
-  // Helper function to update background features
-  function updateBackgroundFeatures() {
-    if (!currentCharacterData.value || !currentCharacterData.value.background) return
+  // --- Explicit Actions (replacing implicit watchers) ---
 
-    const backgroundData = DND_RULES.BACKGROUNDS[currentCharacterData.value.background]
-    if (!backgroundData || !backgroundData.feature) return
-
-    // Ensure features array exists
-    if (!currentCharacterData.value.features) {
-      currentCharacterData.value.features = []
-    }
-
-    // Remove existing background features
-    // We identify background features by checking if they match any background feature title
-    const allBackgroundFeatureTitles = new Set<string>()
-    Object.values(DND_RULES.BACKGROUNDS).forEach((bg: unknown) => {
-      const b = bg as Record<string, unknown>
-      const feature = b.feature as Record<string, unknown> | undefined
-      if (feature && typeof feature.title === 'string')
-        allBackgroundFeatureTitles.add(feature.title)
-    })
-
-    currentCharacterData.value.features = currentCharacterData.value.features.filter(
-      (feature) => !allBackgroundFeatureTitles.has(feature.title),
-    )
-
-    // Add the new background feature
-    const newFeature = {
-      title: backgroundData.feature.title,
-      desc: backgroundData.feature.desc,
-      key: backgroundData.feature.key || false,
-      casterType: null,
-    }
-
-    currentCharacterData.value.features.push(newFeature)
+  /**
+   * Apply a background change: set the background value, then pipe the
+   * character through background skills, background feature, and derived
+   * stat recalculation.
+   */
+  function applyBackgroundChange(newBackground: string): void {
+    if (!currentCharacterData.value) return
+    currentCharacterData.value.background = newBackground
+    currentCharacterData.value = applyBackgroundSkills(currentCharacterData.value)
+    currentCharacterData.value = applyBackgroundFeature(currentCharacterData.value)
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
   }
 
-  // Helper function to update class features
-  function updateClassFeatures() {
-    if (!currentCharacterData.value || !currentCharacterData.value.class) return
-
-    const classData = DND_RULES.CLASSES[currentCharacterData.value.class]
-    if (!classData || !classData.features) return
-
-    // Ensure features array exists
-    if (!currentCharacterData.value.features) {
-      currentCharacterData.value.features = []
-    }
-
-    // Remove existing class features
-    // We identify class features by checking if they match any class feature title
-    const allClassFeatureTitles = new Set<string>()
-    Object.values(DND_RULES.CLASSES).forEach((cls: unknown) => {
-      const clsData = cls as Record<string, unknown>
-      const features = clsData.features as unknown
-      if (Array.isArray(features)) {
-        features.forEach((feature: unknown) => {
-          const featureData = feature as Record<string, unknown>
-          if (featureData && typeof featureData.title === 'string') {
-            allClassFeatureTitles.add(featureData.title)
-          }
-        })
-      }
-    })
-
-    currentCharacterData.value.features = currentCharacterData.value.features.filter(
-      (feature) => !allClassFeatureTitles.has(feature.title),
-    )
-
-    // Add the new class features
-    if (Array.isArray(classData.features)) {
-      classData.features.forEach((feature: unknown) => {
-        const f = feature as Record<string, unknown>
-        const usesCandidate = f.uses as Record<string, unknown> | undefined
-        let usesVal: { total: number; per: string } | undefined
-        if (
-          usesCandidate &&
-          typeof usesCandidate.total === 'number' &&
-          typeof usesCandidate.per === 'string'
-        ) {
-          usesVal = { total: usesCandidate.total as number, per: usesCandidate.per as string }
-        }
-        const newFeature = {
-          title: (f.title as string) || '',
-          desc: (f.desc as string) || '',
-          key: (f.key as boolean) || false,
-          casterType: (f.casterType as string) || null,
-          uses: usesVal,
-        }
-        currentCharacterData.value?.features.push(newFeature)
-      })
-    }
-
-    // Update spellcasting ability based on new class
-    _setupSpellcasting()
+  /**
+   * Apply a class change: set the class value, then pipe the character
+   * through class features and derived stat recalculation.
+   */
+  function applyClassChange(newClass: string): void {
+    if (!currentCharacterData.value) return
+    currentCharacterData.value.class = newClass
+    currentCharacterData.value = applyClassFeatures(currentCharacterData.value)
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
   }
 
-  // Helper function to update species traits
-  function updateSpeciesTraits() {
-    if (!currentCharacterData.value || !currentCharacterData.value.species) return
-
-    const speciesData = DND_RULES.SPECIES[currentCharacterData.value.species]
-    if (!speciesData || !speciesData.traits) return
-
-    // Ensure features array exists
-    if (!currentCharacterData.value.features) {
-      currentCharacterData.value.features = []
-    }
-
-    // Remove existing species traits
-    // We identify species traits by checking if they match any species trait title
-    const allSpeciesTraitTitles = new Set()
-    Object.values(DND_RULES.SPECIES).forEach((species: unknown) => {
-      const s = species as Record<string, unknown>
-      const traits = s.traits as unknown
-      if (Array.isArray(traits)) {
-        traits.forEach((trait: unknown) => {
-          const t = trait as Record<string, unknown>
-          if (t && typeof t.title === 'string') {
-            allSpeciesTraitTitles.add(t.title)
-          }
-        })
-      }
-    })
-
-    currentCharacterData.value.features = currentCharacterData.value.features.filter(
-      (feature) => !allSpeciesTraitTitles.has(feature.title),
-    )
-
-    // Add the new species traits
-    if (Array.isArray(speciesData.traits)) {
-      speciesData.traits.forEach((trait: unknown) => {
-        const t = trait as Record<string, unknown>
-        const usesCandidate = t.uses as Record<string, unknown> | undefined
-        let usesVal: { total: number; per: string } | undefined
-        if (
-          usesCandidate &&
-          typeof usesCandidate.total === 'number' &&
-          typeof usesCandidate.per === 'string'
-        ) {
-          usesVal = { total: usesCandidate.total as number, per: usesCandidate.per as string }
-        }
-        const newTrait = {
-          title: (t.title as string) || '',
-          desc: (t.desc as string) || '',
-          key: (t.key as boolean) || false,
-          casterType: null,
-          uses: usesVal,
-        }
-        currentCharacterData.value?.features.push(newTrait)
-      })
-    }
+  /**
+   * Apply a species change: set the species value, then pipe the character
+   * through species traits and derived stat recalculation.
+   */
+  function applySpeciesChange(newSpecies: string): void {
+    if (!currentCharacterData.value) return
+    currentCharacterData.value.species = newSpecies
+    currentCharacterData.value = applySpeciesTraits(currentCharacterData.value)
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
   }
 
-  // Watch for background changes and auto-update skills and features
-  watch(
-    () => currentCharacterData.value?.background,
-    (newBackground, oldBackground) => {
-      if (newBackground && newBackground !== oldBackground) {
-        updateBackgroundSkills()
-        updateBackgroundFeatures()
-      }
-    },
-    { deep: false },
-  )
+  /**
+   * Apply background bonus selection changes by rebuilding ability scores
+   * and recalculating derived stats.
+   */
+  function applyBonusSelectionChange(): void {
+    if (!currentCharacterData.value) return
+    currentCharacterData.value = applyBackgroundBonuses(currentCharacterData.value)
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+  }
 
-  // Recalculate ability scores when background bonus selections change (+2 / +1)
-  watch(
-    () => currentCharacterData.value?.backgroundBonusSelections,
-    () => {
-      recalculateAbilityScores()
-    },
-    { deep: true },
-  )
-
-  // Watch for class changes and auto-update features and saving throws
-  watch(
-    () => currentCharacterData.value?.class,
-    (newClass, oldClass) => {
-      if (newClass && newClass !== oldClass) {
-        updateClassFeatures()
-
-        // Update saving throw proficiencies
-        if (currentCharacterData.value && DND_RULES.CLASSES[newClass]?.savingThrows) {
-          currentCharacterData.value.proficiencies.savingThrows =
-            DND_RULES.CLASSES[newClass].savingThrows
-        }
-
-        // Recalculate derived stats including HP
-        recalculateAbilityScores()
-      }
-    },
-    { deep: false },
-  )
-
-  // Watch for species changes and auto-update traits
-  watch(
-    () => currentCharacterData.value?.species,
-    (newSpecies, oldSpecies) => {
-      if (newSpecies && newSpecies !== oldSpecies) {
-        updateSpeciesTraits()
-
-        // Update speed if available
-        if (currentCharacterData.value && DND_RULES.SPECIES[newSpecies]?.speed) {
-          currentCharacterData.value.combat.speed = DND_RULES.SPECIES[newSpecies].speed
-        }
-      }
-    },
-    { deep: false },
-  )
+  /**
+   * Full recalculate: run ALL mutation functions in the correct pipeline
+   * order (bonuses → skills → background feature → class features →
+   * species traits → derived stats).
+   */
+  function recalculateAll(): void {
+    if (!currentCharacterData.value) return
+    currentCharacterData.value = applyAllChanges(currentCharacterData.value)
+  }
 
   return {
     // State
     currentCharacterData,
+    currentUserData,
     isEditing,
     characterLibrary,
     sessionName,
@@ -843,10 +596,12 @@ export const useCharacterStore = defineStore('character', () => {
     loadingText,
     errorModal,
     shareModal,
-    // Getters
+    // Getters (legacy compatibility — new code should use useProgressionStore / useSpellStore)
     abilityMods,
     profBonus,
     maxHp,
+    derivedLevel,
+    spellSlots,
     keyFeatures,
     otherFeatures,
     spellcastingAbility,
@@ -855,7 +610,11 @@ export const useCharacterStore = defineStore('character', () => {
     spellAttack,
     pointBuyPointsUsed,
     pointBuyPointsRemaining,
-    // Helper functions
+    pointBuyCostForScore,
+    pointBuyMaxForScore,
+    isValidBonusSelection,
+    initiativeMod,
+    walkingSpeed,
     getFeatureMaxUses,
     // Actions
     initStore,
@@ -873,6 +632,12 @@ export const useCharacterStore = defineStore('character', () => {
     adjustPointBuyScore,
     recalculateAbilityScores,
     validateCharacter,
+    // New explicit actions
+    applyBackgroundChange,
+    applyClassChange,
+    applySpeciesChange,
+    applyBonusSelectionChange,
+    recalculateAll,
     // Modals
     closeErrorModal: () => (errorModal.value.show = false),
     closeShareModal: () => (shareModal.value.show = false),

@@ -27,7 +27,7 @@ function handlePrint() {
 </script>
 
 <template>
-  <div class="flex justify-end mb-4 no-print space-x-2 z-10">
+  <div class="flex justify-center mb-4 no-print space-x-2 z-10">
     <button
       @click="store.toggleEdit()"
       class="icon-button"

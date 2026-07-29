@@ -1,92 +1,46 @@
 import * as DND_RULES from '../data/rules'
-import type { Feature } from '../data/rules'
+import type { RulesFeature } from '../types/rules'
+import type {
+  CharacterData,
+} from '../types/character'
+import { STORAGE_KEYS } from '../constants/storage-keys'
 
-export interface CharacterData {
-  name: string
-  title: string
-  class: string | null
-  level: number
-  species: string | null
-  background: string | null
-  pointBuyBaseScores: Record<string, number>
-  backgroundBonusSelections: {
-    plusTwo: string | null
-    plusOne: string | null
+// Re-export CharacterData for backward compatibility (all consumers import from here)
+export type { CharacterData } from '../types/character'
+
+/**
+ * Automatically migrates legacy character library storage to the new snake_case key.
+ */
+function migrateLegacyStorage(): void {
+  const legacyData = localStorage.getItem('dndCharacterLibrary')
+  if (legacyData && !localStorage.getItem(STORAGE_KEYS.CHARACTER_LIBRARY)) {
+    localStorage.setItem(STORAGE_KEYS.CHARACTER_LIBRARY, legacyData)
+    localStorage.removeItem('dndCharacterLibrary')
   }
-  abilityScores: Record<string, number>
-  profBonus: number
-  proficiencies: {
-    savingThrows: string[]
-    skills: string[]
-  }
-  combat: {
-    ac: number
-    hp_max: number
-    hp_current?: number
-    speed: string
-  }
-  attacks: Array<{
-    id?: string
-    name: string
-    atkStat?: string | null
-    customAtkValue?: number
-    dmgDie: string
-    dmgStat?: string | null
-    customDmgValue?: number
-    dmgBonus: number
-    type: string
-    notes?: string
-    weaponMastery?: string
-  }>
-  features: Array<{
-    title: string
-    desc: string
-    key?: boolean
-    source?: string
-    featureType?: string
-    actionType?: string
-    uses?: { total: number; per: string } | null
-    resource?: {
-      resourceType: string
-      value?: number
-      scalingStat?: string | null
-      reset?: string
-    } | null
-    casterType?: string | null
-    grantsSpells?: boolean
-    grantedSpellLevels?: number[]
-    abilityModifiers?: Record<string, number>
-    [key: string]: unknown
-  }>
-  equipment: string
-  personality: {
-    traits: string
-    ideal: string
-    bond: string
-    flaw: string
-    notes?: string
-  }
-  spellcasting: { ability?: string } | null
-  spells: Array<{
-    name: string
-    level: number
-    desc: string
-    source?: string
-    school?: string
-    castingTime?: string
-    range?: string
-    components?: string
-    duration?: string
-    concentration?: boolean
-  }>
 }
 
-const STORAGE_KEY = 'dndCharacterLibrary'
-
-export const getLibrary = (): Record<string, CharacterData[]> =>
-  JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {}
 export const saveLibrary = (library: Record<string, CharacterData[]>): void =>
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(library))
+  localStorage.setItem(STORAGE_KEYS.CHARACTER_LIBRARY, JSON.stringify(library))
+export const getLibrary = (): Record<string, CharacterData[]> => {
+  migrateLegacyStorage()
+  const library = JSON.parse(localStorage.getItem(STORAGE_KEYS.CHARACTER_LIBRARY) || 'null') || {}
+
+  // Migrate characters in library to have the new fields
+  Object.keys(library).forEach((key) => {
+    library[key] = library[key].map((char: CharacterData) => ({
+      ...char,
+      gold: char.gold ?? 0,
+      supply: char.supply ?? 0,
+      influence: char.influence ?? 0,
+      inventorySlots: char.inventorySlots ?? Math.max(10, char.abilityScores?.str || 10),
+      equippedGear: char.equippedGear ?? [],
+      consumables: char.consumables ?? [],
+      jobInParty: char.jobInParty ?? '',
+    }))
+  })
+
+  return library
+}
 
 export const getMod = (score: number): number => Math.floor((score - 10) / 2)
 export const formatMod = (mod: number): string => (mod >= 0 ? `+${mod}` : mod.toString())
@@ -111,21 +65,23 @@ export const createBlankCharacter = (): CharacterData => {
     plusTwo: null,
     plusOne: null,
   }
-  const backgroundFeature: Feature[] = []
-  const defaultBackgroundData = defaultBackground ? DND_RULES.BACKGROUNDS[defaultBackground] : undefined
+  const backgroundFeature: RulesFeature[] = []
+  const defaultBackgroundData = defaultBackground
+    ? DND_RULES.BACKGROUNDS[defaultBackground]
+    : undefined
   if (defaultBackgroundData) {
     const bonusOptions = defaultBackgroundData.abilityScoreIncrease
     defaultSelections = { plusTwo: bonusOptions[0] ?? null, plusOne: bonusOptions[1] ?? null }
     if (defaultBackgroundData.feature) backgroundFeature.push(defaultBackgroundData.feature)
   }
 
-  let classFeatures: Feature[] = []
+  let classFeatures: RulesFeature[] = []
   const defaultClassData = defaultClass ? DND_RULES.CLASSES[defaultClass] : undefined
   if (defaultClassData?.features) {
     classFeatures = defaultClassData.features
   }
 
-  let speciesTraits: Feature[] = []
+  let speciesTraits: RulesFeature[] = []
   const defaultSpeciesData = defaultSpecies ? DND_RULES.SPECIES[defaultSpecies] : undefined
   if (defaultSpeciesData?.traits) {
     speciesTraits = defaultSpeciesData.traits
@@ -143,8 +99,10 @@ export const createBlankCharacter = (): CharacterData => {
   return {
     name: 'New Character',
     title: '',
+    jobInParty: '',
     class: defaultClass,
-    level: 1,
+    renownTier: 1,
+    renownMilestones: 0,
     species: defaultSpecies,
     background: defaultBackground,
     pointBuyBaseScores: baseScores,
@@ -165,8 +123,18 @@ export const createBlankCharacter = (): CharacterData => {
       speed: defaultSpeciesData?.speed || '30ft',
     },
     attacks: [],
-    features: [...speciesTraits, ...classFeatures, ...backgroundFeature] as CharacterData['features'],
+    features: [
+      ...speciesTraits,
+      ...classFeatures,
+      ...backgroundFeature,
+    ] as CharacterData['features'],
     equipment: '',
+    gold: 0,
+    supply: 0,
+    influence: 0,
+    inventorySlots: Math.max(10, finalScores.str || 10), // Base slot calculation, can be updated later
+    equippedGear: [],
+    consumables: [],
     personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
     spellcasting: null,
     spells: [],

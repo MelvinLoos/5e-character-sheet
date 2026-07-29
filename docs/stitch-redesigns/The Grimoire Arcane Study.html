@@ -1,0 +1,237 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Spell Library - Midnight Scholar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2c150e",
+                        "secondary": "#e7bdb1",
+                        "surface-container-lowest": "#100e07",
+                        "secondary-container": "#604239",
+                        "on-surface": "#e8e2d4",
+                        "surface-dim": "#15130b",
+                        "tertiary-container": "#cca72f",
+                        "outline": "#8b9293",
+                        "primary-fixed-dim": "#aacdd1",
+                        "inverse-primary": "#436467",
+                        "background": "#15130b",
+                        "surface-container-highest": "#37352b",
+                        "inverse-on-surface": "#333027",
+                        "surface-bright": "#3c392f",
+                        "on-tertiary-fixed-variant": "#574400",
+                        "on-primary-container": "#84a6aa",
+                        "primary-fixed": "#c5e9ed",
+                        "on-surface-variant": "#c1c8c9",
+                        "surface-variant": "#37352b",
+                        "surface-container-low": "#1e1c13",
+                        "surface-container-high": "#2c2a21",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#ffdbd0",
+                        "surface-container": "#222017",
+                        "surface-tint": "#aacdd1",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-primary-fixed-variant": "#2b4c4f",
+                        "on-secondary-fixed-variant": "#5d4037",
+                        "outline-variant": "#414849",
+                        "on-secondary": "#442a22",
+                        "inverse-surface": "#e8e2d4",
+                        "on-background": "#e8e2d4",
+                        "secondary-fixed-dim": "#e7bdb1",
+                        "on-tertiary-container": "#4f3d00",
+                        "on-primary": "#123539",
+                        "primary-container": "#1a3c40",
+                        "tertiary-fixed": "#ffe08a",
+                        "tertiary": "#eac249",
+                        "on-tertiary": "#3d2f00",
+                        "tertiary-fixed-dim": "#eac249",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-container": "#d8afa4",
+                        "primary": "#aacdd1",
+                        "surface": "#15130b",
+                        "on-primary-fixed": "#002023",
+                        "error": "#ffb4ab"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["EB Garamond"],
+                        "display-lg": ["EB Garamond"],
+                        "label-md": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "headline-md": ["EB Garamond"],
+                        "body-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .parchment-bg {
+            background-color: #e8e2d4;
+            color: #15130b;
+        }
+        .wood-bg {
+            background-color: #5d4037;
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+        }
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(234, 194, 73, 0.4);
+            border-color: #eac249;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md overflow-x-hidden">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-primary-container dark:bg-primary-container w-64 fixed left-0 top-0 shadow-sm flex flex-col h-screen py-container-padding z-20 hidden md:flex"><div class="px-6 mb-8 flex flex-col items-center gap-4"><div class="relative w-24 h-24 rounded-full border-2 border-tertiary overflow-hidden flex-shrink-0"><img class="w-full h-full object-cover" data-alt="A detailed digital painting portrait of a scholarly adventurer character in the style of fantasy tabletop RPGs. Deep teal and parchment tones. Focus on intellectual curiosity and quiet confidence. Modern cozy study aesthetic with soft directional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRMVS6ftSL8gDJN3k-BwraTEVIt5BkiG96s553-iXPw9FvfCkwyil4DRNtJ_PmJ-W4GYDhuHBLt9cnmJkCglY_VjmT8096r9fZJ5KArDqqdGCQ35IO4Q3mPBGRzb5aCNJ-nS9KDASLrcABbxRT_nYcAFeTI9zdz8OHKg8lfxCnXRTutP0YTZWhWW6OwaMO1OAtRUMm_djrftNb78FrWhD6t5mv631i75vzZ4hIWquDHDnGCjfUAmMJAFqyfs4A-zRDszhRgNQiKzit"></div><div class="text-center"><h2 class="font-headline-lg text-headline-lg text-tertiary">The Archivist</h2><p class="font-label-md text-label-md text-on-surface-variant">Level 1 Aspirant</p></div></div><ul class="flex flex-col gap-2 flex-grow mt-4"><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_35}}"><span class="material-symbols-outlined">person</span><span class="font-label-md text-label-md">Identity</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_14}}"><span class="material-symbols-outlined">school</span><span class="font-label-md text-label-md">Skills</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_56}}"><span class="material-symbols-outlined">history_edu</span><span class="font-label-md text-label-md">Narrative</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_50}}"><span class="material-symbols-outlined">backpack</span><span class="font-label-md text-label-md">Inventory</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_29}}"><span class="material-symbols-outlined">military_tech</span><span class="font-label-md text-label-md">Feats</span></a></li><li class=""><a class="text-primary font-bold border-r-4 border-tertiary flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all bg-surface-variant/30" href="{{DATA:SCREEN:SCREEN_34}}"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span><span class="font-label-md text-label-md">Spells</span></a></li></ul><div class="px-6 mt-auto"><button class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined">download</span>Export Character</button></div></nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full">
+<!-- TopAppBar (Shared Component Mobile Fallback) -->
+<header class="bg-background dark:bg-background flex justify-between items-center px-gutter py-unit w-full md:hidden sticky top-0 z-30 shadow-md">
+<h1 class="font-display-lg text-display-lg text-tertiary dark:text-tertiary">Midnight Scholar</h1>
+<div class="flex gap-4">
+<button class="text-primary hover:text-primary transition-colors"><span class="material-symbols-outlined">account_circle</span></button>
+<button class="text-primary hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</header>
+<div class="p-container-padding flex-1 flex flex-col gap-card-gap max-w-6xl mx-auto w-full">
+<!-- Renown Tier Tracker -->
+<!-- Component Abstraction Banner -->
+<div class="wood-bg rounded-lg p-5 border border-tertiary-container/30 flex items-start gap-4 shadow-md">
+<span class="material-symbols-outlined text-tertiary text-3xl shrink-0 mt-1" style="font-variation-settings: 'FILL' 1;">info</span>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Component Abstraction</h4>
+<p class="font-body-md text-body-md text-on-surface/90 leading-relaxed">
+                        Note: Mundane Material Components are abstracted into your <span class="text-secondary font-bold">Supply</span> or your Arcane Focus’s Usage Die. You do not need to track them individually.
+                    </p>
+</div>
+</div>
+<!-- Spell Grimoire -->
+<section class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1">
+<div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
+<h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl">menu_book</span> Spell Grimoire
+                    </h3>
+<div class="text-right">
+<span class="font-label-md text-label-md text-on-surface-variant block uppercase tracking-wider mb-1">Spell Attack / DC</span>
+<div class="flex gap-4">
+<div class="bg-surface-container-high px-3 py-1 rounded border border-outline-variant"><span class="text-tertiary font-bold">+5</span> ATK</div>
+<div class="bg-surface-container-high px-3 py-1 rounded border border-outline-variant"><span class="text-tertiary font-bold">13</span> DC</div>
+</div>
+</div>
+</div><div class="flex flex-col md:flex-row gap-4 mb-6 items-center"><div class="relative flex-1 w-full"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span><input class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary" placeholder="Search Spells..." type="text"></div><button class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors whitespace-nowrap"><span class="material-symbols-outlined">add_circle</span> Add Spell</button></div>
+<!-- Spell Slot Counters -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+<!-- Level 1 -->
+<div class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center">
+<span class="font-label-md text-label-md text-primary mb-2">1st Level</span>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container">4</div>
+<span class="text-outline-variant">/</span>
+<div class="w-8 h-8 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant">4</div>
+</div>
+</div>
+<!-- Level 2 -->
+<div class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center">
+<span class="font-label-md text-label-md text-primary mb-2">2nd Level</span>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container">1</div>
+<span class="text-outline-variant">/</span>
+<div class="w-8 h-8 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant">2</div>
+</div>
+</div>
+<!-- Level 3 -->
+<div class="bg-surface-container-high rounded p-3 border border-outline-variant opacity-50 grayscale flex flex-col items-center">
+<span class="font-label-md text-label-md text-on-surface-variant mb-2">3rd Level</span>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full border border-outline flex items-center justify-center text-on-surface-variant bg-surface-container">-</div>
+</div>
+</div>
+</div>
+<!-- Spell Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Spell Card 1 (Parchment - Prepared/Featured) -->
+<div class="parchment-bg rounded border border-secondary-container shadow-[0_4px_10px_rgba(0,0,0,0.2)] p-4 relative overflow-hidden transition-transform hover:-translate-y-1">
+<div class="absolute top-0 right-0 w-16 h-16 bg-tertiary/20 rounded-bl-full border-l border-b border-tertiary/30"></div>
+<div class="flex justify-between items-start mb-2 relative z-10"><button class="text-on-secondary-fixed-variant hover:text-on-secondary-fixed transition-colors mr-2" title="Mark Prepared"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span></button>
+<h4 class="font-headline-md text-headline-md text-on-secondary-fixed">Mage Armor</h4>
+<span class="bg-surface-container text-tertiary px-2 py-0.5 rounded text-xs font-bold border border-tertiary-container shadow-sm">Lvl 1</span>
+</div>
+<p class="font-label-md text-label-md text-on-secondary-fixed-variant italic mb-3">Abjuration</p>
+<div class="grid grid-cols-2 gap-2 mb-4 text-sm font-label-md border-y border-outline/30 py-2">
+<div class=""><span class="text-on-secondary-fixed opacity-70">Time:</span> 1 Action</div>
+<div class=""><span class="text-on-secondary-fixed opacity-70">Range:</span> Touch</div>
+<div class=""><span class="text-on-secondary-fixed opacity-70">Comp:</span> V, S, M</div>
+<div class=""><span class="text-on-secondary-fixed opacity-70">Dur:</span> 8 Hours</div>
+</div>
+<p class="font-body-md text-body-md text-on-secondary-fixed leading-snug line-clamp-4">
+                            You touch a willing creature who isn't wearing armor, and a protective magical force surrounds it until the spell ends. The target's base AC becomes 13 + its Dexterity modifier. The spell ends if the target dons armor or if you dismiss it as an action.
+                        </p>
+</div>
+<!-- Spell Card 2 (System Style) -->
+<div class="bg-primary-container rounded border border-outline-variant p-4 relative overflow-hidden transition-transform hover:-translate-y-1">
+<div class="flex justify-between items-start mb-2"><button class="text-on-surface-variant hover:text-primary transition-colors mr-2" title="Mark Prepared"><span class="material-symbols-outlined">radio_button_unchecked</span></button>
+<h4 class="font-headline-md text-headline-md text-primary">Identify</h4>
+<span class="bg-surface-container text-tertiary px-2 py-0.5 rounded text-xs font-bold border border-tertiary-container">Lvl 1</span>
+</div>
+<p class="font-label-md text-label-md text-on-primary-container italic mb-3">Divination (Ritual)</p>
+<div class="grid grid-cols-2 gap-2 mb-4 text-sm font-label-md border-y border-outline-variant/50 py-2">
+<div class=""><span class="text-on-primary-container opacity-70">Time:</span> 1 Min</div>
+<div class=""><span class="text-on-primary-container opacity-70">Range:</span> Touch</div>
+<div class=""><span class="text-on-primary-container opacity-70">Comp:</span> V, S, M*</div>
+<div class=""><span class="text-on-primary-container opacity-70">Dur:</span> Instant</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-snug line-clamp-4">
+                            You choose one object that you must touch throughout the casting of the spell. If it is a magic item or some other magic-imbued object, you learn its properties and how to use them, whether it requires attunement to use, and how many charges it has, if any.
+                        </p>
+</div>
+<!-- Spell Card 3 (System Style) -->
+<div class="bg-primary-container rounded border border-outline-variant p-4 relative overflow-hidden transition-transform hover:-translate-y-1">
+<div class="flex justify-between items-start mb-2"><button class="text-on-surface-variant hover:text-primary transition-colors mr-2" title="Mark Prepared"><span class="material-symbols-outlined">radio_button_unchecked</span></button>
+<h4 class="font-headline-md text-headline-md text-primary">Scorching Ray</h4>
+<span class="bg-surface-container text-tertiary px-2 py-0.5 rounded text-xs font-bold border border-tertiary-container">Lvl 2</span>
+</div>
+<p class="font-label-md text-label-md text-on-primary-container italic mb-3">Evocation</p>
+<div class="grid grid-cols-2 gap-2 mb-4 text-sm font-label-md border-y border-outline-variant/50 py-2">
+<div class=""><span class="text-on-primary-container opacity-70">Time:</span> 1 Action</div>
+<div class=""><span class="text-on-primary-container opacity-70">Range:</span> 120 ft</div>
+<div class=""><span class="text-on-primary-container opacity-70">Comp:</span> V, S</div>
+<div class=""><span class="text-on-primary-container opacity-70">Dur:</span> Instant</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-snug line-clamp-4">
+                            You create three rays of fire and hurl them at targets within range. You can hurl them at one target or several. Make a ranged spell attack for each ray. On a hit, the target takes 2d6 fire damage.
+                        </p>
+</div>
+</div>
+</section>
+</div>
+</main>
+
+
+</body></html>

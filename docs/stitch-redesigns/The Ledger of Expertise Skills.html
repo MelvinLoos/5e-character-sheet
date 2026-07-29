@@ -1,0 +1,616 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Skills - Midnight Scholar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffe08a",
+                        "on-tertiary-fixed-variant": "#574400",
+                        "on-tertiary-fixed": "#241a00",
+                        "surface-container-lowest": "#100e07",
+                        "primary-fixed-dim": "#aacdd1",
+                        "tertiary-container": "#cca72f",
+                        "surface-variant": "#37352b",
+                        "on-tertiary-container": "#4f3d00",
+                        "surface-bright": "#3c392f",
+                        "on-surface": "#e8e2d4",
+                        "surface-tint": "#aacdd1",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#002023",
+                        "surface-container-low": "#1e1c13",
+                        "primary": "#aacdd1",
+                        "inverse-on-surface": "#333027",
+                        "secondary-container": "#604239",
+                        "secondary": "#e7bdb1",
+                        "on-secondary-fixed-variant": "#5d4037",
+                        "on-secondary": "#442a22",
+                        "primary-container": "#1a3c40",
+                        "tertiary-fixed-dim": "#eac249",
+                        "surface-dim": "#15130b",
+                        "outline": "#8b9293",
+                        "error": "#ffb4ab",
+                        "tertiary": "#eac249",
+                        "on-tertiary": "#3d2f00",
+                        "secondary-fixed-dim": "#e7bdb1",
+                        "background": "#15130b",
+                        "on-secondary-fixed": "#2c150e",
+                        "on-background": "#e8e2d4",
+                        "surface-container-high": "#2c2a21",
+                        "outline-variant": "#414849",
+                        "on-secondary-container": "#d8afa4",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#37352b",
+                        "on-primary-container": "#84a6aa",
+                        "on-primary": "#123539",
+                        "inverse-surface": "#e8e2d4",
+                        "on-primary-fixed-variant": "#2b4c4f",
+                        "inverse-primary": "#436467",
+                        "secondary-fixed": "#ffdbd0",
+                        "primary-fixed": "#c5e9ed",
+                        "surface": "#15130b",
+                        "on-surface-variant": "#c1c8c9",
+                        "surface-container": "#222017",
+                        "on-error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Manrope"],
+                        "headline-md": ["EB Garamond"],
+                        "body-md": ["Manrope"],
+                        "display-lg": ["EB Garamond"],
+                        "headline-lg": ["EB Garamond"],
+                        "body-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .skill-checkbox:checked + div {
+            background-color: var(--tw-colors-tertiary);
+            border-color: var(--tw-colors-tertiary);
+        }
+        .skill-checkbox:checked + div svg {
+            opacity: 1;
+        }
+        .expertise-checkbox:checked + div {
+            background-color: var(--tw-colors-tertiary-container);
+            border-color: var(--tw-colors-tertiary-container);
+        }
+        .expertise-checkbox:checked + div svg {
+            opacity: 1;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #15130b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1a3c40; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #436467; 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-primary-container dark:bg-primary-container h-screen w-64 fixed left-0 top-0 shadow-sm flex flex-col h-full py-container-padding z-50"><div class="px-6 mb-8 flex flex-col items-center text-center"><div class="w-24 h-24 rounded-full border-2 border-tertiary overflow-hidden mb-4"><img alt="Scholar Portrait" class="w-full h-full object-cover" data-alt="A portrait of a scholarly adventurer in deep teal robes with intricate gold arcane embroidery, lit by candlelight in a dark library. The style is detailed, realistic fantasy illustration with a focus on dramatic, atmospheric lighting and tactile textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzZd4ZKL39VieDzu4xC0GFk--iMRkzJntK3MkSs-CuvCChs79YYsnJcHV2umy7aendc_c_Ng2ULYLMdQdvj1nQHIXh9Htpj191ddZ4jvjqoYm87o2wyyqbrfD7BkuFoNqbiGSwlofXd67gz3dJ_zdVl0p7YtAe37kTuP3GUxpXCY5kVc7xYw8wD9XMYPalfWquwyvG6jUfq2BxzMGA71TSWGbqojUVSObTgHSQ9Oi_S-VaTW7zbd_Gi8xpZy_V2mvB0FKGgkB79rQy"></div><h1 class="font-headline-lg text-headline-lg text-tertiary header_title">The Archivist</h1><p class="font-label-md text-label-md text-primary header_subtext">Level 1 Aspirant</p></div><ul class="flex-1 space-y-2 mt-4"><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_35}}"><span class="material-symbols-outlined" data-icon="person">person</span><span class="font-label-md text-label-md">Identity</span></a></li><li class=""><a class="text-primary font-bold border-r-4 border-tertiary flex items-center gap-4 py-3 px-6 bg-surface-variant/50 translate-x-1 duration-200" href="{{DATA:SCREEN:SCREEN_14}}"><span class="material-symbols-outlined" data-icon="school" style="font-variation-settings: 'FILL' 1;">school</span><span class="font-label-md text-label-md">Skills</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_56}}"><span class="material-symbols-outlined" data-icon="history_edu">history_edu</span><span class="font-label-md text-label-md">Narrative</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_50}}"><span class="material-symbols-outlined" data-icon="backpack">backpack</span><span class="font-label-md text-label-md">Inventory</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_29}}"><span class="material-symbols-outlined" data-icon="military_tech">military_tech</span><span class="font-label-md text-label-md">Feats</span></a></li><li class=""><a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_34}}"><span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span><span class="font-label-md text-label-md">Spells</span></a></li></ul><div class="px-6 mt-auto"><button class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-2 rounded shadow-sm hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px]">download</span>Export Character</button></div></nav>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 h-screen overflow-y-auto bg-background p-container-padding">
+<!-- Header area -->
+<header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-background">Skills &amp; Proficiencies</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Determine your scholarly expertise and practical aptitudes.</p>
+</div>
+<div class="flex gap-6">
+<div class="bg-surface-container border border-primary-container rounded p-3 text-center min-w-[80px]">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase text-[10px]">Proficiency</p>
+<p class="font-headline-lg text-headline-lg text-tertiary">+2</p>
+</div>
+</div>
+</header>
+<!-- Skills Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-card-gap pb-12"><!-- Acrobatics -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Acrobatics</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">DEX</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Animal Handling -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+1</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Animal Handling</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">WIS</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Arcana -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+5</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Arcana</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">INT</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" checked="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Athletics -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">0</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Athletics</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">STR</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Deception -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+2</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Deception</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">CHA</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- History -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+5</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">History</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">INT</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" checked="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Insight -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Insight</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">WIS</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Intimidation -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+2</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Intimidation</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">CHA</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Investigation -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+5</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Investigation</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">INT</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" checked="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Medicine -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+1</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Medicine</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">WIS</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Nature -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Nature</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">INT</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Perception -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Perception</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">WIS</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Performance -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+2</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Performance</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">CHA</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Persuasion -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+2</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Persuasion</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">CHA</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Religion -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-tertiary border-tertiary/50">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Religion</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">INT</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox" checked="">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary-container/50">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Sleight of Hand -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Sleight of Hand</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">DEX</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Stealth -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+3</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Stealth</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">DEX</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div>
+<!-- Survival -->
+<div class="bg-surface-container border border-primary-container rounded-lg p-4 flex items-center justify-between hover:bg-surface-variant transition-colors group">
+    <div class="flex items-center gap-4 flex-1">
+        <div class="w-12 h-12 rounded bg-surface-dim border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant">+1</div>
+        <div>
+            <h3 class="font-label-md text-label-md text-on-background">Survival</h3>
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">WIS</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <label class="relative flex items-center justify-center cursor-pointer" title="Proficiency">
+            <input type="checkbox" class="sr-only skill-checkbox">
+            <div class="w-6 h-6 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center transition-all group-hover:border-tertiary/50">
+                <svg class="w-3 h-3 text-on-tertiary opacity-0 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+        </label>
+        <label class="relative flex items-center justify-center cursor-pointer" title="Expertise">
+            <input type="checkbox" class="sr-only expertise-checkbox" disabled="">
+            <div class="w-4 h-4 rounded-sm border border-outline-variant bg-surface flex items-center justify-center transition-all opacity-30 cursor-not-allowed">
+                 <svg class="w-2 h-2 text-on-tertiary-container opacity-0 transition-opacity" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+        </label>
+    </div>
+</div></div>
+</main>
+<script>
+        // Simple interaction logic to disable expertise if proficiency is unchecked
+        document.addEventListener('DOMContentLoaded', () => {
+            const skillCards = document.querySelectorAll('.group');
+            
+            skillCards.forEach(card => {
+                const profCheck = card.querySelector('.skill-checkbox');
+                const expCheck = card.querySelector('.expertise-checkbox');
+                const expDiv = expCheck.nextElementSibling;
+                const modDiv = card.querySelector('.w-12.h-12');
+
+                profCheck.addEventListener('change', (e) => {
+                    if (!e.target.checked) {
+                        expCheck.checked = false;
+                        expCheck.disabled = true;
+                        expDiv.classList.add('opacity-30', 'cursor-not-allowed');
+                        modDiv.classList.remove('text-tertiary', 'border-tertiary/50');
+                        modDiv.classList.add('text-on-surface-variant');
+                    } else {
+                        expCheck.disabled = false;
+                        expDiv.classList.remove('opacity-30', 'cursor-not-allowed');
+                        modDiv.classList.remove('text-on-surface-variant');
+                        modDiv.classList.add('text-tertiary', 'border-tertiary/50');
+                    }
+                });
+            });
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+</body></html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Feats &amp; Talents - Midnight Scholar</title>
+<!-- Tailwind CSS & Configuration -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#eac249",
+                        "on-secondary-container": "#d8afa4",
+                        "surface-container": "#222017",
+                        "secondary-fixed-dim": "#e7bdb1",
+                        "secondary-fixed": "#ffdbd0",
+                        "on-secondary": "#442a22",
+                        "secondary-container": "#604239",
+                        "on-surface-variant": "#c1c8c9",
+                        "inverse-on-surface": "#333027",
+                        "on-tertiary": "#3d2f00",
+                        "error-container": "#93000a",
+                        "primary-container": "#1a3c40",
+                        "primary": "#aacdd1",
+                        "inverse-primary": "#436467",
+                        "tertiary-fixed-dim": "#eac249",
+                        "surface-container-low": "#1e1c13",
+                        "on-primary-container": "#84a6aa",
+                        "surface-bright": "#3c392f",
+                        "surface-container-high": "#2c2a21",
+                        "surface-tint": "#aacdd1",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-highest": "#37352b",
+                        "tertiary-fixed": "#ffe08a",
+                        "on-primary-fixed": "#002023",
+                        "error": "#ffb4ab",
+                        "surface-dim": "#15130b",
+                        "on-tertiary-container": "#4f3d00",
+                        "on-primary": "#123539",
+                        "primary-fixed": "#c5e9ed",
+                        "on-tertiary-fixed-variant": "#574400",
+                        "tertiary-container": "#cca72f",
+                        "background": "#15130b",
+                        "surface-variant": "#37352b",
+                        "primary-fixed-dim": "#aacdd1",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-primary-fixed-variant": "#2b4c4f",
+                        "on-secondary-fixed-variant": "#5d4037",
+                        "secondary": "#e7bdb1",
+                        "outline": "#8b9293",
+                        "surface-container-lowest": "#100e07",
+                        "outline-variant": "#414849",
+                        "on-surface": "#e8e2d4",
+                        "surface": "#15130b",
+                        "inverse-surface": "#e8e2d4",
+                        "on-error": "#690005",
+                        "on-background": "#e8e2d4",
+                        "on-secondary-fixed": "#2c150e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-padding": "24px",
+                        "gutter": "16px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Manrope", "sans-serif"],
+                        "label-md": ["Manrope", "sans-serif"],
+                        "display-lg": ["EB Garamond", "serif"],
+                        "headline-lg": ["EB Garamond", "serif"],
+                        "body-lg": ["Manrope", "sans-serif"],
+                        "headline-md": ["EB Garamond", "serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        /* Custom Scrollbar for the Cozy Study Aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #414849; /* outline-variant */
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #8b9293; /* outline */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden min-h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-primary-container dark:bg-primary-container shadow-sm flex flex-col py-container-padding z-50 md:flex hidden min-h-screen bottom-0">
+<div class="px-6 mb-8 flex flex-col items-center gap-4">
+<div class="relative w-24 h-24 rounded-full border-2 border-tertiary overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A detailed digital painting portrait of a scholarly adventurer character in the style of fantasy tabletop RPGs. Deep teal and parchment tones. Focus on intellectual curiosity and quiet confidence. Modern cozy study aesthetic with soft directional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvw8eHT7ZQhew15VOGN7aDSwH8TZPvJCn8z8FdR9T8zBNFFRa_yABwGfz4kDS1DLLE7R1350Hsdap-ufOA8oen3fOdcAbnJOY5fPA4yMPL2Ti-bG-UzOeMN08ynkQc-bncsp33wiqnkRGfL0Pb3zwB7NXeJom-tIYUPC0tuJtvYXe2N8GCKuzC_okO0M3lh9oZdJWTiXOoFhMw2uZdvd2hMjshrV4oTvqXN7alzeOUCDGO_XeoPRnEb2o6mKebYjFYBjN-5tXXYNZr">
+</div>
+<div class="text-center">
+<h2 class="font-headline-lg text-headline-lg text-tertiary">The Archivist</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Level 1 Aspirant</p>
+</div>
+</div>
+<ul class="flex flex-col gap-2 flex-grow mt-4"><li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_35}}">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Identity</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_14}}">
+<span class="material-symbols-outlined">school</span>
+<span class="font-label-md text-label-md">Skills</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_56}}">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-label-md text-label-md">Narrative</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_50}}">
+<span class="material-symbols-outlined">backpack</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+</li>
+<li class="">
+<a class="text-primary font-bold border-r-4 border-tertiary flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all bg-surface-variant/30" href="{{DATA:SCREEN:SCREEN_29}}">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="font-label-md text-label-md">Feats</span>
+</a>
+</li>
+<li class="">
+<a class="text-on-surface-variant flex items-center gap-4 py-3 px-6 hover:bg-surface-variant dark:hover:bg-surface-variant transition-all" href="{{DATA:SCREEN:SCREEN_34}}">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-label-md">Spells</span>
+</a>
+</li></ul>
+<div class="px-6 mt-auto pb-6">
+<button class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                Export Character
+            </button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen relative">
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-background dark:bg-background docked full-width top-0 flat no shadows flex justify-between items-center px-gutter py-unit w-full sticky z-10 border-b border-surface-variant/20">
+<!-- Title (hidden visually to prioritize main page title, but present for component compliance) -->
+<div class="font-headline-md text-headline-md text-primary dark:text-primary opacity-0 pointer-events-none absolute">Midnight Scholar</div>
+<div class="flex-1"></div> <!-- Spacer since search is hidden in top app bar per JSON -->
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-variant/30 active:scale-95 duration-150">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-variant/30 active:scale-95 duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Page Specific Content -->
+<div class="p-container-padding flex-1 max-w-7xl w-full mx-auto flex flex-col gap-8">
+<!-- Top Section: Title & Filters -->
+<section class="flex flex-col gap-6">
+<div>
+<h1 class="font-display-lg text-display-lg text-tertiary mb-2">Feats &amp; Talents</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Discover and select exceptional abilities that define your scholar's unique path through the Shattered Isles.</p>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant/30">
+<!-- Search Bar -->
+<div class="relative w-full md:max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm" placeholder="Search the archives..." type="text">
+</div>
+<!-- Category Filters -->
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-1.5 rounded-full border border-tertiary text-tertiary bg-tertiary/10 font-label-md text-label-md transition-colors shadow-sm">All Forms</button>
+<button class="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors bg-surface-container">Combat</button>
+<button class="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors bg-surface-container">Magic</button>
+<button class="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors bg-surface-container">Utility</button>
+</div>
+</div>
+</section>
+<!-- Main Layout: Two Columns -->
+<section class="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-card-gap flex-1 items-start pb-12">
+<!-- Left Column: Available Feats Library -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-outline-variant/50 pb-2">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">library_books</span>
+                            Available Archives
+                        </h2>
+<span class="font-label-md text-label-md text-on-surface-variant">Showing 42 entries</span>
+</div>
+<!-- Scrollable List of Cards -->
+<div class="flex flex-col gap-4 overflow-y-auto pr-2" style="max-height: calc(100vh - 300px);">
+<!-- Feat Card 1 -->
+<div class="bg-surface-container border border-primary-container p-5 rounded-lg flex flex-col sm:flex-row gap-4 hover:border-tertiary/50 transition-colors group relative shadow-sm">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-tertiary mb-1">Arcane Initiate</h3>
+<div class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px] mb-3">
+                                    Prerequisite: INT or WIS 13
+                                </div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                    Your scholarly pursuits have unlocked nascent magical potential. Learn two cantrips of your choice from the wizard or warlock spell list. You also learn one 1st-level spell, which you can cast once per long rest without expending a spell slot.
+                                </p>
+</div>
+<div class="flex items-start sm:justify-end mt-2 sm:mt-0">
+<button class="w-10 h-10 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm" title="Transcribe Feat">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Feat Card 2 -->
+<div class="bg-surface-container border border-primary-container p-5 rounded-lg flex flex-col sm:flex-row gap-4 hover:border-tertiary/50 transition-colors group relative shadow-sm">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-tertiary mb-1">Tactical Mind</h3>
+<div class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px] mb-3">
+                                    Prerequisite: None
+                                </div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                    You analyze battlefields with detached precision. You gain a +5 bonus to Initiative rolls. Furthermore, you cannot be surprised while you are conscious, and other creatures don't gain advantage on attack rolls against you as a result of being hidden.
+                                </p>
+</div>
+<div class="flex items-start sm:justify-end mt-2 sm:mt-0">
+<button class="w-10 h-10 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm" title="Transcribe Feat">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Feat Card 3 -->
+<div class="bg-surface-container border border-primary-container p-5 rounded-lg flex flex-col sm:flex-row gap-4 hover:border-tertiary/50 transition-colors group relative shadow-sm">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-tertiary mb-1">Resilient (Constitution)</h3>
+<div class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px] mb-3">
+                                    Prerequisite: None
+                                </div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                    Exposure to the harsh environments of the Isles has hardened you. Increase your Constitution score by 1, to a maximum of 20. You gain proficiency in Constitution saving throws.
+                                </p>
+</div>
+<div class="flex items-start sm:justify-end mt-2 sm:mt-0">
+<button class="w-10 h-10 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm" title="Transcribe Feat">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Feat Card 4 -->
+<div class="bg-surface-container border border-primary-container p-5 rounded-lg flex flex-col sm:flex-row gap-4 hover:border-tertiary/50 transition-colors group relative shadow-sm">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-tertiary mb-1">Linguist</h3>
+<div class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px] mb-3">
+                                    Prerequisite: INT 13 or higher
+                                </div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                    You have studied ancient dialects and cyphers. Increase your Intelligence score by 1. You learn three languages of your choice. You can ably create written ciphers; others must succeed on an Intelligence check to decipher them.
+                                </p>
+</div>
+<div class="flex items-start sm:justify-end mt-2 sm:mt-0">
+<button class="w-10 h-10 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm" title="Transcribe Feat">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: My Feats (Ledger) -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-6 shadow-md h-full flex flex-col relative overflow-hidden">
+<!-- Decorative corner inset -->
+<div class="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-tertiary/20 rounded-tr-lg pointer-events-none"></div>
+<div class="flex justify-between items-end border-b border-tertiary/30 pb-3 mb-6">
+<h2 class="font-headline-md text-headline-md text-tertiary flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+                            Transcribed Feats
+                        </h2>
+<div class="font-label-md text-label-md bg-tertiary/10 text-tertiary px-3 py-1 rounded-full border border-tertiary/20">
+                            2 Active
+                        </div>
+</div>
+<div class="flex flex-col gap-6 overflow-y-auto pr-2 flex-1">
+<!-- Selected Feat 1 -->
+<div class="relative pl-5 before:content-[''] before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-tertiary/50">
+<div class="flex justify-between items-start mb-2 group">
+<h3 class="font-headline-md text-[20px] text-inverse-surface">Keen Mind</h3>
+<button class="text-outline-variant hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10" title="Remove Feat">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant space-y-3">
+<p class="italic text-secondary-fixed-dim/80 text-[14px]">You have a mind that can track time, direction, and detail with uncanny precision.</p>
+<ul class="list-none space-y-2 relative">
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">Increase your Intelligence score by 1, to a maximum of 20.</li>
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">You always know which way is north.</li>
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">You always know the number of hours left before the next sunrise or sunset.</li>
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">You can accurately recall anything you have seen or heard within the past month.</li>
+</ul>
+</div>
+</div>
+<!-- Selected Feat 2 -->
+<div class="relative pl-5 before:content-[''] before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-tertiary/50">
+<div class="flex justify-between items-start mb-2 group">
+<h3 class="font-headline-md text-[20px] text-inverse-surface">Observant</h3>
+<button class="text-outline-variant hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10" title="Remove Feat">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant space-y-3">
+<p class="italic text-secondary-fixed-dim/80 text-[14px]">Quick to notice details of your environment.</p>
+<ul class="list-none space-y-2 relative">
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">Increase your Intelligence or Wisdom score by 1, to a maximum of 20.</li>
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">If you can see a creature's mouth while it is speaking a language you understand, you can interpret what it's saying by reading its lips.</li>
+<li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">You have a +5 bonus to your passive Wisdom (Perception) and passive Intelligence (Investigation) scores.</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Decorative bottom flourish -->
+<div class="w-full flex justify-center mt-4 opacity-30">
+<span class="material-symbols-outlined text-tertiary text-[16px]">horizontal_rule</span>
+<span class="material-symbols-outlined text-tertiary text-[16px] mx-1">diamond</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">horizontal_rule</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+
+
+
+
+</body></html>

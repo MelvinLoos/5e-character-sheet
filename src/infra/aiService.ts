@@ -20,16 +20,18 @@ export function getAiSchema(): object | null {
   return _geminiSchema
 }
 
-export async function generateCharacter(userPrompt: string): Promise<{ data: object, valid: boolean, errors: string[] }> {
+export async function generateCharacter(
+  userPrompt: string,
+): Promise<{ data: object; valid: boolean; errors: string[] }> {
   if (!userPrompt) {
     throw new Error('Please describe the character you want to generate.')
   }
-  
+
   if (!_geminiSchema) {
-     throw new Error('Character schema is not loaded. AI generation is disabled.')
+    throw new Error('Character schema is not loaded. AI generation is disabled.')
   }
 
   const generatedData = await generateCharacterViaGemini(userPrompt, _geminiSchema)
   // We'll return it and let the store determine if it's valid with the separate main schema, or we can use gemini-schema
-  return { data: generatedData, valid: true, errors: [] } 
+  return { data: generatedData, valid: true, errors: [] }
 }

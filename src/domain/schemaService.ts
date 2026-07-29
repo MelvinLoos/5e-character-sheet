@@ -19,7 +19,7 @@ export function getSchema(): object | null {
   return _schema
 }
 
-export function validateCharacterData(data: unknown): { valid: boolean, errors: string[] } {
+export function validateCharacterData(data: unknown): { valid: boolean; errors: string[] } {
   if (!_schema) {
     logger.warn('Character schema not loaded, skipping validation.')
     return { valid: true, errors: [] }

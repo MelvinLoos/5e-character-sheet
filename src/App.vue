@@ -2,8 +2,6 @@
 import { onMounted, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
-import ControlPanel from './components/ControlPanel.vue'
-import CharacterSheet from './components/CharacterSheet.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -19,25 +17,36 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-sheet-bg">
-    <div class="container mx-auto px-4 py-4 max-w-7xl">
-      <ControlPanel />
+  <div
+    class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0"
+  >
+    <ControlPanel />
 
-      <div v-if="!store.currentCharacterData"
-        class="text-center p-10 max-w-4xl mx-auto bg-amber-50 rounded shadow-md border border-amber-200">
-        <h2 class="font-fell text-2xl">Welcome, Gamemaster!</h2>
-        <p class="mt-2">
+    <main
+      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
+    >
+      <div
+        v-if="!store.currentCharacterData"
+        class="text-center p-10 max-w-4xl mx-auto bg-surface-container rounded-xl shadow-sm border border-primary-container"
+      >
+        <h2 class="font-headline-lg text-headline-lg text-tertiary">Welcome, Gamemaster!</h2>
+        <p class="mt-4 text-on-surface-variant font-body-md">
           Start by creating a
-          <button @click="store.handleNewCharacter" class="text-sheet-red font-bold underline">
-            new character</button>, loading one from your library, or using the AI generator.
+          <button @click="store.handleNewCharacter" class="text-primary font-bold hover:underline">
+            new character</button
+          >, loading one from your library, or using the AI generator.
         </p>
       </div>
 
       <CharacterSheet v-if="store.currentCharacterData" />
-    </div>
+    </main>
+
+    <PrintableSheet v-if="store.currentCharacterData" />
 
     <LoadingModal />
     <ErrorModal />
     <ShareModal />
+
+    <ThemeToggle />
   </div>
 </template>

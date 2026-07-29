@@ -76,3 +76,32 @@ describe('Character Store - Ability Modifiers', () => {
     expect(store.currentCharacterData.abilityScores.dex).toBe(12)
   })
 })
+
+
+
+  it('keeps current HP bounded by max HP correctly', () => {
+    const store = useCharacterStore()
+    
+    // Initial blank character should have hp_current set and synced to maxHp
+    expect(store.currentCharacterData.combat.hp_current).toBe(store.maxHp)
+
+    // Set con base score high to change maxHp
+    store.currentCharacterData.pointBuyBaseScores.con = 14
+    store.recalculateAbilityScores()
+
+    // HP should stay at max HP because it was at max HP before
+    expect(store.currentCharacterData.combat.hp_current).toBe(store.maxHp)
+
+    // Set hp_current to a damaged state
+    store.currentCharacterData.combat.hp_current = 5
+    store.recalculateAbilityScores()
+    
+    // hp_current should be 5
+    expect(store.currentCharacterData.combat.hp_current).toBe(5)
+
+    // Set hp_current to above max HP
+    store.currentCharacterData.combat.hp_current = 100
+    // Trigger recalculation should bound it
+    store.recalculateAbilityScores()
+    expect(store.currentCharacterData.combat.hp_current).toBe(store.maxHp)
+  })

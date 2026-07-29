@@ -1,22 +1,100 @@
+import containerQueries from '@tailwindcss/container-queries'
+
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      fontFamily: {
-        fell: ['"IM Fell English SC"', 'serif'],
-        garamond: ['"EB Garamond"', 'serif'],
-      },
       colors: {
-        'sheet-bg': '#fdf6e3',
-        'sheet-text': '#3a2d21',
-        'sheet-red': '#8c1d1d',
-        'sheet-red-dark': '#6a1616',
-        'sheet-border': '#5c4d3d',
-        'sheet-accent': '#c9b7a2',
-        'sheet-input-bg': '#eaddc7',
+        /* Material Design 3 semantic tokens — values resolve via CSS custom properties */
+        "on-secondary-fixed": "var(--color-on-secondary-fixed)",
+        "secondary": "var(--color-secondary)",
+        "surface-container-lowest": "var(--color-surface-container-lowest)",
+        "secondary-container": "var(--color-secondary-container)",
+        "on-surface": "var(--color-on-surface)",
+        "surface-dim": "var(--color-surface-dim)",
+        "tertiary-container": "var(--color-tertiary-container)",
+        "outline": "var(--color-outline)",
+        "primary-fixed-dim": "var(--color-primary-fixed-dim)",
+        "inverse-primary": "var(--color-inverse-primary)",
+        "background": "var(--color-background)",
+        "surface-container-highest": "var(--color-surface-container-highest)",
+        "inverse-on-surface": "var(--color-inverse-on-surface)",
+        "surface-bright": "var(--color-surface-bright)",
+        "on-tertiary-fixed-variant": "var(--color-on-tertiary-fixed-variant)",
+        "on-primary-container": "var(--color-on-primary-container)",
+        "primary-fixed": "var(--color-primary-fixed)",
+        "on-surface-variant": "var(--color-on-surface-variant)",
+        "surface-variant": "var(--color-surface-variant)",
+        "surface-container-low": "var(--color-surface-container-low)",
+        "surface-container-high": "var(--color-surface-container-high)",
+        "on-error": "var(--color-on-error)",
+        "secondary-fixed": "var(--color-secondary-fixed)",
+        "surface-container": "var(--color-surface-container)",
+        "surface-tint": "var(--color-surface-tint)",
+        "error-container": "var(--color-error-container)",
+        "on-tertiary-fixed": "var(--color-on-tertiary-fixed)",
+        "on-primary-fixed-variant": "var(--color-on-primary-fixed-variant)",
+        "on-secondary-fixed-variant": "var(--color-on-secondary-fixed-variant)",
+        "outline-variant": "var(--color-outline-variant)",
+        "on-secondary": "var(--color-on-secondary)",
+        "inverse-surface": "var(--color-inverse-surface)",
+        "on-background": "var(--color-on-background)",
+        "secondary-fixed-dim": "var(--color-secondary-fixed-dim)",
+        "on-tertiary-container": "var(--color-on-tertiary-container)",
+        "on-primary": "var(--color-on-primary)",
+        "primary-container": "var(--color-primary-container)",
+        "tertiary-fixed": "var(--color-tertiary-fixed)",
+        "tertiary": "var(--color-tertiary)",
+        "on-tertiary": "var(--color-on-tertiary)",
+        "tertiary-fixed-dim": "var(--color-tertiary-fixed-dim)",
+        "on-error-container": "var(--color-on-error-container)",
+        "on-secondary-container": "var(--color-on-secondary-container)",
+        "primary": "var(--color-primary)",
+        "surface": "var(--color-surface)",
+        "on-primary-fixed": "var(--color-on-primary-fixed)",
+        "error": "var(--color-error)",
+        /* Legacy sheet tokens — mapped to the same CSS custom property system */
+        'sheet-bg': "var(--color-sheet-bg)",
+        'sheet-text': "var(--color-sheet-text)",
+        'sheet-red': "var(--color-sheet-red)",
+        'sheet-red-dark': "var(--color-sheet-red-dark)",
+        'sheet-border': "var(--color-sheet-border)",
+        'sheet-accent': "var(--color-sheet-accent)",
+        'sheet-input-bg': "var(--color-sheet-input-bg)",
       },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      spacing: {
+        "unit": "8px",
+        "gutter": "16px",
+        "container-padding": "24px",
+        "card-gap": "20px"
+      },
+      fontFamily: {
+        "headline-lg": ["EB Garamond", "serif"],
+        "display-lg": ["EB Garamond", "serif"],
+        "label-md": ["Manrope", "sans-serif"],
+        "body-md": ["Manrope", "sans-serif"],
+        "headline-md": ["EB Garamond", "serif"],
+        "body-lg": ["Manrope", "sans-serif"],
+        "fell": ['"IM Fell English SC"', 'serif'],
+        "garamond": ['"EB Garamond"', 'serif']
+      },
+      fontSize: {
+        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+      }
     },
   },
-  plugins: [],
+  plugins: [containerQueries],
 }

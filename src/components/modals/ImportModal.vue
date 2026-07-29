@@ -158,8 +158,7 @@ function importData(data: unknown[]) {
     }, 2000)
   } catch (error) {
     status.value = 'error'
-    statusMessage.value =
-      error instanceof Error ? error.message : 'Failed to import data'
+    statusMessage.value = error instanceof Error ? error.message : 'Failed to import data'
   }
 }
 
@@ -208,7 +207,11 @@ function close() {
         <!-- Category Selection -->
         <div>
           <label class="block text-sm font-medium mb-2">Import Category:</label>
-          <select v-model="selectedCategory" class="w-full p-2 border border-sheet-border bg-sheet-input-bg" :disabled="status === 'processing'">
+          <select
+            v-model="selectedCategory"
+            class="w-full p-2 border border-sheet-border bg-sheet-input-bg"
+            :disabled="status === 'processing'"
+          >
             <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
@@ -237,7 +240,10 @@ function close() {
               class="hidden"
               id="import-file-input"
             />
-            <label for="import-file-input" class="inline-block px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600">
+            <label
+              for="import-file-input"
+              class="inline-block px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-blue-600"
+            >
               Choose File
             </label>
           </div>
@@ -246,7 +252,11 @@ function close() {
             <div class="text-4xl">📄</div>
             <p class="font-medium">{{ selectedFile.name }}</p>
             <p class="text-sm text-gray-600">{{ (selectedFile.size / 1024).toFixed(2) }} KB</p>
-            <button @click="clearFile" class="text-red-500 hover:text-red-700 text-sm" :disabled="status === 'processing'">
+            <button
+              @click="clearFile"
+              class="text-red-500 hover:text-red-700 text-sm"
+              :disabled="status === 'processing'"
+            >
               Remove File
             </button>
           </div>
@@ -256,7 +266,9 @@ function close() {
         <div v-if="previewData" class="border border-blue-300 bg-blue-50 p-4 rounded">
           <h3 class="font-bold mb-2">Preview:</h3>
           <p class="mb-2">Found {{ previewData.count }} {{ selectedCategory }}</p>
-          <p class="text-sm text-gray-700 mb-2">First {{ Math.min(5, previewData.count) }} items:</p>
+          <p class="text-sm text-gray-700 mb-2">
+            First {{ Math.min(5, previewData.count) }} items:
+          </p>
           <ul class="list-disc list-inside text-sm">
             <li v-for="item in previewData.items" :key="item">{{ item }}</li>
           </ul>
@@ -266,12 +278,15 @@ function close() {
         </div>
 
         <!-- Status Messages -->
-        <div v-if="statusMessage" :class="[
-          'p-3 rounded',
-          status === 'success' ? 'bg-green-100 text-green-800' : '',
-          status === 'error' ? 'bg-red-100 text-red-800' : '',
-          status === 'processing' ? 'bg-blue-100 text-blue-800' : '',
-        ]">
+        <div
+          v-if="statusMessage"
+          :class="[
+            'p-3 rounded',
+            status === 'success' ? 'bg-green-100 text-green-800' : '',
+            status === 'error' ? 'bg-red-100 text-red-800' : '',
+            status === 'processing' ? 'bg-blue-100 text-blue-800' : '',
+          ]"
+        >
           {{ statusMessage }}
         </div>
 
@@ -282,7 +297,11 @@ function close() {
 
         <!-- Action Buttons -->
         <div class="flex gap-3 justify-end">
-          <button @click="close" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100" :disabled="status === 'processing'">
+          <button
+            @click="close"
+            class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+            :disabled="status === 'processing'"
+          >
             Cancel
           </button>
 

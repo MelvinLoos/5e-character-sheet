@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { VitePWA } from 'vite-plugin-pwa'
+import Components from 'unplugin-vue-components/vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -20,6 +21,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
     vue(),
+    Components({
+      dirs: ['src/components'],
+      extensions: ['vue'],
+      deep: true,
+      dts: 'src/components.d.ts',
+    }),
     vueJsx(),
     vueDevTools(),
     VitePWA({

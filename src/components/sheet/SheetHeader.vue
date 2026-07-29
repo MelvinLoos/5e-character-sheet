@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
-import feather from 'feather-icons'
+import decorativeBackdrop from '@/assets/decorative-backdrop.png'
 
 const store = useCharacterStore()
 const showInfo = ref<Record<string, boolean>>({ class: false, species: false, background: false })
@@ -119,171 +119,232 @@ function getBackgroundInfo(backgroundName: string) {
   return info
 }
 
-function incrementLevel() {
-  if (store.currentCharacterData.level < 20) {
-    store.currentCharacterData.level++
+function decrementTier() {
+  if (store.currentCharacterData) {
+    store.currentCharacterData.renownTier = Math.max(
+      1,
+      (store.currentCharacterData.renownTier || 1) - 1,
+    )
   }
 }
 
-function decrementLevel() {
-  if (store.currentCharacterData.level > 1) {
-    store.currentCharacterData.level--
+function incrementTier() {
+  if (store.currentCharacterData) {
+    store.currentCharacterData.renownTier = Math.min(
+      4,
+      (store.currentCharacterData.renownTier || 1) + 1,
+    )
   }
 }
 </script>
 
 <template>
-  <header class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b-2 border-black pb-2 mb-3">
-    <div class="header-main">
-      <input
-        v-if="store.isEditing"
-        v-model="store.currentCharacterData.name"
-        class="edit-mode-input text-5xl font-fell text-red-800 w-full"
-      />
-      <h1 v-else class="text-5xl font-fell text-red-800">{{ store.currentCharacterData.name }}</h1>
-
-      <input
-        v-if="store.isEditing"
-        v-model="store.currentCharacterData.title"
-        class="edit-mode-input text-lg italic text-gray-700 w-full mt-1"
-        placeholder="Character title or epithet"
-      />
-      <p v-else class="text-lg text-gray-700 italic">{{ store.currentCharacterData.title }}</p>
-    </div>
-
+  <section
+    class="bg-surface-container rounded-xl p-6 border border-primary-container shadow-sm relative overflow-hidden"
+  >
+    <!-- Decorative backdrop -->
     <div
-      class="text-left md:text-right text-sm mt-2 lg:mt-0 flex flex-col md:grid md:grid-cols-2 gap-x-4 gap-y-2"
-    >
-      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
-        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Class:</strong>
-        <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
-          <select
-            v-model="store.currentCharacterData.class"
-            class="edit-mode-select w-full md:w-auto"
-          >
-            <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
-              {{ key }}
-            </option>
-          </select>
-          <button
-            @click="toggleInfo('class')"
-            class="info-button ml-1 flex-shrink-0"
-            title="Class info"
-            type="button"
-          >
-            <span v-html="feather.icons['help-circle'].toSvg({ width: 16, height: 16 })"></span>
-          </button>
-          <!-- Info popover -->
+      class="absolute right-0 top-0 w-1/3 h-full opacity-5 pointer-events-none"
+      :style="{
+        backgroundImage: `url(${decorativeBackdrop})`,
+        backgroundSize: 'cover',
+      }"
+    ></div>
+
+    <div class="relative z-10 flex flex-col md:flex-row gap-6 md:items-end">
+      <div class="flex-grow w-full md:w-auto">
+        <input
+          v-if="store.isEditing"
+          v-model="store.currentCharacterData.name"
+          class="w-full bg-transparent border-b-2 border-surface-variant focus:border-tertiary focus:ring-0 font-display-lg text-display-lg text-on-surface p-0 pb-2 placeholder-on-surface-variant/50 transition-colors"
+          placeholder="Enter Name..."
+          type="text"
+        />
+        <div
+          v-else
+          class="w-full border-b-2 border-transparent font-display-lg text-display-lg text-tertiary p-0 pb-2"
+        >
+          {{ store.currentCharacterData.name || 'Unnamed' }}
+        </div>
+
+        <input
+          v-if="store.isEditing"
+          v-model="store.currentCharacterData.title"
+          class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 font-body-md text-on-surface-variant italic p-0 pb-1 mt-2"
+          placeholder="Character title or epithet"
+        />
+        <div v-else class="w-full font-body-md text-on-surface-variant italic p-0 pb-1 mt-2">
+          {{ store.currentCharacterData.title }}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap md:flex-nowrap gap-4 w-full md:w-auto">
+        <!-- Tier & Experience -->
+
+        <div class="flex-1 min-w-[100px] hidden">
+          <label class="block font-label-md text-label-md text-on-surface-variant mb-1">Tier<InfoButton topic="great-work-progression" /></label>
           <div
-            v-if="showInfo.class && store.currentCharacterData.class"
-            class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+            v-if="store.isEditing"
+            class="flex items-center w-full bg-surface-container-high border border-outline-variant rounded focus-within:border-tertiary focus-within:ring-1 focus-within:ring-tertiary"
           >
-            <div class="font-bold mb-2">{{ store.currentCharacterData.class }}</div>
-            <div class="whitespace-pre-line text-xs">
-              {{ getClassInfo(store.currentCharacterData.class) }}
-            </div>
+            <button
+              @click="decrementTier"
+              class="px-2 py-2 text-on-surface hover:text-tertiary"
+              type="button"
+            >
+              −
+            </button>
+            <input
+              v-model.number="store.currentCharacterData.renownTier"
+              type="number"
+              min="1"
+              max="20"
+              class="w-full bg-transparent border-none text-center font-body-md text-on-surface p-2 focus:ring-0"
+            />
+            <button
+              @click="incrementTier"
+              class="px-2 py-2 text-on-surface hover:text-tertiary"
+              type="button"
+            >
+              +
+            </button>
+          </div>
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md text-center"
+          >
+            {{ store.currentCharacterData.renownTier }}
           </div>
         </div>
-        <span v-else>{{ store.currentCharacterData.class }}</span>
-      </div>
 
-      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center">
-        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Level:</strong>
-        <div v-if="store.isEditing" class="flex items-center w-full md:w-auto">
-          <!-- Mobile stepper buttons -->
-          <button
-            @click="decrementLevel"
-            class="md:hidden bg-sheet-accent hover:bg-sheet-accent/80 text-sheet-text border border-sheet-border px-3 py-2 rounded-l-md transition-colors"
-            :disabled="store.currentCharacterData.level <= 1"
-            type="button"
+        <!-- Species -->
+        <div class="flex-1 min-w-[140px] relative">
+          <label
+            class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1"
           >
-            −
-          </button>
-          <input
-            v-model.number="store.currentCharacterData.level"
-            type="number"
-            min="1"
-            max="20"
-            class="edit-stat flex-1 md:flex-none text-center border-t border-b md:border border-sheet-border rounded-none md:rounded px-3 py-2"
-            style="width: 60px"
-          />
-          <button
-            @click="incrementLevel"
-            class="md:hidden bg-sheet-accent hover:bg-sheet-accent/80 text-sheet-text border border-sheet-border px-3 py-2 rounded-r-md transition-colors"
-            :disabled="store.currentCharacterData.level >= 20"
-            type="button"
-          >
-            +
-          </button>
-        </div>
-        <span v-else>{{ store.currentCharacterData.level }}</span>
-      </div>
-
-      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
-        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Species:</strong>
-        <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
+            Species
+            <button
+              v-if="store.isEditing"
+              @click="toggleInfo('species')"
+              class="hover:text-tertiary transition-colors"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[16px]">info</span>
+            </button>
+          </label>
           <select
-            v-model="store.currentCharacterData.species"
-            class="edit-mode-select w-full md:w-auto"
+            v-if="store.isEditing"
+            :value="store.currentCharacterData.species"
+            @change="store.applySpeciesChange(($event.target as HTMLSelectElement).value)"
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >
             <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
               {{ key }}
             </option>
           </select>
-          <button
-            @click="toggleInfo('species')"
-            class="info-button ml-1 flex-shrink-0"
-            title="Species info"
-            type="button"
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md"
           >
-            <span v-html="feather.icons['help-circle'].toSvg({ width: 16, height: 16 })"></span>
-          </button>
-          <!-- Info popover -->
+            {{ store.currentCharacterData.species }}
+          </div>
           <div
             v-if="showInfo.species && store.currentCharacterData.species"
-            class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+            class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface"
           >
-            <div class="font-bold mb-2">{{ store.currentCharacterData.species }}</div>
+            <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.species }}</div>
             <div class="whitespace-pre-line text-xs">
               {{ getSpeciesInfo(store.currentCharacterData.species) }}
             </div>
           </div>
         </div>
-        <span v-else>{{ store.currentCharacterData.species }}</span>
-      </div>
 
-      <div class="flex flex-col md:flex-row md:justify-end items-start md:items-center relative">
-        <strong class="mr-0 md:mr-2 mb-1 md:mb-0">Background:</strong>
-        <div v-if="store.isEditing" class="flex items-center relative w-full md:w-auto">
+        <!-- Class -->
+        <div class="flex-1 min-w-[140px] relative">
+          <label
+            class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1"
+          >
+            Class
+            <button
+              v-if="store.isEditing"
+              @click="toggleInfo('class')"
+              class="hover:text-tertiary transition-colors"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[16px]">info</span>
+            </button>
+          </label>
           <select
-            v-model="store.currentCharacterData.background"
-            class="edit-mode-select w-full md:w-auto"
+            v-if="store.isEditing"
+            :value="store.currentCharacterData.class"
+            @change="store.applyClassChange(($event.target as HTMLSelectElement).value)"
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+          >
+            <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
+              {{ key }}
+            </option>
+          </select>
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md"
+          >
+            {{ store.currentCharacterData.class }}
+          </div>
+          <div
+            v-if="showInfo.class && store.currentCharacterData.class"
+            class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface"
+          >
+            <div class="font-bold text-tertiary mb-2">{{ store.currentCharacterData.class }}</div>
+            <div class="whitespace-pre-line text-xs">
+              {{ getClassInfo(store.currentCharacterData.class) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Background -->
+        <div class="flex-1 min-w-[140px] relative">
+          <label
+            class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1"
+          >
+            Background
+            <button
+              v-if="store.isEditing"
+              @click="toggleInfo('background')"
+              class="hover:text-tertiary transition-colors"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[16px]">info</span>
+            </button>
+          </label>
+          <select
+            v-if="store.isEditing"
+            :value="store.currentCharacterData.background"
+            @change="store.applyBackgroundChange(($event.target as HTMLSelectElement).value)"
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >
             <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">
               {{ key }}
             </option>
           </select>
-          <button
-            @click="toggleInfo('background')"
-            class="info-button ml-1 flex-shrink-0"
-            title="Background info"
-            type="button"
+          <div
+            v-else
+            class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md"
           >
-            <span v-html="feather.icons['help-circle'].toSvg({ width: 16, height: 16 })"></span>
-          </button>
-          <!-- Info popover -->
+            {{ store.currentCharacterData.background }}
+          </div>
           <div
             v-if="showInfo.background && store.currentCharacterData.background"
-            class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+            class="absolute top-full right-0 mt-2 p-4 bg-surface-container-highest border border-outline rounded-lg shadow-lg z-20 w-72 text-sm text-on-surface"
           >
-            <div class="font-bold mb-2">{{ store.currentCharacterData.background }}</div>
+            <div class="font-bold text-tertiary mb-2">
+              {{ store.currentCharacterData.background }}
+            </div>
             <div class="whitespace-pre-line text-xs">
               {{ getBackgroundInfo(store.currentCharacterData.background) }}
             </div>
           </div>
         </div>
-        <span v-else>{{ store.currentCharacterData.background }}</span>
       </div>
     </div>
-  </header>
+  </section>
 </template>

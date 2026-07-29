@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { migrateUsesToResource } from '../src/utils/migrations'
+import { createBlankCharacter, getLibrary, saveLibrary } from '@/domain'
 
 describe('migrateUsesToResource', () => {
   it('converts legacy uses.total and uses.per (short rest) to resource', () => {
@@ -34,5 +35,60 @@ describe('migrateUsesToResource', () => {
     const migrated = migrateUsesToResource(char)
     expect(migrated.features[0].resource).toBeUndefined()
     expect(migrated.features[0]._migratedFromUses).toBeUndefined()
+  })
+})
+
+
+
+describe('jobInParty fallbacks & defaults', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    localStorage.clear()
+  })
+
+  it('createBlankCharacter defaults jobInParty to an empty string', () => {
+    const char = createBlankCharacter()
+    expect(char.jobInParty).toBe('')
+  })
+
+  it('getLibrary migrates old library saves by defaulting jobInParty to an empty string', () => {
+    const legacyLibrary = {
+      'Default Session': [
+        {
+          name: 'Hero without jobInParty',
+          title: 'The Great',
+          class: 'Fighter',
+          renownTier: 1,
+          renownMilestones: 0,
+          species: 'Human',
+          background: 'Soldier',
+          abilityScores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          pointBuyBaseScores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          backgroundBonusSelections: { plusTwo: 'str', plusOne: 'con' },
+          profBonus: 2,
+          proficiencies: { savingThrows: [], skills: [] },
+          combat: { ac: 10, speed: '30ft' },
+          personality: { traits: '', ideal: '', bond: '', flaw: '' },
+          attacks: [],
+          features: [],
+          gold: 10,
+          supply: 5,
+          influence: 1,
+          inventorySlots: 10,
+          equippedGear: [],
+          consumables: [],
+          spells: []
+        }
+      ]
+    }
+
+    // We save under the library key
+    saveLibrary(legacyLibrary as any)
+
+    const loadedLibrary = getLibrary()
+    expect(loadedLibrary['Default Session'][0].jobInParty).toBe('')
   })
 })
