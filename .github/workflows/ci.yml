@@ -15,29 +15,29 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run type-check 2>&1 | tee type-check-output.txt
+      - name: Run type-check
+        id: type-check
+        run: npm run type-check
         continue-on-error: true
-      - name: Type-check Summary
-        if: always()
+      - name: Type-check Summary (success)
+        if: steps.type-check.outcome == 'success'
         run: |
-          if [ -f type-check-output.txt ] && [ -s type-check-output.txt ]; then
-            node -e "
-              const fs = require('fs');
-              const out = fs.readFileSync('type-check-output.txt','utf8').trim();
-              const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
-              if (!out) write('## ✅ TypeScript Type Check\n\nNo type errors found.');
-              else write('## ❌ TypeScript Type Check\n\n```\n' + out + '\n```');
-            " >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## ✅ TypeScript Type Check" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "No type errors found." >> $GITHUB_STEP_SUMMARY
-          fi
-      - run: |
-          if [ -f type-check-output.txt ] && [ -s type-check-output.txt ]; then
-            cat type-check-output.txt
-            exit 1
-          fi
+          {
+            echo "## ✅ TypeScript Type Check"
+            echo ""
+            echo "No type errors found."
+          } >> $GITHUB_STEP_SUMMARY
+      - name: Type-check Summary (failure)
+        if: steps.type-check.outcome == 'failure'
+        run: |
+          {
+            echo "## ❌ TypeScript Type Check"
+            echo ""
+            echo '```'
+            echo "Type-check failed — check the logs above for details."
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+          exit 1
 
   lint:
     name: ESLint
@@ -49,23 +49,27 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run lint 2>&1 | tee lint-output.txt
+      - name: Run ESLint
+        id: lint
+        run: npm run lint
         continue-on-error: true
-      - name: ESLint Summary
-        if: always()
+      - name: ESLint Summary (success)
+        if: steps.lint.outcome == 'success'
         run: |
-          node -e "
-            const fs = require('fs');
-            const out = fs.readFileSync('lint-output.txt','utf8').trim();
-            const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
-            if (!out) write('## ✅ ESLint\n\nNo linting errors found.');
-            else write('## ❌ ESLint\n\n```\n' + out + '\n```');
-          " >> $GITHUB_STEP_SUMMARY
-      - run: |
-          if [ -f lint-output.txt ] && [ -s lint-output.txt ]; then
-            cat lint-output.txt
-            exit 1
-          fi
+          {
+            echo "## ✅ ESLint"
+            echo ""
+            echo "No linting errors found."
+          } >> $GITHUB_STEP_SUMMARY
+      - name: ESLint Summary (failure)
+        if: steps.lint.outcome == 'failure'
+        run: |
+          {
+            echo "## ❌ ESLint"
+            echo ""
+            echo "Linting failed — check the logs above for details."
+          } >> $GITHUB_STEP_SUMMARY
+          exit 1
 
   unit-tests:
     name: Vitest Unit Tests
@@ -205,22 +209,24 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --frozen-lockfile
-      - run: npm run build 2>&1 | tee build-output.txt
+      - name: Run build
+        id: build-step
+        run: npm run build
         continue-on-error: true
-      - name: Build Summary
-        if: always()
+      - name: Build Summary (success)
+        if: steps.build-step.outcome == 'success'
         run: |
-          if [ -f build-output.txt ] && grep -q "error" build-output.txt; then
-            node -e "
-              const fs = require('fs');
-              const out = fs.readFileSync('build-output.txt','utf8').trim();
-              const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
-              write('## ❌ Vite Build\n\n```\n' + out + '\n```');
-            " >> $GITHUB_STEP_SUMMARY
-            cat build-output.txt
-            exit 1
-          else
-            echo "## ✅ Vite Build" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Build succeeded — \`dist/\` output ready." >> $GITHUB_STEP_SUMMARY
-          fi
+          {
+            echo "## ✅ Vite Build"
+            echo ""
+            echo "Build succeeded — \`dist/\` output ready."
+          } >> $GITHUB_STEP_SUMMARY
+      - name: Build Summary (failure)
+        if: steps.build-step.outcome == 'failure'
+        run: |
+          {
+            echo "## ❌ Vite Build"
+            echo ""
+            echo "Build failed — check the logs above for details."
+          } >> $GITHUB_STEP_SUMMARY
+          exit 1
