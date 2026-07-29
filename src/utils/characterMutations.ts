@@ -9,7 +9,7 @@
 
 import * as DND_RULES from '@/data/rules'
 import { migrateUsesToResource, migrateLevelToRenown } from './migrations'
-import { getMod, pointBuyCosts } from '@/domain'
+import { getMod } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 
 // ---------------------------------------------------------------------------

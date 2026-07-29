@@ -35,13 +35,12 @@ function makeChar(overrides: Partial<CharacterData> = {}): CharacterData {
 
 describe('useSpellStore', () => {
   let charStore: ReturnType<typeof useCharacterStore>
-  let progStore: ReturnType<typeof useProgressionStore>
   let spellStore: ReturnType<typeof useSpellStore>
 
   beforeEach(() => {
     setActivePinia(createPinia())
     charStore = useCharacterStore()
-    progStore = useProgressionStore()
+    useProgressionStore()
     spellStore = useSpellStore()
     charStore.currentCharacterData = makeChar()
   })
