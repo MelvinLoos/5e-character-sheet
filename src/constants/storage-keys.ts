@@ -4,6 +4,7 @@
 export const STORAGE_KEYS = {
   CHARACTER_LIBRARY: 'dnd_character_library',
   CURRENT_CHARACTER_ID: 'dnd_current_character_id',
+  CURRENT_DRAFT: 'dnd_current_draft',
   APP_THEME: 'dnd_app_theme',
   USER_SETTINGS: 'dnd_user_settings',
 } as const;

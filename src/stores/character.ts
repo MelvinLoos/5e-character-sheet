@@ -31,6 +31,7 @@ import {
 } from '@/infra'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
 import { loadSchema, getSchema, validateCharacterData } from '@/domain'
+import { STORAGE_KEYS } from '../constants/storage-keys'
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
@@ -178,8 +179,17 @@ export const useCharacterStore = defineStore('character', () => {
     await loadSchema()
     await loadAiSchema()
 
-    // Load character from URL if present
+    // Priority: shared URL → unsaved draft → last loaded/saved character → blank
     await loadCharacterFromUrl()
+
+    // Only fall back to draft/last character if no character was loaded from URL
+    const urlParams = new URLSearchParams(window.location.search)
+    if (!urlParams.get('id')) {
+      // Try draft first (unsaved work-in-progress), then last saved character
+      if (!_restoreDraft()) {
+        _restoreLastCharacter()
+      }
+    }
   }
 
   function validateCharacter(data: unknown): { valid: boolean; errors: string[] } {
@@ -192,6 +202,78 @@ export const useCharacterStore = defineStore('character', () => {
   }
   function _hideLoading(): void {
     isLoading.value = false
+  }
+
+  // --- Draft Persistence Helpers ---
+
+  function _saveDraft(): void {
+    if (!currentCharacterData.value) return
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.CURRENT_DRAFT,
+        JSON.stringify(currentCharacterData.value),
+      )
+    } catch (e) {
+      logger.warn('Failed to save character draft to localStorage:', e)
+    }
+  }
+
+  function _restoreDraft(): boolean {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.CURRENT_DRAFT)
+      if (!raw) return false
+      const data = JSON.parse(raw)
+      if (data && typeof data === 'object') {
+        _setCharacter(data)
+        return true
+      }
+    } catch (e) {
+      logger.warn('Failed to restore character draft from localStorage:', e)
+    }
+    return false
+  }
+
+  function _clearDraft(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_DRAFT)
+    } catch (e) {
+      logger.warn('Failed to clear character draft from localStorage:', e)
+    }
+  }
+
+  function _setCurrentCharacterId(session: string, name: string): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_CHARACTER_ID, `${session}|${name}`)
+    } catch (e) {
+      logger.warn('Failed to set current character ID:', e)
+    }
+  }
+
+  function _clearCurrentCharacterId(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_CHARACTER_ID)
+    } catch (e) {
+      logger.warn('Failed to clear current character ID:', e)
+    }
+  }
+
+  function _restoreLastCharacter(): boolean {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.CURRENT_CHARACTER_ID)
+      if (!raw) return false
+      const [session, charName] = raw.split('|')
+      if (!session || !charName) return false
+      const library = getLocalLibrary()
+      const data = library[session]?.find((c: CharacterData) => c.name === charName)
+      if (data) {
+        _setCharacter(data)
+        sessionName.value = session
+        return true
+      }
+    } catch (e) {
+      logger.warn('Failed to restore last character:', e)
+    }
+    return false
   }
 
   function _showErrorModal(errors: string[]): void {
@@ -272,6 +354,9 @@ export const useCharacterStore = defineStore('character', () => {
     if (data) {
       _setCharacter(data)
       sessionName.value = session
+      // Clear any stale draft and remember this as the last loaded character
+      _clearDraft()
+      _setCurrentCharacterId(session, charName)
     }
   }
 
@@ -318,9 +403,16 @@ export const useCharacterStore = defineStore('character', () => {
 
     saveLocalLibrary(library)
     characterLibrary.value = library // Update reactive state
+
+    // Clear draft since character is now safely in library
+    _clearDraft()
+    // Remember this as the last loaded/saved character
+    _setCurrentCharacterId(session, currentCharacterData.value.name)
   }
 
   function handleNewCharacter(): void {
+    _clearDraft()
+    _clearCurrentCharacterId()
     _setCharacter(createBlankCharacter())
     isEditing.value = true
   }
@@ -580,6 +672,19 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
+
+  // --- Auto-save draft watcher (debounced deep watch) ---
+  let draftTimer: ReturnType<typeof setTimeout> | null = null
+  watch(
+    currentCharacterData,
+    () => {
+      if (draftTimer) clearTimeout(draftTimer)
+      draftTimer = setTimeout(() => {
+        _saveDraft()
+      }, 500)
+    },
+    { deep: true },
+  )
 
   return {
     // State
