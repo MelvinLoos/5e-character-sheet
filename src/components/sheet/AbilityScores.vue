@@ -85,7 +85,7 @@ watch(
 <template>
   <section class="flex flex-col gap-6">
     <div class="flex justify-between items-end border-b border-primary-container pb-2">
-      <h3 class="font-headline-md text-headline-md text-primary">Ability Scores</h3>
+      <h3 class="font-headline-md text-headline-md text-primary">Ability Scores<InfoButton topic="point-buy" /></h3>
       <span
         v-if="store.isEditing"
         class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30"
