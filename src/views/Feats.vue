@@ -2,17 +2,29 @@
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
+import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
+import ActionBadge from '@/components/ui/ActionBadge.vue'
+import type { CharacterFeature } from '@/types/character'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
 
-const searchQuery = ref('')
+// --- State ---
+const searchFilter = ref('')
 const activeCategory = ref('All Forms')
+const showFeatLibrary = ref(false)
+const expandedFeatures = ref<Set<string>>(new Set())
+
+// Feature editor modal state
+const isEditorOpen = ref(false)
+const editingFeatureData = ref<Record<string, unknown>>({})
+const isNewFeature = ref(false)
+const editingFeatureRef = ref<CharacterFeature | null>(null)
 
 const categories = ['All Forms', 'Combat', 'Magic', 'Utility']
 
-// Interface matching rulesStore feats
-interface LocalFeature {
+// --- Available feats from rulesStore ---
+interface LocalFeat {
   title: string
   desc: string
   key?: boolean
@@ -22,16 +34,21 @@ interface LocalFeature {
   prerequisite?: string
   casterType?: string | null
   uses?: { total: number; per: string } | null
+  category?: string
   [key: string]: unknown
 }
 
-// Available features from rulesStore
-const availableFeats = computed(() => {
-  return (rulesStore.allFeats as LocalFeature[]) || []
+const availableFeats = computed<LocalFeat[]>(() => {
+  return (rulesStore.allFeats as LocalFeat[]) || []
 })
 
-// Filtered feats
-const filteredFeats = computed(() => {
+// --- Selected feats from character ---
+const selectedFeats = computed<CharacterFeature[]>(() => {
+  return store.currentCharacterData?.features || []
+})
+
+// --- Library feats (filtered) ---
+const libraryFeats = computed(() => {
   let filtered = availableFeats.value
 
   if (activeCategory.value !== 'All Forms') {
@@ -40,37 +57,136 @@ const filteredFeats = computed(() => {
     )
   }
 
-  if (searchQuery.value.trim()) {
-    const search = searchQuery.value.toLowerCase()
+  if (searchFilter.value.trim()) {
+    const search = searchFilter.value.toLowerCase()
     filtered = filtered.filter(
-      (f: LocalFeature) =>
-        f.title.toLowerCase().includes(search) || (f.desc && f.desc.toLowerCase().includes(search)),
+      (f) =>
+        f.title.toLowerCase().includes(search) ||
+        (f.desc && f.desc.toLowerCase().includes(search)),
     )
   }
 
   return filtered.sort((a, b) => a.title.localeCompare(b.title))
 })
 
-const myFeatsCount = computed(() => store.currentCharacterData?.features.length || 0)
+// --- Toggle expand/collapse ---
+function toggleExpand(title: string) {
+  if (expandedFeatures.value.has(title)) {
+    expandedFeatures.value.delete(title)
+  } else {
+    expandedFeatures.value.add(title)
+  }
+}
 
-function addFeat(feat: LocalFeature) {
-  const newFeat = { ...feat, key: false } // ensure key is handled
-
+// --- Add feat from library ---
+function addFeatFromLibrary(feat: LocalFeat) {
   if (!store.currentCharacterData.features) {
     store.currentCharacterData.features = []
   }
 
-  store.currentCharacterData.features.push(newFeat)
+  const newFeat = {
+    ...feat,
+    key: false,
+  }
+
+  store.currentCharacterData.features.push(
+    newFeat as unknown as (typeof store.currentCharacterData.features)[number],
+  )
   store.recalculateAbilityScores()
 }
 
+// --- Remove feat ---
 function removeFeat(index: number) {
-  if (store.currentCharacterData.features && store.currentCharacterData.features.length > index) {
+  if (
+    store.currentCharacterData.features &&
+    store.currentCharacterData.features.length > index
+  ) {
     store.currentCharacterData.features.splice(index, 1)
     store.recalculateAbilityScores()
   }
 }
 
+// --- Open library ---
+function openFeatLibrary() {
+  searchFilter.value = ''
+  activeCategory.value = 'All Forms'
+  showFeatLibrary.value = true
+}
+
+// --- Custom feat (manual entry via FeatureEditorModal) ---
+function addManualFeat() {
+  editingFeatureData.value = {}
+  editingFeatureRef.value = null
+  isNewFeature.value = true
+  isEditorOpen.value = true
+  showFeatLibrary.value = false
+}
+
+function editFeature(feature: CharacterFeature) {
+  editingFeatureData.value = { ...feature }
+  editingFeatureRef.value = feature
+  isNewFeature.value = false
+  isEditorOpen.value = true
+}
+
+function handleEditorSave(featureData: CharacterFeature) {
+  if (isNewFeature.value) {
+    store.currentCharacterData.features = store.currentCharacterData.features || []
+    const normalized = {
+      ...featureData,
+      uses: featureData.uses
+        ? {
+            total: (featureData.uses.total as number) || 0,
+            per: (featureData.uses.per as string) || '',
+          }
+        : undefined,
+    } as unknown as (typeof store.currentCharacterData.features)[number]
+    store.currentCharacterData.features.push(normalized)
+  } else if (editingFeatureRef.value) {
+    const allFeatures = store.currentCharacterData.features || []
+    const featureIndex = allFeatures.findIndex(
+      (f: CharacterFeature) => f === editingFeatureRef.value,
+    )
+    if (featureIndex !== -1) {
+      const normalized = {
+        ...featureData,
+        uses: featureData.uses
+          ? {
+              total: (featureData.uses.total as number) || 0,
+              per: (featureData.uses.per as string) || '',
+            }
+          : undefined,
+      } as unknown as (typeof store.currentCharacterData.features)[number]
+      allFeatures[featureIndex] = normalized
+    }
+  }
+
+  isEditorOpen.value = false
+  editingFeatureRef.value = null
+  store.recalculateAbilityScores()
+}
+
+function handleEditorCancel() {
+  isEditorOpen.value = false
+  editingFeatureRef.value = null
+}
+
+function handleEditorDelete() {
+  if (!isNewFeature.value && editingFeatureRef.value) {
+    const allFeatures = store.currentCharacterData.features || []
+    const featureIndex = allFeatures.findIndex(
+      (f: CharacterFeature) => f === editingFeatureRef.value,
+    )
+    if (featureIndex !== -1) {
+      allFeatures.splice(featureIndex, 1)
+    }
+    store.recalculateAbilityScores()
+  }
+  isEditorOpen.value = false
+  editingFeatureRef.value = null
+}
+
+// --- Set active category ---
 function setActiveCategory(cat: string) {
   activeCategory.value = cat
 }
@@ -80,180 +196,369 @@ function setActiveCategory(cat: string) {
   <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
     <header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
       <div>
-        <h2 class="font-display-lg text-display-lg text-tertiary mb-2">Feats &amp; Talents</h2>
+        <h2 class="font-display-lg text-display-lg text-tertiary mb-2">Feats & Talents</h2>
         <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
           Select exceptional abilities that define your character
         </p>
       </div>
-    </header>
-    <!-- Top Section: Title & Filters -->
-    <section class="flex flex-col gap-6">
       <div
-        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant/30"
+        v-if="selectedFeats.length > 0"
+        class="font-label-md text-label-md bg-tertiary/10 text-tertiary px-3 py-1 rounded-full border border-tertiary/20"
       >
-        <!-- Search Bar -->
-        <div class="relative w-full md:max-w-md">
+        {{ selectedFeats.length }} Active
+      </div>
+    </header>
+
+    <!-- Selected Feats Section -->
+    <section
+      class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
+    >
+      <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
+        <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
+          <span class="material-symbols-outlined text-3xl">auto_awesome</span>
+          Transcribed Feats
+        </h3>
+      </div>
+
+      <!-- Search + Add Feats Button -->
+      <div class="flex flex-col md:flex-row gap-4 mb-6 items-center">
+        <div class="relative flex-1 w-full">
           <span
             class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
             >search</span
           >
           <input
-            v-model="searchQuery"
-            class="w-full bg-surface-container border border-outline-variant rounded py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
-            placeholder="Search the archives..."
+            v-model="searchFilter"
+            class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
+            placeholder="Search my feats..."
             type="text"
           />
         </div>
-        <!-- Category Filters -->
-        <div class="flex flex-wrap gap-2">
-          <button
-            v-for="cat in categories"
-            :key="cat"
-            @click="setActiveCategory(cat)"
-            :class="[
-              'px-4 py-1.5 rounded-full border font-label-md text-label-md transition-colors shadow-sm',
-              activeCategory === cat
-                ? 'border-tertiary text-tertiary bg-tertiary/10'
-                : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary bg-surface-container',
-            ]"
+        <button
+          v-if="store.isEditing"
+          @click="openFeatLibrary"
+          class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors whitespace-nowrap shadow-sm"
+        >
+          <span class="material-symbols-outlined">add_circle</span> Add Feats
+        </button>
+      </div>
+
+      <!-- Selected Feat Cards Grid -->
+      <div
+        v-if="selectedFeats.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <div
+          v-for="(feat, index) in selectedFeats"
+          :key="index"
+          class="bg-surface-container-high border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors group relative shadow-sm"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-start justify-between cursor-pointer select-none mb-2"
+            @click="toggleExpand(feat.title)"
           >
-            {{ cat }}
+            <div class="flex items-center gap-2">
+              <span
+                class="material-symbols-outlined text-outline text-[20px] transition-transform"
+                :class="{ 'rotate-90': expandedFeatures.has(feat.title) }"
+                >chevron_right</span
+              >
+              <h4
+                class="font-headline-md text-headline-md text-tertiary m-0 group-hover:text-tertiary-fixed transition-colors"
+              >
+                {{ feat.title }}
+              </h4>
+            </div>
+            <button
+              v-if="store.isEditing"
+              @click.stop="removeFeat(index)"
+              class="text-outline-variant hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10 opacity-0 group-hover:opacity-100 focus:opacity-100"
+              title="Remove Feat"
+            >
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <!-- Badges -->
+          <div class="flex flex-wrap gap-2 pl-7 mb-2">
+            <div
+              v-if="feat.prerequisite"
+              class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+            >
+              Prerequisite: {{ feat.prerequisite }}
+            </div>
+            <ActionBadge
+              v-if="feat.actionType"
+              :action-type="(feat.actionType as any)"
+              size="sm"
+              class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+            />
+            <div
+              v-if="feat.source"
+              class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+            >
+              {{ feat.source }}
+            </div>
+
+            <!-- Resource usage display -->
+            <div
+              v-if="feat.resource"
+              class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+            >
+              <div class="flex items-center gap-1">
+                <input
+                  v-for="n in store.getFeatureMaxUses(feat)"
+                  :key="n"
+                  type="checkbox"
+                  class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container-high"
+                />
+              </div>
+              <span v-if="feat.resource.reset" class="opacity-80"
+                >/ {{ feat.resource.reset }}</span
+              >
+            </div>
+            <!-- Legacy uses format -->
+            <div
+              v-else-if="feat.uses"
+              class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+            >
+              <div class="flex items-center gap-1">
+                <input
+                  v-for="n in feat.uses.total"
+                  :key="n"
+                  type="checkbox"
+                  class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container-high"
+                />
+              </div>
+              <span v-if="feat.uses.per" class="opacity-80">/ {{ feat.uses.per }}</span>
+            </div>
+          </div>
+
+          <!-- Description (expandable) -->
+          <div
+            v-show="expandedFeatures.has(feat.title)"
+            class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
+          >
+            <div v-html="formatFeatDesc(feat.desc)"></div>
+          </div>
+
+          <!-- Edit button -->
+          <button
+            v-if="store.isEditing"
+            @click.stop="editFeature(feat)"
+            class="absolute top-4 right-12 text-outline-variant hover:text-primary transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            title="Edit Feat"
+          >
+            <span class="material-symbols-outlined text-[16px]">edit</span>
           </button>
         </div>
       </div>
+
+      <!-- Empty State -->
+      <div
+        v-if="selectedFeats.length === 0"
+        class="text-center py-12 text-on-surface-variant italic border border-dashed border-outline-variant/30 rounded-lg"
+      >
+        <p v-if="store.isEditing">
+          No feats transcribed yet. Click <strong>Add Feats</strong> to browse the archives.
+        </p>
+        <p v-else>No feats available for this character.</p>
+      </div>
     </section>
 
-    <!-- Main Layout: Two Columns -->
-    <section
-      class="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-card-gap flex-1 items-start pb-12"
+    <!-- Feat Library Modal -->
+    <div
+      v-if="showFeatLibrary && store.isEditing"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click.self="showFeatLibrary = false"
     >
-      <!-- Left Column: Available Feats Library -->
-      <div class="flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-outline-variant/50 pb-2">
-          <h2 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
-            <span class="material-symbols-outlined">library_books</span>
-            Available Archives
-          </h2>
-          <span class="font-label-md text-label-md text-on-surface-variant"
-            >Showing {{ filteredFeats.length }} entries</span
+      <div
+        class="bg-surface-container rounded-lg max-w-4xl max-h-[85vh] overflow-hidden flex flex-col w-full border border-outline-variant shadow-xl"
+      >
+        <!-- Modal Header -->
+        <div
+          class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low rounded-t-lg"
+        >
+          <h3
+            class="text-2xl font-headline-lg text-tertiary flex items-center gap-2 m-0 bg-transparent"
           >
+            <span class="material-symbols-outlined">library_books</span>
+            Feat Archives
+          </h3>
+          <button
+            @click="showFeatLibrary = false"
+            class="p-2 hover:bg-surface-variant rounded-full transition-colors text-on-surface-variant"
+          >
+            <span class="material-symbols-outlined">close</span>
+          </button>
         </div>
 
-        <!-- Scrollable List of Cards -->
-        <div
-          class="flex flex-col gap-4 overflow-y-auto pr-2"
-          style="max-height: calc(100vh - 300px)"
-        >
+        <!-- Library Controls -->
+        <div class="p-4 bg-surface-container-low border-b border-outline-variant/30">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="relative">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+                >search</span
+              >
+              <input
+                v-model="searchFilter"
+                type="text"
+                placeholder="Filter by name or description..."
+                class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
+                autofocus
+              />
+            </div>
+            <div class="flex gap-1 flex-wrap items-center">
+              <button
+                v-for="cat in categories"
+                :key="cat"
+                @click="setActiveCategory(cat)"
+                :class="[
+                  'px-3 py-1 text-xs rounded-full border transition-all font-bold',
+                  activeCategory === cat
+                    ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
+                    : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
+                ]"
+              >
+                {{ cat }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Library Scroll Area -->
+        <div class="flex-grow overflow-y-auto p-6 custom-scrollbar">
           <div
-            v-for="(feat, index) in filteredFeats"
-            :key="index"
-            class="bg-surface-container border border-primary-container p-5 rounded-lg flex flex-col sm:flex-row gap-4 hover:border-tertiary/50 transition-colors group relative shadow-sm"
+            v-if="libraryFeats.length === 0"
+            class="text-center py-12 text-on-surface-variant italic border border-dashed border-outline-variant rounded-xl"
           >
-            <div class="flex-1">
-              <h3 class="font-headline-md text-headline-md text-tertiary mb-1">{{ feat.title }}</h3>
+            No feats found matching your criteria.
+          </div>
+
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              v-for="(feat, index) in libraryFeats"
+              :key="index"
+              class="bg-surface-container-low border border-outline-variant rounded-lg p-4 hover:border-tertiary/50 transition-colors group relative"
+            >
+              <div class="flex justify-between items-start mb-1">
+                <h5
+                  class="font-headline-md text-on-surface group-hover:text-tertiary transition-colors m-0"
+                >
+                  {{ feat.title }}
+                </h5>
+                <span
+                  v-if="feat.source"
+                  class="text-[12px] bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md ml-2 flex-shrink-0"
+                >
+                  {{ feat.source }}
+                </span>
+              </div>
               <div
                 v-if="feat.prerequisite"
-                class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px] mb-3"
+                class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[11px] mb-2"
               >
                 Prerequisite: {{ feat.prerequisite }}
               </div>
-              <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              <p
+                class="font-body-md text-body-md text-on-surface-variant leading-relaxed line-clamp-2 mb-3"
+              >
                 {{ feat.desc }}
               </p>
-            </div>
 
-            <div class="flex items-start sm:justify-end mt-2 sm:mt-0">
-              <button
-                @click="addFeat(feat)"
-                class="w-10 h-10 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm"
-                title="Transcribe Feat"
-              >
-                <span class="material-symbols-outlined">add</span>
-              </button>
+              <div class="flex justify-between items-end">
+                <div
+                  class="flex gap-2 text-[10px] text-primary/70 uppercase font-bold tracking-tighter"
+                >
+                  <span v-if="feat.actionType">{{ feat.actionType }}</span>
+                  <span
+                    v-if="feat.featureType && feat.featureType !== feat.actionType"
+                    >{{ feat.featureType }}</span
+                  >
+                </div>
+                <button
+                  @click="addFeatFromLibrary(feat)"
+                  class="bg-tertiary text-on-tertiary text-xs px-3 py-1 rounded font-bold hover:bg-tertiary-fixed transition-colors shadow-sm"
+                >
+                  Transcribe
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div
-            v-if="filteredFeats.length === 0"
-            class="text-center py-8 text-on-surface-variant font-body-md"
-          >
-            No archives match your inquiry.
           </div>
         </div>
-      </div>
 
-      <!-- Right Column: My Feats (Ledger) -->
-      <div
-        class="bg-surface-container-low border border-outline-variant rounded-lg p-6 shadow-md h-full flex flex-col relative overflow-hidden"
-      >
-        <!-- Decorative corner inset -->
+        <!-- Footer -->
         <div
-          class="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-tertiary/20 rounded-tr-lg pointer-events-none"
-        ></div>
-
-        <div class="flex justify-between items-end border-b border-tertiary/30 pb-3 mb-6">
-          <h2 class="font-headline-md text-headline-md text-tertiary flex items-center gap-2">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1"
-              >menu_book</span
-            >
-            Transcribed Feats
-          </h2>
-          <div
-            class="font-label-md text-label-md bg-tertiary/10 text-tertiary px-3 py-1 rounded-full border border-tertiary/20"
+          class="p-4 border-t border-outline-variant bg-surface-container-low flex justify-between items-center rounded-b-lg"
+        >
+          <span class="font-label-md text-on-surface-variant"
+            >Found {{ libraryFeats.length }} feats</span
           >
-            {{ myFeatsCount }} Active
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-6 overflow-y-auto pr-2 flex-1 pt-2">
-          <div
-            v-for="(feat, index) in store.currentCharacterData?.features"
-            :key="index"
-            class="relative pl-5 before:content-[''] before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-tertiary/50"
+          <button
+            @click="addManualFeat"
+            class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
-            <div class="flex justify-between items-start mb-2 group">
-              <h3 class="font-headline-md text-[20px] text-inverse-surface">{{ feat.title }}</h3>
-              <button
-                @click="removeFeat(index)"
-                class="text-outline-variant hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10 opacity-0 group-hover:opacity-100 focus:opacity-100"
-                title="Remove Feat"
-              >
-                <span class="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
-
-            <div class="font-body-md text-body-md text-on-surface-variant space-y-3">
-              <div
-                v-html="
-                  feat.desc
-                    .replace(
-                      /<li>/g,
-                      '<li class=\'pl-4 relative before:content-[&quot;&quot;] before:absolute before:left-0 before:top-2.5 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full\'>',
-                    )
-                    .replace(/<ul>/g, '<ul class=\'list-none space-y-2 relative\'>')
-                "
-              ></div>
-            </div>
-          </div>
-
-          <div
-            v-if="
-              !store.currentCharacterData?.features ||
-              store.currentCharacterData.features.length === 0
-            "
-            class="text-center font-body-md text-on-surface-variant italic py-8 border border-dashed border-outline-variant/30 rounded-lg mt-4"
-          >
-            No transcribed feats. Click the + icon on a feat in the archives to active it.
-          </div>
-        </div>
-
-        <!-- Decorative bottom flourish -->
-        <div class="w-full flex justify-center mt-4 opacity-30">
-          <span class="material-symbols-outlined text-tertiary text-[16px]">horizontal_rule</span>
-          <span class="material-symbols-outlined text-tertiary text-[16px] mx-1">diamond</span>
-          <span class="material-symbols-outlined text-tertiary text-[16px]">horizontal_rule</span>
+            <span class="material-symbols-outlined text-base">edit_note</span>
+            Custom Entry
+          </button>
         </div>
       </div>
-    </section>
+    </div>
+
+    <!-- Feature Editor Modal (for custom/manual entries) -->
+    <FeatureEditorModal
+      :is-open="isEditorOpen"
+      :feature="editingFeatureData"
+      :is-new="isNewFeature"
+      @save="handleEditorSave"
+      @cancel="handleEditorCancel"
+      @delete="handleEditorDelete"
+    />
   </div>
 </template>
+
+<script lang="ts">
+function formatFeatDesc(desc: string): string {
+  if (!desc) return ''
+  return desc
+    .replace(
+      /<li>/g,
+      '<li class="pl-4 relative before:content-[\'\'] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">',
+    )
+    .replace(/<ul>/g, '<ul class="list-none space-y-2 relative my-2">')
+}
+</script>
+
+<style scoped>
+/* Custom scrollbar for library — gold thumb matching Midnight Scholar tertiary accent */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-tertiary) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-tertiary);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-tertiary-fixed-dim);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
