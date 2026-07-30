@@ -42,6 +42,7 @@ export interface CharacterFeature {
   grantsSpells?: boolean
   grantedSpellLevels?: number[]
   abilityModifiers?: Record<string, number>
+  prerequisite?: string
 }
 
 /** Runtime character feature — loose types for data loaded from external sources.

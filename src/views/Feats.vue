@@ -290,7 +290,7 @@ function setActiveCategory(cat: string) {
             </div>
             <ActionBadge
               v-if="feat.actionType"
-              :action-type="feat.actionType"
+              :action-type="(feat.actionType as any)"
               size="sm"
               class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
             />
