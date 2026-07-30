@@ -60,6 +60,48 @@ export function useSpellcasting(
   const filterByLevel: Ref<number | null> = ref(null)
 
   // ---------------------------------------------------------------------------
+  // Spell Sorting
+  // ---------------------------------------------------------------------------
+
+  /** Sort mode for spell display. 'manual' preserves user drag-and-drop order. */
+  const spellSortMode: Ref<'manual' | 'level' | 'name' | 'school' | 'prepared'> = ref('level')
+
+  /** Spells sorted according to the active sort mode. */
+  const sortedSpells: ComputedRef<CharacterSpell[]> = computed(() => {
+    const spells = [...editableSpells.value]
+
+    if (spellSortMode.value === 'manual') return spells
+
+    if (spellSortMode.value === 'level') {
+      return spells.sort((a, b) => {
+        if (a.level !== b.level) return a.level - b.level
+        return a.name.localeCompare(b.name)
+      })
+    }
+
+    if (spellSortMode.value === 'name') {
+      return spells.sort((a, b) => a.name.localeCompare(b.name))
+    }
+
+    if (spellSortMode.value === 'school') {
+      return spells.sort((a, b) => {
+        const schoolA = (typeof a.school === 'string' ? a.school : '\uffff') || '\uffff'
+        const schoolB = (typeof b.school === 'string' ? b.school : '\uffff') || '\uffff'
+        if (schoolA !== schoolB) return schoolA.localeCompare(schoolB)
+        return a.name.localeCompare(b.name)
+      })
+    }
+
+    // 'prepared' - prepared spells first, then by level, then by name
+    return spells.sort((a, b) => {
+      if (a.prepared && !b.prepared) return -1
+      if (!a.prepared && b.prepared) return 1
+      if (a.level !== b.level) return a.level - b.level
+      return a.name.localeCompare(b.name)
+    })
+  })
+
+  // ---------------------------------------------------------------------------
   // Caster Detection
   // ---------------------------------------------------------------------------
 
@@ -280,9 +322,9 @@ export function useSpellcasting(
 
   /** Filtered version of the character's own spells (when search is active). */
   const filteredActiveSpells: ComputedRef<CharacterSpell[]> = computed(() => {
-    if (!searchFilter.value) return editableSpells.value
+    if (!searchFilter.value) return sortedSpells.value
     const query = searchFilter.value.toLowerCase()
-    return editableSpells.value.filter(
+    return sortedSpells.value.filter(
       (s) =>
         s.name.toLowerCase().includes(query) ||
         s.desc.toLowerCase().includes(query) ||
@@ -356,6 +398,8 @@ export function useSpellcasting(
     showSpellLibrary,
     searchFilter,
     filterByLevel,
+    spellSortMode,
+    sortedSpells,
     // Caster detection
     hasSpellcasting,
     casterType,
