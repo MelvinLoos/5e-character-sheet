@@ -547,19 +547,27 @@ const allowedLevels = computed(() => {
   color: var(--color-on-background);
 }
 
-/* Custom scrollbar for library */
+/* Custom scrollbar for library — gold thumb matching Midnight Scholar tertiary accent */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-tertiary) transparent;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--md-sys-color-outline-variant);
-  border-radius: 10px;
+  background: var(--color-tertiary);
+  border-radius: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--md-sys-color-outline);
+  background: var(--color-tertiary-fixed-dim);
 }
 
 .spell-drag-handle {
