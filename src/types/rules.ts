@@ -32,12 +32,15 @@ export interface SpeciesData {
   traits: RulesFeature[]
 }
 
+import type { BackgroundEquipment } from './equipment'
+
 /** Background definition in the rules compendium. */
 export interface BackgroundData {
   description?: string
   skills: string[]
   abilityScoreIncrease: AbilityKey[]
   feature: RulesFeature
+  equipment?: BackgroundEquipment
 }
 
 /** Alias for the nested spell slot records keyed by caster level. */

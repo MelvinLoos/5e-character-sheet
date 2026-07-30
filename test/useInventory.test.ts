@@ -44,28 +44,28 @@ describe('useInventory', () => {
   })
 
   describe('maxSlots', () => {
-    it('scales with Strength score (STR 14 → 14 slots)', () => {
-      store.currentCharacterData.abilityScores['str'] = 14
-      store.currentCharacterData.pointBuyBaseScores['str'] = 14
+    it('scales with Strength score (STR 16 → 16 slots)', () => {
+      store.currentCharacterData.abilityScores['str'] = 16
+      store.currentCharacterData.pointBuyBaseScores['str'] = 16
       const { maxSlots } = useInventory(store)
 
-      expect(maxSlots.value).toBe(14)
+      expect(maxSlots.value).toBe(16)
     })
 
-    it('enforces minimum floor of 10 slots (STR 6 → 10 slots)', () => {
+    it('enforces minimum floor of 15 slots (STR 6 → 15 slots)', () => {
       store.currentCharacterData.abilityScores['str'] = 6
       store.currentCharacterData.pointBuyBaseScores['str'] = 6
       const { maxSlots } = useInventory(store)
 
-      expect(maxSlots.value).toBe(10)
+      expect(maxSlots.value).toBe(15)
     })
 
-    it('handles STR exactly at 10 (no clamping needed)', () => {
-      store.currentCharacterData.abilityScores['str'] = 10
-      store.currentCharacterData.pointBuyBaseScores['str'] = 10
+    it('handles STR exactly at 15 (no clamping needed)', () => {
+      store.currentCharacterData.abilityScores['str'] = 15
+      store.currentCharacterData.pointBuyBaseScores['str'] = 15
       const { maxSlots } = useInventory(store)
 
-      expect(maxSlots.value).toBe(10)
+      expect(maxSlots.value).toBe(15)
     })
   })
 
@@ -106,11 +106,11 @@ describe('useInventory', () => {
   })
 
   describe('slotPercentage', () => {
-    it('calculates correct encumbrance ratio (14 STR, 7 used = 50%)', () => {
-      store.currentCharacterData.abilityScores['str'] = 14
-      store.currentCharacterData.pointBuyBaseScores['str'] = 14
+    it('calculates correct encumbrance ratio (15 STR, 7.5 used = 50%)', () => {
+      store.currentCharacterData.abilityScores['str'] = 15
+      store.currentCharacterData.pointBuyBaseScores['str'] = 15
       store.currentCharacterData.equippedGear = [
-        { id: '1', name: 'Heavy Armor', type: 'Armor', description: '', slotCost: 7 },
+        { id: '1', name: 'Heavy Armor', type: 'Armor', description: '', slotCost: 7.5 },
       ]
       store.currentCharacterData.consumables = []
       const { slotPercentage } = useInventory(store)
@@ -119,10 +119,10 @@ describe('useInventory', () => {
     })
 
     it('clamps at 100% when over-encumbered', () => {
-      store.currentCharacterData.abilityScores['str'] = 10
-      store.currentCharacterData.pointBuyBaseScores['str'] = 10
+      store.currentCharacterData.abilityScores['str'] = 15
+      store.currentCharacterData.pointBuyBaseScores['str'] = 15
       store.currentCharacterData.equippedGear = [
-        { id: '1', name: 'Overloaded', type: 'Misc', description: '', slotCost: 15 },
+        { id: '1', name: 'Overloaded', type: 'Misc', description: '', slotCost: 20 },
       ]
       store.currentCharacterData.consumables = []
       const { slotPercentage } = useInventory(store)
@@ -141,15 +141,15 @@ describe('useInventory', () => {
 
   describe('availableSlots', () => {
     it('returns maxSlots - usedSlots', () => {
-      store.currentCharacterData.abilityScores['str'] = 14
-      store.currentCharacterData.pointBuyBaseScores['str'] = 14
+      store.currentCharacterData.abilityScores['str'] = 16
+      store.currentCharacterData.pointBuyBaseScores['str'] = 16
       store.currentCharacterData.equippedGear = [
         { id: '1', name: 'Item', type: 'Gear', description: '', slotCost: 4 },
       ]
       store.currentCharacterData.consumables = []
       const { availableSlots } = useInventory(store)
 
-      expect(availableSlots.value).toBe(10) // 14 - 4
+      expect(availableSlots.value).toBe(12) // 16 - 4
     })
   })
 

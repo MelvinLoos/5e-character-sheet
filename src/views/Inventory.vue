@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StartingEquipmentWizard from '@/components/creation/StartingEquipmentWizard.vue'
 </script>
 
 <template>
@@ -13,6 +14,7 @@
       </div>
     </header>
 
+    <StartingEquipmentWizard />
     <EquipmentBlock />
   </div>
 </template>

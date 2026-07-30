@@ -22,7 +22,9 @@ import {
   applyBackgroundBonuses,
   calculateDerivedStats,
   applyAllChanges,
+  applyStartingEquipment,
 } from '../utils/characterMutations'
+import type { StartingEquipmentState } from '@/types/equipment'
 
 import {
   initSupabase,
@@ -53,6 +55,14 @@ export const useCharacterStore = defineStore('character', () => {
   const loadingText = ref('')
   const errorModal = ref({ show: false, errors: [] as string[] })
   const shareModal = ref({ show: false, url: '' })
+
+  // Starting equipment selection state (creation-time only, not persisted)
+  const startingEquipmentState = ref<StartingEquipmentState>({
+    classOption: null,
+    backgroundOption: null,
+    resolvedClassChoices: [],
+    selectedTrinket: null,
+  })
 
   // --- GETTERS (Computed Properties) ---
   // These are INTERNAL-ONLY computed properties used by the store's own actions.
@@ -673,6 +683,69 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
 
+  // --- Starting Equipment Actions ---
+
+  /** Set the class equipment option (A, B, or C). */
+  function selectClassEquipmentOption(option: 'A' | 'B' | 'C'): void {
+    startingEquipmentState.value.classOption = option
+  }
+
+  /** Set the background equipment option (A or B). */
+  function selectBackgroundEquipmentOption(option: 'A' | 'B'): void {
+    startingEquipmentState.value.backgroundOption = option
+  }
+
+  /** Resolve a class equipment choice (e.g. "pick Handaxe or Light Hammer"). */
+  function resolveEquipmentChoice(
+    choiceIndex: number,
+    itemId: string,
+    quantity: number,
+  ): void {
+    // Remove any previous resolution for this choice index
+    startingEquipmentState.value.resolvedClassChoices =
+      startingEquipmentState.value.resolvedClassChoices.filter(
+        (rc) => rc.choiceIndex !== choiceIndex,
+      )
+
+    startingEquipmentState.value.resolvedClassChoices.push({
+      choiceIndex,
+      selectedItemId: itemId,
+      selectedQuantity: quantity,
+    })
+  }
+
+  /** Set the selected trinket (by EquipmentItem.id). */
+  function selectTrinket(trinketId: string | null): void {
+    startingEquipmentState.value.selectedTrinket = trinketId
+  }
+
+  /**
+   * Finalize starting equipment: resolve all selections and apply them
+   * to the current character data. This adds gear, consumables, attack
+   * entries, gold, and spellcasting focus features.
+   */
+  function confirmStartingEquipment(): void {
+    if (!currentCharacterData.value) return
+
+    currentCharacterData.value = applyStartingEquipment(
+      currentCharacterData.value,
+      startingEquipmentState.value,
+    )
+
+    // Recalculate derived stats to account for new attacks, AC, etc.
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+  }
+
+  /** Reset the starting equipment state (e.g. when starting a new character). */
+  function resetStartingEquipment(): void {
+    startingEquipmentState.value = {
+      classOption: null,
+      backgroundOption: null,
+      resolvedClassChoices: [],
+      selectedTrinket: null,
+    }
+  }
+
   // --- Auto-save draft watcher (debounced deep watch) ---
   let draftTimer: ReturnType<typeof setTimeout> | null = null
   watch(
@@ -737,6 +810,14 @@ export const useCharacterStore = defineStore('character', () => {
     adjustPointBuyScore,
     recalculateAbilityScores,
     validateCharacter,
+    // Starting equipment state & actions
+    startingEquipmentState,
+    selectClassEquipmentOption,
+    selectBackgroundEquipmentOption,
+    resolveEquipmentChoice,
+    selectTrinket,
+    confirmStartingEquipment,
+    resetStartingEquipment,
     // New explicit actions
     applyBackgroundChange,
     applyClassChange,
