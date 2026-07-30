@@ -10,6 +10,7 @@ const {
   showSpellLibrary,
   searchFilter,
   filterByLevel,
+  spellSortMode,
   hasSpellcasting,
   displaySpellSlots,
   maxSpellSlotLevel,
@@ -28,6 +29,11 @@ const {
   clearFilters,
   formatLevel,
 } = useSpellcasting()
+
+/** Controls whether drag-and-drop reordering is active (manual sort mode, editing, no search filter). */
+const isDraggable = computed(() => {
+  return spellSortMode.value === 'manual' && store.isEditing && !searchFilter.value
+})
 
 const allowedLevels = computed(() => {
   const max = maxSpellSlotLevel.value
@@ -134,14 +140,40 @@ const allowedLevels = computed(() => {
         </div>
       </div>
 
-      <!-- Spell Cards Grid (draggable when not searching) -->
-      <draggable
+      <!-- Sort Mode Toggle -->
+      <div
         v-if="!searchFilter"
+        class="flex items-center gap-2 mb-4 flex-wrap"
+      >
+        <span class="text-xs font-label-md text-on-surface-variant uppercase tracking-wider mr-1">Sort:</span>
+        <button
+          v-for="mode in ([
+            { key: 'level', label: 'Level' },
+            { key: 'name', label: 'Name' },
+            { key: 'school', label: 'School' },
+            { key: 'prepared', label: 'Prepared' },
+            { key: 'manual', label: 'Manual' },
+          ] as const)"
+          :key="mode.key"
+          @click="spellSortMode = mode.key"
+          :class="[
+            'px-3 py-1 text-xs rounded-full border transition-all font-bold',
+            spellSortMode === mode.key
+              ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
+              : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
+          ]"
+        >
+          {{ mode.label }}
+        </button>
+      </div>
+
+      <!-- Spell Cards Grid (draggable when manual sort, editing, and no search) -->
+      <draggable
+        v-if="isDraggable"
         v-model="editableSpells"
         item-key="id"
         tag="div"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        :disabled="!store.isEditing"
         handle=".spell-drag-handle"
         ghost-class="opacity-50"
       >
@@ -164,7 +196,6 @@ const allowedLevels = computed(() => {
               <div class="flex items-center">
                 <!-- Drag handle -->
                 <span
-                  v-if="store.isEditing"
                   class="spell-drag-handle material-symbols-outlined text-sm cursor-move opacity-0 group-hover:opacity-50 mr-1 text-inherit"
                   >drag_indicator</span
                 >
@@ -248,7 +279,7 @@ const allowedLevels = computed(() => {
         </template>
       </draggable>
 
-      <!-- Static filtered grid (when searching — drag disabled) -->
+      <!-- Static sorted grid (when not draggable — auto-sorted or searching) -->
       <div
         v-else
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"

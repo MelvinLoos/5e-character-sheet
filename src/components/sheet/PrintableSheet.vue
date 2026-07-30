@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useSpellcasting } from '@/composables/useSpellcasting'
 import * as DND_RULES from '@/data/rules'
 
 const store = useCharacterStore()
+const { sortedSpells } = useSpellcasting()
 
 const char = computed(() => store.currentCharacterData)
 
@@ -384,7 +386,50 @@ const attacks = computed(() => {
         </div>
       </section>
 
-      <!-- Attacks & Combat Actions -->
+      <!-- Selected Spells -->
+      <section class="mt-4" v-if="sortedSpells.length > 0">
+        <h3
+          class="font-headline-lg text-headline-lg border-b-2 border-black pb-1 mb-2 text-black uppercase tracking-wider text-xl"
+        >
+          Selected Spells
+        </h3>
+        <div class="border border-black rounded-sm overflow-hidden bg-white">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-black bg-white">
+                <th
+                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-black text-xs"
+                >
+                  Spell Name
+                </th>
+                <th
+                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-center text-black text-xs"
+                >
+                  Level
+                </th>
+                <th class="p-1.5 font-label-md text-label-md uppercase text-black text-xs">
+                  School
+                </th>
+              </tr>
+            </thead>
+            <tbody class="font-body-md bg-white text-sm">
+              <tr
+                v-for="(spell, index) in sortedSpells"
+                :key="index"
+                class="border-b border-black"
+              >
+                <td class="p-1.5 border-r border-black h-7 text-black">{{ spell.name }}</td>
+                <td class="p-1.5 border-r border-black text-center text-black">
+                  {{ spell.level === 0 ? 'Cantrip' : spell.level }}
+                </td>
+                <td class="p-1.5 text-black">{{ spell.school || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Attacks -->
       <section class="mt-4">
         <h3
           class="font-headline-lg text-headline-lg border-b-2 border-black pb-1 mb-2 text-black uppercase tracking-wider text-xl"
@@ -443,148 +488,55 @@ const attacks = computed(() => {
           </table>
         </div>
 
-        <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="border border-black p-2 rounded-sm bg-white">
-            <h4
-              class="font-label-md text-label-md uppercase mb-1 border-b border-black pb-0.5 text-black text-xs"
+        <!-- Inventory & Equipment Block -->
+        <div class="mt-3 border border-black p-2 rounded-sm bg-white">
+          <h4
+            class="font-label-md text-label-md uppercase mb-1 border-b border-black pb-0.5 text-black text-xs"
+          >
+            Inventory & Equipment
+          </h4>
+          <div class="text-black text-xs overflow-hidden space-y-1">
+            <!-- Tri-Currency Row -->
+            <div
+              class="flex justify-between border-b border-black/10 pb-1 mb-1 font-bold text-[10px]"
             >
-              Combat Actions (5.5e)
-            </h4>
-            <div class="grid grid-cols-1 gap-1 text-[9px] font-label-md">
-              <div class="mb-0.5">
-                <span class="font-bold uppercase block border-b border-black/10 mb-0.5 text-black"
-                  >Actions</span
-                >
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-black">
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Attack
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Dash
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Disengage
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Dodge
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Help
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Hide
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Ready
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Search
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Use Object
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Grapple
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Push/Shove
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Magic
-                  </div>
-                </div>
-              </div>
-              <div class="mb-0.5">
-                <span class="font-bold uppercase block border-b border-black/10 mb-0.5 text-black"
-                  >Bonus Actions</span
-                >
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-black">
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Magic Action
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Class Feature
-                  </div>
-                </div>
-              </div>
-              <div>
-                <span class="font-bold uppercase block border-b border-black/10 mb-0.5 text-black"
-                  >Movement</span
-                >
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-black">
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Move
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Climb/Swim
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Drop Prone
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Crawl
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Stand Up
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span class="w-1 h-1 bg-black rounded-full"></span>Jump
-                  </div>
-                </div>
+              <span>Gold: {{ char?.gold ?? 0 }} GP</span>
+              <span>Supply: {{ char?.supply ?? 0 }}</span>
+              <span>Influence: {{ char?.influence ?? 0 }}</span>
+            </div>
+            <!-- Gear List -->
+            <div v-if="char?.equippedGear && char.equippedGear.length > 0" class="space-y-0.5">
+              <div
+                v-for="item in char.equippedGear.slice(0, 3)"
+                :key="item.id"
+                class="flex justify-between text-[10px]"
+              >
+                <span class="truncate font-medium">⚔️ {{ item.name }}</span>
+                <span class="text-black/60 shrink-0">Cost: {{ item.slotCost }}</span>
               </div>
             </div>
-          </div>
-
-          <!-- Inventory & Equipment Block -->
-          <div class="border border-black p-2 rounded-sm bg-white flex flex-col justify-between">
-            <h4
-              class="font-label-md text-label-md uppercase mb-1 border-b border-black pb-0.5 text-black text-xs"
+            <!-- Consumables List -->
+            <div
+              v-if="char?.consumables && char.consumables.length > 0"
+              class="space-y-0.5 pt-1 border-t border-black/10"
             >
-              Inventory & Equipment
-            </h4>
-            <div class="flex-1 text-black text-xs overflow-hidden space-y-1">
-              <!-- Tri-Currency Row -->
               <div
-                class="flex justify-between border-b border-black/10 pb-1 mb-1 font-bold text-[10px]"
+                v-for="item in char.consumables.slice(0, 3)"
+                :key="item.id"
+                class="flex justify-between text-[10px]"
               >
-                <span>Gold: {{ char?.gold ?? 0 }} GP</span>
-                <span>Supply: {{ char?.supply ?? 0 }}</span>
-                <span>Influence: {{ char?.influence ?? 0 }}</span>
+                <span class="truncate">🎒 {{ item.name }}</span>
+                <span class="text-black/60 shrink-0">{{ item.usageDie }}</span>
               </div>
-              <!-- Gear List -->
-              <div v-if="char?.equippedGear && char.equippedGear.length > 0" class="space-y-0.5">
-                <div
-                  v-for="item in char.equippedGear.slice(0, 3)"
-                  :key="item.id"
-                  class="flex justify-between text-[10px]"
-                >
-                  <span class="truncate font-medium">⚔️ {{ item.name }}</span>
-                  <span class="text-black/60 shrink-0">Cost: {{ item.slotCost }}</span>
-                </div>
-              </div>
-              <!-- Consumables List -->
-              <div
-                v-if="char?.consumables && char.consumables.length > 0"
-                class="space-y-0.5 pt-1 border-t border-black/10"
-              >
-                <div
-                  v-for="item in char.consumables.slice(0, 3)"
-                  :key="item.id"
-                  class="flex justify-between text-[10px]"
-                >
-                  <span class="truncate">🎒 {{ item.name }}</span>
-                  <span class="text-black/60 shrink-0">{{ item.usageDie }}</span>
-                </div>
-              </div>
-              <div
-                v-if="
-                  (!char?.equippedGear || char.equippedGear.length === 0) &&
-                  (!char?.consumables || char.consumables.length === 0)
-                "
-                class="text-black/50 italic text-center py-4"
-              >
-                No equipment or consumables.
-              </div>
+            </div>
+            <div
+              v-if="
+                (!char?.equippedGear || char.equippedGear.length === 0) &&
+                (!char?.consumables || char.consumables.length === 0)
+              "
+              class="text-black/50 italic text-center py-4"
+            >
+              No equipment or consumables.
             </div>
           </div>
         </div>
