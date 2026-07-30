@@ -17,10 +17,17 @@ const store = useCharacterStore()
       </div>
 
       <textarea
+        v-if="store.isEditing"
         v-model="store.currentCharacterData.jobInParty"
         class="w-full bg-surface-dim border border-outline-variant rounded p-4 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none transition-all textarea-styled"
         placeholder="e.g., The arcane researcher who provides historical context and ritual support..."
       ></textarea>
+      <p
+        v-else
+        class="text-on-surface font-body-md italic bg-surface-dim border border-outline-variant rounded p-4"
+      >
+        {{ store.currentCharacterData.jobInParty || 'None' }}
+      </p>
     </section>
 
     <!-- Backstory -->
@@ -47,11 +54,19 @@ const store = useCharacterStore()
       </div>
 
       <textarea
+        v-if="store.isEditing"
         v-model="store.currentCharacterData.personality.notes"
         class="w-full bg-transparent border border-[#cca72f]/30 rounded p-4 text-[#241a00] font-headline-md text-lg leading-relaxed focus:border-[#574400] outline-none transition-all"
         placeholder="Begin your tale here... Where were you born? What drove you to the life of an aspirant?"
         style="min-height: 400px; font-family: 'EB Garamond', serif"
       ></textarea>
+      <p
+        v-else
+        class="text-[#241a00] font-headline-md text-lg leading-relaxed italic bg-transparent border border-[#cca72f]/30 rounded p-4"
+        style="min-height: 400px; font-family: 'EB Garamond', serif"
+      >
+        {{ store.currentCharacterData.personality.notes || 'No backstory written yet.' }}
+      </p>
     </section>
   </div>
 
