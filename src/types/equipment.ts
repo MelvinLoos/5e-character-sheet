@@ -40,6 +40,7 @@ export type EquipmentTag =
   | 'thrown'
   | 'two-handed'
   | 'versatile'
+  | 'reach'
   | 'loading'
   | 'ammunition'
   | 'silvered'

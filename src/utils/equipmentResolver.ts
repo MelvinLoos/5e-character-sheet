@@ -350,13 +350,14 @@ export function resolveStartingEquipment(
 
     if (bundle.choices && state.resolvedClassChoices) {
       for (let i = 0; i < bundle.choices.length; i++) {
-        const choice = bundle.choices[i]
+        const choice = bundle.choices[i]!
         if (!choice.options?.length) continue
+        const firstOption = choice.options[0]!
         const resolved = state.resolvedClassChoices.find((rc) => rc.choiceIndex === i)
         if (resolved) {
           classItems.push({ itemId: resolved.selectedItemId, quantity: resolved.selectedQuantity })
         } else {
-          classItems.push({ itemId: choice.options[0].itemId, quantity: choice.options[0].quantity })
+          classItems.push({ itemId: firstOption.itemId, quantity: firstOption.quantity })
         }
       }
     }

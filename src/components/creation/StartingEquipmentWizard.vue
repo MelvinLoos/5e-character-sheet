@@ -557,9 +557,9 @@ const masteryDescriptions: Record<string, string> = {
               <li v-for="(choice, ci) in selectedBundle.choices" :key="'c-' + ci" class="flex items-start gap-1">
                 <span class="text-tertiary">•</span>
                 <span>
-                  {{ getItemDetail(choiceSelections[ci] || choice.options[0].itemId).name }}
+                  {{ getItemDetail(choiceSelections[ci] || choice.options[0]?.itemId || '').name }}
                   <span class="text-on-surface-variant">(chosen)</span>
-                  <span v-if="getItemDetail(choiceSelections[ci] || choice.options[0].itemId).mastery" class="text-tertiary font-bold ml-1">[{{ getItemDetail(choiceSelections[ci] || choice.options[0].itemId).mastery }}]</span>
+                  <span v-if="getItemDetail(choiceSelections[ci] || choice.options[0]?.itemId || '').mastery" class="text-tertiary font-bold ml-1">[{{ getItemDetail(choiceSelections[ci] || choice.options[0]?.itemId || '').mastery }}]</span>
                 </span>
               </li>
             </ul>
