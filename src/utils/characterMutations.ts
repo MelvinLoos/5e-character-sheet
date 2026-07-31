@@ -11,8 +11,7 @@ import * as DND_RULES from '@/data/rules'
 import { migrateUsesToResource, migrateLevelToRenown } from './migrations'
 import { getMod } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
-import type { EquipmentResolutionResult } from '@/types/equipment'
-import { resolveStartingEquipment, calculateTotalGold } from './equipmentResolver'
+import { resolveStartingEquipment } from './equipmentResolver'
 import type { StartingEquipmentState } from '@/types/equipment'
 
 // ---------------------------------------------------------------------------

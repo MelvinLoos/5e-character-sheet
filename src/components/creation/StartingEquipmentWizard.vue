@@ -2,14 +2,14 @@
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { EQUIPMENT_CATALOG } from '@/data/equipment-items'
-import { CLASS_BUNDLES, BACKGROUND_EQUIPMENT, CLASS_FOCUS_MAP } from '@/data/equipment-bundles'
+import { CLASS_BUNDLES, CLASS_FOCUS_MAP } from '@/data/equipment-bundles'
 import {
   getClassBundle,
   getBackgroundEquipment,
   getTrinketList,
   calculateTotalGold,
 } from '@/utils/equipmentResolver'
-import type { ClassEquipmentBundle, BackgroundEquipment, EquipmentChoice, EquipmentOption } from '@/types/equipment'
+import type { ClassEquipmentBundle, BackgroundEquipment } from '@/types/equipment'
 
 const store = useCharacterStore()
 
@@ -186,14 +186,6 @@ function getItemDetail(itemId: string): { name: string; mastery?: string; dmgDie
     result.desc = `AC ${item.armor.baseAc}` + (item.armor.stealthDisadvantage ? ' (Stealth Disadv.)' : '')
   }
   return result
-}
-
-function formatChoiceOption(opt: EquipmentOption): string {
-  const detail = getItemDetail(opt.itemId)
-  let text = `${detail.name}${opt.quantity > 1 ? ` (×${opt.quantity})` : ''}`
-  if (detail.mastery) text += ` — ${detail.mastery}`
-  if (detail.dmgDie) text += `, ${detail.dmgDie} ${detail.dmgType ?? ''}`
-  return text
 }
 
 const masteryDescriptions: Record<string, string> = {

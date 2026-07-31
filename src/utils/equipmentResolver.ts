@@ -221,10 +221,6 @@ function calculateSlotCost(
   return quantity / 5
 }
 
-function isConsumableCheck(item: import('@/types/equipment').EquipmentItem): boolean {
-  return item.category === 'ammunition' || item.supply === true
-}
-
 /**
  * Maps quantity of supply items to a starting usage die.
  * Lower quantity = lower usage die (fewer resources to deplete).
