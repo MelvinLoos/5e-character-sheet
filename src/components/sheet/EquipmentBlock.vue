@@ -138,7 +138,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
         <div class="h-full" :style="{ width: `\${100 - slotPercentage}%` }"></div>
       </div>
       <p class="font-body-md text-body-md text-on-surface-variant mt-2 text-sm italic">
-        Slots determined by current Strength Score (min 10).
+        Slots determined by current Strength Score (min 15).
       </p>
     </section>
 
@@ -219,7 +219,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
                     : 'bg-surface-variant text-on-surface',
               ]"
             >
-              Cost: {{ gear.slotCost }} Slot{{ gear.slotCost !== 1 ? 's' : '' }}
+              Slots: {{ gear.slotCost }}
             </div>
             <div class="flex items-start gap-4 mb-3">
               <div
@@ -277,7 +277,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
           class="grid grid-cols-12 gap-4 p-4 border-b border-surface-variant bg-surface-container-high font-label-md text-label-md text-on-surface-variant"
         >
           <div class="col-span-6">Item</div>
-          <div class="col-span-3 text-center">Cost</div>
+          <div class="col-span-3 text-center">Slots</div>
           <div class="col-span-3 text-right">Usage Die</div>
         </div>
 
@@ -320,7 +320,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
               type="number"
               class="w-16 bg-background border border-[#1A3C40] rounded p-1 text-center"
             />
-            <span v-else>{{ consumable.slotCost }} Slot(s)</span>
+            <span v-else>{{ consumable.slotCost }} Slots</span>
           </div>
           <div class="col-span-3 text-right flex items-center justify-end gap-2">
             <select

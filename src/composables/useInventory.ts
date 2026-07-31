@@ -27,9 +27,9 @@ export function useInventory(characterStore?: ReturnType<typeof useCharacterStor
     return store.currentCharacterData.abilityScores['str'] || 10
   })
 
-  /** Maximum inventory slots: STR score, clamped to minimum 10. */
+  /** Maximum inventory slots: STR score, clamped to minimum 15 (STR×15 lb for medium creature). */
   const maxSlots: ComputedRef<number> = computed(() => {
-    return Math.max(10, strScore.value)
+    return Math.max(15, strScore.value)
   })
 
   /** Total slots consumed by equipped gear and consumables. */
@@ -43,14 +43,14 @@ export function useInventory(characterStore?: ReturnType<typeof useCharacterStor
     for (const item of consumables) {
       cost += item.slotCost || 0
     }
-    return cost
+    return Math.round(cost * 10) / 10
   })
 
-  /** Encumbrance percentage: (usedSlots / maxSlots) * 100, clamped [0, 100]. */
+  /** Encumbrance percentage: (usedSlots / maxSlots) * 100, clamped [0, 100], rounded to 1 decimal. */
   const slotPercentage: ComputedRef<number> = computed(() => {
     if (maxSlots.value === 0) return 0
     const percent = (usedSlots.value / maxSlots.value) * 100
-    return Math.min(100, Math.max(0, percent))
+    return Math.round(Math.min(100, Math.max(0, percent)) * 10) / 10
   })
 
   /** Remaining available inventory slots. */

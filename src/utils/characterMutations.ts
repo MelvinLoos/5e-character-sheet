@@ -11,6 +11,8 @@ import * as DND_RULES from '@/data/rules'
 import { migrateUsesToResource, migrateLevelToRenown } from './migrations'
 import { getMod } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
+import { resolveStartingEquipment } from './equipmentResolver'
+import type { StartingEquipmentState } from '@/types/equipment'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -135,7 +137,7 @@ export function migrateCharacterData(data: unknown): CharacterData {
   if (migrated.supply === undefined) migrated.supply = 0
   if (migrated.influence === undefined) migrated.influence = 0
   if (migrated.inventorySlots === undefined) {
-    migrated.inventorySlots = Math.max(10, (migrated.abilityScores as Record<string, number>)?.str || 10)
+    migrated.inventorySlots = Math.max(15, (migrated.abilityScores as Record<string, number>)?.str || 10)
   }
   if (!migrated.equippedGear) migrated.equippedGear = []
   if (!migrated.consumables) migrated.consumables = []
@@ -424,6 +426,95 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
       hp_current: hpCurrent ?? maxHp,
     },
     spellcasting,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// applyStartingEquipment
+// ---------------------------------------------------------------------------
+
+/**
+ * Apply starting equipment to a character based on their class, background,
+ * and the player's equipment selection state.
+ *
+ * This resolves the Class Option (A/B/C) and Background Option (A/B)
+ * into concrete inventory items, attack entries, and gold.
+ *
+ * @param char  - The character to apply equipment to
+ * @param state - The transient equipment selection state from the creation wizard
+ * @returns A new CharacterData with equipment, attacks, and gold applied
+ */
+export function applyStartingEquipment(
+  char: CharacterData,
+  state: StartingEquipmentState,
+): CharacterData {
+  if (!char.class || !char.background) {
+    // Can't resolve equipment without class and background
+    return { ...char }
+  }
+
+  // Resolve all equipment from selections
+  const resolution = resolveStartingEquipment(
+    state,
+    char.class,
+    char.background,
+  )
+
+  // Clone existing arrays to maintain immutability
+  const existingGear = [...(char.equippedGear || [])]
+  const existingConsumables = [...(char.consumables || [])]
+  const existingAttacks = [...(char.attacks || [])]
+  const existingFeatures = [...(char.features || [])]
+
+  // Append resolved gear (don't replace — player may have manually added items)
+  for (const gear of resolution.equippedGear) {
+    existingGear.push(gear)
+  }
+
+  // Append resolved consumables
+  for (const consumable of resolution.consumables) {
+    existingConsumables.push(consumable)
+  }
+
+  // Append generated attack entries
+  for (const attack of resolution.attacks) {
+    existingAttacks.push({
+      name: attack.name,
+      dmgDie: attack.dmgDie,
+      type: attack.type,
+      weaponMastery: attack.weaponMastery,
+      atkStat: attack.atkStat,
+      dmgStat: attack.dmgStat,
+      dmgBonus: attack.dmgBonus || 0,
+      notes: attack.notes,
+    })
+  }
+
+  // Add spellcasting focus feature if applicable
+  for (const grant of resolution.focusGrants) {
+    if (grant.type === 'focus') {
+      const focusFeature: CharacterFeature = {
+        title: 'Spellcasting Focus',
+        desc: `You possess a ${grant.target} focus, allowing you to use Magic Actions for your spells. This focus is required for casting spells with material components.`,
+        source: 'Starting Equipment',
+        featureType: 'Class Feature',
+        actionType: 'Magic Action' as CharacterFeature['actionType'],
+      }
+
+      // Avoid duplicates
+      if (!existingFeatures.some((f) => f.title === 'Spellcasting Focus')) {
+        existingFeatures.push(focusFeature)
+      }
+    }
+  }
+
+  return {
+    ...char,
+    equippedGear: existingGear,
+    consumables: existingConsumables,
+    attacks: existingAttacks,
+    features: existingFeatures,
+    gold: (char.gold || 0) + resolution.gold.totalGold,
   }
 }
 

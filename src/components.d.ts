@@ -37,6 +37,7 @@ declare module 'vue' {
     SheetHeader: typeof import('./components/sheet/SheetHeader.vue')['default']
     SkillsList: typeof import('./components/sheet/SkillsList.vue')['default']
     SpellcastingBlock: typeof import('./components/sheet/SpellcastingBlock.vue')['default']
+    StartingEquipmentWizard: typeof import('./components/creation/StartingEquipmentWizard.vue')['default']
     ThemeToggle: typeof import('./components/ThemeToggle.vue')['default']
     UpdateNotification: typeof import('./components/UpdateNotification.vue')['default']
   }
@@ -69,6 +70,7 @@ declare global {
   const SheetHeader: typeof import('./components/sheet/SheetHeader.vue')['default']
   const SkillsList: typeof import('./components/sheet/SkillsList.vue')['default']
   const SpellcastingBlock: typeof import('./components/sheet/SpellcastingBlock.vue')['default']
+  const StartingEquipmentWizard: typeof import('./components/creation/StartingEquipmentWizard.vue')['default']
   const ThemeToggle: typeof import('./components/ThemeToggle.vue')['default']
   const UpdateNotification: typeof import('./components/UpdateNotification.vue')['default']
 }
