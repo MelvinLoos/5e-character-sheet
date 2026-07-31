@@ -303,7 +303,7 @@ function setActiveCategory(cat: string) {
 
             <!-- Resource usage display -->
             <div
-              v-if="feat.resource"
+              v-if="feat.resource && (feat.used !== undefined ? feat.used : 0) < (store.getFeatureMaxUses(feat) || 0)"
               class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
             >
               <div class="flex items-center gap-1">
@@ -311,6 +311,8 @@ function setActiveCategory(cat: string) {
                   v-for="n in store.getFeatureMaxUses(feat)"
                   :key="n"
                   type="checkbox"
+                  :checked="n <= (feat.used || 0)"
+                  @change="feat.used = feat.used === n ? n - 1 : n"
                   class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container-high"
                 />
               </div>
@@ -328,6 +330,8 @@ function setActiveCategory(cat: string) {
                   v-for="n in feat.uses.total"
                   :key="n"
                   type="checkbox"
+                  :checked="n <= (feat.used || 0)"
+                  @change="feat.used = feat.used === n ? n - 1 : n"
                   class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container-high"
                 />
               </div>
