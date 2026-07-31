@@ -203,17 +203,6 @@ const queryParams = computed(() => {
         </div>
       </li>
 
-      <!-- Manual Controls -->
-      <li>
-        <div class="px-4 py-2">
-          <button
-            @click="showImportModal = true"
-            class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md py-2 rounded text-sm transition-colors"
-          >
-            Import Data
-          </button>
-        </div>
-      </li>
     </ul>
 
     <div
@@ -229,6 +218,16 @@ const queryParams = computed(() => {
       >
         <span class="material-symbols-outlined">{{ store.isEditing ? 'edit' : 'visibility' }}</span>
         {{ store.isEditing ? 'Editing…' : 'Edit Mode' }}
+      </button>
+
+      <!-- Import -->
+      <button
+        @click="showImportModal = true"
+        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        title="Import JSON"
+      >
+        <span class="material-symbols-outlined">file_upload</span>
+        Import Data
       </button>
 
       <!-- Save -->

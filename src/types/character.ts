@@ -39,6 +39,7 @@ export interface CharacterFeature {
   casterType?: CasterType | string | null
   uses?: LegacyUses | null
   resource?: ResourceData | null
+  used?: number
   grantsSpells?: boolean
   grantedSpellLevels?: number[]
   abilityModifiers?: Record<string, number>
