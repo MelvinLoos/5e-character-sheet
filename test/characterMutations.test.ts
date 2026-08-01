@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   migrateCharacterData,
   applyBackgroundSkills,
+  applyClassSkills,
+  cleanupInvalidSkills,
   applyBackgroundFeature,
   applyClassFeatures,
   applySpeciesTraits,
@@ -128,6 +130,104 @@ describe('applyBackgroundSkills', () => {
     const char = makeChar({ background: 'Acolyte', proficiencies: { savingThrows: [], skills: [] } })
     const result = applyBackgroundSkills(char)
     expect(result.proficiencies.skills[0]).toBe('insight') // not 'Insight'
+  })
+})
+
+// ---------------------------------------------------------------------------
+// applyClassSkills (4 tests)
+// ---------------------------------------------------------------------------
+
+describe('applyClassSkills', () => {
+  it('adds class fixed skills when present', () => {
+    const char = makeChar({
+      class: 'Fighter',
+      proficiencies: { savingThrows: [], skills: [] },
+    })
+    const result = applyClassSkills(char)
+    // Fighter has no fixedSkills in current data, so skills should be unchanged
+    expect(result.proficiencies.skills).toEqual([])
+  })
+
+  it('does nothing for null class', () => {
+    const char = makeChar({ class: null, proficiencies: { savingThrows: [], skills: [] } })
+    const result = applyClassSkills(char)
+    expect(result.proficiencies.skills).toEqual([])
+  })
+
+  it('deduplicates skills already present', () => {
+    const char = makeChar({
+      class: 'Fighter',
+      proficiencies: { savingThrows: [], skills: ['athletics'] },
+    })
+    const result = applyClassSkills(char)
+    expect(result.proficiencies.skills.filter((s: string) => s === 'athletics')).toHaveLength(1)
+  })
+
+  it('never overwrites manual user choices', () => {
+    const char = makeChar({
+      class: 'Fighter',
+      proficiencies: { savingThrows: [], skills: ['arcana', 'athletics'] },
+    })
+    const result = applyClassSkills(char)
+    // Manual choices preserved
+    expect(result.proficiencies.skills).toContain('arcana')
+    expect(result.proficiencies.skills).toContain('athletics')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// cleanupInvalidSkills (4 tests)
+// ---------------------------------------------------------------------------
+
+describe('cleanupInvalidSkills', () => {
+  it('removes skills not valid for current class/background', () => {
+    const char = makeChar({
+      class: 'Fighter',
+      background: 'Acolyte',
+      proficiencies: {
+        savingThrows: [],
+        skills: ['insight', 'religion', 'arcana', 'stealth'],
+      },
+    })
+    const result = cleanupInvalidSkills(char)
+    // Acolyte grants insight, religion. Fighter choices include arcana? No — Fighter list doesn't include arcana.
+    // Fighter skillChoices.from: Acrobatics, Animal Handling, Athletics, History, Insight, Intimidation, Perception, Survival
+    expect(result.proficiencies.skills).toContain('insight')
+    expect(result.proficiencies.skills).toContain('religion')
+    expect(result.proficiencies.skills).not.toContain('stealth')
+  })
+
+  it('keeps skills in class skillChoices.from list', () => {
+    const char = makeChar({
+      class: 'Fighter',
+      background: null,
+      proficiencies: { savingThrows: [], skills: ['athletics', 'perception'] },
+    })
+    const result = cleanupInvalidSkills(char)
+    expect(result.proficiencies.skills).toContain('athletics')
+    expect(result.proficiencies.skills).toContain('perception')
+  })
+
+  it('keeps all skills when class has from: any', () => {
+    const char = makeChar({
+      class: 'Bard',
+      background: null,
+      proficiencies: { savingThrows: [], skills: ['arcana', 'stealth', 'performance'] },
+    })
+    const result = cleanupInvalidSkills(char)
+    expect(result.proficiencies.skills).toContain('arcana')
+    expect(result.proficiencies.skills).toContain('stealth')
+    expect(result.proficiencies.skills).toContain('performance')
+  })
+
+  it('removes all skills when no class and no background', () => {
+    const char = makeChar({
+      class: null,
+      background: null,
+      proficiencies: { savingThrows: [], skills: ['arcana', 'stealth'] },
+    })
+    const result = cleanupInvalidSkills(char)
+    expect(result.proficiencies.skills).toEqual([])
   })
 })
 

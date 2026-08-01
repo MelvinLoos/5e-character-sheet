@@ -173,6 +173,108 @@ export function applyBackgroundSkills(char: CharacterData): CharacterData {
 }
 
 // ---------------------------------------------------------------------------
+// applyClassSkills
+// ---------------------------------------------------------------------------
+
+/**
+ * Merge the current class's fixed skill proficiencies into the character's
+ * proficiency list. Skills are normalized (lowercase, no spaces) and
+ * deduplicated. This NEVER overwrites manual user choices — it only adds
+ * fixed skills granted by the class.
+ */
+export function applyClassSkills(char: CharacterData): CharacterData {
+  if (!char.class) return { ...char }
+
+  const classData = DND_RULES.CLASSES[char.class]
+  if (!classData?.fixedSkills) return { ...char }
+
+  const currentSkills = new Set(char.proficiencies.skills)
+  for (const skill of classData.fixedSkills) {
+    currentSkills.add(skill.toLowerCase().replace(/ /g, ''))
+  }
+
+  return {
+    ...char,
+    proficiencies: {
+      ...char.proficiencies,
+      skills: Array.from(currentSkills),
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// cleanupInvalidSkills
+// ---------------------------------------------------------------------------
+
+/**
+ * Remove skills from the character's proficiency list that are no longer
+ * valid given the current class and background. A skill is considered valid
+ * if it is:
+ *  - a fixed skill granted by the current background
+ *  - a fixed skill granted by the current class
+ *  - in the current class's skillChoices.from list (or 'any')
+ *  - in the current background's skillChoices.from list (or 'any')
+ *
+ * This prevents stale skills from a previously selected class/background
+ * from lingering after the player changes their selection.
+ */
+export function cleanupInvalidSkills(char: CharacterData): CharacterData {
+  const validSkills = new Set<string>()
+
+  // Background fixed skills + skill choices
+  if (char.background) {
+    const bgData = DND_RULES.BACKGROUNDS[char.background]
+    for (const skill of bgData?.skills || []) {
+      validSkills.add(skill.toLowerCase().replace(/ /g, ''))
+    }
+    const bgChoices = bgData?.skillChoices
+    if (bgChoices) {
+      if (bgChoices.from === 'any') {
+        for (const skill of Object.keys(DND_RULES.SKILLS)) {
+          validSkills.add(skill.toLowerCase().replace(/ /g, ''))
+        }
+      } else {
+        for (const skill of bgChoices.from) {
+          validSkills.add(skill.toLowerCase().replace(/ /g, ''))
+        }
+      }
+    }
+  }
+
+  // Class fixed skills + skill choices
+  if (char.class) {
+    const classData = DND_RULES.CLASSES[char.class]
+    for (const skill of classData?.fixedSkills || []) {
+      validSkills.add(skill.toLowerCase().replace(/ /g, ''))
+    }
+    const classChoices = classData?.skillChoices
+    if (classChoices) {
+      if (classChoices.from === 'any') {
+        for (const skill of Object.keys(DND_RULES.SKILLS)) {
+          validSkills.add(skill.toLowerCase().replace(/ /g, ''))
+        }
+      } else {
+        for (const skill of classChoices.from) {
+          validSkills.add(skill.toLowerCase().replace(/ /g, ''))
+        }
+      }
+    }
+  }
+
+  const filteredSkills = (char.proficiencies.skills || []).filter((skill) =>
+    validSkills.has(skill),
+  )
+
+  return {
+    ...char,
+    proficiencies: {
+      ...char.proficiencies,
+      skills: filteredSkills,
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
 // applyBackgroundFeature
 // ---------------------------------------------------------------------------
 
@@ -439,7 +541,10 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
 export function applyAllChanges(char: CharacterData): CharacterData {
   let result = cloneChar(char)
   result = applyBackgroundBonuses(result)
+  // Clean up stale skills before re-applying current class/background grants
+  result = cleanupInvalidSkills(result)
   result = applyBackgroundSkills(result)
+  result = applyClassSkills(result)
   result = applyBackgroundFeature(result)
   result = applyClassFeatures(result)
   result = applySpeciesTraits(result)

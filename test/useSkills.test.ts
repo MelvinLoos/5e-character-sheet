@@ -187,4 +187,134 @@ describe('useSkills', () => {
       expect(acrobaticsEntry?.mod).toBe(2) // 2 + 0
     })
   })
+
+  describe('lockedSkills', () => {
+    it('returns background fixed skills as locked', () => {
+      store.currentCharacterData.background = 'Acolyte'
+      const { lockedSkills } = useSkills(store)
+      expect(lockedSkills.value).toContain('insight')
+      expect(lockedSkills.value).toContain('religion')
+    })
+
+    it('returns empty when no background and no class fixed skills', () => {
+      store.currentCharacterData.background = null
+      store.currentCharacterData.class = 'Fighter' // Fighter has no fixedSkills
+      const { lockedSkills } = useSkills(store)
+      expect(lockedSkills.value).toEqual([])
+    })
+  })
+
+  describe('classSkillOptions', () => {
+    it('returns the class skillChoices for a class with choices', () => {
+      store.currentCharacterData.class = 'Fighter'
+      const { classSkillOptions } = useSkills(store)
+      expect(classSkillOptions.value).toEqual({
+        count: 2,
+        from: expect.any(Array),
+      })
+    })
+
+    it('returns null when no class selected', () => {
+      store.currentCharacterData.class = null
+      const { classSkillOptions } = useSkills(store)
+      expect(classSkillOptions.value).toBeNull()
+    })
+  })
+
+  describe('remainingChoices', () => {
+    it('returns 0 when no class selected', () => {
+      store.currentCharacterData.class = null
+      const { remainingChoices } = useSkills(store)
+      expect(remainingChoices.value).toBe(0)
+    })
+
+    it('returns max count minus manually selected non-locked skills', () => {
+      store.currentCharacterData.class = 'Fighter' // count: 2
+      store.currentCharacterData.background = 'Acolyte' // locked: insight, religion
+      store.currentCharacterData.proficiencies.skills = ['insight', 'athletics']
+      const { remainingChoices } = useSkills(store)
+      // insight is locked, athletics is manual → 2 - 1 = 1
+      expect(remainingChoices.value).toBe(1)
+    })
+
+    it('returns 0 when all choices used', () => {
+      store.currentCharacterData.class = 'Fighter' // count: 2
+      store.currentCharacterData.proficiencies.skills = ['athletics', 'perception']
+      const { remainingChoices } = useSkills(store)
+      expect(remainingChoices.value).toBe(0)
+    })
+  })
+
+  describe('isSkillDisabled', () => {
+    it('disables locked skills', () => {
+      store.currentCharacterData.background = 'Acolyte'
+      const { isSkillDisabled } = useSkills(store)
+      expect(isSkillDisabled('Insight')).toBe(true)
+      expect(isSkillDisabled('Religion')).toBe(true)
+    })
+
+    it('disables all skills when no class selected', () => {
+      store.currentCharacterData.class = null
+      const { isSkillDisabled } = useSkills(store)
+      expect(isSkillDisabled('Athletics')).toBe(true)
+      expect(isSkillDisabled('Stealth')).toBe(true)
+    })
+
+    it('disables skills not in the class from list', () => {
+      store.currentCharacterData.class = 'Fighter'
+      const { isSkillDisabled } = useSkills(store)
+      // Fighter list doesn't include Arcana
+      expect(isSkillDisabled('Arcana')).toBe(true)
+      // Fighter list includes Athletics
+      expect(isSkillDisabled('Athletics')).toBe(false)
+    })
+
+    it('allows any skill when class from is any', () => {
+      store.currentCharacterData.class = 'Bard' // from: 'any'
+      const { isSkillDisabled } = useSkills(store)
+      expect(isSkillDisabled('Arcana')).toBe(false)
+      expect(isSkillDisabled('Stealth')).toBe(false)
+    })
+
+    it('disables unselected skills when no remaining choices', () => {
+      store.currentCharacterData.class = 'Fighter' // count: 2
+      store.currentCharacterData.proficiencies.skills = ['athletics', 'perception']
+      const { isSkillDisabled } = useSkills(store)
+      // All 2 choices used, so unselected skills are disabled
+      expect(isSkillDisabled('Survival')).toBe(true)
+      // Already-selected skills remain enabled (can be toggled off)
+      expect(isSkillDisabled('Athletics')).toBe(false)
+    })
+  })
+
+  describe('toggleProficiency with constraints', () => {
+    it('prevents toggling locked skills', () => {
+      store.currentCharacterData.background = 'Acolyte'
+      store.currentCharacterData.proficiencies.skills = ['insight']
+      const { toggleProficiency } = useSkills(store)
+
+      // Try to remove a locked skill
+      toggleProficiency('Insight')
+      expect(store.currentCharacterData.proficiencies.skills).toContain('insight')
+    })
+
+    it('prevents adding skills beyond remaining choices', () => {
+      store.currentCharacterData.class = 'Fighter' // count: 2
+      store.currentCharacterData.proficiencies.skills = ['athletics', 'perception']
+      const { toggleProficiency } = useSkills(store)
+
+      // Try to add a third skill
+      toggleProficiency('Survival')
+      expect(store.currentCharacterData.proficiencies.skills).not.toContain('survival')
+    })
+
+    it('allows adding skills within remaining choices', () => {
+      store.currentCharacterData.class = 'Fighter' // count: 2
+      store.currentCharacterData.proficiencies.skills = ['athletics']
+      const { toggleProficiency } = useSkills(store)
+
+      toggleProficiency('Perception')
+      expect(store.currentCharacterData.proficiencies.skills).toContain('perception')
+    })
+  })
 })

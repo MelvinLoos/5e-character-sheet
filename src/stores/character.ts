@@ -15,9 +15,6 @@ import type { CharacterData } from '@/domain'
 import { logger } from '../utils/logger'
 import {
   migrateCharacterData,
-  applyBackgroundSkills,
-  applyBackgroundFeature,
-  applyClassFeatures,
   applySpeciesTraits,
   applyBackgroundBonuses,
   calculateDerivedStats,
@@ -620,26 +617,24 @@ export const useCharacterStore = defineStore('character', () => {
 
   /**
    * Apply a background change: set the background value, then pipe the
-   * character through background skills, background feature, and derived
-   * stat recalculation.
+   * character through the full mutation pipeline (cleanup, background
+   * skills, class skills, features, and derived stat recalculation).
    */
   function applyBackgroundChange(newBackground: string): void {
     if (!currentCharacterData.value) return
     currentCharacterData.value.background = newBackground
-    currentCharacterData.value = applyBackgroundSkills(currentCharacterData.value)
-    currentCharacterData.value = applyBackgroundFeature(currentCharacterData.value)
-    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+    currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
 
   /**
    * Apply a class change: set the class value, then pipe the character
-   * through class features and derived stat recalculation.
+   * through the full mutation pipeline (cleanup, background skills,
+   * class skills, features, and derived stat recalculation).
    */
   function applyClassChange(newClass: string): void {
     if (!currentCharacterData.value) return
     currentCharacterData.value.class = newClass
-    currentCharacterData.value = applyClassFeatures(currentCharacterData.value)
-    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+    currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
 
   /**
