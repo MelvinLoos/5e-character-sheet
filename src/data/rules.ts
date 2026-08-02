@@ -252,6 +252,10 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 12,
     hitDiceAverage: 7,
     savingThrows: ['str', 'con'],
+    skillChoices: {
+      count: 2,
+      from: ['Animal Handling', 'Athletics', 'Intimidation', 'Nature', 'Perception', 'Survival'],
+    },
     features: [
       {
         title: 'Rage',
@@ -271,6 +275,10 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 8,
     hitDiceAverage: 5,
     savingThrows: ['dex', 'cha'],
+    skillChoices: {
+      count: 3,
+      from: 'any',
+    },
     features: [
       {
         title: 'Spellcasting (Bard)',
@@ -291,6 +299,10 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 8,
     hitDiceAverage: 5,
     savingThrows: ['wis', 'cha'],
+    skillChoices: {
+      count: 2,
+      from: ['History', 'Insight', 'Medicine', 'Persuasion', 'Religion'],
+    },
     features: [
       {
         title: 'Spellcasting (Cleric)',
@@ -312,6 +324,19 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 8,
     hitDiceAverage: 5,
     savingThrows: ['int', 'wis'],
+    skillChoices: {
+      count: 2,
+      from: [
+        'Animal Handling',
+        'Arcana',
+        'Insight',
+        'Medicine',
+        'Nature',
+        'Perception',
+        'Religion',
+        'Survival',
+      ],
+    },
     features: [
       {
         title: 'Spellcasting (Druid)',
@@ -332,6 +357,19 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 10,
     hitDiceAverage: 6,
     savingThrows: ['str', 'con'],
+    skillChoices: {
+      count: 2,
+      from: [
+        'Acrobatics',
+        'Animal Handling',
+        'Athletics',
+        'History',
+        'Insight',
+        'Intimidation',
+        'Perception',
+        'Survival',
+      ],
+    },
     features: [
       {
         title: 'Second Wind',
@@ -347,6 +385,19 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 10,
     hitDiceAverage: 6,
     savingThrows: ['str', 'dex'],
+    skillChoices: {
+      count: 3,
+      from: [
+        'Animal Handling',
+        'Athletics',
+        'Insight',
+        'Investigation',
+        'Nature',
+        'Perception',
+        'Stealth',
+        'Survival',
+      ],
+    },
     features: [
       {
         title: 'Spellcasting (Ranger)',
@@ -366,6 +417,22 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 8,
     hitDiceAverage: 5,
     savingThrows: ['dex', 'int'],
+    skillChoices: {
+      count: 4,
+      from: [
+        'Acrobatics',
+        'Athletics',
+        'Deception',
+        'Insight',
+        'Intimidation',
+        'Investigation',
+        'Perception',
+        'Performance',
+        'Persuasion',
+        'Sleight of Hand',
+        'Stealth',
+      ],
+    },
     features: [
       {
         title: 'Sneak Attack',
@@ -384,6 +451,10 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 6,
     hitDiceAverage: 4,
     savingThrows: ['con', 'cha'],
+    skillChoices: {
+      count: 2,
+      from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'],
+    },
     features: [
       {
         title: 'Spellcasting (Sorcerer)',
@@ -398,6 +469,10 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 8,
     hitDiceAverage: 5,
     savingThrows: ['wis', 'cha'],
+    skillChoices: {
+      count: 2,
+      from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'],
+    },
     features: [
       {
         title: 'Pact Magic (Warlock)',
@@ -412,6 +487,10 @@ export const CLASSES: Record<string, ClassData> = {
     hitDice: 6,
     hitDiceAverage: 4,
     savingThrows: ['int', 'wis'],
+    skillChoices: {
+      count: 2,
+      from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'],
+    },
     features: [
       {
         title: 'Spellcasting (Wizard)',

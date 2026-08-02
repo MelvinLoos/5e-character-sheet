@@ -22,6 +22,7 @@ export function normalizeSkillName(name: string): string {
  * - Proficiency membership checks
  * - Modifier calculation (ability mod + proficiency bonus)
  * - Proficiency toggling
+ * - Class/Background skill choice enforcement
  *
  * @param characterStore - Optional pre-existing character store instance.
  *   If omitted, calls useCharacterStore() internally.
@@ -73,8 +74,99 @@ export function useSkills(characterStore?: ReturnType<typeof useCharacterStore>)
   })
 
   /**
+   * Fixed skill proficiencies granted automatically by the current
+   * background and class. These skills cannot be toggled off by the player.
+   */
+  const lockedSkills: ComputedRef<string[]> = computed(() => {
+    const locked = new Set<string>()
+
+    // Background fixed skills
+    if (store.currentCharacterData.background) {
+      const bgData = DND_RULES.BACKGROUNDS[store.currentCharacterData.background]
+      for (const skill of bgData?.skills || []) {
+        locked.add(normalizeSkillName(skill))
+      }
+    }
+
+    // Class fixed skills
+    if (store.currentCharacterData.class) {
+      const classData = DND_RULES.CLASSES[store.currentCharacterData.class]
+      for (const skill of classData?.fixedSkills || []) {
+        locked.add(normalizeSkillName(skill))
+      }
+    }
+
+    return Array.from(locked)
+  })
+
+  /**
+   * The current class's skill choice rule (e.g. { count: 2, from: [...] }).
+   * Returns null if no class is selected or the class has no skill choices.
+   */
+  const classSkillOptions: ComputedRef<{ count: number; from: string[] | 'any' } | null> =
+    computed(() => {
+      if (!store.currentCharacterData.class) return null
+      const classData = DND_RULES.CLASSES[store.currentCharacterData.class]
+      return classData?.skillChoices ?? null
+    })
+
+  /**
+   * The number of class skill choices the player still has remaining.
+   * Computed as: max class choices - number of manually selected skills
+   * that are NOT locked (i.e. skills the player chose themselves).
+   */
+  const remainingChoices: ComputedRef<number> = computed(() => {
+    const options = classSkillOptions.value
+    if (!options) return 0
+
+    const locked = new Set(lockedSkills.value)
+    const manuallySelected = store.currentCharacterData.proficiencies.skills.filter(
+      (skill) => !locked.has(skill),
+    )
+
+    return Math.max(0, options.count - manuallySelected.length)
+  })
+
+  /**
+   * Determines whether a skill's checkbox should be disabled in the UI.
+   *
+   * Returns true if:
+   *  - The skill is a locked (auto-granted) skill.
+   *  - No class is selected.
+   *  - The skill is not in the class's `from` list (unless 'any').
+   *  - The player has no remaining choices and the skill is not currently selected.
+   */
+  function isSkillDisabled(skillName: string): boolean {
+    const normName = normalizeSkillName(skillName)
+
+    // Locked skills (auto-granted) cannot be toggled
+    if (lockedSkills.value.includes(normName)) return true
+
+    // No class selected → no class skill choices available
+    if (!store.currentCharacterData.class) return true
+
+    const options = classSkillOptions.value
+    if (!options) return true
+
+    // Skill must be in the class's allowed list (unless 'any')
+    if (options.from !== 'any' && !options.from.some((s) => normalizeSkillName(s) === normName)) {
+      return true
+    }
+
+    // If no remaining choices and the skill isn't already selected, disable it
+    if (remainingChoices.value <= 0 && !isProficient.value(skillName)) {
+      return true
+    }
+
+    return false
+  }
+
+  /**
    * Toggles a skill's proficiency on/off. Only operates when
    * store.isEditing is true (non-editing mode is a no-op).
+   *
+   * Respects locked skills (cannot be toggled off) and the class
+   * "choose N" limit (cannot add more than the allowed count).
    */
   function toggleProficiency(name: string): void {
     if (!store.isEditing) return
@@ -84,8 +176,12 @@ export function useSkills(characterStore?: ReturnType<typeof useCharacterStore>)
     const index = skills.indexOf(normName)
 
     if (index === -1) {
+      // Adding a new skill — respect locked skills and remaining choices
+      if (isSkillDisabled(name)) return
       skills.push(normName)
     } else {
+      // Removing a skill — locked skills cannot be removed
+      if (lockedSkills.value.includes(normName)) return
       skills.splice(index, 1)
     }
   }
@@ -95,5 +191,9 @@ export function useSkills(characterStore?: ReturnType<typeof useCharacterStore>)
     skillMod,
     allSkillMods,
     toggleProficiency,
+    lockedSkills,
+    classSkillOptions,
+    remainingChoices,
+    isSkillDisabled,
   }
 }
