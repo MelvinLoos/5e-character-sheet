@@ -12,6 +12,7 @@ import { migrateUsesToResource, migrateLevelToRenown } from './migrations'
 import { getMod } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 import { resolveStartingEquipment } from './equipmentResolver'
+import { calculateArmorClass } from './acCalculator'
 import type { StartingEquipmentState } from '@/types/equipment'
 
 // ---------------------------------------------------------------------------
@@ -114,9 +115,12 @@ export function migrateCharacterData(data: unknown): CharacterData {
 
   // Ensure combat
   if (!migrated.combat) {
-    migrated.combat = { ac: 10, hp_max: 1, hp_current: 1, speed: '30ft' }
+    migrated.combat = { ac: 10, isAcOverride: false, hp_max: 1, hp_current: 1, speed: '30ft' }
   } else {
     const combat = migrated.combat as Record<string, unknown>
+    if (combat.isAcOverride === undefined) {
+      combat.isAcOverride = false
+    }
     if (combat.hp_current === undefined) {
       combat.hp_current = combat.hp_max || 1
     }
@@ -519,11 +523,18 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
     spellcasting = null
   }
 
+  // AC calculation (only when manual override is off)
+  const dexMod = abilityMods['dex'] ?? 0
+  const ac = char.combat.isAcOverride
+    ? char.combat.ac
+    : calculateArmorClass(char.equippedGear ?? [], dexMod)
+
   return {
     ...char,
     profBonus: prof,
     combat: {
       ...char.combat,
+      ac,
       hp_max: maxHp,
       hp_current: hpCurrent ?? maxHp,
     },

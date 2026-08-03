@@ -30,6 +30,7 @@ import {
 } from '@/infra'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
 import { loadSchema, getSchema, validateCharacterData } from '@/domain'
+import { calculateArmorClass } from '@/utils/acCalculator'
 import { STORAGE_KEYS } from '../constants/storage-keys'
 
 export const useCharacterStore = defineStore('character', () => {
@@ -155,6 +156,18 @@ export const useCharacterStore = defineStore('character', () => {
     if (spd) return spd
     const sp = currentCharacterData.value?.species
     return sp ? DND_RULES.SPECIES[sp]?.speed ?? '30ft' : '30ft'
+  })
+
+  /**
+   * Dynamically calculated Armor Class from equipped armor, shields, and DEX.
+   * If the user has enabled manual AC override, the stored manual value is used.
+   */
+  const computedArmorClass = computed(() => {
+    const char = currentCharacterData.value
+    if (!char) return 10
+    if (char.combat.isAcOverride) return char.combat.ac
+    const dexMod = abilityMods.value.dex ?? 0
+    return calculateArmorClass(char.equippedGear ?? [], dexMod)
   })
 
   function getFeatureMaxUses(feature: unknown): number | null {
@@ -789,6 +802,7 @@ export const useCharacterStore = defineStore('character', () => {
     initiativeMod,
     walkingSpeed,
     getFeatureMaxUses,
+    computedArmorClass,
     // Actions
     initStore,
     loadCharacterFromUrl,

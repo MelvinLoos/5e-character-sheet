@@ -36,12 +36,23 @@ const { clampCurrentHp } = useCombat()
             v-if="store.isEditing"
             v-model.number="store.currentCharacterData.combat.ac"
             type="number"
-            class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0"
+            :disabled="!store.currentCharacterData.combat.isAcOverride"
+            class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0 disabled:opacity-70"
           />
           <template v-else>
-            {{ store.currentCharacterData.combat.ac }}
+            {{ store.computedArmorClass }}
           </template>
         </div>
+        <label
+          class="relative z-10 mt-2 inline-flex items-center gap-2 cursor-pointer font-body-sm text-body-sm text-secondary-fixed-dim"
+        >
+          <input
+            v-model="store.currentCharacterData.combat.isAcOverride"
+            type="checkbox"
+            class="form-checkbox h-4 w-4 rounded border-secondary-fixed-dim bg-secondary-container text-primary focus:ring-primary"
+          />
+          <span>Override AC</span>
+        </label>
       </div>
 
       <!-- HP Card -->

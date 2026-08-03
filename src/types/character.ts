@@ -116,6 +116,7 @@ export interface Attack {
 /** Combat statistics block. */
 export interface CombatStats {
   ac: number
+  isAcOverride: boolean
   hp_max: number
   hp_current?: number
   speed: string
