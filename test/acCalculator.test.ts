@@ -12,6 +12,22 @@ function gear(id: string, name: string = id): EquippedGear {
   }
 }
 
+/**
+ * Regression helper: creates EquippedGear the way the equipmentResolver does,
+ * where the runtime id is a random UUID and the catalog reference is stored in
+ * `catalogId`.
+ */
+function resolvedGear(id: string, catalogId: string, name: string = catalogId): EquippedGear {
+  return {
+    id,
+    name,
+    type: 'gear',
+    description: '',
+    slotCost: 1,
+    catalogId,
+  }
+}
+
 describe('calculateArmorClass', () => {
   describe('unarmored', () => {
     it('returns 10 + positive DEX modifier when no armor is equipped', () => {
@@ -104,6 +120,30 @@ describe('calculateArmorClass', () => {
   describe('non-armor gear', () => {
     it('ignores weapons and adventuring gear', () => {
       expect(calculateArmorClass([gear('longsword'), gear('backpack')], 2)).toBe(12)
+    })
+  })
+
+  describe('regression: resolver-generated gear ids', () => {
+    it('falls back to unarmored when only a random UUID id is provided without catalogId', () => {
+      const uuidGear = gear('a1b2c3d4-e5f6-7890-abcd-ef1234567890')
+      expect(calculateArmorClass([uuidGear], -1)).toBe(9)
+    })
+
+    it('uses catalogId to find armor when the runtime id is a random UUID', () => {
+      expect(calculateArmorClass([resolvedGear('uuid-1', 'scale-mail')], -1)).toBe(13)
+    })
+
+    it('uses catalogId to find a shield when the runtime id is a random UUID', () => {
+      expect(calculateArmorClass([resolvedGear('uuid-2', 'shield')], 0)).toBe(12)
+    })
+
+    it('calculates Paladin with Scale Mail and Shield at DEX 8 (-1)', () => {
+      const equipment = [
+        resolvedGear('uuid-3', 'scale-mail', 'Scale Mail'),
+        resolvedGear('uuid-4', 'shield', 'Shield'),
+      ]
+      // Scale Mail base 14 + DEX (-1) = 13; Shield +2 => 15
+      expect(calculateArmorClass(equipment, -1)).toBe(15)
     })
   })
 })

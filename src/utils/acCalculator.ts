@@ -22,7 +22,8 @@ export function calculateArmorClass(
   let hasShield = false
 
   for (const gear of equippedGear) {
-    const item: EquipmentItem | undefined = EQUIPMENT_CATALOG[gear.id]
+    const lookupKey = gear.catalogId ?? gear.id
+    const item: EquipmentItem | undefined = EQUIPMENT_CATALOG[lookupKey]
     if (!item) continue
 
     if (item.category === 'armor' && item.armor) {

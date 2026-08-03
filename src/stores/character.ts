@@ -754,6 +754,22 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
+  // --- Reactive AC recalculation ---
+  // When equipped gear changes and the user is not manually overriding AC,
+  // update combat.ac in place so it stays in sync with the computed value.
+  // We only touch combat.ac (not the whole character object) to avoid a
+  // recursive watcher loop.
+  watch(
+    () => currentCharacterData.value?.equippedGear,
+    () => {
+      const char = currentCharacterData.value
+      if (!char || char.combat.isAcOverride) return
+      const dexMod = getMod(char.abilityScores.dex ?? 10)
+      char.combat.ac = calculateArmorClass(char.equippedGear ?? [], dexMod)
+    },
+    { deep: true },
+  )
+
   // --- Auto-save draft watcher (debounced deep watch) ---
   let draftTimer: ReturnType<typeof setTimeout> | null = null
   watch(

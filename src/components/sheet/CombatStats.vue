@@ -33,15 +33,14 @@ const { clampCurrentHp } = useCombat()
         >
         <div class="font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold">
           <input
-            v-if="store.isEditing"
+            v-if="store.isEditing && store.currentCharacterData.combat.isAcOverride"
             v-model.number="store.currentCharacterData.combat.ac"
             type="number"
-            :disabled="!store.currentCharacterData.combat.isAcOverride"
-            class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0 disabled:opacity-70"
+            class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0"
           />
-          <template v-else>
+          <span v-else>
             {{ store.computedArmorClass }}
-          </template>
+          </span>
         </div>
         <label
           class="relative z-10 mt-2 inline-flex items-center gap-2 cursor-pointer font-body-sm text-body-sm text-secondary-fixed-dim"

@@ -399,6 +399,7 @@ export function resolveStartingEquipment(
   for (const entry of gearEntries) {
     result.equippedGear.push({
       id: crypto.randomUUID ? crypto.randomUUID() : `${entry.itemId}-${Date.now()}-${Math.random()}`,
+      catalogId: entry.itemId,
       name: entry.name,
       type: entry.type,
       description: entry.description,

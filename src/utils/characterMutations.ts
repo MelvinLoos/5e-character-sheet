@@ -8,7 +8,7 @@
  */
 
 import * as DND_RULES from '@/data/rules'
-import { migrateUsesToResource, migrateLevelToRenown } from './migrations'
+import { migrateUsesToResource, migrateLevelToRenown, migrateEquippedGearCatalogIds } from './migrations'
 import { getMod } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 import { resolveStartingEquipment } from './equipmentResolver'
@@ -39,6 +39,7 @@ export function migrateCharacterData(data: unknown): CharacterData {
   // Apply migrations
   migrated = migrateUsesToResource(migrated) as Record<string, unknown>
   migrated = migrateLevelToRenown(migrated) as Record<string, unknown>
+  migrated = migrateEquippedGearCatalogIds(migrated) as Record<string, unknown>
 
   // Ensure jobInParty exists
   migrated.jobInParty = (migrated.jobInParty as string) ?? ''

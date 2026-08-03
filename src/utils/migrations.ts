@@ -1,3 +1,5 @@
+import { EQUIPMENT_CATALOG } from '@/data/equipment-items'
+
 // Migration helpers for character data
 export function migrateUsesToResource(character: unknown) {
   if (!character || typeof character !== 'object') return character
@@ -74,6 +76,52 @@ export function migrateLevelToRenown(character: unknown) {
       ch.renownMilestones = 0
     }
   }
+
+  return ch
+}
+
+/**
+ * Backfill `catalogId` on equipped gear for characters saved before the
+ * dynamic AC feature. Older gear entries only stored a random runtime UUID
+ * in `id`, so the AC calculator could not look them up in EQUIPMENT_CATALOG.
+ *
+ * This migration tries, in order:
+ * 1. If `id` already matches a catalog key, use it as `catalogId`.
+ * 2. Match `name` (case-insensitive, ignoring "(×N)" quantity suffixes) to a catalog item name.
+ */
+export function migrateEquippedGearCatalogIds(character: unknown) {
+  if (!character || typeof character !== 'object') return character
+
+  const ch = character as { equippedGear?: unknown[] }
+  if (!Array.isArray(ch.equippedGear)) return character
+
+  const catalogByName = new Map(
+    Object.values(EQUIPMENT_CATALOG).map((item) => [item.name.toLowerCase(), item.id]),
+  )
+
+  ch.equippedGear = ch.equippedGear.map((g) => {
+    if (!g || typeof g !== 'object') return g
+    const gear = g as Record<string, unknown>
+    if (typeof gear.catalogId === 'string' && gear.catalogId) return gear
+
+    const id = typeof gear.id === 'string' ? gear.id : ''
+    if (EQUIPMENT_CATALOG[id]) {
+      gear.catalogId = id
+      return gear
+    }
+
+    const name = typeof gear.name === 'string' ? gear.name : ''
+    const normalizedName = name
+      .replace(/\s*\(×\d+\)\s*$/, '')
+      .trim()
+      .toLowerCase()
+    const catalogId = catalogByName.get(normalizedName)
+    if (catalogId) {
+      gear.catalogId = catalogId
+    }
+
+    return gear
+  })
 
   return ch
 }
