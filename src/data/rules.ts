@@ -379,6 +379,50 @@ export const CLASSES: Record<string, ClassData> = {
       },
     ],
   },
+  Monk: {
+    description:
+      'A master of martial arts, harnessing the power of the body in pursuit of physical and spiritual perfection.',
+    hitDice: 8,
+    hitDiceAverage: 5,
+    savingThrows: ['str', 'dex'],
+    skillChoices: {
+      count: 2,
+      from: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'],
+    },
+    features: [
+      {
+        title: 'Martial Arts',
+        desc: 'You gain the following benefits while unarmed or wielding only Monk weapons: you can use Dexterity instead of Strength for attack and damage rolls; your unarmed strikes deal 1d6 Bludgeoning damage; and when you take the Attack action, you can make one unarmed strike as a bonus action.',
+        key: true,
+      },
+      {
+        title: 'Unarmored Defense',
+        desc: 'While you are not wearing armor or wielding a shield, your Armor Class equals 10 plus your Dexterity modifier plus your Wisdom modifier.',
+        key: false,
+      },
+      {
+        title: "Monk's Focus",
+        desc: 'You have 2 Focus Points. You can spend these points to use Flurry of Blows, Patient Defense, and Step of the Wind.',
+        uses: { total: 2, per: 'Short Rest' },
+        key: true,
+      },
+      {
+        title: 'Unarmored Movement',
+        desc: 'Your speed increases by 10 feet while you are not wearing armor or wielding a shield.',
+        key: false,
+      },
+      {
+        title: 'Deflect Attacks',
+        desc: 'When an attack roll hits you and its damage includes Bludgeoning, Piercing, or Slashing damage, you can take a Reaction to reduce the attack\'s damage by 1d10 + your Dexterity modifier + your Monk level. If you reduce the damage to 0, you can spend 1 Focus Point to redirect the attack.',
+        key: true,
+      },
+      {
+        title: 'Monk Subclass',
+        desc: 'You choose a Monastic Tradition, which grants you features at level 3, and again at levels 6, 11, and 17.',
+        key: true,
+      },
+    ],
+  },
   Paladin: {
     description:
       'A holy warrior bound to a sacred oath, combining martial prowess with divine magic.',
