@@ -379,6 +379,57 @@ export const CLASSES: Record<string, ClassData> = {
       },
     ],
   },
+  Paladin: {
+    description:
+      'A holy warrior bound to a sacred oath, combining martial prowess with divine magic.',
+    hitDice: 10,
+    hitDiceAverage: 6,
+    savingThrows: ['wis', 'cha'],
+    skillChoices: {
+      count: 2,
+      from: ['Athletics', 'Insight', 'Intimidation', 'Medicine', 'Persuasion', 'Religion'],
+    },
+    features: [
+      {
+        title: 'Lay on Hands',
+        desc: 'You have a pool of healing power equal to your Paladin level × 5. As a Magic action, you can touch a creature and draw from the pool to restore hit points or cure the Poisoned condition.',
+        key: true,
+      },
+      {
+        title: 'Spellcasting',
+        desc: 'You can cast Paladin spells. Charisma is your spellcasting ability.',
+        casterType: 'half',
+        key: true,
+      },
+      {
+        title: 'Weapon Mastery',
+        desc: 'Your training with weapons allows you to use the Mastery property of two kinds of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can change the kinds of weapons you chose.',
+        key: true,
+      },
+      {
+        title: "Paladin's Smite",
+        desc: 'You always have the Divine Smite spell prepared. You can cast it once without expending a spell slot, regaining the ability to do so when you finish a Long Rest.',
+        uses: { total: 1, per: 'Long Rest' },
+        key: true,
+      },
+      {
+        title: 'Fighting Style',
+        desc: 'You gain a Fighting Style feat of your choice.',
+        key: true,
+      },
+      {
+        title: 'Channel Divinity',
+        desc: 'You can channel divine energy directly from the Outer Planes. You start with two options: Divine Sense and an option from your subclass. You can use this feature twice, regaining expended uses on a Short or Long Rest.',
+        uses: { total: 2, per: 'Short or Long Rest' },
+        key: true,
+      },
+      {
+        title: 'Paladin Subclass',
+        desc: 'You choose a Paladin Oath, which grants you specific features at level 3, and again at levels 7, 15, and 20.',
+        key: true,
+      },
+    ],
+  },
   Ranger: {
     description:
       'A warrior who uses martial prowess and nature magic to combat threats on the edges of civilization.',
