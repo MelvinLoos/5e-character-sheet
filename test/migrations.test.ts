@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { migrateUsesToResource } from '../src/utils/migrations'
+import { migrateUsesToResource, migrateEquippedGearCatalogIds } from '../src/utils/migrations'
 import { createBlankCharacter, getLibrary, saveLibrary } from '@/domain'
 
 describe('migrateUsesToResource', () => {
@@ -90,5 +90,51 @@ describe('jobInParty fallbacks & defaults', () => {
 
     const loadedLibrary = getLibrary()
     expect(loadedLibrary['Default Session'][0].jobInParty).toBe('')
+  })
+})
+
+describe('migrateEquippedGearCatalogIds', () => {
+  it('uses existing id as catalogId when id matches a catalog key', () => {
+    const char = {
+      equippedGear: [{ id: 'scale-mail', name: 'Scale Mail', type: 'Armor', description: '', slotCost: 1 }],
+    }
+    const migrated = migrateEquippedGearCatalogIds(char)
+    expect(migrated.equippedGear[0].catalogId).toBe('scale-mail')
+  })
+
+  it('matches catalog id by name when id is a random UUID', () => {
+    const char = {
+      equippedGear: [
+        { id: 'uuid-123', name: 'Scale Mail', type: 'Armor', description: '', slotCost: 1 },
+        { id: 'uuid-456', name: 'Shield', type: 'Shield', description: '', slotCost: 1 },
+      ],
+    }
+    const migrated = migrateEquippedGearCatalogIds(char)
+    expect(migrated.equippedGear[0].catalogId).toBe('scale-mail')
+    expect(migrated.equippedGear[1].catalogId).toBe('shield')
+  })
+
+  it('ignores quantity suffix when matching by name', () => {
+    const char = {
+      equippedGear: [{ id: 'uuid-789', name: 'Javelin (×5)', type: 'Weapon', description: '', slotCost: 1 }],
+    }
+    const migrated = migrateEquippedGearCatalogIds(char)
+    expect(migrated.equippedGear[0].catalogId).toBe('javelin')
+  })
+
+  it('leaves catalogId empty when no match is found', () => {
+    const char = {
+      equippedGear: [{ id: 'uuid-000', name: 'Mystery Item', type: 'Gear', description: '', slotCost: 1 }],
+    }
+    const migrated = migrateEquippedGearCatalogIds(char)
+    expect(migrated.equippedGear[0].catalogId).toBeUndefined()
+  })
+
+  it('does not overwrite an existing catalogId', () => {
+    const char = {
+      equippedGear: [{ id: 'uuid-123', catalogId: 'shield', name: 'Scale Mail', type: 'Armor', description: '', slotCost: 1 }],
+    }
+    const migrated = migrateEquippedGearCatalogIds(char)
+    expect(migrated.equippedGear[0].catalogId).toBe('shield')
   })
 })

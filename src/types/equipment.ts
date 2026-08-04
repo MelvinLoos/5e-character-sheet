@@ -217,6 +217,7 @@ export interface GoldBreakdown {
 export interface EquipmentResolutionResult {
   equippedGear: Array<{
     id: string
+    catalogId?: string
     name: string
     type: string
     description: string

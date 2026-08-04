@@ -116,6 +116,7 @@ export interface Attack {
 /** Combat statistics block. */
 export interface CombatStats {
   ac: number
+  isAcOverride: boolean
   hp_max: number
   hp_current?: number
   speed: string
@@ -128,6 +129,8 @@ export interface CombatStats {
 /** An equipped gear item. */
 export interface EquippedGear {
   id: string
+  /** Canonical catalog item ID (e.g. "scale-mail", "shield"). Optional for backward compatibility with older characters that only stored a random runtime UUID. */
+  catalogId?: string
   name: string
   type: string
   description: string

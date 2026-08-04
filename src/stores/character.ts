@@ -30,6 +30,7 @@ import {
 } from '@/infra'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
 import { loadSchema, getSchema, validateCharacterData } from '@/domain'
+import { calculateArmorClass } from '@/utils/acCalculator'
 import { STORAGE_KEYS } from '../constants/storage-keys'
 
 export const useCharacterStore = defineStore('character', () => {
@@ -155,6 +156,18 @@ export const useCharacterStore = defineStore('character', () => {
     if (spd) return spd
     const sp = currentCharacterData.value?.species
     return sp ? DND_RULES.SPECIES[sp]?.speed ?? '30ft' : '30ft'
+  })
+
+  /**
+   * Dynamically calculated Armor Class from equipped armor, shields, and DEX.
+   * If the user has enabled manual AC override, the stored manual value is used.
+   */
+  const computedArmorClass = computed(() => {
+    const char = currentCharacterData.value
+    if (!char) return 10
+    if (char.combat.isAcOverride) return char.combat.ac
+    const dexMod = abilityMods.value.dex ?? 0
+    return calculateArmorClass(char.equippedGear ?? [], dexMod)
   })
 
   function getFeatureMaxUses(feature: unknown): number | null {
@@ -741,6 +754,22 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
+  // --- Reactive AC recalculation ---
+  // When equipped gear changes and the user is not manually overriding AC,
+  // update combat.ac in place so it stays in sync with the computed value.
+  // We only touch combat.ac (not the whole character object) to avoid a
+  // recursive watcher loop.
+  watch(
+    () => currentCharacterData.value?.equippedGear,
+    () => {
+      const char = currentCharacterData.value
+      if (!char || char.combat.isAcOverride) return
+      const dexMod = getMod(char.abilityScores.dex ?? 10)
+      char.combat.ac = calculateArmorClass(char.equippedGear ?? [], dexMod)
+    },
+    { deep: true },
+  )
+
   // --- Auto-save draft watcher (debounced deep watch) ---
   let draftTimer: ReturnType<typeof setTimeout> | null = null
   watch(
@@ -789,6 +818,7 @@ export const useCharacterStore = defineStore('character', () => {
     initiativeMod,
     walkingSpeed,
     getFeatureMaxUses,
+    computedArmorClass,
     // Actions
     initStore,
     loadCharacterFromUrl,
