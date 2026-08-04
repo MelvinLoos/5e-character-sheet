@@ -121,21 +121,23 @@ export const useSpellStore = defineStore('spellStore', () => {
 
   /**
    * Initialize or clean up the spellcasting object on the character data.
-   * Sets ability to 'int' if a spellcasting feature exists but no
-   * spellcasting object is present; nulls it if no spellcasting features exist.
+   * Sets ability to 'int' if any feature grants spellcasting (via casterType
+   * or grantsSpells) but no spellcasting object is present; nulls it if no
+   * spellcasting source exists.
    */
   function setupSpellcasting(): void {
     const data = characterStore.currentCharacterData
     if (!data) return
 
     const features = data.features || []
-    const spellcastingFeature = features.find(
-      (f) => f.casterType && f.casterType !== 'none',
+    const hasSpellcasting = features.some(
+      (f) =>
+        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
     )
 
-    if (spellcastingFeature && !data.spellcasting) {
+    if (hasSpellcasting && !data.spellcasting) {
       data.spellcasting = { ability: 'int' }
-    } else if (!spellcastingFeature) {
+    } else if (!hasSpellcasting) {
       data.spellcasting = null
     }
   }

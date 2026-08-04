@@ -79,25 +79,44 @@ describe('migrateCharacterData', () => {
     expect(result.personality.ideal).toBe('')
   })
 
-  it('auto-adds spellcasting feature for Wizard class', () => {
-    const legacy = { name: 'Wiz', class: 'Wizard', spellcasting: { ability: 'int' } }
+  it('auto-adds spellcasting feat for Wizard class during v1->v2 migration', () => {
+    const legacy = {
+      version: 1,
+      name: 'Wiz',
+      class: 'Wizard',
+      spellcasting: { ability: 'int' },
+      features: [{ title: 'Spellcasting (Wizard)', desc: '...', casterType: 'full', key: true }],
+    }
     const result = migrateCharacterData(legacy)
-    const spellFeat = result.features.find((f) => f.title.includes('Spellcasting'))
+    const spellFeat = result.features.find((f) => f.title === 'Wizard Spellcasting')
     expect(spellFeat).toBeDefined()
     expect(spellFeat?.casterType).toBe('full')
+    expect(result.features.some((f) => f.title === 'Spellcasting (Wizard)' && f.casterType)).toBe(false)
   })
 
-  it('detects half caster for Ranger', () => {
-    const legacy = { name: 'Ranger', class: 'Ranger', spellcasting: { ability: 'wis' } }
+  it('detects half caster for Ranger during v1->v2 migration', () => {
+    const legacy = {
+      version: 1,
+      name: 'Ranger',
+      class: 'Ranger',
+      spellcasting: { ability: 'wis' },
+      features: [{ title: 'Spellcasting (Ranger)', desc: '...', casterType: 'half', key: true }],
+    }
     const result = migrateCharacterData(legacy)
-    const spellFeat = result.features.find((f) => f.title.includes('Spellcasting'))
+    const spellFeat = result.features.find((f) => f.title === 'Ranger Spellcasting')
     expect(spellFeat?.casterType).toBe('half')
   })
 
-  it('detects pact caster for Warlock', () => {
-    const legacy = { name: 'Lock', class: 'Warlock', spellcasting: { ability: 'cha' } }
+  it('detects pact caster for Warlock during v1->v2 migration', () => {
+    const legacy = {
+      version: 1,
+      name: 'Lock',
+      class: 'Warlock',
+      spellcasting: { ability: 'cha' },
+      features: [{ title: 'Pact Magic (Warlock)', desc: '...', casterType: 'pact', key: true }],
+    }
     const result = migrateCharacterData(legacy)
-    const spellFeat = result.features.find((f) => f.title.includes('Spellcasting'))
+    const spellFeat = result.features.find((f) => f.title === 'Warlock Pact Magic')
     expect(spellFeat?.casterType).toBe('pact')
   })
 })
@@ -300,12 +319,14 @@ describe('applyClassFeatures', () => {
     expect(result).toEqual(char)
   })
 
-  it('adds Bard features with casterType = full', () => {
+  it('adds Bard Spellcasting feat with casterType = full', () => {
     const char = makeChar({ class: 'Bard', features: [] })
     const result = applyClassFeatures(char)
-    const spellcasting = result.features.find((f) => f.title === 'Spellcasting (Bard)')
+    const spellcasting = result.features.find((f) => f.title === 'Bard Spellcasting')
     expect(spellcasting).toBeDefined()
     expect(spellcasting?.casterType).toBe('full')
+    // Class rules data no longer embeds casterType on class features
+    expect(result.features.some((f) => f.title === 'Spellcasting (Bard)')).toBe(false)
   })
 })
 

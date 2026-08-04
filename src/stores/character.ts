@@ -335,15 +335,18 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return
 
     const features = currentCharacterData.value.features || []
-    const spellcastingFeature = features.find((f) => f.casterType && f.casterType !== 'none')
+    const hasSpellcasting = features.some(
+      (f) =>
+        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
+    )
 
-    if (spellcastingFeature && !currentCharacterData.value.spellcasting) {
+    if (hasSpellcasting && !currentCharacterData.value.spellcasting) {
       // Set up spellcasting object with default ability
       currentCharacterData.value.spellcasting = {
         ability: 'int', // Default to Intelligence as specified
       }
-    } else if (!spellcastingFeature) {
-      // Remove spellcasting object if no valid casterType exists
+    } else if (!hasSpellcasting) {
+      // Remove spellcasting object if no spellcasting source exists
       currentCharacterData.value.spellcasting = null
     }
   }

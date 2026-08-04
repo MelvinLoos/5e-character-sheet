@@ -3,16 +3,15 @@
  * Import from '@/types/rules'.
  */
 
-import type { AbilityKey, CasterType } from './enums'
+import type { AbilityKey, FeatureType, ActionType } from './enums'
 
 /** A feature as defined in the D&D 5.5e rules data (class features, species traits, etc.). */
 export interface RulesFeature {
   title: string
   desc: string
   key?: boolean
-  featureType?: string
-  actionType?: string
-  casterType?: CasterType | null
+  featureType?: FeatureType | string
+  actionType?: ActionType | string
   uses?: { total: number; per: string }
 }
 

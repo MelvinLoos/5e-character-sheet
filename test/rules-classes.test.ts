@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CLASSES } from '../src/data/rules'
+import { CLASSES, CLASS_SPELLCASTING_FEATS } from '../src/data/rules'
 
 describe('CLASSES dictionary', () => {
   describe('Paladin', () => {
@@ -7,16 +7,14 @@ describe('CLASSES dictionary', () => {
       expect(CLASSES.Paladin).toBeDefined()
     })
 
-    it('is a half-caster', () => {
-      const spellcasting = CLASSES.Paladin?.features.find(
-        (feature) => feature.title === 'Spellcasting',
-      )
+    it('is a half-caster via CLASS_SPELLCASTING_FEATS', () => {
+      const spellcasting = CLASS_SPELLCASTING_FEATS.Paladin
       expect(spellcasting).toBeDefined()
-      expect(spellcasting?.casterType).toBe('half')
+      expect(spellcasting.casterType).toBe('half')
     })
 
-    it('has exactly 7 Tier 1 features', () => {
-      expect(CLASSES.Paladin?.features).toHaveLength(7)
+    it('has 6 non-spellcasting Tier 1 features', () => {
+      expect(CLASSES.Paladin?.features).toHaveLength(6)
     })
   })
 

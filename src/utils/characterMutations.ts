@@ -76,37 +76,34 @@ export function migrateCharacterData(data: unknown): CharacterData {
     migrated.features = []
   }
 
-  // Auto-add missing spellcasting feature
-  if (migrated.class && migrated.spellcasting) {
-    const features = migrated.features as unknown[]
-    const hasSpellcastingFeature = features.some((f: unknown) => {
-      const ff = f as Record<string, unknown>
-      return (
-        typeof ff.title === 'string' &&
-        ff.title.toLowerCase().includes('spellcasting') &&
-        !!ff.casterType
-      )
-    })
+  // v1 -> v2 migration: move class-based casterType from features into
+  // a dedicated class-granted spellcasting feat.
+  const currentVersion = typeof migrated.version === 'number' ? migrated.version : 1
+  if (currentVersion < 2 && migrated.class) {
+    const className = (migrated.class as string) || ''
+    const features = migrated.features as Array<Record<string, unknown>>
+    const spellcastingFeat = DND_RULES.CLASS_SPELLCASTING_FEATS[className]
 
-    if (!hasSpellcastingFeature) {
-      let casterType = 'full'
-      const className = ((migrated.class as string) || '').replace(/\s*\(.*\)/, '')
+    // Find any feature that still carries a casterType directly
+    const legacyCasterIndex = features.findIndex(
+      (f) =>
+        typeof f.casterType === 'string' &&
+        f.casterType !== 'none' &&
+        f.casterType !== '',
+    )
 
-      if (['Ranger', 'Paladin'].includes(className)) {
-        casterType = 'half'
-      } else if (['Eldritch Knight', 'Arcane Trickster'].includes(className)) {
-        casterType = 'third'
-      } else if (className === 'Warlock') {
-        casterType = 'pact'
+    if (spellcastingFeat && legacyCasterIndex !== -1) {
+      // Remove the legacy class feature that embedded casterType
+      features.splice(legacyCasterIndex, 1)
+
+      // Avoid duplicates if the feat already exists somehow
+      const alreadyHasFeat = features.some((f) => f.title === spellcastingFeat.title)
+      if (!alreadyHasFeat) {
+        features.push({ ...spellcastingFeat })
       }
-
-      ;(migrated.features as unknown[]).push({
-        title: `Spellcasting (${className})`,
-        desc: `You can cast ${className.toLowerCase()} spells. ${(migrated.spellcasting as Record<string, unknown>).ability} is your spellcasting ability.`,
-        casterType: casterType,
-        key: true,
-      })
     }
+
+    migrated.version = 2
   }
 
   // Ensure spells
@@ -314,6 +311,12 @@ export function applyBackgroundFeature(char: CharacterData): CharacterData {
     key: (bgData.feature as { key?: boolean }).key || false,
   }
 
+  // Backgrounds that grant Magic Initiate should unlock spell selection
+  if (newFeature.title.startsWith('Magic Initiate')) {
+    newFeature.grantsSpells = true
+    newFeature.grantedSpellLevels = [0, 1]
+  }
+
   return {
     ...char,
     features: [...filteredFeatures, newFeature],
@@ -334,7 +337,7 @@ export function applyClassFeatures(char: CharacterData): CharacterData {
   const classData = DND_RULES.CLASSES[char.class]
   if (!classData) return { ...char }
 
-  // Collect all class feature titles for removal
+  // Collect all class feature titles for removal (from rules data)
   const allClassFeatureTitles = new Set<string>()
   for (const cls of Object.values(DND_RULES.CLASSES)) {
     for (const feat of cls.features || []) {
@@ -342,21 +345,31 @@ export function applyClassFeatures(char: CharacterData): CharacterData {
     }
   }
 
+  // Also remove any previously auto-granted class spellcasting feats before re-adding the correct one
+  const autoGrantedSpellcastingFeatTitles = new Set<string>(
+    Object.values(DND_RULES.CLASS_SPELLCASTING_FEATS).map((f) => f.title),
+  )
+
   const filteredFeatures = (char.features || []).filter(
-    (f) => !allClassFeatureTitles.has(f.title),
+    (f) => !allClassFeatureTitles.has(f.title) && !autoGrantedSpellcastingFeatTitles.has(f.title),
   )
 
   // Build new features from rules data
   const newFeatures: CharacterFeature[] = (classData.features || []).map((feat) => {
-    const f = feat as { title: string; desc: string; key?: boolean; casterType?: string | null; uses?: { total: number; per: string } }
+    const f = feat as { title: string; desc: string; key?: boolean; uses?: { total: number; per: string } }
     return {
       title: f.title || '',
       desc: f.desc || '',
       key: !!f.key,
-      casterType: (f.casterType as string) || null,
       uses: f.uses ? { total: f.uses.total, per: f.uses.per } : undefined,
     }
   })
+
+  // Auto-grant the class's spellcasting feat if the class is a spellcaster
+  const classSpellcastingFeat = DND_RULES.CLASS_SPELLCASTING_FEATS[char.class]
+  if (classSpellcastingFeat) {
+    newFeatures.push({ ...classSpellcastingFeat })
+  }
 
   return {
     ...char,
@@ -512,15 +525,18 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
     hpCurrent = maxHp
   }
 
-  // Spellcasting setup
+  // Spellcasting setup: detect any feature that grants spellcasting,
+  // either through a casterType (class-granted feat) or grantsSpells flag.
   const features = char.features || []
-  const spellcastingFeature = features.find(
-    (f) => f.casterType && f.casterType !== 'none',
+  const hasSpellcasting = features.some(
+    (f) =>
+      (typeof f.casterType === 'string' && f.casterType !== 'none') ||
+      !!f.grantsSpells,
   )
   let spellcasting = char.spellcasting
-  if (spellcastingFeature && !spellcasting) {
+  if (hasSpellcasting && !spellcasting) {
     spellcasting = { ability: 'int' }
-  } else if (!spellcastingFeature) {
+  } else if (!hasSpellcasting) {
     spellcasting = null
   }
 
