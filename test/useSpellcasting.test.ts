@@ -34,7 +34,7 @@ function createWizardCharacter(): CharacterData {
   return createTestCharacter({
     features: [
       {
-        title: 'Spellcasting (Wizard)',
+        title: 'Wizard Spellcasting',
         desc: 'You can cast wizard spells.',
         casterType: 'full',
         key: true,
@@ -321,6 +321,9 @@ describe('useSpellcasting', () => {
 
     it('hasSpellcasting becomes false after switching from Wizard back to Fighter', () => {
       characterStore.currentCharacterData = createWizardCharacter()
+      // Switch to a non-spellcasting background to isolate class-based spellcasting
+      characterStore.currentCharacterData.background = 'Soldier'
+      characterStore.applyBackgroundChange('Soldier')
       const { hasSpellcasting } = useSpellcasting(characterStore, rulesStore)
       expect(hasSpellcasting.value).toBe(true)
 

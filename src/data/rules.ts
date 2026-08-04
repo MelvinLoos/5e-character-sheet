@@ -20,6 +20,8 @@ import type {
   BackgroundData,
   SpellSlotsByLevel,
 } from '@/types/rules'
+import type { CharacterFeature } from '@/types/character'
+import type { CasterType } from '@/types/enums'
 
 /**
  * Maps a Renown Tier to its equivalent standard D&D 5.5e character level.
@@ -80,6 +82,94 @@ export const PROFICIENCY_BONUS_PROGRESSION: Record<number, number> = {
   13: 5,
   17: 6,
 }
+
+/**
+ * Spellcasting feats automatically granted by classes. Classes no longer
+ * carry `casterType` on their own features; instead they grant one of these
+ * feats when a character selects the class.
+ */
+export const CLASS_SPELLCASTING_FEATS: Record<string, CharacterFeature> = {
+  Bard: {
+    title: 'Bard Spellcasting',
+    desc: 'You can cast bard spells you know. Charisma is your spellcasting ability.',
+    casterType: 'full' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Cleric: {
+    title: 'Cleric Spellcasting',
+    desc: 'You can cast cleric spells you have prepared. Wisdom is your spellcasting ability.',
+    casterType: 'full' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Druid: {
+    title: 'Druid Spellcasting',
+    desc: 'You can cast druid spells you have prepared. Wisdom is your spellcasting ability.',
+    casterType: 'full' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Paladin: {
+    title: 'Paladin Spellcasting',
+    desc: 'You can cast Paladin spells. Charisma is your spellcasting ability.',
+    casterType: 'half' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Ranger: {
+    title: 'Ranger Spellcasting',
+    desc: 'You can cast ranger spells you know. Wisdom is your spellcasting ability.',
+    casterType: 'half' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Sorcerer: {
+    title: 'Sorcerer Spellcasting',
+    desc: 'You can cast sorcerer spells you know. Charisma is your spellcasting ability.',
+    casterType: 'full' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Warlock: {
+    title: 'Warlock Pact Magic',
+    desc: 'You can cast warlock spells you know. Charisma is your spellcasting ability. You regain all expended spell slots when you finish a short or long rest.',
+    casterType: 'pact' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+  Wizard: {
+    title: 'Wizard Spellcasting',
+    desc: 'You can cast wizard spells you have prepared. Intelligence is your spellcasting ability.',
+    casterType: 'full' as CasterType,
+    key: true,
+    source: 'Class',
+    featureType: 'Class Feature',
+  },
+}
+
+/**
+ * Standard feats available in the feat library. These are distinct from
+ * class-granted features and can be selected by players in the Feats view.
+ */
+export const FEATS: CharacterFeature[] = [
+  {
+    title: 'Magic Initiate',
+    desc: 'You learn two cantrips and one 1st-level spell from a class spell list. You can cast the 1st-level spell once per long rest without a spell slot.',
+    key: false,
+    source: 'Feat',
+    featureType: 'General Feat',
+    grantsSpells: true,
+    grantedSpellLevels: [0, 1],
+  },
+]
 
 export const SPELL_SLOT_PROGRESSION: Record<string, SpellSlotsByLevel> = {
   full: {
@@ -281,12 +371,6 @@ export const CLASSES: Record<string, ClassData> = {
     },
     features: [
       {
-        title: 'Spellcasting (Bard)',
-        desc: 'You can cast bard spells you know. Charisma is your spellcasting ability.',
-        casterType: 'full',
-        key: true,
-      },
-      {
         title: 'Bardic Inspiration',
         desc: 'As a bonus action, you can give one creature a d6 inspiration die. Once within 10 minutes, the creature can roll the die and add the number to one ability check, attack roll, or saving throw.',
         uses: { total: 3, per: 'Long Rest' },
@@ -304,12 +388,6 @@ export const CLASSES: Record<string, ClassData> = {
       from: ['History', 'Insight', 'Medicine', 'Persuasion', 'Religion'],
     },
     features: [
-      {
-        title: 'Spellcasting (Cleric)',
-        desc: 'You can cast cleric spells you have prepared. Wisdom is your spellcasting ability.',
-        casterType: 'full',
-        key: true,
-      },
       {
         title: 'Channel Divinity',
         desc: 'You can channel divine energy to fuel magical effects. You start with one effect: Turn Undead.',
@@ -338,12 +416,6 @@ export const CLASSES: Record<string, ClassData> = {
       ],
     },
     features: [
-      {
-        title: 'Spellcasting (Druid)',
-        desc: 'You can cast druid spells you have prepared. Wisdom is your spellcasting ability.',
-        casterType: 'full',
-        key: true,
-      },
       {
         title: 'Wild Shape',
         desc: 'As an action, you can magically assume the shape of a beast you have seen before. You can use this feature twice.',
@@ -396,12 +468,6 @@ export const CLASSES: Record<string, ClassData> = {
         key: true,
       },
       {
-        title: 'Spellcasting',
-        desc: 'You can cast Paladin spells. Charisma is your spellcasting ability.',
-        casterType: 'half',
-        key: true,
-      },
-      {
         title: 'Weapon Mastery',
         desc: 'Your training with weapons allows you to use the Mastery property of two kinds of Simple or Martial Melee weapons of your choice. Whenever you finish a Long Rest, you can change the kinds of weapons you chose.',
         key: true,
@@ -450,12 +516,6 @@ export const CLASSES: Record<string, ClassData> = {
       ],
     },
     features: [
-      {
-        title: 'Spellcasting (Ranger)',
-        desc: 'You can cast ranger spells you know. Wisdom is your spellcasting ability.',
-        casterType: 'half',
-        key: true,
-      },
       {
         title: 'Favored Enemy',
         desc: 'You have significant experience studying, tracking, hunting, and even talking to a certain type of enemy. Choose a type of favored enemy: beasts, fey, humanoids, monstrosities, or undead. You have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.',
@@ -506,14 +566,7 @@ export const CLASSES: Record<string, ClassData> = {
       count: 2,
       from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'],
     },
-    features: [
-      {
-        title: 'Spellcasting (Sorcerer)',
-        desc: 'You can cast sorcerer spells you know. Charisma is your spellcasting ability.',
-        casterType: 'full',
-        key: true,
-      },
-    ],
+    features: [],
   },
   Warlock: {
     description: 'A wielder of magic that is derived from a bargain with an extraplanar entity.',
@@ -524,14 +577,7 @@ export const CLASSES: Record<string, ClassData> = {
       count: 2,
       from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'],
     },
-    features: [
-      {
-        title: 'Pact Magic (Warlock)',
-        desc: 'You can cast warlock spells you know. Charisma is your spellcasting ability. You regain all expended spell slots when you finish a short or long rest.',
-        casterType: 'pact',
-        key: true,
-      },
-    ],
+    features: [],
   },
   Wizard: {
     description: 'A scholarly magic-user capable of manipulating the structures of reality.',
@@ -543,12 +589,6 @@ export const CLASSES: Record<string, ClassData> = {
       from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'],
     },
     features: [
-      {
-        title: 'Spellcasting (Wizard)',
-        desc: 'You can cast wizard spells you have prepared. Intelligence is your spellcasting ability.',
-        casterType: 'full',
-        key: true,
-      },
       {
         title: 'Arcane Recovery',
         desc: 'Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up).',
