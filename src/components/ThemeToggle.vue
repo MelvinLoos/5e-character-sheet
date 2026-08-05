@@ -57,7 +57,7 @@ onMounted(() => {
   <button
     type="button"
     :aria-label="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
-    class="fixed top-16 right-4 z-20 md:top-4 md:right-4 md:z-50 p-3 rounded-full border border-outline-variant bg-surface-container-high text-on-surface shadow-sm hover:bg-surface-container-highest focus:outline-none focus:ring-2 focus:ring-tertiary focus:ring-offset-2 focus:ring-offset-background transition-colors print:hidden flex items-center justify-center"
+    class="fixed top-16 right-4 z-20 md:top-4 md:right-4 md:z-50 p-3 rounded-full border border-outline-variant bg-surface-container-high text-on-surface shadow-sm hover:bg-surface-container-highest hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-tertiary focus:ring-offset-2 focus:ring-offset-background transition-all duration-200 ease-out print:hidden flex items-center justify-center select-none"
     @click="toggleTheme"
   >
     <svg

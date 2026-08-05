@@ -14,7 +14,7 @@ const { editableAttacks, addAttack, removeAttack } = useCombat()
       <button
         v-if="store.isEditing"
         @click="addAttack"
-        class="bg-primary-container text-primary border border-primary/30 px-3 py-1 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors text-sm"
+        class="bg-primary-container text-primary border border-primary/30 px-3 py-1 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out text-sm select-none"
         title="Add Attack"
       >
         <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Attack
@@ -253,7 +253,7 @@ const { editableAttacks, addAttack, removeAttack } = useCombat()
             <button
               v-if="store.isEditing"
               @click="removeAttack(index)"
-              class="ml-2 w-6 h-6 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-white transition-colors flex items-center justify-center shrink-0"
+              class="ml-2 w-6 h-6 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-white hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out flex items-center justify-center shrink-0 select-none"
               title="Remove Attack"
             >
               <span class="material-symbols-outlined text-[14px]">close</span>

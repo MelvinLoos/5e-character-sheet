@@ -257,7 +257,7 @@ watch(
       <button
         v-if="store.isEditing && props.editable"
         @click="addFeature"
-        class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors active:scale-95 shadow-sm"
+        class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 ease-out shadow-sm select-none"
         title="Add Feature"
       >
         <span class="material-symbols-outlined text-[18px]">add</span>
@@ -356,14 +356,14 @@ watch(
               >
                 <button
                   @click.stop="editFeature(feature)"
-                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary transition-colors active:scale-95"
+                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
                   title="Edit Feature"
                 >
                   <span class="material-symbols-outlined text-[16px]">edit</span>
                 </button>
                 <button
                   @click.stop="removeFeature(index)"
-                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-error/20 hover:text-error transition-colors active:scale-95"
+                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-error/20 hover:text-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-95 transition-all duration-200 ease-out select-none"
                   title="Remove Feature"
                 >
                   <span class="material-symbols-outlined text-[16px]">delete</span>
@@ -428,7 +428,7 @@ watch(
           </h3>
           <button
             @click="showFeatureLibrary = false"
-            class="text-outline-variant hover:text-on-surface transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50"
+            class="text-outline-variant hover:text-on-surface hover:-translate-y-0.5 hover:bg-surface-variant/50 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out flex items-center justify-center p-1 rounded select-none"
           >
             <span class="material-symbols-outlined">close</span>
           </button>
@@ -458,7 +458,7 @@ watch(
             <p>No archives match your inquiry.</p>
             <button
               @click="addManualFeature"
-              class="mt-4 text-tertiary hover:text-tertiary-fixed underline underline-offset-4"
+              class="mt-4 text-tertiary hover:text-tertiary-fixed hover:-translate-y-0.5 active:translate-y-0 active:scale-95 underline underline-offset-4 transition-all duration-200 ease-out select-none"
             >
               Transcribe a Custom Entry
             </button>
@@ -489,7 +489,7 @@ watch(
                   </p>
                 </div>
                 <button
-                  class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors group-hover:scale-105 active:scale-95 shadow-sm opacity-0 group-hover:opacity-100 flex-shrink-0"
+                  class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 ease-out shadow-sm opacity-0 group-hover:opacity-100 flex-shrink-0 select-none"
                   title="Transcribe Feat"
                 >
                   <span class="material-symbols-outlined">add</span>
@@ -507,7 +507,7 @@ watch(
           >
           <button
             @click="addManualFeature"
-            class="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-variant-high border border-outline-variant/50 hover:border-outline font-label-md rounded transition-colors shadow-sm"
+            class="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-variant-high hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 border border-outline-variant/50 hover:border-outline font-label-md rounded transition-all duration-200 ease-out shadow-sm select-none"
           >
             Create Custom Entry
           </button>

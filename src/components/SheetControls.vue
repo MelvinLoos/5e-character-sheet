@@ -30,7 +30,7 @@ function handlePrint() {
   <div class="flex flex-wrap justify-center items-center gap-2 mb-4 no-print z-10 px-2">
     <button
       @click="store.toggleEdit()"
-      class="edit-toggle-btn"
+      class="edit-toggle-btn active:scale-95"
       :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
       :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
       :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"

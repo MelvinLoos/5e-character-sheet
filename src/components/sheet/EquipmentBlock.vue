@@ -85,7 +85,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
           v-if="!store.isEditing"
           @click="buySupply"
           :disabled="store.currentCharacterData.gold < 1"
-          class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded font-label-md text-label-md hover:bg-secondary hover:text-on-secondary transition-colors border border-outline-variant flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded font-label-md text-label-md hover:bg-secondary hover:text-on-secondary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out border border-outline-variant flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Buy (-1 GP)
         </button>
@@ -151,7 +151,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
         <button
           v-if="store.isEditing"
           @click="addGear"
-          class="bg-surface-variant text-on-surface px-3 py-1 rounded flex items-center gap-1 hover:bg-surface-container-high transition-colors"
+          class="bg-surface-variant text-on-surface px-3 py-1 rounded flex items-center gap-1 hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           <span class="material-symbols-outlined text-sm">add</span> Add Gear
         </button>
@@ -174,7 +174,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
               />
               <button
                 @click="removeGear(index)"
-                class="text-error bg-black/20 p-1 rounded hover:bg-error/20"
+                class="text-error bg-black/20 p-1 rounded hover:bg-error/20 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out select-none"
               >
                 <span class="material-symbols-outlined text-sm">delete</span>
               </button>
@@ -266,7 +266,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
         <button
           v-if="store.isEditing"
           @click="addConsumable"
-          class="bg-surface-variant px-3 py-1 rounded flex gap-1"
+          class="bg-surface-variant px-3 py-1 rounded flex gap-1 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           <span class="material-symbols-outlined text-sm">add</span>
         </button>
@@ -341,7 +341,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
             <button
               v-if="store.isEditing"
               @click="removeConsumable(index)"
-              class="text-error p-1 rounded hover:bg-error/10"
+              class="text-error p-1 rounded hover:bg-error/10 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out select-none"
             >
               <span class="material-symbols-outlined">delete</span>
             </button>
