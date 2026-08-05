@@ -5,9 +5,10 @@ import { useCharacterStore } from '@/stores/character'
 
 const store = useCharacterStore()
 const route = useRoute()
+const emit = defineEmits<{
+  showImport: []
+}>()
 const geminiPrompt = ref('')
-const showImportModal = ref(false)
-const showMobileMenu = ref(false)
 
 interface Character {
   name: string
@@ -222,7 +223,7 @@ const queryParams = computed(() => {
 
       <!-- Import -->
       <button
-        @click="showImportModal = true"
+        @click="emit('showImport')"
         class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
         title="Import JSON"
       >
@@ -275,71 +276,4 @@ const queryParams = computed(() => {
     </div>
   </nav>
 
-  <!-- TopAppBar Mobile -->
-  <header
-    class="md:hidden flex justify-between items-center px-4 py-3 w-full top-0 bg-primary-container dark:bg-primary-container shadow-sm z-40 fixed print:hidden"
-  >
-    <span class="font-headline-md text-tertiary">Character Sheet</span>
-    <div class="flex gap-4">
-      <button
-        @click="showMobileMenu = !showMobileMenu"
-        class="text-on-surface-variant hover:text-primary transition-colors"
-      >
-        <span class="material-symbols-outlined">menu</span>
-      </button>
-    </div>
-  </header>
-
-  <div
-    v-if="showMobileMenu"
-    class="md:hidden fixed top-14 left-0 w-full bg-surface-container z-30 p-4 border-b border-outline-variant shadow-lg print:hidden"
-  >
-    <!-- Mobile Navigation Links -->
-    <div v-if="store.currentCharacterData" class="mb-4 grid grid-cols-2 gap-2">
-      <router-link
-        v-for="link in navLinks"
-        :key="link.name"
-        :to="{ name: link.name, ...queryParams }"
-        @click="showMobileMenu = false"
-        class="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md"
-        :class="[
-          route.name === link.name ? 'text-primary' : 'bg-surface-variant text-on-surface-variant',
-        ]"
-      >
-        <span class="material-symbols-outlined text-[1.1rem]">{{ link.icon }}</span>
-        {{ link.label }}
-      </router-link>
-    </div>
-    <div
-      v-if="store.currentCharacterData"
-      class="border-t border-outline-variant/30 pt-4 mb-2"
-    >
-      <!-- Mobile Edit Toggle -->
-      <button
-        @click="store.toggleEdit()"
-        class="edit-toggle-btn w-full mb-2"
-        :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
-        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
-        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
-      >
-        <span class="material-symbols-outlined">{{ store.isEditing ? 'edit' : 'visibility' }}</span>
-        {{ store.isEditing ? 'Editing…' : 'Edit Mode' }}
-      </button>
-    </div>
-    <button
-      @click="store.handleNewCharacter(), (showMobileMenu = false)"
-      class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
-    >
-      New Character
-    </button>
-    <button
-      @click="showImportModal = true, (showMobileMenu = false)"
-      class="w-full bg-surface-variant mb-2 py-2 rounded text-on-surface font-label-md"
-    >
-      Import
-    </button>
-  </div>
-
-  <!-- Import Modal -->
-  <ImportModal :show="showImportModal" @close="showImportModal = false" />
 </template>

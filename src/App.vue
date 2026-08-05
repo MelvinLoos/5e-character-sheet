@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, defineAsyncComponent } from 'vue'
+import { onMounted, ref, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
+import ImportModal from './components/modals/ImportModal.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -10,6 +11,7 @@ const ShareModal = defineAsyncComponent(() => import('./components/modals/ShareM
 const UpdateNotification = defineAsyncComponent(() => import('./components/UpdateNotification.vue'))
 
 const store = useCharacterStore()
+const showImportModal = ref(false)
 
 onMounted(async () => {
   await useRulesStore().loadFromStorage()
@@ -21,10 +23,11 @@ onMounted(async () => {
   <div
     class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0"
   >
-    <ControlPanel />
+    <ControlPanel @show-import="showImportModal = true" />
+    <MobileHeader v-if="store.currentCharacterData" @show-import="showImportModal = true" />
 
     <main
-      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
+      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
     >
       <div
         v-if="!store.currentCharacterData"
@@ -47,6 +50,9 @@ onMounted(async () => {
     <LoadingModal />
     <ErrorModal />
     <ShareModal />
+    <ImportModal :show="showImportModal" @close="showImportModal = false" />
+
+    <MobileTabBar v-if="store.currentCharacterData" class="md:hidden" />
 
     <ThemeToggle />
     <UpdateNotification />
