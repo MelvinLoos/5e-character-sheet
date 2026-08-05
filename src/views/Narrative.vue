@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col">
     <!-- Header -->
     <header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
       <div>

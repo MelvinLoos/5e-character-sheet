@@ -4,7 +4,7 @@ const store = useCharacterStore()
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col">
     <header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
       <div>
         <h2 class="font-display-lg text-display-lg text-tertiary">Skills & Proficiencies</h2>
