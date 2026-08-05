@@ -21,13 +21,13 @@ onMounted(async () => {
 
 <template>
   <div
-    class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0 select-none"
+    class="antialiased min-h-screen h-dvh flex text-on-background bg-background print:bg-white print:block print:min-h-0 select-none"
   >
     <ControlPanel @show-import="showImportModal = true" />
     <MobileHeader v-if="store.currentCharacterData" @show-import="showImportModal = true" />
 
     <main
-      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
+      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden overflow-y-auto"
     >
       <div
         v-if="!store.currentCharacterData"
