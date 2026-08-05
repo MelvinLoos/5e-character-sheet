@@ -1,0 +1,6 @@
+# CLI & Execution Constraints
+
+- You operate in a non-interactive shell. You MUST NOT run any commands that open a pager, text editor, or await user input.
+- Always use the `--no-pager` flag for git commands (e.g., `git --no-pager log`, `git --no-pager diff`).
+- Never use commands like `less`, `more`, `vi`, or `nano`.
+- If using package managers, append `-y` or `--yes` to bypass prompts.
