@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
+import AuthButton from './AuthButton.vue'
 
 const store = useCharacterStore()
 const route = useRoute()
@@ -273,6 +274,9 @@ const queryParams = computed(() => {
         <span class="material-symbols-outlined">print</span>
         Print Sheet
       </button>
+
+      <!-- Auth -->
+      <AuthButton />
     </div>
   </nav>
 
