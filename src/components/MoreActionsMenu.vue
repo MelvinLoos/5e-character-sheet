@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useAuthStore } from '@/stores/authStore'
+import AuthButton from './AuthButton.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -12,6 +14,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useCharacterStore()
+useAuthStore()
 const menuRef = ref<HTMLDivElement | null>(null)
 const firstItemRef = ref<HTMLButtonElement | null>(null)
 
@@ -169,6 +172,10 @@ watch(
                 <span class="material-symbols-outlined text-2xl">file_upload</span>
                 <span class="text-xs font-label-md">Import Data</span>
               </button>
+            </div>
+
+            <div class="mt-4">
+              <AuthButton />
             </div>
 
             <button
