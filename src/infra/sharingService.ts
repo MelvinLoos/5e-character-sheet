@@ -1,26 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { logger } from '../utils/logger'
+import { createSupabaseClient } from './supabaseClient'
 import type { CharacterData } from '@/domain'
 
 let supabaseClient: SupabaseClient | null = null
 
 export function initSupabase(): SupabaseClient | null {
   if (supabaseClient) return supabaseClient
-
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-    try {
-      supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    } catch (e) {
-      logger.error('Error initializing Supabase client:', (e as Error).message)
-    }
-  } else {
-    logger.warn('Supabase credentials not found. Online sharing will be disabled.')
-  }
-
+  supabaseClient = createSupabaseClient()
   return supabaseClient
 }
 
