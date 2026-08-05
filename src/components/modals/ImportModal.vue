@@ -195,8 +195,8 @@ function close() {
 
 <template>
   <Transition name="sheet-up">
-    <div v-if="show" class="modal-backdrop">
-      <div class="modal-content max-w-2xl">
+    <div v-if="show" class="modal-backdrop backdrop-blur-sm bg-black/40">
+      <div class="modal-content max-w-2xl rounded-xl">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-sheet-red">Import 5e.tools Data</h2>
           <button @click="close" class="icon-button" title="Close">
@@ -336,7 +336,8 @@ function close() {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -344,10 +345,12 @@ function close() {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-sheet-bg);
   padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.25),
+    0 10px 10px rgba(0, 0, 0, 0.12);
   max-height: 90vh;
   overflow-y: auto;
   width: 90%;

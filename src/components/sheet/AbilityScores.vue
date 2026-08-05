@@ -87,10 +87,10 @@ watch(
 <template>
   <section class="flex flex-col gap-6">
     <div class="flex justify-between items-end border-b border-primary-container pb-2">
-      <h3 class="font-headline-md text-headline-md text-primary">Ability Scores<InfoButton topic="point-buy" /></h3>
+      <h3 class="font-headline-md text-headline-md text-primary select-none">Ability Scores<InfoButton topic="point-buy" /></h3>
       <span
         v-if="store.isEditing"
-        class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30"
+        class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30 select-none"
         :class="{
           'text-error border-error/30 bg-error/10': store.pointBuyPointsRemaining < 0,
           'text-primary border-primary/30 bg-primary/10': store.pointBuyPointsRemaining === 0,
@@ -107,12 +107,12 @@ watch(
         DND_RULES.BACKGROUNDS[currentBackground] &&
         store.currentCharacterData.backgroundBonusSelections
       "
-      class="bg-surface-container rounded-lg p-4 border border-outline-variant flex flex-col gap-4"
+      class="bg-surface-container rounded-lg p-4 border border-outline-variant flex flex-col gap-4 shadow-elevation-1"
     >
-      <div class="text-sm font-label-md text-on-surface-variant">Background Bonuses</div>
+      <div class="text-sm font-label-md text-on-surface-variant select-none">Background Bonuses</div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block font-label-sm text-label-sm text-tertiary mb-1">+2 Bonus</label>
+          <label class="block font-label-sm text-label-sm text-tertiary mb-1 select-none">+2 Bonus</label>
           <select
             v-model="store.currentCharacterData.backgroundBonusSelections.plusTwo"
             class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
@@ -124,7 +124,7 @@ watch(
           </select>
         </div>
         <div>
-          <label class="block font-label-sm text-label-sm text-tertiary mb-1">+1 Bonus</label>
+          <label class="block font-label-sm text-label-sm text-tertiary mb-1 select-none">+1 Bonus</label>
           <select
             v-model="store.currentCharacterData.backgroundBonusSelections.plusOne"
             class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
@@ -142,7 +142,7 @@ watch(
       <div
         v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
         :key="key"
-        class="stat-orb-gradient rounded-full p-2 border border-primary-container shadow-lg flex flex-col items-center relative aspect-[1] justify-center group hover:border-tertiary/50 transition-colors"
+        class="stat-orb-gradient rounded-full p-2 border border-primary-container flex flex-col items-center relative aspect-[1] justify-center group hover:border-tertiary/50 transition-colors shadow-[0_8px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]"
         :class="{ 'opacity-70': (store.abilityMods[key] ?? 0) < 0 }"
       >
         <div
@@ -150,12 +150,12 @@ watch(
           :class="{ 'opacity-20': (store.abilityMods[key] ?? 0) < 0 }"
         ></div>
         <span
-          class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-4"
+          class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-4 select-none"
           :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
           >{{ key.toUpperCase() }}</span
         >
         <div
-          class="font-display-lg text-[56px] leading-none text-on-surface font-bold my-2"
+          class="font-display-lg text-[56px] leading-none text-on-surface font-bold my-2 select-none"
           :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
         >
           {{ formatMod(store.abilityMods[key] ?? 0) }}
@@ -190,7 +190,7 @@ watch(
         </div>
         <div
           v-else
-          class="font-body-lg text-body-lg text-on-surface-variant mb-4 font-bold border border-outline-variant/30 rounded-full px-4 py-1 bg-background/30 backdrop-blur-sm"
+          class="font-body-lg text-body-lg text-on-surface-variant mb-4 font-bold border border-outline-variant/30 rounded-full px-4 py-1 bg-background/30 backdrop-blur-sm select-none"
         >
           {{ value }}
         </div>

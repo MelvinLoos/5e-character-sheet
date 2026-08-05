@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { formatMod } from '@/domain'
 import { useSkills, normalizeSkillName } from '@/composables/useSkills'
+import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 
 const store = useCharacterStore()
 const {
@@ -45,22 +46,23 @@ function isLocked(skillName: string): boolean {
 <template>
   <section class="flex flex-col gap-4">
     <div class="flex items-center justify-between border-b border-primary-container pb-2">
-      <h3 class="font-headline-md text-headline-md text-primary">Skills</h3>
+      <h3 class="font-headline-md text-headline-md text-primary select-none">Skills</h3>
       <span
         v-if="store.isEditing"
-        class="text-sm font-label-md text-on-surface-variant"
+        class="text-sm font-label-md text-on-surface-variant select-none"
         :class="remainingChoices > 0 ? 'text-tertiary' : ''"
       >
         {{ choiceHeader }}
       </span>
     </div>
     <div style="gap: 1em" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-card-gap pb-4">
-      <div
+      <ElevatedCard
         v-for="skill in allSkillMods"
         :key="skill.name"
-        class="bg-surface-container border rounded-lg p-2 flex items-center justify-between hover:bg-surface-variant transition-colors group"
+        :elevation="1"
+        :hover="false"
         :class="[
-          'border-primary-container',
+          'rounded-lg p-2 flex items-center justify-between hover:bg-surface-variant transition-colors group',
           isSkillDisabled(skill.name) && !skill.proficient ? 'opacity-60' : '',
         ]"
       >
@@ -76,7 +78,7 @@ function isLocked(skillName: string): boolean {
             {{ formatMod(skill.mod) }}
           </div>
           <div>
-            <h3 class="font-label-md text-label-md text-on-background leading-normal">
+            <h3 class="font-label-md text-label-md text-on-background leading-normal select-none">
               {{ skill.name }}
               <span
                 v-if="isLocked(skill.name)"
@@ -85,7 +87,7 @@ function isLocked(skillName: string): boolean {
                 (Granted)
               </span>
             </h3>
-            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">{{
+            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant select-none">{{
               skill.stat.toUpperCase()
             }}</span>
           </div>
@@ -132,7 +134,7 @@ function isLocked(skillName: string): boolean {
             </div>
           </label>
         </div>
-      </div>
+      </ElevatedCard>
     </div>
   </section>
 </template>
