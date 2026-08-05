@@ -389,15 +389,16 @@ const allowedLevels = computed(() => {
     </section>
 
     <!-- Spell Library Modal -->
-    <div
-      v-if="showSpellLibrary && store.isEditing"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      @click.self="toggleSpellLibrary"
-    >
+    <Transition name="sheet-up">
       <div
-        class="bg-surface-container rounded-lg p-6 max-w-4xl max-h-[85vh] overflow-hidden flex flex-col w-full border border-outline-variant shadow-xl"
+        v-if="showSpellLibrary && store.isEditing"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-end md:items-center justify-center z-50 p-0 md:p-4"
+        @click.self="toggleSpellLibrary"
       >
-        <div class="flex justify-between items-center mb-6">
+        <div
+          class="bg-surface-container rounded-t-lg md:rounded-lg p-6 max-w-4xl max-h-[85vh] overflow-hidden flex flex-col w-full border-t md:border border-outline-variant shadow-xl"
+        >
+          <div class="flex justify-between items-center mb-6">
           <h3 class="text-2xl font-headline-lg text-tertiary">Spell Library</h3>
           <button
             @click="toggleSpellLibrary"
@@ -511,9 +512,10 @@ const allowedLevels = computed(() => {
             <span class="material-symbols-outlined text-base">edit_note</span>
             Custom Spell
           </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
   <div v-else>
     <div

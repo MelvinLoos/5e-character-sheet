@@ -368,6 +368,28 @@ html.light {
     @apply border-4 border-gray-200 border-t-sheet-red rounded-full w-8 h-8 animate-spin;
   }
 
+  /* Route transition: cross-fade with subtle horizontal slide */
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+  }
+  .fade-slide-enter-from,
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  /* Bottom-sheet transition for modals */
+  .sheet-up-enter-active,
+  .sheet-up-leave-active {
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease-out;
+  }
+  .sheet-up-enter-from,
+  .sheet-up-leave-to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
   .modal-backdrop {
     @apply fixed inset-0 w-full h-full bg-black/50 z-50 flex items-center justify-center;
   }
