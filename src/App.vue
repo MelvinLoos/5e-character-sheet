@@ -3,6 +3,7 @@ import { onMounted, ref, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import ImportModal from './components/modals/ImportModal.vue'
+import MoreActionsMenu from './components/MoreActionsMenu.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -12,6 +13,7 @@ const UpdateNotification = defineAsyncComponent(() => import('./components/Updat
 
 const store = useCharacterStore()
 const showImportModal = ref(false)
+const showMoreMenu = ref(false)
 
 onMounted(async () => {
   await useRulesStore().loadFromStorage()
@@ -24,7 +26,7 @@ onMounted(async () => {
     class="antialiased min-h-screen h-dvh flex text-on-background bg-background print:bg-white print:block print:min-h-0 select-none"
   >
     <ControlPanel @show-import="showImportModal = true" />
-    <MobileHeader v-if="store.currentCharacterData" @show-import="showImportModal = true" />
+    <MobileHeader v-if="store.currentCharacterData" />
 
     <main
       class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden overflow-y-auto"
@@ -52,7 +54,16 @@ onMounted(async () => {
     <ShareModal />
     <ImportModal :show="showImportModal" @close="showImportModal = false" />
 
-    <MobileTabBar v-if="store.currentCharacterData" class="md:hidden" />
+    <MobileTabBar
+      v-if="store.currentCharacterData"
+      class="md:hidden"
+      @show-more="showMoreMenu = true"
+    />
+
+    <MoreActionsMenu
+      v-model="showMoreMenu"
+      @show-import="showImportModal = true"
+    />
 
     <ThemeToggle />
     <UpdateNotification />

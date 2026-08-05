@@ -4,6 +4,10 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
+defineEmits<{
+  showMore: []
+}>()
+
 const navLinks = [
   { name: 'identity', label: 'Identity', icon: 'person' },
   { name: 'skills', label: 'Skills', icon: 'school' },
@@ -24,7 +28,31 @@ const queryParams = computed(() => {
   >
     <div class="flex items-center justify-around h-full max-w-lg mx-auto">
       <router-link
-        v-for="link in navLinks"
+        v-for="link in navLinks.slice(0, 3)"
+        :key="link.name"
+        :to="{ name: link.name, ...queryParams }"
+        class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all duration-200 ease-out active:scale-95 select-none"
+        :class="
+          route.name === link.name
+            ? 'text-tertiary'
+            : 'text-on-surface-variant hover:text-on-surface'
+        "
+      >
+        <span class="material-symbols-outlined text-[1.35rem]">{{ link.icon }}</span>
+        <span class="text-[10px] font-label-md leading-none">{{ link.label }}</span>
+      </router-link>
+
+      <button
+        @click="$emit('showMore')"
+        class="relative -top-3 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-tertiary text-on-tertiary shadow-[0_4px_14px_rgba(0,0,0,0.35)] hover:bg-tertiary-fixed hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
+        title="More Actions"
+        aria-label="More Actions"
+      >
+        <span class="material-symbols-outlined text-[1.6rem]">more_horiz</span>
+      </button>
+
+      <router-link
+        v-for="link in navLinks.slice(3)"
         :key="link.name"
         :to="{ name: link.name, ...queryParams }"
         class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all duration-200 ease-out active:scale-95 select-none"
