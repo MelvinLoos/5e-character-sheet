@@ -26,7 +26,7 @@ const store = useCharacterStore()
       </div>
     </header>
 
-    <div class="flex flex-col gap-2 flex-1">
+    <div class="flex flex-col gap-2">
       <SavingThrows />
       <SkillsList />
     </div>
