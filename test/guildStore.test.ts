@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { ref, nextTick } from 'vue'
+import { nextTick } from 'vue'
 import 'fake-indexeddb/auto'
 import { useGuildStore } from '../src/stores/guildStore'
 import { useAuthStore } from '../src/stores/authStore'
