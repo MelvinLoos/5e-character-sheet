@@ -3,6 +3,7 @@ import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
 import { useCombat } from '@/composables/useCombat'
+import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
@@ -12,136 +13,146 @@ const { clampCurrentHp } = useCombat()
 <template>
   <section class="flex flex-col gap-6">
     <h3
-      class="font-headline-md text-headline-md text-primary border-b border-primary-container pb-2"
+      class="font-headline-md text-headline-md text-primary border-b border-primary-container pb-2 select-none"
     >
       Combat Vitals
     </h3>
     <div class="grid grid-cols-2 gap-4">
       <!-- AC Card -->
-      <div
-        class="bg-secondary-container rounded-lg p-4 border border-on-secondary-fixed-variant flex flex-col items-center justify-center shadow-md relative overflow-hidden group"
-      >
-        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        <span
-          class="material-symbols-outlined text-4xl text-secondary mb-2 relative z-10"
-          style="font-variation-settings: 'FILL' 1"
-          >shield</span
+      <ElevatedCard :elevation="2">
+        <div
+          class="rounded-lg p-4 flex flex-col items-center justify-center relative overflow-hidden group"
         >
-        <span
-          class="font-label-md text-label-md text-secondary-fixed-dim uppercase tracking-wider relative z-10"
-          >Armor Class</span
-        >
-        <div class="font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold">
-          <input
-            v-if="store.isEditing && store.currentCharacterData.combat.isAcOverride"
-            v-model.number="store.currentCharacterData.combat.ac"
-            type="number"
-            class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0"
-          />
-          <span v-else>
-            {{ store.computedArmorClass }}
-          </span>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          <span
+            class="material-symbols-outlined text-4xl text-secondary mb-2 relative z-10"
+            style="font-variation-settings: 'FILL' 1"
+            >shield</span
+          >
+          <span
+            class="font-label-md text-label-md text-secondary-fixed-dim uppercase tracking-wider relative z-10 select-none"
+            >Armor Class</span
+          >
+          <div class="font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold">
+            <input
+              v-if="store.isEditing && store.currentCharacterData.combat.isAcOverride"
+              v-model.number="store.currentCharacterData.combat.ac"
+              type="number"
+              class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0"
+            />
+            <span v-else>
+              {{ store.computedArmorClass }}
+            </span>
+          </div>
+          <label
+            class="relative z-10 mt-2 inline-flex items-center gap-2 cursor-pointer font-body-sm text-body-sm text-secondary-fixed-dim select-none"
+          >
+            <input
+              v-model="store.currentCharacterData.combat.isAcOverride"
+              type="checkbox"
+              class="form-checkbox h-4 w-4 rounded border-secondary-fixed-dim bg-secondary-container text-primary focus:ring-primary"
+            />
+            <span>Override AC</span>
+          </label>
         </div>
-        <label
-          class="relative z-10 mt-2 inline-flex items-center gap-2 cursor-pointer font-body-sm text-body-sm text-secondary-fixed-dim"
-        >
-          <input
-            v-model="store.currentCharacterData.combat.isAcOverride"
-            type="checkbox"
-            class="form-checkbox h-4 w-4 rounded border-secondary-fixed-dim bg-secondary-container text-primary focus:ring-primary"
-          />
-          <span>Override AC</span>
-        </label>
-      </div>
+      </ElevatedCard>
 
       <!-- HP Card -->
-      <div
-        class="bg-surface-container-highest rounded-lg p-4 border border-outline-variant flex flex-col justify-between"
-      >
-        <div class="flex justify-between items-center mb-2">
-          <span
-            class="font-label-md text-label-md text-on-surface-variant uppercase flex items-center gap-1"
-            ><span class="material-symbols-outlined text-sm">favorite</span> HP</span
-          >
-        </div>
-        <div class="flex items-end gap-2 border-b border-surface-variant pb-2 mb-2">
-          <input
-            class="w-16 bg-transparent border-none text-right font-headline-lg text-headline-lg text-on-surface p-0 focus:ring-0"
-            type="number"
-            v-model.number="store.currentCharacterData.combat.hp_current"
-            @input="clampCurrentHp()"
-          />
-          <span class="font-body-md text-body-md text-on-surface-variant pb-1 whitespace-nowrap"
-            >/ {{ progression.maxHp }}</span
-          >
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="font-label-md text-label-md text-on-surface-variant">Temp</span>
-          <input
-            class="w-12 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
-            placeholder="0"
-            type="number"
-          />
-        </div>
-      </div>
-
-      <!-- Hit Dice -->
-      <div
-        class="bg-surface-container-highest rounded-lg p-4 border border-outline-variant flex flex-col items-center justify-center col-span-2 sm:col-span-1"
-      >
-        <span
-          class="font-label-md text-label-md text-on-surface-variant uppercase mb-2 flex items-center gap-1"
-          ><span class="material-symbols-outlined text-sm">casino</span> Hit Dice</span
+      <ElevatedCard :elevation="2">
+        <div
+          class="rounded-lg p-4 flex flex-col justify-between"
         >
-        <div class="flex items-center gap-3">
-          <div class="font-headline-md text-headline-md text-on-surface">
-            {{ progression.derivedLevel
-            }}<span class="text-on-surface-variant text-lg"
-              >d{{
-                store.currentCharacterData.class
-                  ? DND_RULES.CLASSES[store.currentCharacterData.class]?.hitDice || 8
-                  : 8
-              }}</span
+          <div class="flex justify-between items-center mb-2">
+            <span
+              class="font-label-md text-label-md text-on-surface-variant uppercase flex items-center gap-1 select-none"
+              ><span class="material-symbols-outlined text-sm">favorite</span> HP</span
             >
           </div>
+          <div class="flex items-end gap-2 border-b border-surface-variant pb-2 mb-2">
+            <input
+              class="w-16 bg-transparent border-none text-right font-headline-lg text-headline-lg text-on-surface p-0 focus:ring-0"
+              type="number"
+              v-model.number="store.currentCharacterData.combat.hp_current"
+              @input="clampCurrentHp()"
+            />
+            <span class="font-body-md text-body-md text-on-surface-variant pb-1 whitespace-nowrap select-none"
+              >/ {{ progression.maxHp }}</span
+            >
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-label-md text-label-md text-on-surface-variant select-none">Temp</span>
+            <input
+              class="w-12 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
+              placeholder="0"
+              type="number"
+            />
+          </div>
         </div>
-      </div>
+      </ElevatedCard>
+
+      <!-- Hit Dice -->
+      <ElevatedCard :elevation="1">
+        <div
+          class="rounded-lg p-4 flex flex-col items-center justify-center col-span-2 sm:col-span-1"
+        >
+          <span
+            class="font-label-md text-label-md text-on-surface-variant uppercase mb-2 flex items-center gap-1 select-none"
+            ><span class="material-symbols-outlined text-sm">casino</span> Hit Dice</span
+          >
+          <div class="flex items-center gap-3">
+            <div class="font-headline-md text-headline-md text-on-surface">
+              {{ progression.derivedLevel
+              }}<span class="text-on-surface-variant text-lg"
+                >d{{
+                  store.currentCharacterData.class
+                    ? DND_RULES.CLASSES[store.currentCharacterData.class]?.hitDice || 8
+                    : 8
+                }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </ElevatedCard>
 
       <!-- Initiative & Speed -->
       <div class="grid grid-cols-2 gap-2 col-span-2 sm:col-span-1">
-        <div
-          class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center justify-center"
-        >
-          <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase"
-            >Initiative</span
+        <ElevatedCard :elevation="1">
+          <div
+            class="rounded p-3 flex flex-col items-center justify-center h-full"
           >
-          <span class="font-headline-md text-headline-md text-on-surface"
-            >{{ (progression.abilityMods.dex ?? 0) >= 0 ? '+' : ''
-            }}{{ progression.abilityMods.dex ?? 0 }}</span
+            <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
+              >Initiative</span
+            >
+            <span class="font-headline-md text-headline-md text-on-surface"
+              >{{ (progression.abilityMods.dex ?? 0) >= 0 ? '+' : ''
+              }}{{ progression.abilityMods.dex ?? 0 }}</span
+            >
+          </div>
+        </ElevatedCard>
+        <ElevatedCard :elevation="1">
+          <div
+            class="rounded p-3 flex flex-col items-center justify-center h-full"
           >
-        </div>
-        <div
-          class="bg-surface-container-high rounded p-3 border border-outline-variant flex flex-col items-center justify-center"
-        >
-          <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase"
-            >Speed</span
-          >
-          <input
-            v-if="store.isEditing"
-            v-model="store.currentCharacterData.combat.speed"
-            class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-on-surface p-0 pb-1"
-          />
-          <span
-            v-else
-            class="font-headline-md text-headline-md text-on-surface"
-            v-html="
-              store.currentCharacterData.combat.speed.replace(
-                'ft',
-                '<span class=\'text-base\'>ft</span>',
-              )
-            "
-          ></span>
-        </div>
+            <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
+              >Speed</span
+            >
+            <input
+              v-if="store.isEditing"
+              v-model="store.currentCharacterData.combat.speed"
+              class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-on-surface p-0 pb-1"
+            />
+            <span
+              v-else
+              class="font-headline-md text-headline-md text-on-surface"
+              v-html="
+                store.currentCharacterData.combat.speed.replace(
+                  'ft',
+                  '<span class=\'text-base\'>ft</span>',
+                )
+              "
+            ></span>
+          </div>
+        </ElevatedCard>
       </div>
     </div>
   </section>

@@ -93,6 +93,12 @@ export default {
         "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
         "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
         "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+      },
+      boxShadow: {
+        "elevation-1": "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)",
+        "elevation-2": "0 3px 6px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.12)",
+        "elevation-3": "0 10px 20px rgba(0,0,0,0.18), 0 3px 6px rgba(0,0,0,0.10)",
+        "elevation-4": "0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.12)",
       }
     },
   },

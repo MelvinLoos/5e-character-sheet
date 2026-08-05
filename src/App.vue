@@ -21,7 +21,7 @@ onMounted(async () => {
 
 <template>
   <div
-    class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0"
+    class="antialiased min-h-screen flex text-on-background bg-background print:bg-white print:block print:min-h-0 select-none"
   >
     <ControlPanel @show-import="showImportModal = true" />
     <MobileHeader v-if="store.currentCharacterData" @show-import="showImportModal = true" />
@@ -56,5 +56,11 @@ onMounted(async () => {
 
     <ThemeToggle />
     <UpdateNotification />
+
+    <!-- Viewport grain overlay — non-interactive -->
+    <div
+      class="fixed inset-0 pointer-events-none z-[100] grain opacity-[0.03] mix-blend-overlay"
+      aria-hidden="true"
+    ></div>
   </div>
 </template>

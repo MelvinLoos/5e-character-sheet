@@ -4,6 +4,7 @@ import { useRulesStore } from '@/stores/rulesStore'
 import { watch, computed, ref } from 'vue'
 import draggable from 'vuedraggable'
 import type { CharacterFeature } from '@/types/character'
+import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
@@ -25,6 +26,15 @@ function toggleExpand(title: string) {
   } else {
     expandedFeatures.value.add(title)
   }
+}
+
+function formattedDesc(feature: CharacterFeature): string {
+  return feature.desc
+    .replace(
+      /<li>/g,
+      "<li class='pl-4 relative before:content-[\\'\\'] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full'>",
+    )
+    .replace(/<ul>/g, "<ul class='list-none space-y-2 relative my-2'>")
 }
 
 const props = defineProps({
@@ -247,7 +257,7 @@ watch(
   <section v-if="props.features.length > 0 || store.isEditing">
     <div class="flex items-center justify-between mb-4 border-b border-outline-variant/50 pb-2">
       <h2
-        class="font-headline-md text-headline-md text-primary flex items-center gap-2 m-0 bg-transparent"
+        class="font-headline-md text-headline-md text-primary flex items-center gap-2 m-0 bg-transparent select-none"
       >
         <span class="material-symbols-outlined">{{
           props.title === 'Key Features' ? 'star' : 'library_books'
@@ -276,125 +286,120 @@ watch(
       drag-class="drag-item"
     >
       <template #item="{ element: feature, index }">
-        <div
-          class="bg-surface-container border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors group relative shadow-sm"
-        >
-          <!-- Drag handle - only show in edit mode -->
+        <ElevatedCard :elevation="1">
           <div
-            v-if="store.isEditing"
-            class="drag-handle absolute -left-2 top-4 lg:-left-4 lg:hidden group-hover:flex cursor-move text-outline-variant hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
-            title="Drag to reorder"
+            class="border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors group relative"
           >
-            <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
-          </div>
-
-          <div class="flex flex-col gap-2 relative z-0">
-            <!-- Header section -->
-            <div class="flex items-start justify-between">
-              <div class="flex-1 cursor-pointer select-none" @click="toggleExpand(feature.title)">
-                <div
-                  class="flex items-center gap-2 group-hover:text-tertiary transition-colors mb-2"
-                >
-                  <span
-                    class="material-symbols-outlined text-outline text-[20px] transition-transform"
-                    :class="{ 'rotate-90': expandedFeatures.has(feature.title) }"
-                    >chevron_right</span
-                  >
-                  <h3 class="font-headline-md text-headline-md text-tertiary m-0">
-                    {{ feature.title }}
-                  </h3>
-                </div>
-
-                <!-- Chips section -->
-                <div class="flex flex-wrap gap-2 pl-7">
-                  <ActionBadge
-                    v-if="feature.actionType"
-                    :action-type="feature.actionType"
-                    size="sm"
-                    class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
-                  />
-
-                  <!-- Resource usage display -->
-                  <div
-                    v-if="feature.resource"
-                    class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
-                  >
-                    <div class="flex items-center gap-1" @click.stop>
-                      <input
-                        v-for="n in store.getFeatureMaxUses(feature)"
-                        :key="n"
-                        type="checkbox"
-                        class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
-                      />
-                    </div>
-                    <span v-if="feature.resource.reset" class="opacity-80"
-                      >/ {{ feature.resource.reset }}</span
-                    >
-                  </div>
-                  <!-- Legacy uses format -->
-                  <div
-                    v-else-if="feature.uses"
-                    class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
-                  >
-                    <div class="flex items-center gap-1" @click.stop>
-                      <input
-                        v-for="n in feature.uses.total"
-                        :key="n"
-                        type="checkbox"
-                        class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
-                      />
-                    </div>
-                    <span v-if="feature.uses.per" class="opacity-80">/ {{ feature.uses.per }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Action buttons -->
-              <div
-                v-if="store.isEditing && props.editable"
-                class="flex flex-col sm:flex-row items-center gap-2 ml-4"
-              >
-                <button
-                  @click.stop="editFeature(feature)"
-                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
-                  title="Edit Feature"
-                >
-                  <span class="material-symbols-outlined text-[16px]">edit</span>
-                </button>
-                <button
-                  @click.stop="removeFeature(index)"
-                  class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-error/20 hover:text-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-95 transition-all duration-200 ease-out select-none"
-                  title="Remove Feature"
-                >
-                  <span class="material-symbols-outlined text-[16px]">delete</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Description (Expandable) -->
+            <!-- Drag handle - only show in edit mode -->
             <div
-              v-show="expandedFeatures.has(feature.title)"
-              class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
+              v-if="store.isEditing"
+              class="drag-handle absolute -left-2 top-4 lg:-left-4 lg:hidden group-hover:flex cursor-move text-outline-variant hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
+              title="Drag to reorder"
             >
+              <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+            </div>
+
+            <div class="flex flex-col gap-2 relative z-0">
+              <!-- Header section -->
+              <div class="flex items-start justify-between">
+                <div class="flex-1 cursor-pointer select-none" @click="toggleExpand(feature.title)">
+                  <div
+                    class="flex items-center gap-2 group-hover:text-tertiary transition-colors mb-2"
+                  >
+                    <span
+                      class="material-symbols-outlined text-outline text-[20px] transition-transform"
+                      :class="{ 'rotate-90': expandedFeatures.has(feature.title) }"
+                      >chevron_right</span
+                    >
+                    <h3 class="font-headline-md text-headline-md text-tertiary m-0">
+                      {{ feature.title }}
+                    </h3>
+                  </div>
+
+                  <!-- Chips section -->
+                  <div class="flex flex-wrap gap-2 pl-7">
+                    <ActionBadge
+                      v-if="feature.actionType"
+                      :action-type="feature.actionType"
+                      size="sm"
+                      class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+                    />
+
+                    <!-- Resource usage display -->
+                    <div
+                      v-if="feature.resource"
+                      class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+                    >
+                      <div class="flex items-center gap-1" @click.stop>
+                        <input
+                          v-for="n in store.getFeatureMaxUses(feature)"
+                          :key="n"
+                          type="checkbox"
+                          class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
+                        />
+                      </div>
+                      <span v-if="feature.resource.reset" class="opacity-80"
+                        >/ {{ feature.resource.reset }}</span
+                      >
+                    </div>
+                    <!-- Legacy uses format -->
+                    <div
+                      v-else-if="feature.uses"
+                      class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
+                    >
+                      <div class="flex items-center gap-1" @click.stop>
+                        <input
+                          v-for="n in feature.uses.total"
+                          :key="n"
+                          type="checkbox"
+                          class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
+                        />
+                      </div>
+                      <span v-if="feature.uses.per" class="opacity-80">/ {{ feature.uses.per }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div
+                  v-if="store.isEditing && props.editable"
+                  class="flex flex-col sm:flex-row items-center gap-2 ml-4"
+                >
+                  <button
+                    @click.stop="editFeature(feature)"
+                    class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
+                    title="Edit Feature"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                  </button>
+                  <button
+                    @click.stop="removeFeature(index)"
+                    class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-error/20 hover:text-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-95 transition-all duration-200 ease-out select-none"
+                    title="Remove Feature"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Description (Expandable) -->
               <div
-                v-html="
-                  feature.desc
-                    .replace(
-                      /<li>/g,
-                      '<li class=\'pl-4 relative before:content-[&quot;&quot;] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full\'>',
-                    )
-                    .replace(/<ul>/g, '<ul class=\'list-none space-y-2 relative my-2\'>')
-                "
-              ></div>
+                v-show="expandedFeatures.has(feature.title)"
+                class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
+              >
+                <div
+                  v-html="formattedDesc(feature)"
+                ></div>
+              </div>
             </div>
           </div>
-        </div>
+        </ElevatedCard>
       </template>
     </draggable>
 
     <div
       v-if="store.isEditing && props.features.length === 0"
-      class="text-center font-body-md text-on-surface-variant italic py-8 border border-dashed border-outline-variant/30 rounded-lg mt-4"
+      class="text-center font-body-md text-on-surface-variant italic py-8 border border-dashed border-outline-variant/30 rounded-lg mt-4 select-none"
     >
       No {{ props.title.toLowerCase() }} transcribed. Click the + icon to catalog a new entry.
     </div>
@@ -412,16 +417,16 @@ watch(
     <!-- Feature Library Modal -->
     <div
       v-if="showFeatureLibrary"
-      class="fixed inset-0 bg-surface/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
       <div
-        class="bg-surface-container rounded-lg shadow-xl border border-outline-variant/30 w-full max-w-2xl max-h-[80vh] flex flex-col"
+        class="bg-surface-container rounded-lg shadow-elevation-4 border border-outline-variant/30 w-full max-w-2xl max-h-[80vh] flex flex-col"
       >
         <div
           class="p-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low rounded-t-lg"
         >
           <h3
-            class="font-headline-md text-headline-md text-tertiary flex items-center gap-2 m-0 bg-transparent"
+            class="font-headline-md text-headline-md text-tertiary flex items-center gap-2 m-0 bg-transparent select-none"
           >
             <span class="material-symbols-outlined">library_books</span>
             Feature Archives
@@ -453,7 +458,7 @@ watch(
         <div class="overflow-y-auto flex-grow p-4 bg-surface-container">
           <div
             v-if="libraryFeatures.length === 0"
-            class="text-center py-8 font-body-md text-on-surface-variant"
+            class="text-center py-8 font-body-md text-on-surface-variant select-none"
           >
             <p>No archives match your inquiry.</p>
             <button
@@ -465,10 +470,14 @@ watch(
           </div>
 
           <div v-else class="space-y-4">
-            <div
+            <ElevatedCard
               v-for="(feature, index) in libraryFeatures"
               :key="index"
-              class="bg-surface-container-low border border-primary-container p-4 rounded-lg flex flex-col gap-2 hover:border-tertiary/50 transition-colors group relative shadow-sm cursor-pointer"
+              :elevation="1"
+              :class="[
+                'border border-primary-container p-4 rounded-lg flex flex-col gap-2 hover:border-tertiary/50 transition-colors group relative cursor-pointer',
+                'bg-surface-container-low',
+              ]"
               @click="addFeatureFromLibrary(feature)"
             >
               <div class="flex justify-between items-start gap-4">
@@ -477,7 +486,7 @@ watch(
                     <h4 class="font-headline-md text-tertiary m-0">{{ feature.title }}</h4>
                     <span
                       v-if="feature.source"
-                      class="text-[12px] bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md"
+                      class="text-[12px] bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md select-none"
                     >
                       {{ feature.source }}
                     </span>
@@ -495,19 +504,19 @@ watch(
                   <span class="material-symbols-outlined">add</span>
                 </button>
               </div>
-            </div>
+            </ElevatedCard>
           </div>
         </div>
 
         <div
           class="p-4 border-t border-outline-variant/30 bg-surface-container-low flex justify-between items-center rounded-b-lg"
         >
-          <span class="font-label-md text-on-surface-variant"
+          <span class="font-label-md text-on-surface-variant select-none"
             >{{ libraryFeatures.length }} entries available</span
           >
           <button
             @click="addManualFeature"
-            class="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-variant-high hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 border border-outline-variant/50 hover:border-outline font-label-md rounded transition-all duration-200 ease-out shadow-sm select-none"
+            class="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 border border-outline-variant/50 hover:border-outline font-label-md rounded transition-all duration-200 ease-out shadow-sm select-none"
           >
             Create Custom Entry
           </button>
