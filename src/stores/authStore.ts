@@ -14,6 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userId = ref<string | null>(null)
   const discordUsername = ref<string | null>(null)
   const discordAvatarUrl = ref<string | null>(null)
+  const providerToken = ref<string | null>(null)
 
   // Getters
   const isAuthenticated = computed(() => status.value === 'authenticated')
@@ -24,6 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
     userId.value = user?.id ?? null
     discordUsername.value = user?.user_metadata?.full_name ?? null
     discordAvatarUrl.value = user?.user_metadata?.avatar_url ?? null
+    providerToken.value = (session?.provider_token as string | undefined) ?? null
   }
 
   function handleAuthChange(event: AuthChangeEvent, session: Session | null) {
@@ -35,6 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
       userId.value = null
       discordUsername.value = null
       discordAvatarUrl.value = null
+      providerToken.value = null
     }
   }
 
@@ -106,6 +109,7 @@ export const useAuthStore = defineStore('auth', () => {
     userId.value = null
     discordUsername.value = null
     discordAvatarUrl.value = null
+    providerToken.value = null
   }
 
   async function handleAuthCallback(accessToken: string, refreshToken: string) {
@@ -125,6 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
       userId.value = null
       discordUsername.value = null
       discordAvatarUrl.value = null
+      providerToken.value = null
       return
     }
 
@@ -138,6 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
     userId,
     discordUsername,
     discordAvatarUrl,
+    providerToken,
     // Getters
     isAuthenticated,
     isLoading,
