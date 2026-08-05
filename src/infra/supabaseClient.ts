@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logger } from '../utils/logger'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, hasSupabaseCredentials } from '../constants/supabase'
+import { getSupabaseUrl, getSupabaseAnonKey, hasSupabaseCredentials } from '../constants/supabase'
 
 /**
  * Creates a Supabase client instance.
@@ -28,7 +28,7 @@ export function createSupabaseClient(sessionToken?: string): SupabaseClient | nu
         }
       : {}
 
-    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, globalHeaders)
+    return createClient(getSupabaseUrl(), getSupabaseAnonKey(), globalHeaders)
   } catch (e) {
     logger.error('Error initializing Supabase client:', (e as Error).message)
     return null
