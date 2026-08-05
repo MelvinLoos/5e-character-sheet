@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 
@@ -48,7 +48,6 @@ function handlePrint() {
     store.toggleEdit()
   }
 
-  // Use setTimeout to ensure DOM is updated before printing
   setTimeout(() => {
     window.onbeforeprint = () => {
       // This logic is tricky. We'll set it back after print.
@@ -74,6 +73,50 @@ const navLinks = [
 
 const queryParams = computed(() => {
   return route.query.id ? { query: { id: route.query.id } } : {}
+})
+
+// More popover state
+const showMorePopover = ref(false)
+const moreButtonRef = ref<HTMLElement | null>(null)
+const popoverRef = ref<HTMLElement | null>(null)
+
+function toggleMorePopover() {
+  showMorePopover.value = !showMorePopover.value
+}
+
+function closeMorePopover() {
+  showMorePopover.value = false
+}
+
+function handleMoreAction(action: () => void) {
+  action()
+  closeMorePopover()
+}
+
+function handleClickOutside(event: MouseEvent) {
+  if (
+    popoverRef.value &&
+    !popoverRef.value.contains(event.target as Node) &&
+    moreButtonRef.value &&
+    !moreButtonRef.value.contains(event.target as Node)
+  ) {
+    closeMorePopover()
+  }
+}
+
+function handlePopoverKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    closeMorePopover()
+    moreButtonRef.value?.focus()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
@@ -165,6 +208,33 @@ const queryParams = computed(() => {
       <p class="font-label-md text-on-surface-variant">Character Manager</p>
     </div>
 
+    <!-- Edit Mode Toggle Bar (Option A) -->
+    <div
+      v-if="store.currentCharacterData"
+      class="mx-4 mb-6 p-1 rounded-xl bg-surface-variant/50 border border-outline-variant/30 flex items-stretch"
+    >
+      <button
+        @click="store.toggleEdit()"
+        class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-label-md transition-all duration-200 ease-out active:scale-95 select-none"
+        :class="store.isEditing ? 'text-on-surface-variant hover:bg-surface-bright' : 'bg-tertiary text-on-tertiary shadow-sm'"
+        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+      >
+        <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
+        <span>Viewing</span>
+      </button>
+      <button
+        @click="store.toggleEdit()"
+        class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-label-md transition-all duration-200 ease-out active:scale-95 select-none"
+        :class="store.isEditing ? 'bg-tertiary text-on-tertiary shadow-sm' : 'text-on-surface-variant hover:bg-surface-bright'"
+        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+      >
+        <span class="material-symbols-outlined text-[1.125rem]">edit</span>
+        <span>Edit</span>
+      </button>
+    </div>
+
     <!-- Navigation Links -->
     <ul v-if="store.currentCharacterData" class="flex flex-col gap-1 px-4 mb-6">
       <li v-for="link in navLinks" :key="link.name">
@@ -180,6 +250,90 @@ const queryParams = computed(() => {
           <span class="material-symbols-outlined text-[1.25rem]">{{ link.icon }}</span>
           {{ link.label }}
         </router-link>
+      </li>
+
+      <!-- More Nav Item -->
+      <li class="relative">
+        <button
+          ref="moreButtonRef"
+          @click="toggleMorePopover"
+          class="flex items-center gap-3 px-4 py-3 w-full transition-colors font-label-lg text-on-surface-variant hover:bg-surface-variant hover:text-on-surface"
+          :class="{ 'bg-surface-variant/30 text-primary font-bold': showMorePopover }"
+          :aria-expanded="showMorePopover"
+          aria-haspopup="true"
+        >
+          <span class="material-symbols-outlined text-[1.25rem]">more_horiz</span>
+          More
+        </button>
+
+        <!-- More Popover -->
+        <Transition name="popover">
+          <div
+            v-if="showMorePopover"
+            ref="popoverRef"
+            class="absolute left-full bottom-0 ml-2 w-52 bg-surface-container rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-outline-variant z-[60] overflow-hidden"
+            @keydown="handlePopoverKeydown"
+            role="menu"
+            aria-label="More actions"
+          >
+            <div class="p-2 flex flex-col gap-1">
+              <button
+                @click="emit('showImport'); closeMorePopover()"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Import JSON"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">file_upload</span>
+                Import Data
+              </button>
+
+              <button
+                @click="handleMoreAction(() => store.saveToLibrary())"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">{{
+                  store.sourceCharacterId ? 'content_copy' : 'save'
+                }}</span>
+                {{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}
+              </button>
+
+              <button
+                @click="handleMoreAction(() => store.shareCharacter())"
+                :disabled="!store.supabaseClient"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed select-none w-full text-left"
+                title="Share Online"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">share</span>
+                Share Online
+              </button>
+
+              <button
+                @click="handleMoreAction(() => store.exportCharacter())"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Export JSON"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">download</span>
+                Export JSON
+              </button>
+
+              <div class="h-px bg-outline-variant/30 my-1"></div>
+
+              <button
+                @click="handleMoreAction(handlePrint)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-tertiary font-label-md text-sm hover:bg-tertiary/10 active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Print Sheet"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">print</span>
+                Print Sheet
+              </button>
+            </div>
+          </div>
+        </Transition>
       </li>
     </ul>
 
@@ -205,75 +359,26 @@ const queryParams = computed(() => {
       </li>
 
     </ul>
-
-    <div
-      class="px-6 mt-auto pb-6 pt-4 border-t border-outline-variant/30 flex flex-col gap-2 print:hidden"
-    >
-      <!-- Edit/View Mode -->
-      <button
-        @click="store.toggleEdit()"
-        class="edit-toggle-btn w-full active:scale-95"
-        :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
-        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
-        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
-      >
-        <span class="material-symbols-outlined">{{ store.isEditing ? 'edit' : 'visibility' }}</span>
-        {{ store.isEditing ? 'Editing…' : 'Edit Mode' }}
-      </button>
-
-      <!-- Import -->
-      <button
-        @click="emit('showImport')"
-        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
-        title="Import JSON"
-      >
-        <span class="material-symbols-outlined">file_upload</span>
-        Import Data
-      </button>
-
-      <!-- Save -->
-      <button
-        @click="store.saveToLibrary()"
-        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
-        :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
-      >
-        <span class="material-symbols-outlined">{{
-          store.sourceCharacterId ? 'content_copy' : 'save'
-        }}</span>
-        {{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}
-      </button>
-
-      <!-- Share -->
-      <button
-        @click="store.shareCharacter()"
-        :disabled="!store.supabaseClient"
-        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
-        title="Share Online"
-      >
-        <span class="material-symbols-outlined">share</span>
-        Share Online
-      </button>
-
-      <!-- Export -->
-      <button
-        @click="store.exportCharacter()"
-        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
-        title="Export JSON"
-      >
-        <span class="material-symbols-outlined">download</span>
-        Export JSON
-      </button>
-
-      <!-- Print -->
-      <button
-        @click="handlePrint"
-        class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
-        title="Print Sheet"
-      >
-        <span class="material-symbols-outlined">print</span>
-        Print Sheet
-      </button>
-    </div>
   </nav>
 
 </template>
+
+<style scoped>
+.popover-enter-active {
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popover-leave-active {
+  transition: all 150ms ease-in;
+}
+
+.popover-enter-from {
+  opacity: 0;
+  transform: scale(0.9) translateX(-8px);
+}
+
+.popover-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+</style>
