@@ -1,12 +1,21 @@
 /**
- * Supabase client configuration constants.
+ * Supabase client configuration helpers.
  *
  * These values are read from Vite environment variables at runtime.
+ * They are exposed as functions so tests can stub env vars between runs.
  */
-export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? ''
-export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
-export const SUPABASE_REDIRECT_URL = import.meta.env.VITE_SUPABASE_REDIRECT_URL ?? window.location.origin
+export function getSupabaseUrl(): string {
+  return import.meta.env.VITE_SUPABASE_URL ?? ''
+}
+
+export function getSupabaseAnonKey(): string {
+  return import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
+}
+
+export function getSupabaseRedirectUrl(): string {
+  return import.meta.env.VITE_SUPABASE_REDIRECT_URL ?? (typeof window !== 'undefined' ? window.location.origin : '')
+}
 
 export function hasSupabaseCredentials(): boolean {
-  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
+  return Boolean(getSupabaseUrl() && getSupabaseAnonKey())
 }
