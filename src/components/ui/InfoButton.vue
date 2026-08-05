@@ -38,7 +38,7 @@ const closeIcon = computed(() =>
     <button
       type="button"
       @click.stop="isOpen = true"
-      class="text-gray-400 hover:text-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full"
+      class="text-gray-400 hover:text-indigo-600 hover:scale-110 active:scale-95 transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full select-none"
       aria-label="More information"
       v-html="helpIcon"
     ></button>
@@ -63,7 +63,7 @@ const closeIcon = computed(() =>
             </h3>
             <button
               @click="isOpen = false"
-              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:scale-110 active:scale-95 transition-all duration-200 ease-out rounded-full p-1 select-none"
               v-html="closeIcon"
               aria-label="Close explanation"
             ></button>

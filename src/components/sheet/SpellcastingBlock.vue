@@ -87,7 +87,7 @@ const allowedLevels = computed(() => {
         <button
           v-if="store.isEditing"
           @click="addSpell"
-          class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors whitespace-nowrap"
+          class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out whitespace-nowrap select-none"
         >
           <span class="material-symbols-outlined">add_circle</span> Add Spell
         </button>
@@ -114,7 +114,7 @@ const allowedLevels = computed(() => {
                   getSpent(parseInt(levelKey.replace('level', ''))) - 1,
                 )
               "
-              class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container hover:bg-tertiary/10 transition-colors cursor-pointer"
+              class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container hover:bg-tertiary/10 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-90 transition-all duration-200 ease-out cursor-pointer select-none"
               title="Click to decrement used slots"
             >
               {{ max - getSpent(parseInt(levelKey.replace('level', ''))) }}
@@ -126,17 +126,17 @@ const allowedLevels = computed(() => {
               {{ max }}
             </div>
           </div>
-          <button
-            @click="
-              setSpent(
-                parseInt(levelKey.replace('level', '')),
-                getSpent(parseInt(levelKey.replace('level', ''))) + 1,
-              )
-            "
-            class="mt-2 text-[10px] uppercase font-bold text-tertiary/60 hover:text-tertiary transition-colors cursor-pointer"
-          >
-            Spend Slot
-          </button>
+            <button
+              @click="
+                setSpent(
+                  parseInt(levelKey.replace('level', '')),
+                  getSpent(parseInt(levelKey.replace('level', ''))) + 1,
+                )
+              "
+              class="mt-2 text-[10px] uppercase font-bold text-tertiary/60 hover:text-tertiary hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
+            >
+              Spend Slot
+            </button>
         </div>
       </div>
 
@@ -157,10 +157,10 @@ const allowedLevels = computed(() => {
           :key="mode.key"
           @click="spellSortMode = mode.key"
           :class="[
-            'px-3 py-1 text-xs rounded-full border transition-all font-bold',
+            'px-3 py-1 text-xs rounded-full border transition-all duration-200 ease-out font-bold select-none active:scale-95',
             spellSortMode === mode.key
               ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
-              : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
+              : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50 hover:-translate-y-0.5 hover:shadow-sm',
           ]"
         >
           {{ mode.label }}
@@ -203,7 +203,7 @@ const allowedLevels = computed(() => {
                 <button
                   @click="togglePrepared(spell)"
                   :class="[
-                    'transition-colors mr-2',
+                    'transition-all duration-200 ease-out mr-2 active:scale-90',
                     spell.prepared
                       ? 'text-on-secondary-fixed-variant hover:text-on-secondary-fixed'
                       : 'text-on-surface-variant hover:text-primary',
@@ -266,15 +266,15 @@ const allowedLevels = computed(() => {
               {{ spell.desc }}
             </p>
 
-            <!-- Delete button -->
-            <button
-              v-if="store.isEditing"
-              @click="removeSpell(spell.id!)"
-              class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error/10 rounded"
-              title="Remove Spell"
-            >
-              <span class="material-symbols-outlined text-sm">delete</span>
-            </button>
+              <!-- Delete button -->
+              <button
+                v-if="store.isEditing"
+                @click="removeSpell(spell.id!)"
+                class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
+                title="Remove Spell"
+              >
+                <span class="material-symbols-outlined text-sm">delete</span>
+              </button>
           </div>
         </template>
       </draggable>
@@ -305,7 +305,7 @@ const allowedLevels = computed(() => {
               <button
                 @click="togglePrepared(spell)"
                 :class="[
-                  'transition-colors mr-2',
+                  'transition-all duration-200 ease-out mr-2 active:scale-90',
                   spell.prepared
                     ? 'text-on-secondary-fixed-variant hover:text-on-secondary-fixed'
                     : 'text-on-surface-variant hover:text-primary',
@@ -368,15 +368,15 @@ const allowedLevels = computed(() => {
             {{ spell.desc }}
           </p>
 
-          <!-- Delete button -->
-          <button
-            v-if="store.isEditing"
-            @click="removeSpell(spell.id!)"
-            class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error/10 rounded"
-            title="Remove Spell"
-          >
-            <span class="material-symbols-outlined text-sm">delete</span>
-          </button>
+              <!-- Delete button -->
+              <button
+                v-if="store.isEditing"
+                @click="removeSpell(spell.id!)"
+                class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
+                title="Remove Spell"
+              >
+                <span class="material-symbols-outlined text-sm">delete</span>
+              </button>
         </div>
       </div>
 
@@ -402,7 +402,7 @@ const allowedLevels = computed(() => {
           <h3 class="text-2xl font-headline-lg text-tertiary">Spell Library</h3>
           <button
             @click="toggleSpellLibrary"
-            class="p-2 hover:bg-surface-variant rounded-full transition-colors"
+            class="p-2 hover:bg-surface-variant active:bg-surface-variant/70 active:scale-95 rounded-full transition-all duration-200 ease-out select-none"
           >
             <span class="material-symbols-outlined">close</span>
           </button>
@@ -439,10 +439,10 @@ const allowedLevels = computed(() => {
               :key="level"
               @click="filterByLevel = filterByLevel === level ? null : level"
               :class="[
-                'px-3 py-1 text-xs rounded border transition-all font-bold',
+                'px-3 py-1 text-xs rounded border transition-all duration-200 ease-out font-bold select-none active:scale-95',
                 filterByLevel === level
                   ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
-                  : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
+                  : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50 hover:-translate-y-0.5 hover:shadow-sm',
               ]"
             >
               {{ level === 0 ? 'C' : level }}
@@ -450,7 +450,7 @@ const allowedLevels = computed(() => {
             <button
               v-if="searchFilter || filterByLevel !== null"
               @click="clearFilters"
-              class="ml-2 text-xs text-primary hover:underline"
+              class="ml-2 text-xs text-primary hover:underline hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
             >
               Clear
             </button>
@@ -491,7 +491,7 @@ const allowedLevels = computed(() => {
                 </div>
                 <button
                   @click="addSpellFromLibrary(spell)"
-                  class="bg-tertiary text-on-tertiary text-xs px-3 py-1 rounded font-bold hover:bg-tertiary-fixed transition-colors shadow-sm"
+                  class="bg-tertiary text-on-tertiary text-xs px-3 py-1 rounded font-bold hover:bg-tertiary-fixed hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out shadow-sm select-none"
                 >
                   Learn
                 </button>
@@ -507,7 +507,7 @@ const allowedLevels = computed(() => {
           </div>
           <button
             @click="addManualSpell"
-            class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 px-4 py-2 rounded-lg transition-all duration-200 ease-out cursor-pointer select-none"
           >
             <span class="material-symbols-outlined text-base">edit_note</span>
             Custom Spell

@@ -195,12 +195,12 @@ const queryParams = computed(() => {
             class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm mb-2 focus:border-tertiary focus:ring-1 focus:ring-tertiary"
             placeholder="e.g. 'grumpy dwarf cleric'"
           />
-          <button
-            @click="generate"
-            class="w-full bg-tertiary/20 text-tertiary hover:bg-tertiary hover:text-on-tertiary font-label-md text-sm py-2 rounded transition-colors"
-          >
-            Generate
-          </button>
+        <button
+          @click="generate"
+          class="w-full bg-tertiary/20 text-tertiary hover:bg-tertiary hover:text-on-tertiary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 font-label-md text-sm py-2 rounded transition-all duration-200 ease-out select-none"
+        >
+          Generate
+        </button>
         </div>
       </li>
 
@@ -212,7 +212,7 @@ const queryParams = computed(() => {
       <!-- Edit/View Mode -->
       <button
         @click="store.toggleEdit()"
-        class="edit-toggle-btn w-full"
+        class="edit-toggle-btn w-full active:scale-95"
         :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
         :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
         :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
@@ -224,7 +224,7 @@ const queryParams = computed(() => {
       <!-- Import -->
       <button
         @click="emit('showImport')"
-        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
         title="Import JSON"
       >
         <span class="material-symbols-outlined">file_upload</span>
@@ -234,7 +234,7 @@ const queryParams = computed(() => {
       <!-- Save -->
       <button
         @click="store.saveToLibrary()"
-        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
         :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
       >
         <span class="material-symbols-outlined">{{
@@ -247,7 +247,7 @@ const queryParams = computed(() => {
       <button
         @click="store.shareCharacter()"
         :disabled="!store.supabaseClient"
-        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         title="Share Online"
       >
         <span class="material-symbols-outlined">share</span>
@@ -257,7 +257,7 @@ const queryParams = computed(() => {
       <!-- Export -->
       <button
         @click="store.exportCharacter()"
-        class="w-full bg-surface-variant hover:bg-surface-bright text-on-surface font-label-md text-label-md py-3 rounded transition-colors flex items-center justify-center gap-2"
+        class="w-full bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface font-label-md text-label-md py-3 rounded transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
         title="Export JSON"
       >
         <span class="material-symbols-outlined">download</span>
@@ -267,7 +267,7 @@ const queryParams = computed(() => {
       <!-- Print -->
       <button
         @click="handlePrint"
-        class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed transition-colors flex items-center justify-center gap-2"
+        class="w-full bg-tertiary text-on-tertiary font-label-md text-label-md py-3 rounded hover:bg-tertiary-fixed hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out flex items-center justify-center gap-2 select-none"
         title="Print Sheet"
       >
         <span class="material-symbols-outlined">print</span>

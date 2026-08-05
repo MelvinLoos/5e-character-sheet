@@ -244,7 +244,7 @@ const masteryDescriptions: Record<string, string> = {
           v-if="bundleA"
           @click="selectClassOption('A')"
           :class="[
-            'cursor-pointer rounded-lg border-2 p-5 transition-all hover:shadow-lg',
+            'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedClassOption === 'A'
               ? 'border-tertiary bg-tertiary-container/20'
               : 'border-outline-variant bg-surface-container hover:border-tertiary/50',
@@ -272,7 +272,7 @@ const masteryDescriptions: Record<string, string> = {
           v-if="bundleB"
           @click="selectClassOption('B')"
           :class="[
-            'cursor-pointer rounded-lg border-2 p-5 transition-all hover:shadow-lg',
+            'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedClassOption === 'B'
               ? 'border-tertiary bg-tertiary-container/20'
               : 'border-outline-variant bg-surface-container hover:border-tertiary/50',
@@ -300,7 +300,7 @@ const masteryDescriptions: Record<string, string> = {
           v-if="bundleC"
           @click="selectClassOption('C')"
           :class="[
-            'cursor-pointer rounded-lg border-2 p-5 transition-all hover:shadow-lg',
+            'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedClassOption === 'C'
               ? 'border-tertiary bg-tertiary-container/20'
               : 'border-outline-variant bg-surface-container hover:border-tertiary/50',
@@ -326,7 +326,7 @@ const masteryDescriptions: Record<string, string> = {
         <button
           @click="goToStep2"
           :disabled="!selectedClassOption"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           Continue →
         </button>
@@ -352,9 +352,9 @@ const masteryDescriptions: Record<string, string> = {
             v-for="opt in choice.options"
             :key="opt.itemId"
             @click="resolveChoice(choiceIndex, opt.itemId, opt.quantity)"
-            :class="[
-              'cursor-pointer rounded-lg border p-4 transition-all hover:shadow',
-              choiceSelections[choiceIndex] === opt.itemId
+              :class="[
+                'cursor-pointer rounded-lg border p-4 transition-all duration-200 ease-out hover:shadow hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
+                choiceSelections[choiceIndex] === opt.itemId
                 ? 'border-tertiary bg-tertiary-container/20'
                 : 'border-outline-variant hover:border-tertiary/50 bg-surface-container-high',
             ]"
@@ -383,13 +383,13 @@ const masteryDescriptions: Record<string, string> = {
       <div class="flex justify-between mt-4">
         <button
           @click="currentStep = 1"
-          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
           @click="goToBackgroundStep"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 transition-colors"
+          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           Continue →
         </button>
@@ -408,7 +408,7 @@ const masteryDescriptions: Record<string, string> = {
         <div
           @click="selectBackgroundOption('A')"
           :class="[
-            'cursor-pointer rounded-lg border-2 p-5 transition-all hover:shadow-lg',
+            'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedBackgroundOption === 'A'
               ? 'border-tertiary bg-tertiary-container/20'
               : 'border-outline-variant bg-surface-container hover:border-tertiary/50',
@@ -436,7 +436,7 @@ const masteryDescriptions: Record<string, string> = {
         <div
           @click="selectBackgroundOption('B')"
           :class="[
-            'cursor-pointer rounded-lg border-2 p-5 transition-all hover:shadow-lg',
+            'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedBackgroundOption === 'B'
               ? 'border-tertiary bg-tertiary-container/20'
               : 'border-outline-variant bg-surface-container hover:border-tertiary/50',
@@ -458,15 +458,15 @@ const masteryDescriptions: Record<string, string> = {
 
       <div class="flex justify-between mt-4">
         <button
-          @click="currentStep = selectedBundle?.choices?.length ? 2 : 1"
-          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          @click="currentStep = 1"
+          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
           @click="goToTrinketOrPreview"
           :disabled="!selectedBackgroundOption"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           Continue →
         </button>
@@ -488,7 +488,7 @@ const masteryDescriptions: Record<string, string> = {
           :key="trinket.id"
           @click="selectTrinket(trinket.id)"
           :class="[
-            'cursor-pointer rounded-lg border p-3 transition-all hover:shadow text-sm',
+            'cursor-pointer rounded-lg border p-3 transition-all duration-200 ease-out hover:shadow hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] text-sm select-none',
             selectedTrinketId === trinket.id
               ? 'border-tertiary bg-tertiary-container/20'
               : 'border-outline-variant hover:border-tertiary/50 bg-surface-container-high',
@@ -505,14 +505,14 @@ const masteryDescriptions: Record<string, string> = {
       <div class="flex justify-between mt-4">
         <button
           @click="currentStep = 3"
-          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
           @click="goToPreview"
           :disabled="!selectedTrinketId"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           Continue →
         </button>
@@ -631,13 +631,13 @@ const masteryDescriptions: Record<string, string> = {
       <div class="flex justify-between mt-4">
         <button
           @click="currentStep = showTrinketStep ? 4 : 3"
-          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
           @click="confirmEquipment"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 transition-colors"
+          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ✓ Confirm & Apply Equipment
         </button>
@@ -657,7 +657,7 @@ const masteryDescriptions: Record<string, string> = {
       </p>
       <button
         @click="resetWizard"
-        class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+        class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
       >
         Reconfigure Equipment
       </button>
@@ -671,7 +671,7 @@ const masteryDescriptions: Record<string, string> = {
   >
     <button
       @click="resetWizard"
-      class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high transition-colors text-sm"
+      class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out text-sm select-none"
     >
       🔄 Reconfigure Starting Equipment
     </button>

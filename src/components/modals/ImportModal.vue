@@ -255,7 +255,7 @@ function close() {
               <p class="text-sm text-gray-600">{{ (selectedFile.size / 1024).toFixed(2) }} KB</p>
               <button
                 @click="clearFile"
-                class="text-red-500 hover:text-red-700 text-sm"
+                class="text-red-500 hover:text-red-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out text-sm select-none"
                 :disabled="status === 'processing'"
               >
                 Remove File
@@ -300,7 +300,7 @@ function close() {
           <div class="flex gap-3 justify-end">
             <button
               @click="close"
-              class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+              class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
               :disabled="status === 'processing'"
             >
               Cancel
@@ -310,7 +310,7 @@ function close() {
               v-if="!previewData"
               @click="processFile"
               :disabled="!canProcess"
-              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:bg-gray-300 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
             >
               Process File
             </button>
@@ -318,7 +318,7 @@ function close() {
             <button
               v-if="canConfirm"
               @click="confirmImport"
-              class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
             >
               Confirm Import
             </button>

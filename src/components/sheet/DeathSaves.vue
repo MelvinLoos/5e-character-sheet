@@ -31,7 +31,7 @@ function toggleFailure(index: number) {
             v-for="i in 3"
             :key="'s' + i"
             @click="toggleSuccess(i - 1)"
-            class="w-6 h-6 rounded-full border-2 transition-colors flex items-center justify-center"
+            class="w-6 h-6 rounded-full border-2 transition-all duration-200 ease-out flex items-center justify-center select-none active:scale-85"
             :class="
               successes[i - 1]
                 ? 'border-tertiary bg-tertiary/20'
@@ -54,7 +54,7 @@ function toggleFailure(index: number) {
             v-for="i in 3"
             :key="'f' + i"
             @click="toggleFailure(i - 1)"
-            class="w-6 h-6 rounded-full border-2 transition-colors flex items-center justify-center"
+            class="w-6 h-6 rounded-full border-2 transition-all duration-200 ease-out flex items-center justify-center select-none active:scale-85"
             :class="
               failures[i - 1] ? 'border-error bg-error/20' : 'border-error/30 hover:border-error'
             "

@@ -16,7 +16,7 @@ defineEmits<{
     <div class="flex items-center gap-2">
       <button
         @click="store.toggleEdit()"
-        class="edit-toggle-btn"
+        class="edit-toggle-btn active:scale-95"
         :class="store.isEditing ? 'edit-toggle-btn--active' : 'edit-toggle-btn--inactive'"
         :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
         :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
@@ -27,7 +27,7 @@ defineEmits<{
 
       <button
         @click="$emit('showImport')"
-        class="p-2 rounded-lg bg-surface-variant hover:bg-surface-bright text-on-surface transition-colors"
+        class="p-2 rounded-lg bg-surface-variant hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
         title="Import Data"
         aria-label="Import Data"
       >
