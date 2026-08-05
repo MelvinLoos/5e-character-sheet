@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
+import AuthButton from './AuthButton.vue'
 
 const store = useCharacterStore()
 const route = useRoute()
@@ -277,6 +278,9 @@ onUnmounted(() => {
             aria-label="More actions"
           >
             <div class="p-2 flex flex-col gap-1">
+              <!-- Auth -->
+              <AuthButton />
+
               <button
                 @click="emit('showImport'); closeMorePopover()"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
