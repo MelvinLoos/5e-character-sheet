@@ -70,4 +70,11 @@ router.beforeEach(async () => {
   }
 })
 
+export async function initializeAuth(): Promise<void> {
+  if (authInitialized) return
+  const authStore = useAuthStore()
+  await authStore.initialize()
+  authInitialized = true
+}
+
 export default router

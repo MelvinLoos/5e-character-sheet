@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { ref } from 'vue'
 import AuthButton from '../src/components/AuthButton.vue'
 import { useAuthStore } from '../src/stores/authStore'
 

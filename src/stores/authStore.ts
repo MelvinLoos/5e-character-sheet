@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { createSupabaseClient } from '../infra/supabaseClient'
-import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
+import type { Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { logger } from '../utils/logger'
 
 export type AuthStatus = 'loggedOut' | 'loading' | 'authenticated'

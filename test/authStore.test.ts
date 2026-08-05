@@ -121,8 +121,8 @@ describe('authStore', () => {
   })
 
   it('updates state reactively on SIGNED_IN auth state change event', async () => {
-    let authCallback: Function | null = null
-    mockSupabaseClient.auth.onAuthStateChange.mockImplementation((callback: Function) => {
+    let authCallback: ((event: string, session: unknown) => void) | null = null
+    mockSupabaseClient.auth.onAuthStateChange.mockImplementation((callback: (event: string, session: unknown) => void) => {
       authCallback = callback
       return { data: { subscription: { unsubscribe: vi.fn() } } }
     })
@@ -143,8 +143,8 @@ describe('authStore', () => {
       error: null,
     })
 
-    let authCallback: Function | null = null
-    mockSupabaseClient.auth.onAuthStateChange.mockImplementation((callback: Function) => {
+    let authCallback: ((event: string, session: unknown) => void) | null = null
+    mockSupabaseClient.auth.onAuthStateChange.mockImplementation((callback: (event: string, session: unknown) => void) => {
       authCallback = callback
       return { data: { subscription: { unsubscribe: vi.fn() } } }
     })
