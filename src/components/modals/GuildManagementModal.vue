@@ -658,7 +658,7 @@ watch(
                       class="flex items-center justify-between p-3 bg-surface-variant/30 rounded-lg border border-outline-variant/20"
                     >
                       <span class="font-body-md text-on-surface truncate mr-2">
-                        {{ (feat as any).name || 'Unnamed Feat' }}
+                        {{ (feat as any).title || 'Unnamed Feat' }}
                       </span>
                       <div class="flex items-center gap-1 shrink-0">
                         <button
