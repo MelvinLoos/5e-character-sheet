@@ -1,0 +1,61 @@
+# CLI & Execution Constraints
+
+- You operate in a non-interactive shell. You MUST NOT run any commands that open a pager, text editor, or await user input.
+- Always use the `--no-pager` flag for git commands (e.g., `git --no-pager log`, `git --no-pager diff`).
+- Never use commands like `less`, `more`, `vi`, or `nano`.
+- If using package managers, append `-y` or `--yes` to bypass prompts.
+
+# Git Workflow & Branching
+
+- **NEVER push directly to `main`.** The branch is protected. All changes MUST go through a pull request.
+- Create a feature branch for every change from an up-to-date `main`. Branch naming conventions:
+  - `feature/<issue-number>-<short-slug>` for new features (e.g., `feature/62-1-auth-store`)
+  - `fix/<issue-number>-<short-slug>` for bug fixes (e.g., `fix/issue-78-mobile-tab-bar`)
+  - `chore/<description>` for tooling, dependencies, or maintenance
+  - `docs/<description>` for documentation-only changes
+  - `epic/<description>` for long-running integration branches
+- Keep branches up to date by rebasing onto `main` (not merging `main` into the feature branch).
+- Delete feature branches after the PR is merged.
+
+# Pull Requests
+
+- Every code change requires a PR against `main`.
+- PR title format: `[#<issue>] <type>: <brief description>` (e.g., `[#89] fix: conditionally disable vue-devtools in production`).
+- PR description must include:
+  - **What** was changed
+  - **Why** the change was made
+  - **How** it was tested (include exact test commands run locally)
+  - Screenshots or GIFs for UI changes
+- PRs must pass the CI quad-check pipeline (type-check, lint, unit tests, e2e tests, build) before merging.
+- Keep PRs small and focused — one concern per PR. If a PR touches more than ~400 lines, consider splitting it.
+- Request review from at least one other contributor before merging (when team size permits).
+
+# Commit Conventions
+
+- Use [Conventional Commits](https://www.conventionalcommits.org/):
+  - `feat:` — a new feature
+  - `fix:` — a bug fix
+  - `test:` — adding or updating tests
+  - `refactor:` — restructuring code without changing behavior
+  - `chore:` — tooling, dependencies, build configuration
+  - `docs:` — documentation only
+  - `style:` — formatting, whitespace (no logic change)
+  - `ci:` — changes to CI/CD configuration
+  - `perf:` — performance improvement
+- Make atomic commits — one logical change per commit. Avoid catch-all "fix stuff" mega-commits.
+- Follow TDD (already the project standard): write a failing test first and commit it (`test:`), then implement the fix or feature (`feat:` or `fix:`).
+
+# Quality Gates & DevOps
+
+- Before pushing or opening a PR, run these commands locally and ensure they all pass:
+  - `npm run type-check` — must pass with zero errors
+  - `npm run lint` — must pass with zero warnings
+  - `npm run test:unit` — all tests must pass
+- The CI pipeline mirrors these checks and must be green before merging any PR.
+- Use `npm ci` in CI and fresh environments (already configured as `npm install --frozen-lockfile`).
+- **Netlify deploys from `main`** — never merge a broken build. Verify `npm run build` succeeds locally before pushing.
+- **Secrets & environment variables**:
+  - Never commit `.env` files. Use `.env.example` as a reference template.
+  - `import.meta.env.VITE_*` variables are bundled into the client — never store secrets in them.
+  - Server-side secrets (e.g., `GEMINI_API_KEY`) belong in Netlify environment variables, never in the repository.
+- **Definition of Done**: code passes all CI checks, has been PR-reviewed, and is merged to `main`.
