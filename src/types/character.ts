@@ -7,6 +7,7 @@
  */
 
 import type { AbilityKey, CasterType, DamageType, ActionType, FeatureType, MagicSchool } from './enums'
+import type { GearType } from './equipment'
 
 // ---------------------------------------------------------------------------
 // Feature & Resource
@@ -132,7 +133,7 @@ export interface EquippedGear {
   /** Canonical catalog item ID (e.g. "scale-mail", "shield"). Optional for backward compatibility with older characters that only stored a random runtime UUID. */
   catalogId?: string
   name: string
-  type: string
+  type: GearType | string
   description: string
   slotCost: number
   rarity?: string
@@ -143,7 +144,7 @@ export interface EquippedGear {
 export interface Consumable {
   id: string
   name: string
-  type: string
+  type: GearType | string
   slotCost: number
   usageDie: string
 }
