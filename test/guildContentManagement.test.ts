@@ -40,7 +40,7 @@ function createMockAuthStore(userId = 'user-uuid-test') {
 }
 
 // =============================================================================
-// Bulk Create Tests (RED — implementation not written yet)
+// Bulk Create Tests
 // =============================================================================
 
 describe('guildContentManagement - bulkCreateGuildSpells', () => {
@@ -49,10 +49,26 @@ describe('guildContentManagement - bulkCreateGuildSpells', () => {
     vi.clearAllMocks()
     mockInsert.mockResolvedValue({ error: null })
     mockSelect.mockResolvedValue({ data: null, error: null })
+    // Reset chain for per-item lookup
+    mockSupabaseClient.from.mockImplementation(() => ({
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete,
+      select: mockSelect,
+    }))
   })
 
   it('bulkCreateGuildSpells inserts multiple spells and returns the created rows', async () => {
     createMockAuthStore('user-uuid-123')
+
+    // Mock per-item SELECT to return no existing spells
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
 
     const createdRows = [
       { id: 's1', guild_id: 'g1', data: { name: 'Spell A', level: 1 }, created_by: 'user-uuid-123' },
@@ -83,6 +99,15 @@ describe('guildContentManagement - bulkCreateGuildSpells', () => {
   it('bulkCreateGuildSpells chunks arrays larger than 50 items', async () => {
     createMockAuthStore('user-uuid-123')
 
+    // Mock per-item SELECT to return no existing spells
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
     const spells = Array.from({ length: 120 }, (_, i) => ({ name: `Spell ${i}`, level: i % 10 }))
     const createdChunk = spells.slice(0, 50).map((s) => ({
       id: 'id-' + s.name,
@@ -108,6 +133,15 @@ describe('guildContentManagement - bulkCreateGuildSpells', () => {
 
   it('bulkCreateGuildSpells throws when Supabase returns an error on any chunk', async () => {
     createMockAuthStore('user-uuid-123')
+
+    // Mock per-item SELECT to return no existing spells, but insert fails
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
 
     const spells = Array.from({ length: 10 }, (_, i) => ({ name: `Spell ${i}`, level: 0 }))
 
@@ -145,14 +179,30 @@ describe('guildContentManagement - bulkCreateGuildFeats', () => {
     vi.clearAllMocks()
     mockInsert.mockResolvedValue({ error: null })
     mockSelect.mockResolvedValue({ data: null, error: null })
+    // Reset chain for per-item lookup
+    mockSupabaseClient.from.mockImplementation(() => ({
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete,
+      select: mockSelect,
+    }))
   })
 
   it('bulkCreateGuildFeats inserts multiple feats and returns the created rows', async () => {
     createMockAuthStore('user-uuid-456')
 
+    // Mock per-item SELECT to return no existing feats
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
     const createdRows = [
-      { id: 'f1', guild_id: 'g2', data: { name: 'Feat A' }, created_by: 'user-uuid-456' },
-      { id: 'f2', guild_id: 'g2', data: { name: 'Feat B' }, created_by: 'user-uuid-456' },
+      { id: 'f1', guild_id: 'g2', data: { title: 'Feat A' }, created_by: 'user-uuid-456' },
+      { id: 'f2', guild_id: 'g2', data: { title: 'Feat B' }, created_by: 'user-uuid-456' },
     ]
 
     mockInsert.mockReturnValue({
@@ -163,15 +213,15 @@ describe('guildContentManagement - bulkCreateGuildFeats', () => {
     const result = await bulkCreateGuildFeats({
       guild_id: 'g2',
       feats: [
-        { name: 'Feat A' },
-        { name: 'Feat B' },
+        { title: 'Feat A' },
+        { title: 'Feat B' },
       ],
     })
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith('guild_feats')
     expect(mockInsert).toHaveBeenCalledWith([
-      { guild_id: 'g2', data: { name: 'Feat A' }, created_by: 'user-uuid-456' },
-      { guild_id: 'g2', data: { name: 'Feat B' }, created_by: 'user-uuid-456' },
+      { guild_id: 'g2', data: { title: 'Feat A' }, created_by: 'user-uuid-456' },
+      { guild_id: 'g2', data: { title: 'Feat B' }, created_by: 'user-uuid-456' },
     ])
     expect(result).toEqual(createdRows)
   })
@@ -179,9 +229,18 @@ describe('guildContentManagement - bulkCreateGuildFeats', () => {
   it('bulkCreateGuildFeats chunks arrays larger than 50 items', async () => {
     createMockAuthStore('user-uuid-456')
 
-    const feats = Array.from({ length: 75 }, (_, i) => ({ name: `Feat ${i}` }))
+    // Mock per-item SELECT to return no existing feats
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
+    const feats = Array.from({ length: 75 }, (_, i) => ({ title: `Feat ${i}` }))
     const createdChunk = feats.slice(0, 50).map((f) => ({
-      id: 'id-' + f.name,
+      id: 'id-' + f.title,
       guild_id: 'g2',
       data: f,
       created_by: 'user-uuid-456',
@@ -205,6 +264,15 @@ describe('guildContentManagement - bulkCreateGuildFeats', () => {
   it('bulkCreateGuildFeats throws when Supabase returns an error on any chunk', async () => {
     createMockAuthStore('user-uuid-456')
 
+    // Mock per-item SELECT to return no existing feats
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
     mockInsert.mockReturnValue({
       select: vi.fn().mockResolvedValue({ data: null, error: new Error('Bulk insert failed') }),
     })
@@ -214,7 +282,7 @@ describe('guildContentManagement - bulkCreateGuildFeats', () => {
     await expect(
       bulkCreateGuildFeats({
         guild_id: 'g2',
-        feats: [{ name: 'Fail' }],
+        feats: [{ title: 'Fail' }],
       }),
     ).rejects.toThrow('Bulk insert failed')
   })
@@ -241,14 +309,30 @@ describe('guildContentManagement - Spells', () => {
     mockUpdate.mockResolvedValue({ error: null })
     mockDelete.mockResolvedValue({ error: null })
     mockSelect.mockResolvedValue({ data: null, error: null })
+    // Reset from mock to return a proper chain for the upsert flow
+    mockSupabaseClient.from.mockImplementation(() => ({
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete,
+      select: mockSelect,
+    }))
   })
 
   // ---------------------------------------------------------------------------
-  // createGuildSpell
+  // createGuildSpell — now uses upsert (check-then-insert)
   // ---------------------------------------------------------------------------
 
   it('createGuildSpell inserts into guild_spells and returns the created row', async () => {
     createMockAuthStore('user-uuid-123')
+
+    // Mock findExistingSpell SELECT returning no match
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
 
     const createdRow = {
       id: 'spell-uuid-1',
@@ -270,7 +354,6 @@ describe('guildContentManagement - Spells', () => {
       data: { name: 'Test Spell', level: 1 },
     })
 
-    expect(mockSupabaseClient.from).toHaveBeenCalledWith('guild_spells')
     expect(mockInsert).toHaveBeenCalledWith({
       guild_id: 'guild-1',
       data: { name: 'Test Spell', level: 1 },
@@ -279,8 +362,28 @@ describe('guildContentManagement - Spells', () => {
     expect(result).toEqual(createdRow)
   })
 
-  it('createGuildSpell throws when Supabase returns an error', async () => {
+  it('createGuildSpell throws when spell name is missing', async () => {
     createMockAuthStore('user-uuid-123')
+
+    await expect(
+      createGuildSpell({
+        guild_id: 'guild-1',
+        data: { level: 1 },
+      }),
+    ).rejects.toThrow('Spell name is required')
+  })
+
+  it('createGuildSpell throws when insert fails', async () => {
+    createMockAuthStore('user-uuid-123')
+
+    // Mock findExistingSpell SELECT returning no match
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
 
     mockInsert.mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -380,19 +483,35 @@ describe('guildContentManagement - Feats', () => {
     mockUpdate.mockResolvedValue({ error: null })
     mockDelete.mockResolvedValue({ error: null })
     mockSelect.mockResolvedValue({ data: null, error: null })
+    // Reset from mock to return a proper chain
+    mockSupabaseClient.from.mockImplementation(() => ({
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete,
+      select: mockSelect,
+    }))
   })
 
   // ---------------------------------------------------------------------------
-  // createGuildFeat
+  // createGuildFeat — now uses upsert (check-then-insert)
   // ---------------------------------------------------------------------------
 
   it('createGuildFeat inserts into guild_feats and returns the created row', async () => {
     createMockAuthStore('user-uuid-456')
 
+    // Mock findExistingFeat SELECT returning no match
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
     const createdRow = {
       id: 'feat-uuid-1',
       guild_id: 'guild-2',
-      data: { name: 'Test Feat' },
+      data: { title: 'Test Feat', desc: 'A test feat' },
       created_by: 'user-uuid-456',
       created_at: '2025-01-01T00:00:00Z',
       updated_at: '2025-01-01T00:00:00Z',
@@ -406,20 +525,39 @@ describe('guildContentManagement - Feats', () => {
 
     const result = await createGuildFeat({
       guild_id: 'guild-2',
-      data: { name: 'Test Feat' },
+      data: { title: 'Test Feat', desc: 'A test feat' },
     })
 
-    expect(mockSupabaseClient.from).toHaveBeenCalledWith('guild_feats')
     expect(mockInsert).toHaveBeenCalledWith({
       guild_id: 'guild-2',
-      data: { name: 'Test Feat' },
+      data: { title: 'Test Feat', desc: 'A test feat' },
       created_by: 'user-uuid-456',
     })
     expect(result).toEqual(createdRow)
   })
 
-  it('createGuildFeat throws when Supabase returns an error', async () => {
+  it('createGuildFeat throws when feat title is missing', async () => {
     createMockAuthStore('user-uuid-456')
+
+    await expect(
+      createGuildFeat({
+        guild_id: 'guild-2',
+        data: { desc: 'No title' },
+      }),
+    ).rejects.toThrow('Feat title is required')
+  })
+
+  it('createGuildFeat throws when insert fails', async () => {
+    createMockAuthStore('user-uuid-456')
+
+    // Mock findExistingFeat SELECT returning no match
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
 
     mockInsert.mockReturnValue({
       select: vi.fn().mockReturnValue({
@@ -430,7 +568,7 @@ describe('guildContentManagement - Feats', () => {
     await expect(
       createGuildFeat({
         guild_id: 'guild-2',
-        data: { name: 'Fail' },
+        data: { title: 'Fail' },
       }),
     ).rejects.toThrow('Insert failed')
   })
@@ -445,7 +583,7 @@ describe('guildContentManagement - Feats', () => {
     const updatedRow = {
       id: 'feat-uuid-1',
       guild_id: 'guild-2',
-      data: { name: 'Updated Feat' },
+      data: { title: 'Updated Feat' },
       created_by: 'user-uuid-456',
       created_at: '2025-01-01T00:00:00Z',
       updated_at: '2025-01-02T00:00:00Z',
@@ -459,11 +597,11 @@ describe('guildContentManagement - Feats', () => {
       }),
     })
 
-    const result = await updateGuildFeat('feat-uuid-1', { name: 'Updated Feat' })
+    const result = await updateGuildFeat('feat-uuid-1', { title: 'Updated Feat' })
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith('guild_feats')
     expect(mockUpdate).toHaveBeenCalledWith({
-      data: { name: 'Updated Feat' },
+      data: { title: 'Updated Feat' },
       updated_at: expect.any(String),
     })
     expect(result).toEqual(updatedRow)
@@ -480,7 +618,7 @@ describe('guildContentManagement - Feats', () => {
       }),
     })
 
-    await expect(updateGuildFeat('feat-uuid-1', { name: 'Fail' })).rejects.toThrow('Update failed')
+    await expect(updateGuildFeat('feat-uuid-1', { title: 'Fail' })).rejects.toThrow('Update failed')
   })
 
   // ---------------------------------------------------------------------------
@@ -508,5 +646,342 @@ describe('guildContentManagement - Feats', () => {
     })
 
     await expect(deleteGuildFeat('feat-uuid-1')).rejects.toThrow('Delete failed')
+  })
+})
+
+// =============================================================================
+// Bug #106: Duplication Prevention — App-Level Upsert (TDD)
+// =============================================================================
+
+describe('guildContentManagement - Duplication Prevention (Upsert)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    mockInsert.mockResolvedValue({ error: null })
+    mockUpdate.mockResolvedValue({ error: null })
+    mockDelete.mockResolvedValue({ error: null })
+    mockSelect.mockResolvedValue({ data: null, error: null })
+    // Reset from mock to return a proper chain
+    mockSupabaseClient.from.mockImplementation(() => ({
+      insert: mockInsert,
+      update: mockUpdate,
+      delete: mockDelete,
+      select: mockSelect,
+    }))
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn(),
+      }),
+    })
+  })
+
+  // ---------------------------------------------------------------------------
+  // createGuildSpell — Upsert
+  // ---------------------------------------------------------------------------
+
+  it('createGuildSpell upserts: inserts when no existing spell with same name', async () => {
+    createMockAuthStore('user-uuid-123')
+
+    // Mock SELECT to return empty (no existing spell)
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
+    const createdRow = {
+      id: 'new-spell-id',
+      guild_id: 'guild-1',
+      data: { name: 'Fireball', level: 3 },
+      created_by: 'user-uuid-123',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-01-01T00:00:00Z',
+    }
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: createdRow, error: null }),
+      }),
+    })
+
+    const result = await createGuildSpell({
+      guild_id: 'guild-1',
+      data: { name: 'Fireball', level: 3 },
+    })
+
+    expect(mockInsert).toHaveBeenCalled()
+    expect(mockUpdate).not.toHaveBeenCalled()
+    expect(result.id).toBe('new-spell-id')
+  })
+
+  it('createGuildSpell upserts: updates when spell with same name exists', async () => {
+    createMockAuthStore('user-uuid-123')
+
+    // Mock SELECT to return an existing spell
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              id: 'existing-spell-id',
+              guild_id: 'guild-1',
+              data: { name: 'Fireball', level: 3 },
+              created_by: 'user-uuid-123',
+              created_at: '2025-01-01T00:00:00Z',
+              updated_at: '2025-01-01T00:00:00Z',
+            },
+            error: null,
+          }),
+        }),
+      }),
+    })
+
+    const updatedRow = {
+      id: 'existing-spell-id',
+      guild_id: 'guild-1',
+      data: { name: 'Fireball', level: 5, desc: 'Updated' },
+      created_by: 'user-uuid-123',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-06-08T00:00:00Z',
+    }
+    mockUpdate.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: updatedRow, error: null }),
+        }),
+      }),
+    })
+
+    const result = await createGuildSpell({
+      guild_id: 'guild-1',
+      data: { name: 'Fireball', level: 5, desc: 'Updated' },
+    })
+
+    expect(mockUpdate).toHaveBeenCalled()
+    expect(mockInsert).not.toHaveBeenCalled()
+    expect(result.id).toBe('existing-spell-id')
+    expect(result.data).toEqual({ name: 'Fireball', level: 5, desc: 'Updated' })
+  })
+
+  // ---------------------------------------------------------------------------
+  // createGuildFeat — Upsert
+  // ---------------------------------------------------------------------------
+
+  it('createGuildFeat upserts: inserts when no existing feat with same title', async () => {
+    createMockAuthStore('user-uuid-456')
+
+    // Mock SELECT to return empty
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
+      }),
+    })
+
+    const createdRow = {
+      id: 'new-feat-id',
+      guild_id: 'guild-2',
+      data: { title: 'Lucky', desc: 'A lucky feat' },
+      created_by: 'user-uuid-456',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-01-01T00:00:00Z',
+    }
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: createdRow, error: null }),
+      }),
+    })
+
+    const result = await createGuildFeat({
+      guild_id: 'guild-2',
+      data: { title: 'Lucky', desc: 'A lucky feat' },
+    })
+
+    expect(mockInsert).toHaveBeenCalled()
+    expect(mockUpdate).not.toHaveBeenCalled()
+    expect(result.id).toBe('new-feat-id')
+  })
+
+  it('createGuildFeat upserts: updates when feat with same title exists', async () => {
+    createMockAuthStore('user-uuid-456')
+
+    // Mock SELECT to return an existing feat
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              id: 'existing-feat-id',
+              guild_id: 'guild-2',
+              data: { title: 'Lucky', desc: 'Old description' },
+              created_by: 'user-uuid-456',
+              created_at: '2025-01-01T00:00:00Z',
+              updated_at: '2025-01-01T00:00:00Z',
+            },
+            error: null,
+          }),
+        }),
+      }),
+    })
+
+    const updatedRow = {
+      id: 'existing-feat-id',
+      guild_id: 'guild-2',
+      data: { title: 'Lucky', desc: 'Updated description' },
+      created_by: 'user-uuid-456',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-06-08T00:00:00Z',
+    }
+    mockUpdate.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: updatedRow, error: null }),
+        }),
+      }),
+    })
+
+    const result = await createGuildFeat({
+      guild_id: 'guild-2',
+      data: { title: 'Lucky', desc: 'Updated description' },
+    })
+
+    expect(mockUpdate).toHaveBeenCalled()
+    expect(mockInsert).not.toHaveBeenCalled()
+    expect(result.id).toBe('existing-feat-id')
+    expect(result.data.desc).toBe('Updated description')
+  })
+
+  // ---------------------------------------------------------------------------
+  // bulkCreateGuildSpells — Upsert per item
+  // ---------------------------------------------------------------------------
+
+  it('bulkCreateGuildSpells upserts: mixes inserts and updates', async () => {
+    createMockAuthStore('user-uuid-123')
+
+    let selectCallCount = 0
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockImplementation(() => {
+            selectCallCount++
+            // First spell "Fireball" exists, second "Lightning" is new
+            if (selectCallCount === 1) {
+              return Promise.resolve({
+                data: { id: 'existing-1', guild_id: 'g-1', data: { name: 'Fireball' } },
+                error: null,
+              })
+            }
+            return Promise.resolve({ data: null, error: null })
+          }),
+        }),
+      }),
+    })
+
+    // Update result for Fireball
+    mockUpdate.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'existing-1', guild_id: 'g-1', data: { name: 'Fireball' }, created_by: 'user-uuid-123' },
+            error: null,
+          }),
+        }),
+      }),
+    })
+
+    // Insert result for Lightning
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        data: [{ id: 'new-1', guild_id: 'g-1', data: { name: 'Lightning' }, created_by: 'user-uuid-123' }],
+        error: null,
+      }),
+    })
+
+    const { bulkCreateGuildSpells } = await import('../src/utils/guildContentManagement')
+    const result = await bulkCreateGuildSpells({
+      guild_id: 'g-1',
+      spells: [
+        { name: 'Fireball', level: 3 },
+        { name: 'Lightning', level: 4 },
+      ],
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result[0].id).toBe('existing-1')
+    expect(result[1].id).toBe('new-1')
+  })
+
+  it('bulkCreateGuildSpells returns empty array for empty input', async () => {
+    createMockAuthStore('user-uuid-123')
+
+    const { bulkCreateGuildSpells } = await import('../src/utils/guildContentManagement')
+    const result = await bulkCreateGuildSpells({
+      guild_id: 'g-1',
+      spells: [],
+    })
+
+    expect(result).toEqual([])
+    expect(mockInsert).not.toHaveBeenCalled()
+    expect(mockUpdate).not.toHaveBeenCalled()
+  })
+
+  // ---------------------------------------------------------------------------
+  // bulkCreateGuildFeats — Upsert per item
+  // ---------------------------------------------------------------------------
+
+  it('bulkCreateGuildFeats upserts: mixes inserts and updates', async () => {
+    createMockAuthStore('user-uuid-456')
+
+    let selectCallCount = 0
+    mockSelect.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockImplementation(() => {
+            selectCallCount++
+            // First feat "Lucky" exists, second "Alert" is new
+            if (selectCallCount === 1) {
+              return Promise.resolve({
+                data: { id: 'existing-f1', guild_id: 'g-2', data: { title: 'Lucky' } },
+                error: null,
+              })
+            }
+            return Promise.resolve({ data: null, error: null })
+          }),
+        }),
+      }),
+    })
+
+    mockUpdate.mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: { id: 'existing-f1', guild_id: 'g-2', data: { title: 'Lucky' }, created_by: 'user-uuid-456' },
+            error: null,
+          }),
+        }),
+      }),
+    })
+
+    mockInsert.mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        data: [{ id: 'new-f1', guild_id: 'g-2', data: { title: 'Alert' }, created_by: 'user-uuid-456' }],
+        error: null,
+      }),
+    })
+
+    const { bulkCreateGuildFeats } = await import('../src/utils/guildContentManagement')
+    const result = await bulkCreateGuildFeats({
+      guild_id: 'g-2',
+      feats: [
+        { title: 'Lucky' },
+        { title: 'Alert' },
+      ],
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result[0].id).toBe('existing-f1')
+    expect(result[1].id).toBe('new-f1')
   })
 })

@@ -5,6 +5,8 @@
  * - Uses authStore.userId for `created_by` on inserts.
  * - Returns the created/updated row for optimistic UI updates.
  * - Throws on error so the UI can display error messages.
+ * - Uses app-level upsert (check-then-insert-or-update) to prevent
+ *   duplicate-named items per guild.
  */
 
 import { getSupabaseClient } from '../infra/sharingService'
@@ -48,109 +50,60 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 }
 
 // =============================================================================
-// Bulk Create — Guild Spells
+// Internal helpers — lookup existing by guild_id + name/title
 // =============================================================================
 
 /**
- * Insert multiple homebrew spells for a guild in chunked batches.
- *
- * Arrays larger than BULK_INSERT_CHUNK_SIZE (50) are automatically split
- * into multiple sequential Supabase insert calls to prevent PostgREST
- * payload limits from being exceeded.
- *
- * @returns The array of created rows (across all chunks).
- * @throws If any chunk insert fails.
+ * Look up an existing guild spell by guild_id and spell name (JSONB data->>'name').
+ * Returns the row or null if not found.
  */
-export async function bulkCreateGuildSpells(input: {
-  guild_id: string
-  spells: Record<string, unknown>[]
-}): Promise<GuildSpell[]> {
-  const { client, userId } = assertClientAndUser()
+async function findExistingSpell(
+  client: NonNullable<ReturnType<typeof getSupabaseClient>>,
+  guildId: string,
+  name: string,
+): Promise<GuildSpell | null> {
+  const { data, error } = await client
+    .from('guild_spells')
+    .select('*')
+    .eq('guild_id', guildId)
+    .eq('data->>name', name)
+    .maybeSingle()
 
-  if (input.spells.length === 0) {
-    return []
-  }
+  if (error) throw error
+  return (data as GuildSpell) ?? null
+}
 
-  const rows = input.spells.map((spell) => ({
-    guild_id: input.guild_id,
-    data: spell,
-    created_by: userId,
-  }))
+/**
+ * Look up an existing guild feat by guild_id and feat title (JSONB data->>'title').
+ * Returns the row or null if not found.
+ */
+async function findExistingFeat(
+  client: NonNullable<ReturnType<typeof getSupabaseClient>>,
+  guildId: string,
+  title: string,
+): Promise<GuildFeat | null> {
+  const { data, error } = await client
+    .from('guild_feats')
+    .select('*')
+    .eq('guild_id', guildId)
+    .eq('data->>title', title)
+    .maybeSingle()
 
-  const chunks = chunkArray(rows, BULK_INSERT_CHUNK_SIZE)
-  const allResults: GuildSpell[] = []
-
-  for (const chunk of chunks) {
-    const { data, error } = await client
-      .from('guild_spells')
-      .insert(chunk)
-      .select()
-
-    if (error) throw error
-
-    if (data) {
-      allResults.push(...(data as GuildSpell[]))
-    }
-  }
-
-  return allResults
+  if (error) throw error
+  return (data as GuildFeat) ?? null
 }
 
 // =============================================================================
-// Bulk Create — Guild Feats
+// Guild Spells CRUD (single-item) — with upsert
 // =============================================================================
 
 /**
- * Insert multiple homebrew feats for a guild in chunked batches.
+ * Insert or update a homebrew spell for a guild.
  *
- * Arrays larger than BULK_INSERT_CHUNK_SIZE (50) are automatically split
- * into multiple sequential Supabase insert calls to prevent PostgREST
- * payload limits from being exceeded.
- *
- * @returns The array of created rows (across all chunks).
- * @throws If any chunk insert fails.
- */
-export async function bulkCreateGuildFeats(input: {
-  guild_id: string
-  feats: Record<string, unknown>[]
-}): Promise<GuildFeat[]> {
-  const { client, userId } = assertClientAndUser()
-
-  if (input.feats.length === 0) {
-    return []
-  }
-
-  const rows = input.feats.map((feat) => ({
-    guild_id: input.guild_id,
-    data: feat,
-    created_by: userId,
-  }))
-
-  const chunks = chunkArray(rows, BULK_INSERT_CHUNK_SIZE)
-  const allResults: GuildFeat[] = []
-
-  for (const chunk of chunks) {
-    const { data, error } = await client
-      .from('guild_feats')
-      .insert(chunk)
-      .select()
-
-    if (error) throw error
-
-    if (data) {
-      allResults.push(...(data as GuildFeat[]))
-    }
-  }
-
-  return allResults
-}
-
-// =============================================================================
-// Guild Spells CRUD (single-item)
-// =============================================================================
-
-/**
- * Insert a new homebrew spell for a guild.
+ * Upsert strategy: matches on guild_id + data->>'name'.
+ * - If a spell with the same name already exists for this guild, the existing
+ *   row's `data` payload is updated (preserving id, created_by, created_at).
+ * - Otherwise a new row is inserted.
  */
 export async function createGuildSpell(input: {
   guild_id: string
@@ -158,6 +111,31 @@ export async function createGuildSpell(input: {
 }): Promise<GuildSpell> {
   const { client, userId } = assertClientAndUser()
 
+  const spellName = typeof input.data.name === 'string' ? input.data.name.trim() : ''
+  if (!spellName) {
+    throw new Error('Spell name is required')
+  }
+
+  // Check if a spell with this name already exists for the guild
+  const existing = await findExistingSpell(client, input.guild_id, spellName)
+
+  if (existing) {
+    // Update the existing row — preserve created_by and created_at
+    const { data: updated, error: updateError } = await client
+      .from('guild_spells')
+      .update({
+        data: input.data,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+    return updated as GuildSpell
+  }
+
+  // No existing spell — insert a new row
   const { data, error } = await client
     .from('guild_spells')
     .insert({
@@ -169,7 +147,6 @@ export async function createGuildSpell(input: {
     .single()
 
   if (error) throw error
-
   return data as GuildSpell
 }
 
@@ -212,11 +189,16 @@ export async function deleteGuildSpell(id: string): Promise<void> {
 }
 
 // =============================================================================
-// Guild Feats CRUD
+// Guild Feats CRUD (single-item) — with upsert
 // =============================================================================
 
 /**
- * Insert a new homebrew feat for a guild.
+ * Insert or update a homebrew feat for a guild.
+ *
+ * Upsert strategy: matches on guild_id + data->>'title'.
+ * - If a feat with the same title already exists for this guild, the existing
+ *   row's `data` payload is updated (preserving id, created_by, created_at).
+ * - Otherwise a new row is inserted.
  */
 export async function createGuildFeat(input: {
   guild_id: string
@@ -224,6 +206,31 @@ export async function createGuildFeat(input: {
 }): Promise<GuildFeat> {
   const { client, userId } = assertClientAndUser()
 
+  const featTitle = typeof input.data.title === 'string' ? input.data.title.trim() : ''
+  if (!featTitle) {
+    throw new Error('Feat title is required')
+  }
+
+  // Check if a feat with this title already exists for the guild
+  const existing = await findExistingFeat(client, input.guild_id, featTitle)
+
+  if (existing) {
+    // Update the existing row — preserve created_by and created_at
+    const { data: updated, error: updateError } = await client
+      .from('guild_feats')
+      .update({
+        data: input.data,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+    return updated as GuildFeat
+  }
+
+  // No existing feat — insert a new row
   const { data, error } = await client
     .from('guild_feats')
     .insert({
@@ -235,7 +242,6 @@ export async function createGuildFeat(input: {
     .single()
 
   if (error) throw error
-
   return data as GuildFeat
 }
 
@@ -275,4 +281,160 @@ export async function deleteGuildFeat(id: string): Promise<void> {
     .eq('id', id)
 
   if (error) throw error
+}
+
+// =============================================================================
+// Bulk Create — Guild Spells (with per-item upsert)
+// =============================================================================
+
+/**
+ * Insert or update multiple homebrew spells for a guild.
+ *
+ * Each spell is individually checked for an existing entry matching
+ * guild_id + data->>'name'. Existing spells are updated; new spells are
+ * batch-inserted in chunks of BULK_INSERT_CHUNK_SIZE.
+ *
+ * @returns The array of created/updated rows.
+ * @throws If any chunk insert fails.
+ */
+export async function bulkCreateGuildSpells(input: {
+  guild_id: string
+  spells: Record<string, unknown>[]
+}): Promise<GuildSpell[]> {
+  const { client, userId } = assertClientAndUser()
+
+  if (input.spells.length === 0) {
+    return []
+  }
+
+  const rowsToInsert: { guild_id: string; data: Record<string, unknown>; created_by: string }[] = []
+  const allResults: GuildSpell[] = []
+
+  // Check each spell for existing duplicates
+  for (const spell of input.spells) {
+    const name = typeof spell.name === 'string' ? spell.name.trim() : ''
+    if (!name) continue // skip unnamed items
+
+    const existing = await findExistingSpell(client, input.guild_id, name)
+
+    if (existing) {
+      // Update existing
+      const { data: updated, error: updateError } = await client
+        .from('guild_spells')
+        .update({
+          data: spell,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (updateError) throw updateError
+      allResults.push(updated as GuildSpell)
+    } else {
+      rowsToInsert.push({
+        guild_id: input.guild_id,
+        data: spell,
+        created_by: userId,
+      })
+    }
+  }
+
+  // Batch insert new spells in chunks
+  const chunks = chunkArray(rowsToInsert, BULK_INSERT_CHUNK_SIZE)
+
+  for (const chunk of chunks) {
+    if (chunk.length === 0) continue
+
+    const { data, error } = await client
+      .from('guild_spells')
+      .insert(chunk)
+      .select()
+
+    if (error) throw error
+
+    if (data) {
+      allResults.push(...(data as GuildSpell[]))
+    }
+  }
+
+  return allResults
+}
+
+// =============================================================================
+// Bulk Create — Guild Feats (with per-item upsert)
+// =============================================================================
+
+/**
+ * Insert or update multiple homebrew feats for a guild.
+ *
+ * Each feat is individually checked for an existing entry matching
+ * guild_id + data->>'title'. Existing feats are updated; new feats are
+ * batch-inserted in chunks of BULK_INSERT_CHUNK_SIZE.
+ *
+ * @returns The array of created/updated rows.
+ * @throws If any chunk insert fails.
+ */
+export async function bulkCreateGuildFeats(input: {
+  guild_id: string
+  feats: Record<string, unknown>[]
+}): Promise<GuildFeat[]> {
+  const { client, userId } = assertClientAndUser()
+
+  if (input.feats.length === 0) {
+    return []
+  }
+
+  const rowsToInsert: { guild_id: string; data: Record<string, unknown>; created_by: string }[] = []
+  const allResults: GuildFeat[] = []
+
+  // Check each feat for existing duplicates
+  for (const feat of input.feats) {
+    const title = typeof feat.title === 'string' ? feat.title.trim() : ''
+    if (!title) continue // skip unnamed items
+
+    const existing = await findExistingFeat(client, input.guild_id, title)
+
+    if (existing) {
+      // Update existing
+      const { data: updated, error: updateError } = await client
+        .from('guild_feats')
+        .update({
+          data: feat,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (updateError) throw updateError
+      allResults.push(updated as GuildFeat)
+    } else {
+      rowsToInsert.push({
+        guild_id: input.guild_id,
+        data: feat,
+        created_by: userId,
+      })
+    }
+  }
+
+  // Batch insert new feats in chunks
+  const chunks = chunkArray(rowsToInsert, BULK_INSERT_CHUNK_SIZE)
+
+  for (const chunk of chunks) {
+    if (chunk.length === 0) continue
+
+    const { data, error } = await client
+      .from('guild_feats')
+      .insert(chunk)
+      .select()
+
+    if (error) throw error
+
+    if (data) {
+      allResults.push(...(data as GuildFeat[]))
+    }
+  }
+
+  return allResults
 }
