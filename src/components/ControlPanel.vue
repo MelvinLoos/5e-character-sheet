@@ -387,6 +387,22 @@ onUnmounted(() => {
       </li>
 
     </ul>
+
+    <!-- Legal Links (visible regardless of character load state) -->
+    <div class="mt-auto px-4 pb-4 flex gap-4 justify-center">
+      <router-link
+        :to="{ name: 'terms' }"
+        class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+      >
+        Terms
+      </router-link>
+      <router-link
+        :to="{ name: 'privacy' }"
+        class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+      >
+        Privacy
+      </router-link>
+    </div>
   </nav>
 
   <!-- Guild Management Modal -->
