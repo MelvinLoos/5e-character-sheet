@@ -29,15 +29,30 @@ global.fetch = mockFetch as unknown as typeof fetch
 // Mock Supabase client for registered_guilds queries
 const mockFromSelectEqMaybeSingle = vi.fn()
 const mockFromSelectSingle = vi.fn()
+const mockInsert = vi.fn()
 const mockSupabaseClient = {
-  from: vi.fn(() => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        maybeSingle: mockFromSelectEqMaybeSingle,
+  from: vi.fn((table: string) => {
+    if (table === 'registered_guilds') {
+      const mockSelect = vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: mockFromSelectEqMaybeSingle,
+        })),
+        single: mockFromSelectSingle,
+      }))
+      return {
+        select: mockSelect,
+        insert: mockInsert,
+      }
+    }
+    return {
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: mockFromSelectEqMaybeSingle,
+        })),
+        single: mockFromSelectSingle,
       })),
-      single: mockFromSelectSingle,
-    })),
-  })),
+    }
+  }),
 }
 
 vi.mock('../src/infra/sharingService', () => ({
@@ -61,6 +76,26 @@ describe('guildStore', () => {
     mockSet.mockResolvedValue(undefined)
     mockDel.mockResolvedValue(undefined)
     localStorage.clear()
+
+    // Restore the table-aware from mock implementation (overridden by some tests)
+    mockSupabaseClient.from.mockImplementation((table: string) => {
+      const mockSelect = vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: mockFromSelectEqMaybeSingle,
+        })),
+        single: mockFromSelectSingle,
+      }))
+      if (table === 'registered_guilds') {
+        return {
+          select: mockSelect,
+          insert: mockInsert,
+        }
+      }
+      return {
+        select: mockSelect,
+      }
+    })
+    mockInsert.mockResolvedValue({ error: null })
   })
 
   it('initializes with empty guilds and no active guild', () => {
@@ -399,5 +434,155 @@ describe('guildStore', () => {
     // After guilds load
     store.$patch({ guilds: mockGuilds })
     expect(store.visibleGuilds).toHaveLength(3) // guild-1, guild-2 (admin), guild-4 (mod)
+  })
+
+  // ---------------------------------------------------------------------------
+  // Sub-Issue 5: Admin Gate — isActiveGuildAdmin (TDD)
+  // ---------------------------------------------------------------------------
+
+  it('isActiveGuildAdmin returns false when not authenticated', () => {
+    createMockAuthStore({ providerToken: null, isAuthenticated: false })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-2') // admin guild
+
+    expect(store.isActiveGuildAdmin).toBe(false)
+  })
+
+  it('isActiveGuildAdmin returns false when no active guild is selected', () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    // activeGuildId is null
+
+    expect(store.isActiveGuildAdmin).toBe(false)
+  })
+
+  it('isActiveGuildAdmin returns false when active guild has no admin permissions', () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-1') // permissions: '0'
+
+    expect(store.isActiveGuildAdmin).toBe(false)
+  })
+
+  it('isActiveGuildAdmin returns true when active guild has ADMINISTRATOR permission', () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-2') // permissions: '8' (ADMINISTRATOR)
+
+    expect(store.isActiveGuildAdmin).toBe(true)
+  })
+
+  it('isActiveGuildAdmin returns true when active guild has MANAGE_GUILD permission', () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-4') // permissions: '32' (MANAGE_GUILD)
+
+    expect(store.isActiveGuildAdmin).toBe(true)
+  })
+
+  it('isActiveGuildAdmin reactively updates when activeGuildId changes', () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+
+    // Start with non-admin guild
+    store.setActiveGuild('guild-1')
+    expect(store.isActiveGuildAdmin).toBe(false)
+
+    // Switch to admin guild
+    store.setActiveGuild('guild-2')
+    expect(store.isActiveGuildAdmin).toBe(true)
+
+    // Switch to mod guild
+    store.setActiveGuild('guild-4')
+    expect(store.isActiveGuildAdmin).toBe(true)
+
+    // Clear selection
+    store.setActiveGuild(null)
+    expect(store.isActiveGuildAdmin).toBe(false)
+  })
+
+  // ---------------------------------------------------------------------------
+  // Sub-Issue 5: Guild Registration — registerActiveGuild (TDD)
+  // ---------------------------------------------------------------------------
+
+  it('registerActiveGuild inserts guild into registered_guilds and updates local state', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    // Set userId for created_by
+    const authStore = useAuthStore()
+    authStore.$patch({ userId: 'user-uuid-123' })
+
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-3') // Unregistered Guild
+
+    // Initial state: empty registered set
+    store.registeredGuildIds = new Set()
+
+    mockInsert.mockResolvedValue({ error: null })
+
+    await store.registerActiveGuild()
+
+    // Verify Supabase insert was called
+    expect(mockInsert).toHaveBeenCalledWith({
+      guild_id: 'guild-3',
+      guild_name: 'Unregistered Guild',
+      created_by: 'user-uuid-123',
+    })
+
+    // Verify local state is updated
+    expect(store.registeredGuildIds!.has('guild-3')).toBe(true)
+  })
+
+  it('registerActiveGuild throws when not authenticated', async () => {
+    createMockAuthStore({ providerToken: null, isAuthenticated: false })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-1')
+
+    await expect(store.registerActiveGuild()).rejects.toThrow('User is not authenticated')
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('registerActiveGuild throws when no active guild is selected', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    // activeGuildId is null
+
+    await expect(store.registerActiveGuild()).rejects.toThrow('No active guild selected')
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('registerActiveGuild throws when active guild is not found in guild list', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('non-existent-guild')
+
+    await expect(store.registerActiveGuild()).rejects.toThrow('Active guild not found')
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('registerActiveGuild handles Supabase error and does not update state', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const authStore = useAuthStore()
+    authStore.$patch({ userId: 'user-uuid-123' })
+
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-3')
+    store.registeredGuildIds = new Set()
+
+    mockInsert.mockResolvedValue({ error: new Error('Database error') })
+
+    await expect(store.registerActiveGuild()).rejects.toThrow('Database error')
+
+    // registeredGuildIds should NOT be updated on error
+    expect(store.registeredGuildIds!.has('guild-3')).toBe(false)
   })
 })
