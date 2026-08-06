@@ -12,7 +12,6 @@ import {
   deleteGuildFeat,
 } from '@/utils/guildContentManagement'
 import { logger } from '@/utils/logger'
-import type { GuildSpell, GuildFeat } from '@/types/supabase'
 
 // ---------------------------------------------------------------------------
 // Props & Emits
@@ -65,11 +64,11 @@ const isRegistered = computed(() => {
 })
 
 const guildSpells = computed(() => {
-  return rulesStore.allSpells.filter((s: Record<string, unknown>) => s._guild_id === guildId.value)
+  return rulesStore.allSpells.filter((s) => (s as Record<string, unknown>)._guild_id === guildId.value)
 })
 
 const guildFeats = computed(() => {
-  return rulesStore.allFeats.filter((f: Record<string, unknown>) => f._guild_id === guildId.value)
+  return rulesStore.allFeats.filter((f) => (f as Record<string, unknown>)._guild_id === guildId.value)
 })
 
 // ---------------------------------------------------------------------------

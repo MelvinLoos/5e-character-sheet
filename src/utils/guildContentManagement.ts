@@ -15,7 +15,7 @@ import type { GuildSpell, GuildFeat } from '../types/supabase'
  * Shared helper to obtain the Supabase client and current user ID.
  * Throws if the client is unavailable or the user is not authenticated.
  */
-function assertClientAndUser(): { client: ReturnType<typeof getSupabaseClient>; userId: string } {
+function assertClientAndUser(): { client: NonNullable<ReturnType<typeof getSupabaseClient>>; userId: string } {
   const client = getSupabaseClient()
   const authStore = useAuthStore()
 
