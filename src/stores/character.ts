@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, shallowRef, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as DND_RULES from '../data/rules'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 import {
   getLibrary as getLocalLibrary,
@@ -27,6 +26,7 @@ import {
   initSupabase,
   fetchCharacterFromUrl,
   shareCharacterToSupabase,
+  getSupabaseClient,
 } from '@/infra'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
 import { loadSchema, getSchema, validateCharacterData } from '@/domain'
@@ -43,9 +43,10 @@ export const useCharacterStore = defineStore('character', () => {
   const sessionName = ref('Uncategorized')
   const schema = computed(() => getSchema())
   const geminiSchema = computed(() => getAiSchema())
-  // Use shallowRef so the Supabase client instance is stored as-is without Vue's
-  // deep UnwrapRef expansion, which otherwise strips its nominal type properties.
-  const supabaseClient = shallowRef<SupabaseClient | null>(null)
+  // Reactive boolean so UI components can bind to it without seeing the
+  // actual Supabase client instance. The client itself is kept in a
+  // module-level singleton (sharingService.ts) outside Vue's reactivity system.
+  const isSupabaseReady = ref(false)
   const sourceCharacterId = ref<string | null>(null) // For shared characters
 
   // Modal states
@@ -194,7 +195,10 @@ export const useCharacterStore = defineStore('character', () => {
   // --- ACTIONS (Methods) ---
 
   async function initStore(): Promise<void> {
-    supabaseClient.value = initSupabase()
+    initSupabase()
+    // Set isSupabaseReady so UI components can reactively bind to it
+    // without ever seeing the actual Supabase client instance.
+    isSupabaseReady.value = true
 
     await loadSchema()
     await loadAiSchema()
@@ -354,7 +358,7 @@ export const useCharacterStore = defineStore('character', () => {
   async function loadCharacterFromUrl(): Promise<void> {
     const urlParams = new URLSearchParams(window.location.search)
     try {
-      const result = await fetchCharacterFromUrl(supabaseClient.value, urlParams)
+      const result = await fetchCharacterFromUrl(getSupabaseClient(), urlParams)
       if (result) {
         _showLoading('Fetching character from the archives...')
         _setCharacter(result.data)
@@ -489,7 +493,8 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   async function shareCharacter(): Promise<void> {
-    if (!supabaseClient.value) {
+    const client = getSupabaseClient()
+    if (!client) {
       _showErrorModal(['Online sharing is not configured.'])
       return
     }
@@ -498,7 +503,7 @@ export const useCharacterStore = defineStore('character', () => {
     _showLoading('Saving character to the archives...')
     try {
       const newId = await shareCharacterToSupabase(
-        supabaseClient.value,
+        client,
         currentCharacterData.value,
         sourceCharacterId.value,
       )
@@ -795,7 +800,9 @@ export const useCharacterStore = defineStore('character', () => {
     sessionName,
     schema,
     geminiSchema,
-    supabaseClient,
+    // Supabase readiness flag (reactive boolean; the actual client is kept
+    // in a module-level singleton outside Vue's reactivity system).
+    isSupabaseReady,
     sourceCharacterId,
     isLoading,
     loadingText,

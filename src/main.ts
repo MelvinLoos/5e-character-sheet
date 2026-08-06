@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import './assets/main.css'
 import { initSupabase } from './infra/sharingService'
+import { setSwUpdateCallback } from './utils/swUpdateBus'
 
 const app = createApp(App)
 
@@ -37,8 +38,9 @@ async function initServiceWorker() {
       },
       onRegistered(registration: ServiceWorkerRegistration | undefined) {
         if (registration) {
-          // Expose the update function so UpdateNotification can trigger it
-          ;(window as unknown as Record<string, unknown>).__swUpdate = updateSW
+          // Store the update callback in a module-level closure so UpdateNotification
+          // can trigger it without exposing it on the global window object.
+          setSwUpdateCallback(updateSW)
         }
       },
     })

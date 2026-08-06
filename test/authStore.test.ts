@@ -179,7 +179,7 @@ describe('authStore', () => {
     expect(store.userId).toBe('user-456')
     expect(store.discordUsername).toBe('Dungeon Master')
     expect(store.discordAvatarUrl).toBe('https://cdn.discordapp.com/avatars/456/def.png')
-    expect(store.providerToken).toBe('discord-access-token-xyz')
+    expect(store.getProviderToken()).toBe('discord-access-token-xyz')
   })
 
   it('handles missing provider token gracefully', async () => {
@@ -197,7 +197,7 @@ describe('authStore', () => {
     const store = useAuthStore()
     await store.initialize()
 
-    expect(store.providerToken).toBeNull()
+    expect(store.getProviderToken()).toBeNull()
   })
 
   it('clears provider token on sign out', async () => {
@@ -209,12 +209,12 @@ describe('authStore', () => {
 
     const store = useAuthStore()
     await store.initialize()
-    expect(store.providerToken).toBe('discord-access-token-xyz')
+    expect(store.getProviderToken()).toBe('discord-access-token-xyz')
 
     await store.signOut()
 
     expect(store.status).toBe('loggedOut')
-    expect(store.providerToken).toBeNull()
+    expect(store.getProviderToken()).toBeNull()
   })
 
   it('sets provider token from auth state change SIGNED_IN event', async () => {
@@ -226,11 +226,11 @@ describe('authStore', () => {
 
     const store = useAuthStore()
     await store.initialize()
-    expect(store.providerToken).toBeNull()
+    expect(store.getProviderToken()).toBeNull()
 
     authCallback?.('SIGNED_IN', createMockSession({ provider_token: 'state-change-token' }))
 
-    expect(store.providerToken).toBe('state-change-token')
+    expect(store.getProviderToken()).toBe('state-change-token')
   })
 
   it('clears provider token on auth state change SIGNED_OUT event', async () => {
@@ -247,11 +247,11 @@ describe('authStore', () => {
 
     const store = useAuthStore()
     await store.initialize()
-    expect(store.providerToken).toBe('discord-access-token-xyz')
+    expect(store.getProviderToken()).toBe('discord-access-token-xyz')
 
     authCallback?.('SIGNED_OUT', null)
 
-    expect(store.providerToken).toBeNull()
+    expect(store.getProviderToken()).toBeNull()
   })
 
   it('extracts provider token from handleAuthCallback session', async () => {
@@ -263,7 +263,7 @@ describe('authStore', () => {
     const store = useAuthStore()
     await store.handleAuthCallback('access-token-abc', 'refresh-token-xyz')
 
-    expect(store.providerToken).toBe('callback-token')
+    expect(store.getProviderToken()).toBe('callback-token')
   })
 
   it('handles missing user metadata gracefully', async () => {
