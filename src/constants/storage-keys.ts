@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   CURRENT_DRAFT: 'dnd_current_draft',
   APP_THEME: 'dnd_app_theme',
   USER_SETTINGS: 'dnd_user_settings',
+  ACTIVE_GUILD_ID: 'dnd_active_guild_id',
 } as const;
 
 /**

@@ -103,92 +103,96 @@ watch(
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="fade">
-      <div
-        v-if="modelValue"
-        ref="menuRef"
-        class="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-end md:hidden"
-        @click="handleBackdropClick"
-        @keydown="handleKeydown"
-        role="dialog"
-        aria-modal="true"
-        aria-label="More actions"
-      >
-        <Transition name="slide-up">
-          <div
-            v-if="modelValue"
-            class="w-full bg-surface-container rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.3)] border-t border-outline-variant p-4 pb-8"
-            @click.stop
-          >
-            <div class="w-12 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
-
-            <h3 class="font-headline-md text-tertiary mb-4 px-2">More Actions</h3>
-
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                ref="firstItemRef"
-                @click="saveToLibrary"
-                class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
-                :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
-              >
-                <span class="material-symbols-outlined text-2xl">{{ store.sourceCharacterId ? 'content_copy' : 'save' }}</span>
-                <span class="text-xs font-label-md text-center">{{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}</span>
-              </button>
-
-              <button
-                @click="shareCharacter"
-                :disabled="!store.supabaseClient"
-                class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 select-none"
-                title="Share Online"
-              >
-                <span class="material-symbols-outlined text-2xl">share</span>
-                <span class="text-xs font-label-md text-center">Share Online</span>
-              </button>
-
-              <button
-                @click="exportCharacter"
-                class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
-                title="Export JSON"
-              >
-                <span class="material-symbols-outlined text-2xl">download</span>
-                <span class="text-xs font-label-md text-center">Export JSON</span>
-              </button>
-
-              <button
-                @click="handlePrint"
-                class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-tertiary text-on-tertiary hover:bg-tertiary-fixed active:scale-95 transition-all duration-200 ease-out select-none"
-                title="Print Sheet"
-              >
-                <span class="material-symbols-outlined text-2xl">print</span>
-                <span class="text-xs font-label-md text-center">Print Sheet</span>
-              </button>
-
-              <button
-                @click="openImport"
-                class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
-                title="Import Data"
-              >
-                <span class="material-symbols-outlined text-2xl">file_upload</span>
-                <span class="text-xs font-label-md">Import Data</span>
-              </button>
-            </div>
-
-            <div class="mt-4">
-              <AuthButton />
-            </div>
-
-            <button
-              @click="close"
-              class="w-full mt-4 py-3 rounded-xl bg-surface-bright text-on-surface font-label-md active:scale-95 transition-all duration-200 ease-out select-none"
+  <!-- Root wrapper so non-prop attributes (e.g. class="print:hidden") have
+       a single DOM element to inherit on, avoiding Vue's fragment warning -->
+  <div>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="modelValue"
+          ref="menuRef"
+          class="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-end md:hidden"
+          @click="handleBackdropClick"
+          @keydown="handleKeydown"
+          role="dialog"
+          aria-modal="true"
+          aria-label="More actions"
+        >
+          <Transition name="slide-up">
+            <div
+              v-if="modelValue"
+              class="w-full bg-surface-container rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.3)] border-t border-outline-variant p-4 pb-8"
+              @click.stop
             >
-              Cancel
-            </button>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+              <div class="w-12 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
+
+              <h3 class="font-headline-md text-tertiary mb-4 px-2">More Actions</h3>
+
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  ref="firstItemRef"
+                  @click="saveToLibrary"
+                  class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
+                >
+                  <span class="material-symbols-outlined text-2xl">{{ store.sourceCharacterId ? 'content_copy' : 'save' }}</span>
+                  <span class="text-xs font-label-md text-center">{{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}</span>
+                </button>
+
+                <button
+                  @click="shareCharacter"
+                  :disabled="!store.supabaseClient"
+                  class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 select-none"
+                  title="Share Online"
+                >
+                  <span class="material-symbols-outlined text-2xl">share</span>
+                  <span class="text-xs font-label-md text-center">Share Online</span>
+                </button>
+
+                <button
+                  @click="exportCharacter"
+                  class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Export JSON"
+                >
+                  <span class="material-symbols-outlined text-2xl">download</span>
+                  <span class="text-xs font-label-md text-center">Export JSON</span>
+                </button>
+
+                <button
+                  @click="handlePrint"
+                  class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-tertiary text-on-tertiary hover:bg-tertiary-fixed active:scale-95 transition-all duration-200 ease-out select-none"
+                  title="Print Sheet"
+                >
+                  <span class="material-symbols-outlined text-2xl">print</span>
+                  <span class="text-xs font-label-md text-center">Print Sheet</span>
+                </button>
+
+                <button
+                  @click="openImport"
+                  class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Import Data"
+                >
+                  <span class="material-symbols-outlined text-2xl">file_upload</span>
+                  <span class="text-xs font-label-md">Import Data</span>
+                </button>
+              </div>
+
+              <div class="mt-4">
+                <AuthButton />
+              </div>
+
+              <button
+                @click="close"
+                class="w-full mt-4 py-3 rounded-xl bg-surface-bright text-on-surface font-label-md active:scale-95 transition-all duration-200 ease-out select-none"
+              >
+                Cancel
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <style scoped>
