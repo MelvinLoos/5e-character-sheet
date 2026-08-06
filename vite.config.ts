@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
       dts: 'src/components.d.ts',
     }),
     vueJsx(),
-    vueDevTools(),
+    ...(mode === 'development' ? [vueDevTools()] : []),
     VitePWA({
       registerType: 'prompt',
       manifest: false,
