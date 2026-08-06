@@ -63,9 +63,11 @@ vi.mock('../src/infra/sharingService', () => ({
 function createMockAuthStore(overrides: { providerToken?: string | null; isAuthenticated?: boolean } = {}) {
   const store = useAuthStore()
   store.$patch({
-    providerToken: overrides.providerToken ?? null,
     status: overrides.isAuthenticated ? 'authenticated' : 'loggedOut',
   })
+  // Since providerToken is now a module-level closure accessed via getProviderToken(),
+  // we spy on the getter to return the desired test value.
+  vi.spyOn(store, 'getProviderToken').mockReturnValue(overrides.providerToken ?? null)
   return store
 }
 
@@ -716,7 +718,8 @@ describe('guildStore', () => {
     mockFetch.mockClear()
 
     // Now re-initialize — should work again
-    authStore.$patch({ status: 'authenticated', providerToken: 'discord-token' })
+    authStore.$patch({ status: 'authenticated' })
+    vi.spyOn(authStore, 'getProviderToken').mockReturnValue('discord-token')
     await store.initialize()
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })
