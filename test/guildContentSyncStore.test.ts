@@ -344,6 +344,50 @@ describe('guildContentSyncStore', () => {
       expect(logger.warn).toHaveBeenCalled()
       expect(store.isLoading).toBe(false)
     })
+
+    it('accepts spells missing the desc field (relaxed validation)', async () => {
+      const spellNoDesc = makeGuildSpellRow({ name: 'Bolt', level: 1 } as any)
+      const validSpell = makeGuildSpellRow(validGuildSpellData as unknown as Record<string, unknown>)
+
+      hoisted.mockSupabaseEq
+        .mockResolvedValueOnce({ data: [spellNoDesc, validSpell], error: null })
+        .mockResolvedValueOnce({ data: [], error: null })
+
+      const store = useGuildContentSyncStore()
+      const rulesStore = useRulesStore()
+
+      await store.syncGuildContent('guild-123')
+
+      // Both spells should pass validation — desc is optional
+      expect(rulesStore.guildSpells).toHaveLength(2)
+      // The spell missing desc should be normalized with desc: ''
+      const noDescSpell = rulesStore.guildSpells.find((s: any) => s.name === 'Bolt')
+      expect(noDescSpell).toBeDefined()
+      expect(noDescSpell.desc).toBe('')
+      expect(store.isLoading).toBe(false)
+    })
+
+    it('accepts feats missing the desc field (relaxed validation)', async () => {
+      const featNoDesc = makeGuildFeatRow({ title: 'Fearless' } as any)
+      const validFeat = makeGuildFeatRow(validGuildFeatData as unknown as Record<string, unknown>)
+
+      hoisted.mockSupabaseEq
+        .mockResolvedValueOnce({ data: [], error: null })
+        .mockResolvedValueOnce({ data: [featNoDesc, validFeat], error: null })
+
+      const store = useGuildContentSyncStore()
+      const rulesStore = useRulesStore()
+
+      await store.syncGuildContent('guild-123')
+
+      // Both feats should pass validation — desc is optional
+      expect(rulesStore.guildFeats).toHaveLength(2)
+      // The feat missing desc should be normalized with desc: ''
+      const noDescFeat = rulesStore.guildFeats.find((f: any) => f.title === 'Fearless')
+      expect(noDescFeat).toBeDefined()
+      expect(noDescFeat.desc).toBe('')
+      expect(store.isLoading).toBe(false)
+    })
   })
 
   describe('stripGuildContent', () => {
