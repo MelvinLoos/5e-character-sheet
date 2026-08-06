@@ -2,13 +2,21 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
+import AuthButton from './AuthButton.vue'
+import GuildSelector from './GuildSelector.vue'
+import GuildManagementModal from './modals/GuildManagementModal.vue'
+import { useGuildStore } from '@/stores/guildStore'
 
 const store = useCharacterStore()
+const guildStore = useGuildStore()
 const route = useRoute()
 const emit = defineEmits<{
   showImport: []
 }>()
 const geminiPrompt = ref('')
+
+// Guild Management Modal state
+const showGuildManagement = ref(false)
 
 interface Character {
   name: string
@@ -277,6 +285,26 @@ onUnmounted(() => {
             aria-label="More actions"
           >
             <div class="p-2 flex flex-col gap-1">
+              <!-- Guild Selector (Discord integration) -->
+              <GuildSelector />
+
+              <!-- Auth -->
+              <AuthButton />
+
+              <!-- Admin: Manage Server Homebrew -->
+              <div v-if="guildStore.isActiveGuildAdmin" class="mt-1">
+                <div class="h-px bg-outline-variant/30 my-1"></div>
+                <button
+                  @click="showGuildManagement = true; closeMorePopover()"
+                  class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-tertiary font-label-md text-sm hover:bg-tertiary/10 active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                  title="Manage Server Homebrew"
+                  role="menuitem"
+                >
+                  <span class="material-symbols-outlined text-[1.125rem]">shield</span>
+                  Manage Server Homebrew
+                </button>
+              </div>
+
               <button
                 @click="emit('showImport'); closeMorePopover()"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
@@ -359,7 +387,29 @@ onUnmounted(() => {
       </li>
 
     </ul>
+
+    <!-- Legal Links (visible regardless of character load state) -->
+    <div class="mt-auto px-4 pb-4 flex gap-4 justify-center">
+      <router-link
+        :to="{ name: 'terms' }"
+        class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+      >
+        Terms
+      </router-link>
+      <router-link
+        :to="{ name: 'privacy' }"
+        class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+      >
+        Privacy
+      </router-link>
+    </div>
   </nav>
+
+  <!-- Guild Management Modal -->
+  <GuildManagementModal
+    :is-open="showGuildManagement"
+    @close="showGuildManagement = false"
+  />
 
 </template>
 

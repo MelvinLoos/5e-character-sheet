@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Identity from '../views/Identity.vue'
+import { useAuthStore } from '../stores/authStore'
+import { useGuildStore } from '../stores/guildStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,7 +40,54 @@ const router = createRouter({
       name: 'spells',
       component: () => import('../views/Spells.vue'),
     },
+    {
+      path: '/auth/callback',
+      name: 'authCallback',
+      component: Identity,
+      beforeEnter: async (to) => {
+        const authStore = useAuthStore()
+        const hashParams = new URLSearchParams(to.hash.replace(/^#/, ''))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+
+        if (accessToken && refreshToken) {
+          await authStore.handleAuthCallback(accessToken, refreshToken)
+          return { name: 'identity' }
+        }
+
+        return { name: 'identity', query: { error: 'auth_callback_failed' } }
+      },
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: () => import('../views/TermsOfService.vue'),
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../views/PrivacyPolicy.vue'),
+    },
   ],
 })
+
+let authInitialized = false
+
+router.beforeEach(async () => {
+  if (!authInitialized) {
+    const authStore = useAuthStore()
+    await authStore.initialize()
+    authInitialized = true
+  }
+  const guildStore = useGuildStore()
+  await guildStore.initialize()
+})
+
+export async function initializeAuth(): Promise<void> {
+  if (authInitialized) return
+  const authStore = useAuthStore()
+  await authStore.initialize()
+  authInitialized = true
+}
 
 export default router

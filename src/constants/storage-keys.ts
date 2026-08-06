@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   CURRENT_DRAFT: 'dnd_current_draft',
   APP_THEME: 'dnd_app_theme',
   USER_SETTINGS: 'dnd_user_settings',
+  ACTIVE_GUILD_ID: 'dnd_active_guild_id',
 } as const;
 
 /**
@@ -19,3 +20,10 @@ export const SESSION_KEYS = {
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
 export type SessionKey = typeof SESSION_KEYS[keyof typeof SESSION_KEYS];
+
+/**
+ * Prefixes for guild content cache keys in IndexedDB.
+ * Used by guildContentSyncStore to cache per-guild spells and feats.
+ */
+export const GUILD_SPELLS_CACHE_PREFIX = 'guild_spells_cache';
+export const GUILD_FEATS_CACHE_PREFIX = 'guild_feats_cache';
