@@ -116,7 +116,7 @@ export function useInventory(characterStore?: ReturnType<typeof useCharacterStor
     store.currentCharacterData.consumables.push({
       id,
       name: 'New Consumable',
-      type: 'Item',
+      type: 'Supply',
       slotCost: 1,
       usageDie: 'd8',
     })
