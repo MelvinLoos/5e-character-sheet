@@ -2,7 +2,10 @@
 import { ref, watch, nextTick } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useAuthStore } from '@/stores/authStore'
+import { useGuildStore } from '@/stores/guildStore'
 import AuthButton from './AuthButton.vue'
+import GuildSelector from './GuildSelector.vue'
+import GuildManagementModal from './modals/GuildManagementModal.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -15,6 +18,8 @@ const emit = defineEmits<{
 
 const store = useCharacterStore()
 useAuthStore()
+const guildStore = useGuildStore()
+const showGuildManagement = ref(false)
 const menuRef = ref<HTMLDivElement | null>(null)
 const firstItemRef = ref<HTMLButtonElement | null>(null)
 
@@ -89,6 +94,11 @@ function handleKeydown(event: KeyboardEvent) {
     event.preventDefault()
     firstButton.focus()
   }
+}
+
+function openGuildManagement() {
+  showGuildManagement.value = true
+  close()
 }
 
 watch(
@@ -177,13 +187,32 @@ watch(
                 </button>
               </div>
 
+              <!-- Guild Selector (Discord integration) -->
+              <div class="mt-4 px-2">
+                <GuildSelector />
+              </div>
+
+              <!-- Admin: Manage Server Homebrew -->
+              <div v-if="guildStore.isActiveGuildAdmin" class="mt-2 px-2">
+                <div class="h-px bg-outline-variant/30 my-2"></div>
+                <button
+                  @click="openGuildManagement"
+                  class="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/10 active:scale-[0.98] transition-all duration-150 ease-out select-none min-h-[44px]"
+                  title="Manage Server Homebrew"
+                >
+                  <span class="material-symbols-outlined text-[1.125rem]">shield</span>
+                  Manage Server Homebrew
+                </button>
+              </div>
+
+              <!-- Auth -->
               <div class="mt-4">
                 <AuthButton />
               </div>
 
               <button
                 @click="close"
-                class="w-full mt-4 py-3 rounded-xl bg-surface-bright text-on-surface font-label-md active:scale-95 transition-all duration-200 ease-out select-none"
+                class="w-full mt-4 py-3 rounded-xl bg-surface-bright text-on-surface font-label-md active:scale-95 transition-all duration-200 ease-out select-none min-h-[44px]"
               >
                 Cancel
               </button>
@@ -192,6 +221,12 @@ watch(
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Guild Management Modal -->
+    <GuildManagementModal
+      :is-open="showGuildManagement"
+      @close="showGuildManagement = false"
+    />
   </div>
 </template>
 
