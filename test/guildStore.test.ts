@@ -256,6 +256,13 @@ describe('guildStore', () => {
   // Guild filtering: registered_guilds + admin/moderator permissions (TDD)
   // ---------------------------------------------------------------------------
 
+  it('registeredGuildIds starts as null before any query', () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+
+    const store = useGuildStore()
+    expect(store.registeredGuildIds).toBeNull()
+  })
+
   it('fetchRegisteredGuilds populates registered guild IDs from Supabase', async () => {
     createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
     const mockSelect = vi.fn().mockResolvedValue({
@@ -271,7 +278,8 @@ describe('guildStore', () => {
     await store.fetchRegisteredGuilds()
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith('registered_guilds')
-    expect(store.visibleGuilds).toEqual([]) // no guilds loaded yet, but registered IDs populated
+    expect(store.registeredGuildIds).toBeInstanceOf(Set)
+    expect(store.registeredGuildIds!.size).toBe(2)
   })
 
   it('visibleGuilds filters out unregistered guilds without admin permissions', async () => {
@@ -301,7 +309,36 @@ describe('guildStore', () => {
     expect(visible).toHaveLength(3)
   })
 
-  it('visibleGuilds includes all guilds when Supabase client is unavailable (graceful degradation)', async () => {
+  it('filters out unregistered non-admin guilds when Supabase returns zero registered guilds (empty Set)', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    // Supabase is reachable but NO guilds have registered — returns empty array
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+    await store.fetchRegisteredGuilds()
+
+    // registeredGuildIds should be an empty Set (not null!)
+    expect(store.registeredGuildIds).toBeInstanceOf(Set)
+    expect(store.registeredGuildIds!.size).toBe(0)
+
+    store.$patch({ guilds: mockGuilds })
+
+    // Only admin/mod guilds should be visible — unregistered non-admin guilds (guild-1, guild-3) are hidden
+    const visible = store.visibleGuilds
+    const visibleIds = visible.map((g) => g.id)
+
+    expect(visibleIds).toContain('guild-2') // ADMINISTRATOR permission (8)
+    expect(visibleIds).toContain('guild-4') // MANAGE_GUILD permission (32)
+    expect(visibleIds).not.toContain('guild-1') // not registered (empty set), no admin perms → LEAK FIXED
+    expect(visibleIds).not.toContain('guild-3') // not registered, no admin perms
+    expect(visible).toHaveLength(2)
+  })
+
+  it('visibleGuilds includes all guilds when Supabase client is unavailable (null state)', async () => {
     const { getSupabaseClient } = await import('../src/infra/sharingService')
     const original = vi.mocked(getSupabaseClient)
     original.mockReturnValue(null)
@@ -310,9 +347,13 @@ describe('guildStore', () => {
 
     const store = useGuildStore()
     await store.fetchRegisteredGuilds()
+
+    // When Supabase is down, registeredGuildIds stays null
+    expect(store.registeredGuildIds).toBeNull()
+
     store.$patch({ guilds: mockGuilds })
 
-    // All guilds should be visible when Supabase is down
+    // All guilds should be visible when Supabase is down (graceful degradation)
     expect(store.visibleGuilds).toEqual(mockGuilds)
     expect(store.visibleGuilds).toHaveLength(4)
 
@@ -320,7 +361,7 @@ describe('guildStore', () => {
     original.mockReturnValue(mockSupabaseClient)
   })
 
-  it('fetchRegisteredGuilds handles Supabase errors gracefully', async () => {
+  it('fetchRegisteredGuilds handles Supabase errors gracefully and keeps null state', async () => {
     createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
     const mockSelect = vi.fn().mockResolvedValue({
       data: null,
@@ -330,6 +371,10 @@ describe('guildStore', () => {
 
     const store = useGuildStore()
     await store.fetchRegisteredGuilds()
+
+    // On error, stays null → fails open
+    expect(store.registeredGuildIds).toBeNull()
+
     store.$patch({ guilds: mockGuilds })
 
     // When Supabase errors, all guilds should be visible (fails open for UX)

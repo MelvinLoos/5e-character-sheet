@@ -2,6 +2,7 @@
 import { onMounted, ref, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
+import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
 
@@ -18,6 +19,8 @@ const showMoreMenu = ref(false)
 onMounted(async () => {
   await useRulesStore().loadFromStorage()
   store.initStore()
+  // Initialize guild content sync — sets up watchers on activeGuildId
+  useGuildContentSyncStore()
 })
 </script>
 
