@@ -17,7 +17,7 @@ const store = useCharacterStore()
         :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
         :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
       >
-        <span class="material-symbols-outlined">{{ store.isEditing ? 'edit' : 'visibility' }}</span>
+        <span class="material-symbols-outlined">edit</span>
         <span class="hidden sm:inline">{{ store.isEditing ? 'Editing…' : 'Edit' }}</span>
       </button>
     </div>
