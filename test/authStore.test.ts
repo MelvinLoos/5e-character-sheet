@@ -85,6 +85,7 @@ describe('authStore', () => {
     expect(mockSupabaseClient.auth.signInWithOAuth).toHaveBeenCalledWith({
       provider: 'discord',
       options: {
+        scopes: 'identify guilds',
         redirectTo: expect.any(String),
       },
     })

@@ -4,12 +4,21 @@ import { logger } from '../utils/logger'
 import { getSupabaseUrl, getSupabaseAnonKey, hasSupabaseCredentials } from '../constants/supabase'
 
 /**
- * Creates a Supabase client instance.
+ * Module-level cache for the default (anonymous) Supabase client.
+ * Ensures only one GoTrueClient instance is created, preventing
+ * the "Multiple GoTrueClient instances" warning from the Supabase SDK.
+ */
+let _defaultClient: SupabaseClient | null | undefined
+
+/**
+ * Creates or retrieves a Supabase client instance.
  *
- * If an authenticated session token is provided, the client will be configured
- * with an `Authorization` header for requests that require an authenticated user.
- * Otherwise, an anonymous client is returned for public operations such as
- * loading a shared character.
+ * When called without a session token, a singleton anonymous client is
+ * returned — the same instance is reused across all call sites (auth store,
+ * sharing service, etc.) to avoid duplicate GoTrueClient instances.
+ *
+ * When a session token is provided, a new client is created each time
+ * (scoped to that specific authenticated session).
  */
 export function createSupabaseClient(sessionToken?: string): SupabaseClient | null {
   if (!hasSupabaseCredentials()) {
@@ -17,20 +26,33 @@ export function createSupabaseClient(sessionToken?: string): SupabaseClient | nu
     return null
   }
 
-  try {
-    const globalHeaders = sessionToken
-      ? {
-          global: {
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-            },
-          },
-        }
-      : {}
+  // Return the cached anonymous client when no session token is needed
+  if (!sessionToken) {
+    if (_defaultClient !== undefined) {
+      return _defaultClient
+    }
 
-    return createClient(getSupabaseUrl(), getSupabaseAnonKey(), globalHeaders)
+    try {
+      _defaultClient = createClient(getSupabaseUrl(), getSupabaseAnonKey())
+      return _defaultClient
+    } catch (e) {
+      logger.error('Error initializing Supabase client:', (e as Error).message)
+      _defaultClient = null
+      return null
+    }
+  }
+
+  // Authenticated requests — create a new client with the session token
+  try {
+    return createClient(getSupabaseUrl(), getSupabaseAnonKey(), {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      },
+    })
   } catch (e) {
-    logger.error('Error initializing Supabase client:', (e as Error).message)
+    logger.error('Error initializing authenticated Supabase client:', (e as Error).message)
     return null
   }
 }
