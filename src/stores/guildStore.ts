@@ -35,6 +35,16 @@ export const useGuildStore = defineStore('guild', () => {
   const isActiveGuildSet = computed(() => activeGuildId.value !== null)
 
   /**
+   * Whether the current user has admin rights (ADMINISTRATOR or MANAGE_GUILD)
+   * for the currently active guild. Used to gate admin-only UI.
+   */
+  const isActiveGuildAdmin = computed(() => {
+    if (!authStore.isAuthenticated) return false
+    if (!activeGuildId.value || !activeGuild.value) return false
+    return hasAdminPermission(activeGuild.value.permissions)
+  })
+
+  /**
    * Guilds that should be visible to the user.
    * Filters the Discord API guild list to only show:
    *   a) Guilds present in the `registered_guilds` table, OR
@@ -250,6 +260,50 @@ export const useGuildStore = defineStore('guild', () => {
     }
   }
 
+  /**
+   * Register the currently active guild in the `registered_guilds` Supabase table.
+   *
+   * Prerequisites:
+   * - User must be authenticated (throws if not).
+   * - An active guild must be selected (throws if not).
+   * - The active guild must exist in the loaded guild list (throws if not).
+   *
+   * On success, optimistically adds the guild ID to `registeredGuildIds`.
+   */
+  async function registerActiveGuild(): Promise<void> {
+    const client = getSupabaseClient()
+
+    if (!authStore.isAuthenticated) {
+      throw new Error('User is not authenticated')
+    }
+
+    if (!activeGuildId.value) {
+      throw new Error('No active guild selected')
+    }
+
+    if (!activeGuild.value) {
+      throw new Error('Active guild not found')
+    }
+
+    const { error: insertError } = await client!
+      .from('registered_guilds')
+      .insert({
+        guild_id: activeGuildId.value,
+        guild_name: activeGuild.value.name,
+        created_by: authStore.userId,
+      })
+
+    if (insertError) {
+      throw insertError
+    }
+
+    // Optimistic update: add to local registered set
+    if (registeredGuildIds.value === null) {
+      registeredGuildIds.value = new Set()
+    }
+    registeredGuildIds.value.add(activeGuildId.value)
+  }
+
   return {
     // State
     guilds,
@@ -261,11 +315,13 @@ export const useGuildStore = defineStore('guild', () => {
     // Getters
     activeGuild,
     isActiveGuildSet,
+    isActiveGuildAdmin,
     visibleGuilds,
     // Actions
     fetchGuilds,
     fetchRegisteredGuilds,
     setActiveGuild,
+    registerActiveGuild,
     initialize,
   }
 })
