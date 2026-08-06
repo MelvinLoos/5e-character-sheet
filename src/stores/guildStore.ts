@@ -285,16 +285,19 @@ export const useGuildStore = defineStore('guild', () => {
       throw new Error('Active guild not found')
     }
 
-    const { error: insertError } = await client!
+    const { error: upsertError } = await client!
       .from('registered_guilds')
-      .insert({
-        guild_id: activeGuildId.value,
-        guild_name: activeGuild.value.name,
-        created_by: authStore.userId,
-      })
+      .upsert(
+        {
+          guild_id: activeGuildId.value,
+          guild_name: activeGuild.value.name,
+          created_by: authStore.userId,
+        },
+        { onConflict: 'guild_id' },
+      )
 
-    if (insertError) {
-      throw insertError
+    if (upsertError) {
+      throw upsertError
     }
 
     // Optimistic update: add to local registered set

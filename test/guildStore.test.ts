@@ -30,6 +30,7 @@ global.fetch = mockFetch as unknown as typeof fetch
 const mockFromSelectEqMaybeSingle = vi.fn()
 const mockFromSelectSingle = vi.fn()
 const mockInsert = vi.fn()
+const mockUpsert = vi.fn()
 const mockSupabaseClient = {
   from: vi.fn((table: string) => {
     if (table === 'registered_guilds') {
@@ -89,6 +90,7 @@ describe('guildStore', () => {
         return {
           select: mockSelect,
           insert: mockInsert,
+          upsert: mockUpsert,
         }
       }
       return {
@@ -524,16 +526,19 @@ describe('guildStore', () => {
     // Initial state: empty registered set
     store.registeredGuildIds = new Set()
 
-    mockInsert.mockResolvedValue({ error: null })
+    mockUpsert.mockResolvedValue({ error: null })
 
     await store.registerActiveGuild()
 
-    // Verify Supabase insert was called
-    expect(mockInsert).toHaveBeenCalledWith({
-      guild_id: 'guild-3',
-      guild_name: 'Unregistered Guild',
-      created_by: 'user-uuid-123',
-    })
+    // Verify Supabase upsert was called
+    expect(mockUpsert).toHaveBeenCalledWith(
+      {
+        guild_id: 'guild-3',
+        guild_name: 'Unregistered Guild',
+        created_by: 'user-uuid-123',
+      },
+      { onConflict: 'guild_id' },
+    )
 
     // Verify local state is updated
     expect(store.registeredGuildIds!.has('guild-3')).toBe(true)
@@ -578,11 +583,64 @@ describe('guildStore', () => {
     store.setActiveGuild('guild-3')
     store.registeredGuildIds = new Set()
 
-    mockInsert.mockResolvedValue({ error: new Error('Database error') })
+    mockUpsert.mockResolvedValue({ error: new Error('Database error') })
 
     await expect(store.registerActiveGuild()).rejects.toThrow('Database error')
 
     // registeredGuildIds should NOT be updated on error
+    expect(store.registeredGuildIds!.has('guild-3')).toBe(false)
+  })
+
+  // ---------------------------------------------------------------------------
+  // Bug fix: registerActiveGuild idempotent via upsert (#103)
+  // ---------------------------------------------------------------------------
+
+  it('registerActiveGuild uses upsert and succeeds when guild is already registered', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const authStore = useAuthStore()
+    authStore.$patch({ userId: 'user-uuid-123' })
+
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-1') // Heroes Guild — already registered in mock scenario
+
+    // Simulate stale local state: guild IS in Supabase but NOT in local Set
+    store.registeredGuildIds = new Set()
+
+    mockUpsert.mockResolvedValue({ error: null })
+
+    await store.registerActiveGuild()
+
+    // Should have called upsert, not insert
+    expect(mockUpsert).toHaveBeenCalledWith(
+      {
+        guild_id: 'guild-1',
+        guild_name: 'Heroes Guild',
+        created_by: 'user-uuid-123',
+      },
+      { onConflict: 'guild_id' },
+    )
+    expect(mockInsert).not.toHaveBeenCalled()
+
+    // Local state should be fixed
+    expect(store.registeredGuildIds!.has('guild-1')).toBe(true)
+  })
+
+  it('registerActiveGuild still throws on non-duplicate upsert errors', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const authStore = useAuthStore()
+    authStore.$patch({ userId: 'user-uuid-123' })
+
+    const store = useGuildStore()
+    store.$patch({ guilds: mockGuilds })
+    store.setActiveGuild('guild-3')
+    store.registeredGuildIds = new Set()
+
+    mockUpsert.mockResolvedValue({ error: new Error('RLS policy violation') })
+
+    await expect(store.registerActiveGuild()).rejects.toThrow('RLS policy violation')
+
+    // Local state should NOT be updated on error
     expect(store.registeredGuildIds!.has('guild-3')).toBe(false)
   })
 })
