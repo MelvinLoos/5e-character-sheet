@@ -166,9 +166,17 @@ describe('guildContentSyncStore', () => {
 
       // Verify guild spells injected
       expect(rulesStore.guildSpells).toHaveLength(1)
-      expect(rulesStore.guildSpells[0]).toMatchObject({ name: 'Guild Bolt', level: 1, desc: 'A bolt of guild energy.' })
+      expect(rulesStore.guildSpells[0]).toMatchObject({
+        name: 'Guild Bolt', level: 1, desc: 'A bolt of guild energy.',
+        _id: 'spell-1',
+        _guild_id: 'guild-123',
+      })
       expect(rulesStore.guildFeats).toHaveLength(1)
-      expect(rulesStore.guildFeats[0]).toMatchObject({ title: 'Guild Training', desc: 'You are trained by your guild.' })
+      expect(rulesStore.guildFeats[0]).toMatchObject({
+        title: 'Guild Training', desc: 'You are trained by your guild.',
+        _id: 'feat-1',
+        _guild_id: 'guild-123',
+      })
 
       // Verify allSpells getter merges base + guild
       rulesStore.baseSpells = [{ name: 'Fireball', level: 3, desc: 'Boom' }]
