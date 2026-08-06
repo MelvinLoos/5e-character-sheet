@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { getSwUpdateCallback } from '../utils/swUpdateBus'
 
 const updateAvailable = ref(false)
 
@@ -8,10 +9,8 @@ function handleUpdateAvailable() {
 }
 
 function applyUpdate() {
-  const updateSW = (window as unknown as Record<string, unknown>).__swUpdate as
-    | (() => Promise<void>)
-    | undefined
   updateAvailable.value = false
+  const updateSW = getSwUpdateCallback()
 
   if (updateSW) {
     updateSW()
