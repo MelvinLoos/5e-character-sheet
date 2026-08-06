@@ -75,13 +75,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     status.value = 'loading'
 
-    const redirectTo = import.meta.env.VITE_SUPABASE_REDIRECT_URL ?? window.location.origin
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
         scopes: 'identify guilds',
-        redirectTo,
+        redirectTo: window.location.origin,
       },
     })
 
