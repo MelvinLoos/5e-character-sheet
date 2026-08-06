@@ -10,7 +10,10 @@ import {
   createGuildFeat,
   updateGuildFeat,
   deleteGuildFeat,
+  bulkCreateGuildSpells,
+  bulkCreateGuildFeats,
 } from '@/utils/guildContentManagement'
+import { mapSpells, mapFeats } from '@/utils/fiveToolsAdapter'
 import { logger } from '@/utils/logger'
 
 // ---------------------------------------------------------------------------
@@ -52,6 +55,14 @@ const editingFeatId = ref<string | null>(null)
 // JSON textarea values
 const spellJsonText = ref('')
 const featJsonText = ref('')
+
+// Bulk Import state
+const showBulkImport = ref(false)
+const bulkImportTab = ref<'spells' | 'feats'>('spells')
+const bulkJsonText = ref('')
+const bulkImportStatus = ref<'idle' | 'parsing' | 'preview' | 'importing' | 'success' | 'error'>('idle')
+const bulkImportMessage = ref('')
+const bulkImportPreview = ref<{ valid: number; invalid: number; items: string[] } | null>(null)
 
 // ---------------------------------------------------------------------------
 // Computed
@@ -245,6 +256,132 @@ async function handleDeleteFeat(id: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Bulk Import Handlers
+// ---------------------------------------------------------------------------
+
+function openBulkImport() {
+  showBulkImport.value = true
+  bulkJsonText.value = ''
+  bulkImportStatus.value = 'idle'
+  bulkImportMessage.value = ''
+  bulkImportPreview.value = null
+  actionError.value = null
+}
+
+function cancelBulkImport() {
+  showBulkImport.value = false
+  bulkJsonText.value = ''
+  bulkImportStatus.value = 'idle'
+  bulkImportMessage.value = ''
+  bulkImportPreview.value = null
+}
+
+function validateAndPreview() {
+  actionError.value = null
+  bulkImportMessage.value = ''
+  bulkImportPreview.value = null
+  bulkImportStatus.value = 'parsing'
+
+  // Step 1: Parse JSON
+  let raw: unknown
+  try {
+    raw = JSON.parse(bulkJsonText.value)
+  } catch (e) {
+    bulkImportStatus.value = 'error'
+    bulkImportMessage.value = `Invalid JSON: ${(e as Error).message}`
+    return
+  }
+
+  // Step 2: Extract array (handle both [...] and { spell: [...] } / { feat: [...] } wrappers)
+  const key = bulkImportTab.value === 'spells' ? 'spell' : 'feat'
+  const rawArray: unknown[] = Array.isArray(raw)
+    ? raw
+    : (raw as Record<string, unknown>)?.[key] || []
+
+  if (!Array.isArray(rawArray) || rawArray.length === 0) {
+    bulkImportStatus.value = 'error'
+    bulkImportMessage.value = 'No valid array found. Paste a JSON array or an object with a "' + key + '" array.'
+    return
+  }
+
+  // Step 3: Map through fiveToolsAdapter
+  const totalInput = rawArray.length
+  let mapped: { name?: string; title?: string }[]
+
+  if (bulkImportTab.value === 'spells') {
+    mapped = mapSpells(rawArray)
+  } else {
+    mapped = mapFeats(rawArray)
+  }
+
+  const valid = mapped.length
+  const invalid = totalInput - valid
+
+  if (valid === 0) {
+    bulkImportStatus.value = 'error'
+    bulkImportMessage.value = `No valid ${bulkImportTab.value} found in the provided data. Check that each entry has required fields (${bulkImportTab.value === 'spells' ? 'name, level' : 'name'}).`
+    return
+  }
+
+  // Step 4: Show preview
+  const previewItems = mapped.slice(0, 5).map((item) => item.name || item.title || 'Unnamed')
+  bulkImportPreview.value = { valid, invalid, items: previewItems }
+  bulkImportStatus.value = 'preview'
+  bulkImportMessage.value = ''
+}
+
+async function executeBulkImport() {
+  if (!guildId.value) return
+
+  actionError.value = null
+  bulkImportStatus.value = 'importing'
+  bulkImportMessage.value = 'Importing to server...'
+
+  try {
+    // Re-parse to get the full mapped array (same logic as validateAndPreview)
+    let raw: unknown
+    try {
+      raw = JSON.parse(bulkJsonText.value)
+    } catch {
+      throw new Error('Invalid JSON (data was modified after preview)')
+    }
+
+    const key = bulkImportTab.value === 'spells' ? 'spell' : 'feat'
+    const rawArray: unknown[] = Array.isArray(raw)
+      ? raw
+      : (raw as Record<string, unknown>)?.[key] || []
+
+    let mapped: Record<string, unknown>[]
+
+    if (bulkImportTab.value === 'spells') {
+      // mapSpells returns AppSpell[], which is Record<string, unknown> compatible
+      mapped = mapSpells(rawArray) as unknown as Record<string, unknown>[]
+      await bulkCreateGuildSpells({
+        guild_id: guildId.value,
+        spells: mapped,
+      })
+    } else {
+      // mapFeats returns AppFeature[], which is Record<string, unknown> compatible
+      mapped = mapFeats(rawArray) as unknown as Record<string, unknown>[]
+      await bulkCreateGuildFeats({
+        guild_id: guildId.value,
+        feats: mapped,
+      })
+    }
+
+    // Re-sync local state
+    await guildContentSyncStore.syncGuildContent(guildId.value)
+
+    bulkImportStatus.value = 'success'
+    bulkImportMessage.value = `Successfully imported ${mapped.length} ${bulkImportTab.value}!`
+  } catch (e) {
+    bulkImportStatus.value = 'error'
+    bulkImportMessage.value = (e as Error).message
+    logger.error('Bulk import failed:', e)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Close on Escape
 // ---------------------------------------------------------------------------
 
@@ -395,6 +532,13 @@ watch(
                     <span class="material-symbols-outlined text-sm align-middle mr-1">add</span>
                     Add Custom Spell
                   </button>
+                  <button
+                    @click="openBulkImport(); bulkImportTab = 'spells'"
+                    class="w-full mt-2 py-2.5 border-2 border-dashed border-tertiary/30 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/5 active:scale-[0.99] transition-all"
+                  >
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                    Bulk Import Spells
+                  </button>
                 </div>
 
                 <!-- Spell Form (Add/Edit) -->
@@ -475,6 +619,13 @@ watch(
                     <span class="material-symbols-outlined text-sm align-middle mr-1">add</span>
                     Add Custom Feat
                   </button>
+                  <button
+                    @click="openBulkImport(); bulkImportTab = 'feats'"
+                    class="w-full mt-2 py-2.5 border-2 border-dashed border-tertiary/30 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/5 active:scale-[0.99] transition-all"
+                  >
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                    Bulk Import Feats
+                  </button>
                 </div>
 
                 <!-- Feat Form (Add/Edit) -->
@@ -507,6 +658,126 @@ watch(
                       {{ isSubmitting ? 'Saving...' : 'Save Feat' }}
                     </button>
                   </div>
+                </div>
+              </div>
+
+              <!-- ============================================================= -->
+              <!-- Bulk Import Panel -->
+              <!-- ============================================================= -->
+              <div v-if="showBulkImport" class="mt-6 p-4 bg-surface-variant/20 border border-outline-variant/30 rounded-xl space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-label-lg text-on-surface">
+                    Bulk Import {{ bulkImportTab === 'spells' ? 'Spells' : 'Feats' }}
+                  </h3>
+                  <button
+                    @click="cancelBulkImport"
+                    class="p-1 rounded-full hover:bg-surface-bright text-on-surface-variant transition-colors"
+                    aria-label="Close bulk import"
+                  >
+                    <span class="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+
+                <p class="font-body-sm text-on-surface-variant">
+                  Paste a JSON array of 5e.tools {{ bulkImportTab }}. Supports both <code class="bg-surface-variant px-1 rounded">[...]</code> arrays and <code class="bg-surface-variant px-1 rounded">{{ '{' }}"{{ bulkImportTab === 'spells' ? 'spell' : 'feat' }}": [...]{{ '}' }}</code> wrapper objects.
+                </p>
+
+                <!-- Content type selector within bulk import -->
+                <div class="flex gap-1 bg-surface-variant/50 rounded-lg p-0.5">
+                  <button
+                    @click="bulkImportTab = 'spells'"
+                    class="flex-1 py-1.5 rounded-md font-label-sm text-xs transition-all"
+                    :class="bulkImportTab === 'spells'
+                      ? 'bg-tertiary text-on-tertiary shadow-sm'
+                      : 'text-on-surface-variant'"
+                  >
+                    Spells
+                  </button>
+                  <button
+                    @click="bulkImportTab = 'feats'"
+                    class="flex-1 py-1.5 rounded-md font-label-sm text-xs transition-all"
+                    :class="bulkImportTab === 'feats'
+                      ? 'bg-tertiary text-on-tertiary shadow-sm'
+                      : 'text-on-surface-variant'"
+                  >
+                    Feats
+                  </button>
+                </div>
+
+                <textarea
+                  v-model="bulkJsonText"
+                  rows="10"
+                  class="w-full bg-surface-variant border border-outline-variant rounded-xl p-3 font-mono text-sm text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary resize-y"
+                  :placeholder="bulkImportTab === 'spells'
+                    ? '[{"name": "Fireball", "level": 3, ...}, ...]'
+                    : '[{"name": "Lucky", ...}, ...]'"
+                ></textarea>
+
+                <!-- Status messages -->
+                <div
+                  v-if="bulkImportMessage"
+                  :class="[
+                    'p-3 rounded-lg font-body-sm',
+                    bulkImportStatus === 'success' ? 'bg-success/10 border border-success/30 text-success' : '',
+                    bulkImportStatus === 'error' ? 'bg-error/10 border border-error/30 text-error' : '',
+                    bulkImportStatus === 'importing' ? 'bg-tertiary/10 border border-tertiary/30 text-tertiary' : '',
+                    bulkImportStatus === 'parsing' ? 'bg-tertiary/10 border border-tertiary/30 text-tertiary' : '',
+                  ]"
+                >
+                  <span v-if="bulkImportStatus === 'importing'" class="material-symbols-outlined animate-spin mr-1 text-sm align-middle">progress_activity</span>
+                  {{ bulkImportMessage }}
+                </div>
+
+                <!-- Preview -->
+                <div v-if="bulkImportPreview && bulkImportStatus === 'preview'" class="border border-tertiary/30 bg-tertiary/5 p-4 rounded-xl">
+                  <p class="font-body-md text-on-surface mb-1">
+                    Found <strong>{{ bulkImportPreview.valid }}</strong> valid {{ bulkImportTab }}
+                    <span v-if="bulkImportPreview.invalid > 0" class="text-error">
+                      ({{ bulkImportPreview.invalid }} skipped)
+                    </span>
+                  </p>
+                  <p class="font-body-sm text-on-surface-variant mb-2">
+                    Preview (first {{ Math.min(5, bulkImportPreview.items.length) }}):
+                  </p>
+                  <ul class="list-disc list-inside text-sm text-on-surface space-y-0.5">
+                    <li v-for="item in bulkImportPreview.items" :key="item">{{ item }}</li>
+                  </ul>
+                  <p v-if="bulkImportPreview.valid > 5" class="text-xs text-on-surface-variant mt-2">
+                    ...and {{ bulkImportPreview.valid - 5 }} more
+                  </p>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex gap-2 justify-end">
+                  <button
+                    @click="cancelBulkImport"
+                    class="px-4 py-2 rounded-lg text-on-surface-variant font-label-md text-sm hover:bg-surface-variant active:scale-95 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    v-if="bulkImportStatus === 'idle'"
+                    @click="validateAndPreview"
+                    :disabled="!bulkJsonText.trim()"
+                    class="px-4 py-2 bg-tertiary text-on-tertiary rounded-lg font-label-md text-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    Validate & Preview
+                  </button>
+                  <button
+                    v-if="bulkImportStatus === 'preview'"
+                    @click="executeBulkImport"
+                    class="px-6 py-2 bg-success text-on-success rounded-lg font-label-md text-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all"
+                  >
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                    Import {{ bulkImportPreview?.valid }} {{ bulkImportTab }}
+                  </button>
+                  <button
+                    v-if="bulkImportStatus === 'success'"
+                    @click="cancelBulkImport"
+                    class="px-4 py-2 bg-tertiary text-on-tertiary rounded-lg font-label-md text-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all"
+                  >
+                    Done
+                  </button>
                 </div>
               </div>
             </div>
