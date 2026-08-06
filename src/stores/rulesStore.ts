@@ -19,8 +19,10 @@ interface RulesState {
   classes: Record<string, unknown>
   species: Record<string, unknown>
   backgrounds: Record<string, unknown>
-  spells: unknown[]
-  feats: unknown[]
+  baseSpells: unknown[]
+  baseFeats: unknown[]
+  guildSpells: unknown[]
+  guildFeats: unknown[]
 }
 
 export const useRulesStore = defineStore('rules', {
@@ -32,8 +34,10 @@ export const useRulesStore = defineStore('rules', {
     classes: JSON.parse(JSON.stringify(CLASSES)),
     species: JSON.parse(JSON.stringify(SPECIES)),
     backgrounds: JSON.parse(JSON.stringify(BACKGROUNDS)),
-    spells: [],
-    feats: [],
+    baseSpells: [],
+    baseFeats: [],
+    guildSpells: [],
+    guildFeats: [],
   }),
 
   getters: {
@@ -41,13 +45,15 @@ export const useRulesStore = defineStore('rules', {
     allClasses: (state) => state.classes,
     allSpecies: (state) => state.species,
     allBackgrounds: (state) => state.backgrounds,
-    allSpells: (state) => state.spells,
-    allFeats: (state) => state.feats,
+    allSpells: (state) => [...state.baseSpells, ...state.guildSpells],
+    allFeats: (state) => [...state.baseFeats, ...state.guildFeats],
   },
 
   actions: {
     /**
      * Import data into a specific category, replacing existing data.
+     * For spells and feats, data goes into the base layer (baseSpells/baseFeats),
+     * leaving the guild overlay untouched.
      * @param category - The data category to replace (e.g., 'spells', 'feats', 'classes')
      * @param dataArray - The array of data to import
      */
@@ -59,10 +65,14 @@ export const useRulesStore = defineStore('rules', {
         return
       }
 
-      // For arrays (spells, feats), replace directly
-      if (category === 'spells' || category === 'feats') {
-        const key = category as 'spells' | 'feats'
-        this[key] = [...dataArray]
+      // For arrays (spells, feats), map to base layer
+      if (category === 'spells') {
+        this.baseSpells = [...dataArray]
+        set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
+        return
+      }
+      if (category === 'feats') {
+        this.baseFeats = [...dataArray]
         set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
         return
       }
@@ -83,10 +93,46 @@ export const useRulesStore = defineStore('rules', {
     },
 
     /**
-     * Reset a category to its original state (from rules.js)
+     * Inject guild-scoped spells into the overlay array.
+     * This replaces any previously injected guild spells without affecting
+     * the base layer (imported SRD, cached data, etc.).
      */
-    resetCategory(category: keyof RulesState) {
-      const defaults: RulesState = {
+    injectGuildSpells(spells: unknown[]): void {
+      this.guildSpells = [...spells]
+    },
+
+    /**
+     * Inject guild-scoped feats into the overlay array.
+     * This replaces any previously injected guild feats without affecting
+     * the base layer.
+     */
+    injectGuildFeats(feats: unknown[]): void {
+      this.guildFeats = [...feats]
+    },
+
+    /**
+     * Remove all guild-scoped content from the store.
+     * This clears the guild overlay without touching base data.
+     * Safe to call when no guild content is present (idempotent).
+     */
+    stripGuildContent(): void {
+      this.guildSpells = []
+      this.guildFeats = []
+    },
+
+    /**
+     * Reset a category to its original state (from rules.js).
+     * For spells/feats, resets only the base layer — guild overlay
+     * is managed separately by guildContentSyncStore.
+     */
+    resetCategory(category: string) {
+      // Backward compatibility: map legacy 'spells'/'feats' to 'baseSpells'/'baseFeats'
+      const mappedCategory =
+        category === 'spells' ? 'baseSpells' :
+        category === 'feats' ? 'baseFeats' :
+        category
+
+      const defaults: Partial<RulesState> = {
         abilities: { ...ABILITIES },
         skills: { ...SKILLS },
         proficiencyBonusProgression: { ...PROFICIENCY_BONUS_PROGRESSION },
@@ -94,25 +140,48 @@ export const useRulesStore = defineStore('rules', {
         classes: JSON.parse(JSON.stringify(CLASSES)),
         species: JSON.parse(JSON.stringify(SPECIES)),
         backgrounds: JSON.parse(JSON.stringify(BACKGROUNDS)),
-        spells: [],
-        feats: [],
+        baseSpells: [],
+        baseFeats: [],
       }
 
-      if (category in defaults) {
+      if (mappedCategory in defaults) {
         // Use a generic typing approach to assign the value based on the key
-        const resetKey = category as keyof RulesState
+        const resetKey = mappedCategory as keyof RulesState
         ;(this as RulesState)[resetKey] = defaults[resetKey] as never
         set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
       }
     },
 
     /**
-     * Load data from IndexedDB
+     * Load data from IndexedDB with state migration for old keys.
+     *
+     * Migration: previously, spells and feats were stored under the keys
+     * `spells` and `feats`. After the dual-state refactor, these were renamed
+     * to `baseSpells` and `baseFeats`. If the stored state contains the old
+     * keys, their values are migrated to the new keys before merging.
      */
     async loadFromStorage(): Promise<void> {
       try {
-        const storedState = await get<RulesState>('dndRulesLibrary')
+        const storedState = await get<Record<string, unknown>>('dndRulesLibrary')
         if (storedState) {
+          // Migrate old key names to new key names
+          if ('spells' in storedState && !('baseSpells' in storedState)) {
+            storedState.baseSpells = storedState.spells
+            delete storedState.spells
+          }
+          if ('feats' in storedState && !('baseFeats' in storedState)) {
+            storedState.baseFeats = storedState.feats
+            delete storedState.feats
+          }
+
+          // Remove old keys if they exist alongside new keys (cleanup)
+          if ('spells' in storedState) {
+            delete storedState.spells
+          }
+          if ('feats' in storedState) {
+            delete storedState.feats
+          }
+
           // Merge stored state with current state utilizing the mutator function
           // to bypass TypeScript TS2769 generic DeepPartial incompatibility
           this.$patch((state) => {
