@@ -329,7 +329,7 @@ onUnmounted(() => {
 
               <button
                 @click="handleMoreAction(() => store.shareCharacter())"
-                :disabled="!store.supabaseClient"
+                :disabled="!store.isSupabaseReady"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed select-none w-full text-left"
                 title="Share Online"
                 role="menuitem"

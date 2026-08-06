@@ -151,7 +151,7 @@ watch(
 
                 <button
                   @click="shareCharacter"
-                  :disabled="!store.supabaseClient"
+                  :disabled="!store.isSupabaseReady"
                   class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 select-none"
                   title="Share Online"
                 >
