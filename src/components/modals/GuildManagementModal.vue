@@ -64,6 +64,10 @@ const bulkImportStatus = ref<'idle' | 'parsing' | 'preview' | 'importing' | 'suc
 const bulkImportMessage = ref('')
 const bulkImportPreview = ref<{ valid: number; invalid: number; items: string[] } | null>(null)
 
+// Placeholder constants for bulk import textarea
+const spellPlaceholder = '[{ "name": "Fireball", "level": 3 }, ...]'
+const featPlaceholder = '[{ "name": "Lucky" }, ...]'
+
 // ---------------------------------------------------------------------------
 // Computed
 // ---------------------------------------------------------------------------
@@ -294,9 +298,9 @@ function validateAndPreview() {
 
   // Step 2: Extract array (handle both [...] and { spell: [...] } / { feat: [...] } wrappers)
   const key = bulkImportTab.value === 'spells' ? 'spell' : 'feat'
-  const rawArray: unknown[] = Array.isArray(raw)
+  const rawArray = (Array.isArray(raw)
     ? raw
-    : (raw as Record<string, unknown>)?.[key] || []
+    : (raw as Record<string, unknown>)?.[key] || []) as unknown[]
 
   if (!Array.isArray(rawArray) || rawArray.length === 0) {
     bulkImportStatus.value = 'error'
@@ -347,9 +351,9 @@ async function executeBulkImport() {
     }
 
     const key = bulkImportTab.value === 'spells' ? 'spell' : 'feat'
-    const rawArray: unknown[] = Array.isArray(raw)
+    const rawArray = (Array.isArray(raw)
       ? raw
-      : (raw as Record<string, unknown>)?.[key] || []
+      : (raw as Record<string, unknown>)?.[key] || []) as unknown[]
 
     let mapped: Record<string, unknown>[]
 
@@ -679,7 +683,7 @@ watch(
                 </div>
 
                 <p class="font-body-sm text-on-surface-variant">
-                  Paste a JSON array of 5e.tools {{ bulkImportTab }}. Supports both <code class="bg-surface-variant px-1 rounded">[...]</code> arrays and <code class="bg-surface-variant px-1 rounded">{{ '{' }}"{{ bulkImportTab === 'spells' ? 'spell' : 'feat' }}": [...]{{ '}' }}</code> wrapper objects.
+                  Paste a JSON array of 5e.tools {{ bulkImportTab }}. Supports both <code class="bg-surface-variant px-1 rounded">[...]</code> arrays and <code class="bg-surface-variant px-1 rounded">&#123; "{{ bulkImportTab === 'spells' ? 'spell' : 'feat' }}": [...] &#125;</code> wrapper objects.
                 </p>
 
                 <!-- Content type selector within bulk import -->
@@ -708,9 +712,7 @@ watch(
                   v-model="bulkJsonText"
                   rows="10"
                   class="w-full bg-surface-variant border border-outline-variant rounded-xl p-3 font-mono text-sm text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary resize-y"
-                  :placeholder="bulkImportTab === 'spells'
-                    ? '[{"name": "Fireball", "level": 3, ...}, ...]'
-                    : '[{"name": "Lucky", ...}, ...]'"
+                  :placeholder="bulkImportTab === 'spells' ? spellPlaceholder : featPlaceholder"
                 ></textarea>
 
                 <!-- Status messages -->
