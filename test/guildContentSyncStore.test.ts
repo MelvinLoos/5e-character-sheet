@@ -75,7 +75,6 @@ vi.mock('@/stores/authStore', () => ({
 // Imports (after mocks are registered)
 // ---------------------------------------------------------------------------
 
-import { get, set } from 'idb-keyval'
 import { logger } from '@/utils/logger'
 import { useRulesStore } from '@/stores/rulesStore'
 import { useGuildContentSyncStore } from '@/stores/guildContentSyncStore'
