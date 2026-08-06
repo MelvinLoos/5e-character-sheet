@@ -58,6 +58,16 @@ const router = createRouter({
         return { name: 'identity', query: { error: 'auth_callback_failed' } }
       },
     },
+    {
+      path: '/terms',
+      name: 'terms',
+      component: () => import('../views/TermsOfService.vue'),
+    },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../views/PrivacyPolicy.vue'),
+    },
   ],
 })
 

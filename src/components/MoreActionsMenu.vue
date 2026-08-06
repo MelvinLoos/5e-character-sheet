@@ -216,6 +216,24 @@ watch(
               >
                 Cancel
               </button>
+
+              <!-- Legal Links (mobile) -->
+              <div class="mt-4 pt-4 border-t border-outline-variant flex justify-center gap-4">
+                <router-link
+                  :to="{ name: 'terms' }"
+                  @click="close"
+                  class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+                >
+                  Terms
+                </router-link>
+                <router-link
+                  :to="{ name: 'privacy' }"
+                  @click="close"
+                  class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+                >
+                  Privacy
+                </router-link>
+              </div>
             </div>
           </Transition>
         </div>
