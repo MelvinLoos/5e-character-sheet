@@ -69,8 +69,8 @@
           <p class="font-label-md text-label-md text-on-tertiary-container mb-2 print:text-black">
             &#x26A0;&#xFE0F; <strong>How do I delete my data?</strong>
           </p>
-          <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed print:text-gray-800">
-            We are currently working on an automated button in the tool that allows you to erase all your data with a single click. Until then, you can submit a <strong class="text-on-surface print:text-black">data deletion request</strong> by sending a direct message (DM) to one of the moderators via our Discord server. We will ensure your data is manually and permanently deleted from our database.
+          <p class="font-body-md text-body-md text-on-tertiary-container leading-relaxed print:text-gray-800">
+            We are currently working on an automated button in the tool that allows you to erase all your data with a single click. Until then, you can submit a <strong class="text-on-tertiary-container print:text-black">data deletion request</strong> by sending a direct message (DM) to one of the moderators via our Discord server. We will ensure your data is manually and permanently deleted from our database.
           </p>
         </div>
       </section>
