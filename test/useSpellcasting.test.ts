@@ -112,9 +112,9 @@ describe('useSpellcasting', () => {
     characterStore = useCharacterStore()
     rulesStore = useRulesStore()
     // Seed rules store with test spell data.
-    // allSpells is a readonly getter backed by mutable state.spells.
+    // allSpells is a readonly getter backed by state.baseSpells.
     rulesStore.$patch({
-      spells: [
+      baseSpells: [
         { name: 'Fireball', level: 3, desc: 'Big boom', classes: ['Wizard', 'Sorcerer'] },
         { name: 'Magic Missile', level: 1, desc: 'Auto-hit', classes: ['Wizard', 'Sorcerer'] },
         { name: 'Cure Wounds', level: 1, desc: 'Healing', classes: ['Cleric', 'Druid'] },
