@@ -80,6 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
+        scopes: 'identify guilds',
         redirectTo,
       },
     })

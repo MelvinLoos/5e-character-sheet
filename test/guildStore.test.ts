@@ -8,7 +8,9 @@ import type { DiscordGuild } from '../src/types/discord'
 
 const mockGuilds: DiscordGuild[] = [
   { id: 'guild-1', name: 'Heroes Guild', icon: 'icon-1', owner: false, permissions: '0', features: [] },
-  { id: 'guild-2', name: 'Mages Tower', icon: null, owner: true, permissions: '0', features: ['COMMUNITY'] },
+  { id: 'guild-2', name: 'Mages Tower', icon: null, owner: true, permissions: '8', features: ['COMMUNITY'] },
+  { id: 'guild-3', name: 'Unregistered Guild', icon: null, owner: false, permissions: '0', features: [] },
+  { id: 'guild-4', name: 'Mod Guild', icon: null, owner: false, permissions: '32', features: [] },
 ]
 
 const mockGet = vi.fn()
@@ -23,6 +25,24 @@ vi.mock('idb-keyval', () => ({
 
 const mockFetch = vi.fn()
 global.fetch = mockFetch as unknown as typeof fetch
+
+// Mock Supabase client for registered_guilds queries
+const mockFromSelectEqMaybeSingle = vi.fn()
+const mockFromSelectSingle = vi.fn()
+const mockSupabaseClient = {
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        maybeSingle: mockFromSelectEqMaybeSingle,
+      })),
+      single: mockFromSelectSingle,
+    })),
+  })),
+}
+
+vi.mock('../src/infra/sharingService', () => ({
+  getSupabaseClient: vi.fn(() => mockSupabaseClient),
+}))
 
 function createMockAuthStore(overrides: { providerToken?: string | null; isAuthenticated?: boolean } = {}) {
   const store = useAuthStore()
@@ -230,5 +250,109 @@ describe('guildStore', () => {
     const store = useGuildStore()
     await expect(store.initialize()).resolves.not.toThrow()
     expect(store.guilds).toEqual([])
+  })
+
+  // ---------------------------------------------------------------------------
+  // Guild filtering: registered_guilds + admin/moderator permissions (TDD)
+  // ---------------------------------------------------------------------------
+
+  it('fetchRegisteredGuilds populates registered guild IDs from Supabase', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: [
+        { guild_id: 'guild-1' },
+        { guild_id: 'guild-2' },
+      ],
+      error: null,
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+    await store.fetchRegisteredGuilds()
+
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith('registered_guilds')
+    expect(store.visibleGuilds).toEqual([]) // no guilds loaded yet, but registered IDs populated
+  })
+
+  it('visibleGuilds filters out unregistered guilds without admin permissions', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    // guild-1 and guild-2 are registered
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: [
+        { guild_id: 'guild-1' },
+        { guild_id: 'guild-2' },
+      ],
+      error: null,
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+    await store.fetchRegisteredGuilds()
+    store.$patch({ guilds: mockGuilds })
+
+    // guild-1: registered, guild-2: admin (perms=8), guild-3: neither, guild-4: mod (perms=32)
+    const visible = store.visibleGuilds
+    const visibleIds = visible.map((g) => g.id)
+
+    expect(visibleIds).toContain('guild-1') // registered
+    expect(visibleIds).toContain('guild-2') // ADMINISTRATOR permission
+    expect(visibleIds).toContain('guild-4') // MANAGE_GUILD permission
+    expect(visibleIds).not.toContain('guild-3') // neither registered nor admin
+    expect(visible).toHaveLength(3)
+  })
+
+  it('visibleGuilds includes all guilds when Supabase client is unavailable (graceful degradation)', async () => {
+    const { getSupabaseClient } = await import('../src/infra/sharingService')
+    const original = vi.mocked(getSupabaseClient)
+    original.mockReturnValue(null)
+
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+
+    const store = useGuildStore()
+    await store.fetchRegisteredGuilds()
+    store.$patch({ guilds: mockGuilds })
+
+    // All guilds should be visible when Supabase is down
+    expect(store.visibleGuilds).toEqual(mockGuilds)
+    expect(store.visibleGuilds).toHaveLength(4)
+
+    // Restore mock
+    original.mockReturnValue(mockSupabaseClient)
+  })
+
+  it('fetchRegisteredGuilds handles Supabase errors gracefully', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: null,
+      error: new Error('Database error'),
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+    await store.fetchRegisteredGuilds()
+    store.$patch({ guilds: mockGuilds })
+
+    // When Supabase errors, all guilds should be visible (fails open for UX)
+    expect(store.visibleGuilds).toEqual(mockGuilds)
+    expect(store.visibleGuilds).toHaveLength(4)
+  })
+
+  it('visibleGuilds updates reactively when guilds change', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: [{ guild_id: 'guild-1' }],
+      error: null,
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+    await store.fetchRegisteredGuilds()
+
+    // Before guilds are loaded
+    expect(store.visibleGuilds).toEqual([])
+
+    // After guilds load
+    store.$patch({ guilds: mockGuilds })
+    expect(store.visibleGuilds).toHaveLength(3) // guild-1, guild-2 (admin), guild-4 (mod)
   })
 })

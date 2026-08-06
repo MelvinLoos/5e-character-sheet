@@ -4,7 +4,10 @@ import { get, set } from 'idb-keyval'
 import { useAuthStore } from './authStore'
 import { STORAGE_KEYS } from '../constants/storage-keys'
 import { logger } from '../utils/logger'
+import { hasAdminPermission } from '../utils/guildPermissions'
+import { getSupabaseClient } from '../infra/sharingService'
 import type { DiscordGuild } from '../types/discord'
+import type { RegisteredGuild } from '../types/supabase'
 
 const GUILD_CACHE_KEY = 'guild_cache'
 
@@ -19,6 +22,7 @@ export const useGuildStore = defineStore('guild', () => {
   const activeGuildId = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const registeredGuildIds = ref<Set<string>>(new Set())
 
   // ---------------------------------------------------------------------------
   // Getters
@@ -29,6 +33,27 @@ export const useGuildStore = defineStore('guild', () => {
   })
 
   const isActiveGuildSet = computed(() => activeGuildId.value !== null)
+
+  /**
+   * Guilds that should be visible to the user.
+   * Filters the Discord API guild list to only show:
+   *   a) Guilds present in the `registered_guilds` table, OR
+   *   b) Guilds where the user has ADMINISTRATOR or MANAGE_GUILD permissions.
+   *
+   * Falls back to showing all guilds if Supabase is unavailable (graceful degradation).
+   */
+  const visibleGuilds = computed<DiscordGuild[]>(() => {
+    // If there are no registered guild IDs at all, treat it as "unavailable" and show everything
+    if (registeredGuildIds.value.size === 0) {
+      return guilds.value
+    }
+
+    return guilds.value.filter(
+      (guild) =>
+        registeredGuildIds.value.has(guild.id) ||
+        hasAdminPermission(guild.permissions),
+    )
+  })
 
   // ---------------------------------------------------------------------------
   // Persistence: active guild selection
@@ -103,6 +128,7 @@ export const useGuildStore = defineStore('guild', () => {
     (status) => {
       if (status === 'loggedOut') {
         guilds.value = []
+        registeredGuildIds.value = new Set()
         setActiveGuild(null)
         error.value = null
       }
@@ -114,8 +140,45 @@ export const useGuildStore = defineStore('guild', () => {
   // ---------------------------------------------------------------------------
 
   /**
+   * Query the Supabase `registered_guilds` table to determine which Discord
+   * servers have opted into the app.
+   *
+   * Results are stored as a Set<string> for O(1) lookup in the `visibleGuilds` getter.
+   * On error or unavailable Supabase client, falls back to an empty set (shows all guilds).
+   */
+  async function fetchRegisteredGuilds(): Promise<void> {
+    const client = getSupabaseClient()
+
+    if (!client) {
+      // Supabase unavailable — keep empty Set so visibleGuilds shows everything
+      registeredGuildIds.value = new Set()
+      return
+    }
+
+    try {
+      const { data, error: queryError } = await client
+        .from('registered_guilds')
+        .select('guild_id')
+
+      if (queryError || !data) {
+        logger.warn('Failed to fetch registered guilds:', queryError?.message)
+        // Fails open: empty Set → show all guilds
+        registeredGuildIds.value = new Set()
+        return
+      }
+
+      const guilds = data as Pick<RegisteredGuild, 'guild_id'>[]
+      registeredGuildIds.value = new Set(guilds.map((g) => g.guild_id))
+    } catch (e) {
+      logger.warn('Error fetching registered guilds:', (e as Error).message)
+      registeredGuildIds.value = new Set()
+    }
+  }
+
+  /**
    * Fetch the user's Discord guilds using the OAuth provider token from the
-   * current Supabase session. On success, the list is cached in IndexedDB.
+   * current Supabase session. On success, the list is cached in IndexedDB
+   * and registered guild IDs are refreshed from Supabase.
    * On failure, stale cache is served if available.
    */
   async function fetchGuilds(): Promise<void> {
@@ -143,6 +206,9 @@ export const useGuildStore = defineStore('guild', () => {
       guilds.value = data
 
       await saveGuildsToCache(data)
+
+      // After successfully fetching guilds, refresh registered guild IDs
+      await fetchRegisteredGuilds()
     } catch (e) {
       error.value = (e as Error).message
       logger.error('Failed to fetch Discord guilds:', e)
@@ -191,8 +257,10 @@ export const useGuildStore = defineStore('guild', () => {
     // Getters
     activeGuild,
     isActiveGuildSet,
+    visibleGuilds,
     // Actions
     fetchGuilds,
+    fetchRegisteredGuilds,
     setActiveGuild,
     initialize,
   }
