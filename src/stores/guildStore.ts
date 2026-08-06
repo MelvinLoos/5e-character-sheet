@@ -201,7 +201,7 @@ export const useGuildStore = defineStore('guild', () => {
    * On failure, stale cache is served if available.
    */
   async function fetchGuilds(): Promise<void> {
-    const token = authStore.providerToken
+    const token = authStore.getProviderToken()
 
     if (!token) {
       return
@@ -262,7 +262,7 @@ export const useGuildStore = defineStore('guild', () => {
     isInitialized = true
     loadActiveGuildIdFromStorage()
 
-    if (authStore.providerToken) {
+    if (authStore.getProviderToken()) {
       await fetchGuilds()
     } else {
       const cached = await loadGuildsFromCache()

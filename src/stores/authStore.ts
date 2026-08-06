@@ -6,6 +6,13 @@ import { logger } from '../utils/logger'
 
 export type AuthStatus = 'loggedOut' | 'loading' | 'authenticated'
 
+/**
+ * Module-level (non-reactive) storage for the Discord OAuth provider token.
+ * Kept out of Pinia's reactive state to prevent inspection via Vue Devtools
+ * and browser console.
+ */
+let _providerToken: string | null = null
+
 export const useAuthStore = defineStore('auth', () => {
   const supabase = createSupabaseClient()
 
@@ -14,7 +21,6 @@ export const useAuthStore = defineStore('auth', () => {
   const userId = ref<string | null>(null)
   const discordUsername = ref<string | null>(null)
   const discordAvatarUrl = ref<string | null>(null)
-  const providerToken = ref<string | null>(null)
 
   // Getters
   const isAuthenticated = computed(() => status.value === 'authenticated')
@@ -25,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
     userId.value = user?.id ?? null
     discordUsername.value = user?.user_metadata?.full_name ?? null
     discordAvatarUrl.value = user?.user_metadata?.avatar_url ?? null
-    providerToken.value = (session?.provider_token as string | undefined) ?? null
+    _providerToken = (session?.provider_token as string | undefined) ?? null
   }
 
   function handleAuthChange(event: AuthChangeEvent, session: Session | null) {
@@ -37,7 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
       userId.value = null
       discordUsername.value = null
       discordAvatarUrl.value = null
-      providerToken.value = null
+      _providerToken = null
     }
   }
 
@@ -108,7 +114,7 @@ export const useAuthStore = defineStore('auth', () => {
     userId.value = null
     discordUsername.value = null
     discordAvatarUrl.value = null
-    providerToken.value = null
+    _providerToken = null
   }
 
   async function handleAuthCallback(accessToken: string, refreshToken: string) {
@@ -128,12 +134,21 @@ export const useAuthStore = defineStore('auth', () => {
       userId.value = null
       discordUsername.value = null
       discordAvatarUrl.value = null
-      providerToken.value = null
+      _providerToken = null
       return
     }
 
     status.value = 'authenticated'
     updateUserFromSession(data.session)
+  }
+
+  /**
+   * Non-reactive getter for the Discord OAuth provider token.
+   * Use this instead of directly accessing the value for internal consumers
+   * that need to pass the token to the Discord API.
+   */
+  function getProviderToken(): string | null {
+    return _providerToken
   }
 
   return {
@@ -142,7 +157,8 @@ export const useAuthStore = defineStore('auth', () => {
     userId,
     discordUsername,
     discordAvatarUrl,
-    providerToken,
+    // Getter
+    getProviderToken,
     // Getters
     isAuthenticated,
     isLoading,
