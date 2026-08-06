@@ -41,7 +41,7 @@ onMounted(() => {
       >
         <option :value="null">All Guilds</option>
         <option
-          v-for="guild in guildStore.guilds"
+          v-for="guild in guildStore.visibleGuilds"
           :key="guild.id"
           :value="guild.id"
         >
