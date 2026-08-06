@@ -207,12 +207,12 @@ const gearTypeOptions: GearType[] = [
             <div class="flex gap-2 text-sm">
               <select
                 v-model="gear.type"
-                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-inherit"
+                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-on-surface"
               >
-                <option v-for="opt in gearTypeOptions" :key="opt" :value="opt">
+                <option v-for="opt in gearTypeOptions" :key="opt" :value="opt" class="text-[#15130b]">
                   {{ opt }}
                 </option>
-                <option value="__custom__">Custom…</option>
+                <option value="__custom__" class="text-[#15130b]">Custom…</option>
               </select>
               <input
                 v-if="gear.type === '__custom__' || !gearTypeOptions.includes(gear.type as GearType)"
@@ -230,11 +230,11 @@ const gearTypeOptions: GearType[] = [
             <div class="flex gap-2 text-sm">
               <select
                 v-model="gear.theme"
-                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-inherit"
+                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-on-surface"
               >
-                <option value="default">Default</option>
-                <option value="parchment">Parchment</option>
-                <option value="deep-teal">Deep Teal</option>
+                <option value="default" class="text-[#15130b]">Default</option>
+                <option value="parchment" class="text-[#15130b]">Parchment</option>
+                <option value="deep-teal" class="text-[#15130b]">Deep Teal</option>
               </select>
             </div>
             <textarea
@@ -336,12 +336,12 @@ const gearTypeOptions: GearType[] = [
                 />
                 <select
                   v-model="consumable.type"
-                  class="w-full bg-background border border-[#1A3C40] rounded p-1 text-xs"
+                  class="w-full bg-background border border-[#1A3C40] rounded p-1 text-xs text-on-surface"
                 >
-                  <option v-for="opt in gearTypeOptions" :key="opt" :value="opt">
+                  <option v-for="opt in gearTypeOptions" :key="opt" :value="opt" class="text-[#15130b]">
                     {{ opt }}
                   </option>
-                  <option value="__custom__">Custom…</option>
+                  <option value="__custom__" class="text-[#15130b]">Custom…</option>
                 </select>
                 <input
                   v-if="consumable.type === '__custom__' || !gearTypeOptions.includes(consumable.type as GearType)"
@@ -370,18 +370,18 @@ const gearTypeOptions: GearType[] = [
           <div class="col-span-3 text-right flex items-center justify-end gap-2">
             <select
               v-model="consumable.usageDie"
-              class="bg-surface-variant border border-outline-variant rounded p-2"
+              class="bg-surface-variant border border-outline-variant rounded p-2 text-on-surface-variant"
               :class="{
                 'text-error': consumable.usageDie === 'depleted' || consumable.usageDie === 'd4',
               }"
             >
-              <option value="d20">Ud20</option>
-              <option value="d12">Ud12</option>
-              <option value="d10">Ud10</option>
-              <option value="d8">Ud8</option>
-              <option value="d6">Ud6</option>
-              <option value="d4">Ud4</option>
-              <option value="depleted">Depleted</option>
+              <option value="d20" class="text-[#15130b]">Ud20</option>
+              <option value="d12" class="text-[#15130b]">Ud12</option>
+              <option value="d10" class="text-[#15130b]">Ud10</option>
+              <option value="d8" class="text-[#15130b]">Ud8</option>
+              <option value="d6" class="text-[#15130b]">Ud6</option>
+              <option value="d4" class="text-[#15130b]">Ud4</option>
+              <option value="depleted" class="text-[#15130b]">Depleted</option>
             </select>
             <button
               v-if="store.isEditing"
