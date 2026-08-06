@@ -4,12 +4,17 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './assets/main.css'
+import { initSupabase } from './infra/sharingService'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+
+// Initialize Supabase client before auth so guild stores can query
+// registered_guilds without racing on client readiness.
+initSupabase()
 
 // Initialize auth state restoration after app mount
 // This ensures Pinia is active and the router guard won't race with explicit init

@@ -30,11 +30,7 @@ export function isValidGuildSpell(data: unknown): data is CharacterSpell {
     return false
   }
 
-  if (typeof d.desc !== 'string') {
-    logger.warn('Guild spell missing or invalid "desc":', d.desc)
-    return false
-  }
-
+  // desc is optional — the normalizer defaults it to ""
   return true
 }
 
@@ -76,11 +72,7 @@ export function isValidGuildFeat(data: unknown): data is CharacterFeature {
     return false
   }
 
-  if (typeof d.desc !== 'string') {
-    logger.warn('Guild feat missing or invalid "desc":', d.desc)
-    return false
-  }
-
+  // desc is optional — the normalizer defaults it to ""
   return true
 }
 

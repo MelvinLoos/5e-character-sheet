@@ -24,6 +24,12 @@ export const useGuildStore = defineStore('guild', () => {
   const error = ref<string | null>(null)
   const registeredGuildIds = ref<Set<string> | null>(null)
 
+  /**
+   * Prevents duplicate initialization calls (e.g., from router guards
+   * that fire on every route change).
+   */
+  let isInitialized = false
+
   // ---------------------------------------------------------------------------
   // Getters
   // ---------------------------------------------------------------------------
@@ -143,6 +149,7 @@ export const useGuildStore = defineStore('guild', () => {
         registeredGuildIds.value = null
         setActiveGuild(null)
         error.value = null
+        isInitialized = false
       }
     },
   )
@@ -245,19 +252,28 @@ export const useGuildStore = defineStore('guild', () => {
   /**
    * Initialize the store from localStorage/IndexedDB and trigger a fetch when
    * the user is authenticated.
+   *
+   * Idempotent: subsequent calls after the first are no-ops. The guard is reset
+   * when the user logs out, allowing re-initialization on re-login.
    */
   async function initialize(): Promise<void> {
+    if (isInitialized) return
+
+    isInitialized = true
     loadActiveGuildIdFromStorage()
 
     if (authStore.providerToken) {
       await fetchGuilds()
-      return
+    } else {
+      const cached = await loadGuildsFromCache()
+      if (cached.length > 0) {
+        guilds.value = cached
+      }
     }
 
-    const cached = await loadGuildsFromCache()
-    if (cached.length > 0) {
-      guilds.value = cached
-    }
+    // Always fetch registered guild IDs from Supabase so the
+    // visibleGuilds getter has data to filter against.
+    await fetchRegisteredGuilds()
   }
 
   /**

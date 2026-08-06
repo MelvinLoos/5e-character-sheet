@@ -643,4 +643,81 @@ describe('guildStore', () => {
     // Local state should NOT be updated on error
     expect(store.registeredGuildIds!.has('guild-3')).toBe(false)
   })
+
+  // ---------------------------------------------------------------------------
+  // Bug fix: Idempotent initialize (#106) — TDD
+  // ---------------------------------------------------------------------------
+
+  it('initialize() returns early on subsequent calls (idempotency guard)', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockGuilds,
+    })
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: [{ guild_id: 'guild-1' }],
+      error: null,
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+
+    // First call — should trigger fetch
+    await store.initialize()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    // Reset the spy to check if second call re-triggers
+    mockFetch.mockClear()
+
+    // Second call — should be a no-op
+    await store.initialize()
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('initialize() fetches registered guilds when offline (no provider token)', async () => {
+    createMockAuthStore({ providerToken: null, isAuthenticated: false })
+    mockGet.mockResolvedValue(undefined)
+
+    const mockSelect = vi.fn().mockResolvedValue({
+      data: [{ guild_id: 'guild-1' }, { guild_id: 'guild-2' }],
+      error: null,
+    })
+    mockSupabaseClient.from.mockReturnValue({ select: mockSelect })
+
+    const store = useGuildStore()
+    await store.initialize()
+
+    // Should still call fetchRegisteredGuilds even without a Discord token
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith('registered_guilds')
+    expect(store.registeredGuildIds).toBeInstanceOf(Set)
+    expect(store.registeredGuildIds!.size).toBe(2)
+  })
+
+  it('initialize() resets isInitialized flag when user logs out', async () => {
+    createMockAuthStore({ providerToken: 'discord-token', isAuthenticated: true })
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockGuilds,
+    })
+    mockSupabaseClient.from.mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    })
+
+    const store = useGuildStore()
+    await store.initialize()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    // Simulate logout
+    const authStore = useAuthStore()
+    authStore.$patch({ status: 'loggedOut' })
+    await nextTick()
+
+    // Reset fetch spy
+    mockFetch.mockClear()
+
+    // Now re-initialize — should work again
+    authStore.$patch({ status: 'authenticated', providerToken: 'discord-token' })
+    await store.initialize()
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
 })

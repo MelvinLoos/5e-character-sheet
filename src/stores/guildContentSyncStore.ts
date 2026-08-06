@@ -68,7 +68,8 @@ export const useGuildContentSyncStore = defineStore('guildContentSync', () => {
 
       for (const row of rows) {
         if (isValidGuildSpell(row.data)) {
-          validated.push(normalizeGuildSpell(row.data as Record<string, unknown>))
+          const normalized = normalizeGuildSpell(row.data as Record<string, unknown>)
+          validated.push({ ...normalized, _id: row.id, _guild_id: row.guild_id })
         }
       }
 
@@ -111,7 +112,8 @@ export const useGuildContentSyncStore = defineStore('guildContentSync', () => {
 
       for (const row of rows) {
         if (isValidGuildFeat(row.data)) {
-          validated.push(normalizeGuildFeat(row.data as Record<string, unknown>))
+          const normalized = normalizeGuildFeat(row.data as Record<string, unknown>)
+          validated.push({ ...normalized, _id: row.id, _guild_id: row.guild_id })
         }
       }
 

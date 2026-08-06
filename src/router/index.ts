@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Identity from '../views/Identity.vue'
 import { useAuthStore } from '../stores/authStore'
+import { useGuildStore } from '../stores/guildStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,6 +69,8 @@ router.beforeEach(async () => {
     await authStore.initialize()
     authInitialized = true
   }
+  const guildStore = useGuildStore()
+  await guildStore.initialize()
 })
 
 export async function initializeAuth(): Promise<void> {
