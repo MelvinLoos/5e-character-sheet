@@ -22,7 +22,7 @@ export const useGuildStore = defineStore('guild', () => {
   const activeGuildId = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-  const registeredGuildIds = ref<Set<string>>(new Set())
+  const registeredGuildIds = ref<Set<string> | null>(null)
 
   // ---------------------------------------------------------------------------
   // Getters
@@ -43,14 +43,16 @@ export const useGuildStore = defineStore('guild', () => {
    * Falls back to showing all guilds if Supabase is unavailable (graceful degradation).
    */
   const visibleGuilds = computed<DiscordGuild[]>(() => {
-    // If there are no registered guild IDs at all, treat it as "unavailable" and show everything
-    if (registeredGuildIds.value.size === 0) {
+    const ids = registeredGuildIds.value
+
+    // If Supabase has never been reached, fail-open and show everything
+    if (ids === null) {
       return guilds.value
     }
 
     return guilds.value.filter(
       (guild) =>
-        registeredGuildIds.value.has(guild.id) ||
+        ids.has(guild.id) ||
         hasAdminPermission(guild.permissions),
     )
   })
@@ -128,7 +130,7 @@ export const useGuildStore = defineStore('guild', () => {
     (status) => {
       if (status === 'loggedOut') {
         guilds.value = []
-        registeredGuildIds.value = new Set()
+        registeredGuildIds.value = null
         setActiveGuild(null)
         error.value = null
       }
@@ -150,8 +152,8 @@ export const useGuildStore = defineStore('guild', () => {
     const client = getSupabaseClient()
 
     if (!client) {
-      // Supabase unavailable — keep empty Set so visibleGuilds shows everything
-      registeredGuildIds.value = new Set()
+      // Supabase unavailable — keep null so visibleGuilds shows everything
+      registeredGuildIds.value = null
       return
     }
 
@@ -162,8 +164,8 @@ export const useGuildStore = defineStore('guild', () => {
 
       if (queryError || !data) {
         logger.warn('Failed to fetch registered guilds:', queryError?.message)
-        // Fails open: empty Set → show all guilds
-        registeredGuildIds.value = new Set()
+        // Fails open: null → show all guilds
+        registeredGuildIds.value = null
         return
       }
 
@@ -171,7 +173,7 @@ export const useGuildStore = defineStore('guild', () => {
       registeredGuildIds.value = new Set(guilds.map((g) => g.guild_id))
     } catch (e) {
       logger.warn('Error fetching registered guilds:', (e as Error).message)
-      registeredGuildIds.value = new Set()
+      registeredGuildIds.value = null
     }
   }
 
@@ -254,6 +256,8 @@ export const useGuildStore = defineStore('guild', () => {
     activeGuildId,
     isLoading,
     error,
+    // State (expose registeredGuildIds for testing)
+    registeredGuildIds,
     // Getters
     activeGuild,
     isActiveGuildSet,
