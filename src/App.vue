@@ -23,13 +23,13 @@ onMounted(async () => {
 
 <template>
   <div
-    class="antialiased min-h-screen h-dvh flex text-on-background bg-background print:bg-white print:block print:min-h-0 select-none"
+    class="antialiased min-h-screen h-dvh flex text-on-background bg-background print:bg-white print:block print:min-h-0 select-none overflow-y-auto print:overflow-visible"
   >
     <ControlPanel @show-import="showImportModal = true" />
     <MobileHeader v-if="store.currentCharacterData" />
 
     <main
-      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden overflow-y-auto"
+      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-20 md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
     >
       <div
         v-if="!store.currentCharacterData"
@@ -56,21 +56,22 @@ onMounted(async () => {
 
     <MobileTabBar
       v-if="store.currentCharacterData"
-      class="md:hidden"
+      class="md:hidden print:hidden"
       @show-more="showMoreMenu = true"
     />
 
     <MoreActionsMenu
       v-model="showMoreMenu"
+      class="print:hidden"
       @show-import="showImportModal = true"
     />
 
-    <ThemeToggle />
-    <UpdateNotification />
+    <ThemeToggle class="print:hidden" />
+    <UpdateNotification class="print:hidden" />
 
     <!-- Viewport grain overlay — non-interactive -->
     <div
-      class="fixed inset-0 pointer-events-none z-[100] grain opacity-[0.03] mix-blend-overlay"
+      class="fixed inset-0 pointer-events-none z-[100] grain opacity-[0.03] mix-blend-overlay print:hidden"
       aria-hidden="true"
     ></div>
   </div>
