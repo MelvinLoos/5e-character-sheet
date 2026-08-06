@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 import AuthButton from './AuthButton.vue'
+import GuildSelector from './GuildSelector.vue'
 
 const store = useCharacterStore()
 const route = useRoute()
@@ -278,6 +279,9 @@ onUnmounted(() => {
             aria-label="More actions"
           >
             <div class="p-2 flex flex-col gap-1">
+              <!-- Guild Selector (Discord integration) -->
+              <GuildSelector />
+
               <!-- Auth -->
               <AuthButton />
 

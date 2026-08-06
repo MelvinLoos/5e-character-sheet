@@ -159,8 +159,9 @@ describe('authStore', () => {
     expect(store.userId).toBeNull()
   })
 
-  it('extracts Discord user metadata from session', async () => {
+  it('extracts Discord user metadata and provider token from session', async () => {
     const session = createMockSession({
+      provider_token: 'discord-access-token-xyz',
       user: {
         id: 'user-456',
         user_metadata: {
@@ -177,6 +178,91 @@ describe('authStore', () => {
     expect(store.userId).toBe('user-456')
     expect(store.discordUsername).toBe('Dungeon Master')
     expect(store.discordAvatarUrl).toBe('https://cdn.discordapp.com/avatars/456/def.png')
+    expect(store.providerToken).toBe('discord-access-token-xyz')
+  })
+
+  it('handles missing provider token gracefully', async () => {
+    const session = createMockSession({
+      user: {
+        id: 'user-456',
+        user_metadata: {
+          full_name: 'Dungeon Master',
+          avatar_url: 'https://cdn.discordapp.com/avatars/456/def.png',
+        },
+      },
+    })
+    mockSupabaseClient.auth.getSession.mockResolvedValue({ data: { session }, error: null })
+
+    const store = useAuthStore()
+    await store.initialize()
+
+    expect(store.providerToken).toBeNull()
+  })
+
+  it('clears provider token on sign out', async () => {
+    mockSupabaseClient.auth.getSession.mockResolvedValue({
+      data: { session: createMockSession({ provider_token: 'discord-access-token-xyz' }) },
+      error: null,
+    })
+    mockSupabaseClient.auth.signOut.mockResolvedValue({ error: null })
+
+    const store = useAuthStore()
+    await store.initialize()
+    expect(store.providerToken).toBe('discord-access-token-xyz')
+
+    await store.signOut()
+
+    expect(store.status).toBe('loggedOut')
+    expect(store.providerToken).toBeNull()
+  })
+
+  it('sets provider token from auth state change SIGNED_IN event', async () => {
+    let authCallback: ((event: string, session: unknown) => void) | null = null
+    mockSupabaseClient.auth.onAuthStateChange.mockImplementation((callback: (event: string, session: unknown) => void) => {
+      authCallback = callback
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+
+    const store = useAuthStore()
+    await store.initialize()
+    expect(store.providerToken).toBeNull()
+
+    authCallback?.('SIGNED_IN', createMockSession({ provider_token: 'state-change-token' }))
+
+    expect(store.providerToken).toBe('state-change-token')
+  })
+
+  it('clears provider token on auth state change SIGNED_OUT event', async () => {
+    mockSupabaseClient.auth.getSession.mockResolvedValue({
+      data: { session: createMockSession({ provider_token: 'discord-access-token-xyz' }) },
+      error: null,
+    })
+
+    let authCallback: ((event: string, session: unknown) => void) | null = null
+    mockSupabaseClient.auth.onAuthStateChange.mockImplementation((callback: (event: string, session: unknown) => void) => {
+      authCallback = callback
+      return { data: { subscription: { unsubscribe: vi.fn() } } }
+    })
+
+    const store = useAuthStore()
+    await store.initialize()
+    expect(store.providerToken).toBe('discord-access-token-xyz')
+
+    authCallback?.('SIGNED_OUT', null)
+
+    expect(store.providerToken).toBeNull()
+  })
+
+  it('extracts provider token from handleAuthCallback session', async () => {
+    mockSupabaseClient.auth.setSession.mockResolvedValue({
+      data: { session: createMockSession({ provider_token: 'callback-token' }) },
+      error: null,
+    })
+
+    const store = useAuthStore()
+    await store.handleAuthCallback('access-token-abc', 'refresh-token-xyz')
+
+    expect(store.providerToken).toBe('callback-token')
   })
 
   it('handles missing user metadata gracefully', async () => {
