@@ -27,6 +27,59 @@ export type EquipmentCategory =
   | 'trinket'
   | 'currency'
 
+// ---------------------------------------------------------------------------
+// Inventory Icon Indicators (Issue #61)
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical gear type strings used for icon mapping in inventory UI.
+ * Uses D&D 2024 PHB / DMG naming conventions.
+ */
+export type GearType =
+  | 'Weapon'
+  | 'Armor'
+  | 'Shield'
+  | 'Spellcasting Focus'
+  | 'Equipment Pack'
+  | 'Tool'
+  | 'Adventuring Gear'
+  | 'Ammunition'
+  | 'Trinket'
+  | 'Currency'
+  | 'Supply'
+  // Magic item categories (DMG)
+  | 'Potion'
+  | 'Scroll'
+  | 'Ring'
+  | 'Rod'
+  | 'Staff'
+  | 'Wand'
+  | 'Wondrous Item'
+  | 'Other'
+
+/** Maps each canonical GearType to a Material Icon name for inventory rendering. */
+export const ICON_MAP: Record<GearType, string> = {
+  Weapon: 'swords',
+  Armor: 'shield_question',
+  Shield: 'shield',
+  'Spellcasting Focus': 'auto_awesome',
+  'Equipment Pack': 'backpack',
+  Tool: 'build',
+  'Adventuring Gear': 'inventory_2',
+  Ammunition: 'target',
+  Trinket: 'diamond',
+  Currency: 'monetization_on',
+  Supply: 'water_drop',
+  Potion: 'science',
+  Scroll: 'description',
+  Ring: 'circle',
+  Rod: 'remove',
+  Staff: 'difference',
+  Wand: 'gesture',
+  'Wondrous Item': 'stars',
+  Other: 'category',
+}
+
 /** Semantic tags applied to weapons and armor for rule interactions. */
 export type EquipmentTag =
   | 'simple'

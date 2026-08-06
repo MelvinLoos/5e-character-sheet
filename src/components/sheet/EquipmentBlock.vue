@@ -1,10 +1,35 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { useInventory } from '@/composables/useInventory'
+import { gearTypeToIcon } from '@/utils/gearTypeToIcon'
+import type { GearType } from '@/types/equipment'
 
 const store = useCharacterStore()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, addConsumable, removeConsumable, getGearBgClass } = useInventory()
+
+// Canonical gear type values for the edit-mode dropdown
+const gearTypeOptions: GearType[] = [
+  'Weapon',
+  'Armor',
+  'Shield',
+  'Spellcasting Focus',
+  'Equipment Pack',
+  'Tool',
+  'Adventuring Gear',
+  'Ammunition',
+  'Trinket',
+  'Currency',
+  'Supply',
+  'Potion',
+  'Scroll',
+  'Ring',
+  'Rod',
+  'Staff',
+  'Wand',
+  'Wondrous Item',
+  'Other',
+]
 </script>
 
 <style scoped>
@@ -146,7 +171,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
     <section>
       <div class="flex justify-between items-center mb-4 border-b border-[#1A3C40] pb-2">
         <h3 class="font-headline-md text-headline-md text-on-surface">
-          Equipped Gear &amp; Artifacts
+          Equipped Gear & Artifacts
         </h3>
         <button
           v-if="store.isEditing"
@@ -180,9 +205,19 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
               </button>
             </div>
             <div class="flex gap-2 text-sm">
-              <input
+              <select
                 v-model="gear.type"
-                placeholder="Type"
+                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-on-surface"
+              >
+                <option v-for="opt in gearTypeOptions" :key="opt" :value="opt" class="text-[#15130b]">
+                  {{ opt }}
+                </option>
+                <option value="__custom__" class="text-[#15130b]">Custom…</option>
+              </select>
+              <input
+                v-if="gear.type === '__custom__' || !gearTypeOptions.includes(gear.type as GearType)"
+                v-model="gear.type"
+                placeholder="Custom Type"
                 class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-inherit"
               />
               <input
@@ -195,11 +230,11 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
             <div class="flex gap-2 text-sm">
               <select
                 v-model="gear.theme"
-                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-inherit"
+                class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-on-surface"
               >
-                <option value="default">Default</option>
-                <option value="parchment">Parchment</option>
-                <option value="deep-teal">Deep Teal</option>
+                <option value="default" class="text-[#15130b]">Default</option>
+                <option value="parchment" class="text-[#15130b]">Parchment</option>
+                <option value="deep-teal" class="text-[#15130b]">Deep Teal</option>
               </select>
             </div>
             <textarea
@@ -232,7 +267,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
                       : 'bg-surface-variant text-on-surface',
                 ]"
               >
-                <span class="material-symbols-outlined">inventory_2</span>
+                <span class="material-symbols-outlined">{{ gearTypeToIcon(gear.type, gear.catalogId) }}</span>
               </div>
               <div>
                 <h4 class="font-headline-md text-headline-md leading-tight">
@@ -290,7 +325,7 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
             <span
               v-if="!store.isEditing"
               class="material-symbols-outlined text-on-surface-variant hidden sm:block"
-              >category</span
+              >{{ gearTypeToIcon(consumable.type) }}</span
             >
             <div class="w-full">
               <template v-if="store.isEditing">
@@ -299,10 +334,20 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
                   placeholder="Name"
                   class="w-full bg-background border border-[#1A3C40] rounded p-1 mb-1"
                 />
-                <input
+                <select
                   v-model="consumable.type"
-                  placeholder="Type"
-                  class="w-full bg-background border border-[#1A3C40] rounded p-1 text-xs"
+                  class="w-full bg-background border border-[#1A3C40] rounded p-1 text-xs text-on-surface"
+                >
+                  <option v-for="opt in gearTypeOptions" :key="opt" :value="opt" class="text-[#15130b]">
+                    {{ opt }}
+                  </option>
+                  <option value="__custom__" class="text-[#15130b]">Custom…</option>
+                </select>
+                <input
+                  v-if="consumable.type === '__custom__' || !gearTypeOptions.includes(consumable.type as GearType)"
+                  v-model="consumable.type"
+                  placeholder="Custom Type"
+                  class="w-full bg-background border border-[#1A3C40] rounded p-1 text-xs mt-1"
                 />
               </template>
               <template v-else>
@@ -325,18 +370,18 @@ const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, add
           <div class="col-span-3 text-right flex items-center justify-end gap-2">
             <select
               v-model="consumable.usageDie"
-              class="bg-surface-variant border border-outline-variant rounded p-2"
+              class="bg-surface-variant border border-outline-variant rounded p-2 text-on-surface-variant"
               :class="{
                 'text-error': consumable.usageDie === 'depleted' || consumable.usageDie === 'd4',
               }"
             >
-              <option value="d20">Ud20</option>
-              <option value="d12">Ud12</option>
-              <option value="d10">Ud10</option>
-              <option value="d8">Ud8</option>
-              <option value="d6">Ud6</option>
-              <option value="d4">Ud4</option>
-              <option value="depleted">Depleted</option>
+              <option value="d20" class="text-[#15130b]">Ud20</option>
+              <option value="d12" class="text-[#15130b]">Ud12</option>
+              <option value="d10" class="text-[#15130b]">Ud10</option>
+              <option value="d8" class="text-[#15130b]">Ud8</option>
+              <option value="d6" class="text-[#15130b]">Ud6</option>
+              <option value="d4" class="text-[#15130b]">Ud4</option>
+              <option value="depleted" class="text-[#15130b]">Depleted</option>
             </select>
             <button
               v-if="store.isEditing"

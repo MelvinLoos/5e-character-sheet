@@ -9,6 +9,7 @@ import {
   getTrinketList,
   calculateTotalGold,
 } from '@/utils/equipmentResolver'
+import { gearTypeToIcon } from '@/utils/gearTypeToIcon'
 import type { ClassEquipmentBundle, BackgroundEquipment } from '@/types/equipment'
 
 const store = useCharacterStore()
@@ -259,6 +260,7 @@ const masteryDescriptions: Record<string, string> = {
             <li v-for="item in bundleA.items" :key="item.itemId" class="flex items-start gap-1">
               <span class="text-tertiary mt-0.5">•</span>
               <span>
+              <span class="material-symbols-outlined text-sm mr-1">{{ gearTypeToIcon('', item.itemId) }}</span>
                 {{ getItemDetail(item.itemId).name }}<template v-if="item.quantity > 1"> (×{{ item.quantity }})</template>
                 <span v-if="getItemDetail(item.itemId).mastery" class="text-tertiary font-bold ml-1">[{{ getItemDetail(item.itemId).mastery }}]</span>
               </span>
@@ -287,6 +289,7 @@ const masteryDescriptions: Record<string, string> = {
             <li v-for="item in bundleB.items" :key="item.itemId" class="flex items-start gap-1">
               <span class="text-tertiary mt-0.5">•</span>
               <span>
+              <span class="material-symbols-outlined text-sm mr-1">{{ gearTypeToIcon('', item.itemId) }}</span>
                 {{ getItemDetail(item.itemId).name }}<template v-if="item.quantity > 1"> (×{{ item.quantity }})</template>
                 <span v-if="getItemDetail(item.itemId).mastery" class="text-tertiary font-bold ml-1">[{{ getItemDetail(item.itemId).mastery }}]</span>
               </span>

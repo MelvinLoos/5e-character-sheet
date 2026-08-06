@@ -281,8 +281,13 @@ function generateInventoryEntries(
         type: catalogItem.category === 'weapon' ? 'Weapon'
           : catalogItem.category === 'armor' ? 'Armor'
           : catalogItem.category === 'shield' ? 'Shield'
-          : catalogItem.category === 'focus' ? 'Focus'
-          : 'Gear',
+          : catalogItem.category === 'focus' ? 'Spellcasting Focus'
+          : catalogItem.category === 'pack' ? 'Equipment Pack'
+          : catalogItem.category === 'tool' ? 'Tool'
+          : catalogItem.category === 'gear' ? 'Adventuring Gear'
+          : catalogItem.category === 'trinket' ? 'Trinket'
+          : catalogItem.category === 'currency' ? 'Currency'
+          : 'Adventuring Gear',
         description: catalogItem.description || getDefaultDescription(catalogItem),
         slotCost: calculateSlotCost(catalogItem, quantity),
         isConsumable: false,
