@@ -760,6 +760,10 @@ html.light {
   .space-y-8 > * + * {
     margin-top: 2rem;
   }
+
+  .pb-mobile-safe {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Better responsive grid spacing */
