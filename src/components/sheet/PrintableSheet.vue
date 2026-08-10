@@ -120,7 +120,7 @@ const attacks = computed(() => {
           </h1>
           <h2 class="font-headline-md text-headline-md text-black">
             <span style="font-family: Manrope, sans-serif; font-size: 18px">
-              {{ char.class || 'Class' }} - {{ char.species || 'Species' }}
+              {{ char.class || 'Class' }} - {{ store.displaySpeciesName || char.species || 'Species' }}
             </span>
           </h2>
         </div>
