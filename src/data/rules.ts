@@ -11,6 +11,7 @@ export type {
   SpeciesData,
   BackgroundData,
   SpellSlotsByLevel,
+  SubChoice,
 } from '@/types/rules'
 
 // Also import for internal use

@@ -13,6 +13,20 @@ export interface RulesFeature {
   featureType?: FeatureType | string
   actionType?: ActionType | string
   uses?: { total: number; per: string }
+  /** Minimum Renown Tier (1-3) required before this trait is gained. */
+  minTier?: number
+}
+
+/** A sub-choice within a species: lineages (Elf), ancestries (Goliath), legacies (Tiefling). */
+export interface SubChoice {
+  /** Unique identifier (e.g. "high-elf", "drow", "cloud-giant"). */
+  id: string
+  /** Display label shown to the player (e.g. "High Elf", "Drow"). */
+  label: string
+  /** Optional flavour description for the sub-choice. */
+  description?: string
+  /** Traits granted by selecting this sub-choice. */
+  traits: RulesFeature[]
 }
 
 /**
@@ -43,6 +57,8 @@ export interface SpeciesData {
   description?: string
   speed: string
   traits: RulesFeature[]
+  /** Optional sub-choices: lineages (Elf), ancestries (Goliath), legacies (Tiefling). */
+  subChoices?: SubChoice[]
 }
 
 import type { BackgroundEquipment } from './equipment'

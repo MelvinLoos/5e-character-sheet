@@ -36,6 +36,7 @@ export const getLibrary = (): Record<string, CharacterData[]> => {
       equippedGear: char.equippedGear ?? [],
       consumables: char.consumables ?? [],
       jobInParty: char.jobInParty ?? '',
+      subChoice: char.subChoice ?? null,
     }))
   })
 
@@ -104,6 +105,7 @@ export const createBlankCharacter = (): CharacterData => {
     renownTier: 1,
     renownMilestones: 0,
     species: defaultSpecies,
+    subChoice: null,
     background: defaultBackground,
     pointBuyBaseScores: baseScores,
     backgroundBonusSelections: defaultSelections,

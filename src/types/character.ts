@@ -45,6 +45,8 @@ export interface CharacterFeature {
   grantedSpellLevels?: number[]
   abilityModifiers?: Record<string, number>
   prerequisite?: string
+  /** Minimum Renown Tier (1-3) required before this trait is active. */
+  minTier?: number
 }
 
 /** Runtime character feature — loose types for data loaded from external sources.
@@ -195,6 +197,8 @@ export interface CharacterData {
   renownTier: number
   renownMilestones: number
   species: string | null
+  /** Selected sub-choice ID (e.g. "high-elf") for species with lineages/ancestries/legacies. */
+  subChoice?: string | null
   background: string | null
   pointBuyBaseScores: Record<string, number>
   backgroundBonusSelections: BackgroundBonusSelections
