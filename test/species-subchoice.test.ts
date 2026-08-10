@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { useCharacterStore } from '@/stores/character'
 import { applySpeciesTraits } from '@/utils/characterMutations'
 import { createBlankCharacter } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
@@ -144,5 +146,114 @@ describe('createBlankCharacter — subChoice default', () => {
   it('sets subChoice to null', () => {
     const char = createBlankCharacter()
     expect(char.subChoice).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Store: applySubChoice action
+// ---------------------------------------------------------------------------
+
+describe('character store — applySubChoice action', () => {
+  function createStore() {
+    setActivePinia(createPinia())
+    return useCharacterStore()
+  }
+
+  it('sets subChoice and merges subChoice traits for Tiefling (Infernal)', () => {
+    const store = createStore()
+    // Set up a Tiefling character
+    store.currentCharacterData.species = 'Tiefling'
+    store.currentCharacterData.features = []
+    store.applySubChoice('infernal')
+
+    expect(store.currentCharacterData.subChoice).toBe('infernal')
+    // Infernal subChoice grants Infernal Resistance
+    expect(
+      store.currentCharacterData.features.some(
+        (f) => f.title === 'Infernal Resistance',
+      ),
+    ).toBe(true)
+    // Base Tiefling traits should also be present
+    expect(
+      store.currentCharacterData.features.some(
+        (f) => f.title === 'Darkvision',
+      ),
+    ).toBe(true)
+  })
+
+  it('clears old subChoice traits when switching subChoices', () => {
+    const store = createStore()
+    store.currentCharacterData.species = 'Tiefling'
+    store.currentCharacterData.features = []
+    store.applySubChoice('infernal')
+
+    // Now switch to Abyssal
+    store.applySubChoice('abyssal')
+
+    expect(store.currentCharacterData.subChoice).toBe('abyssal')
+    // Infernal traits should be gone
+    expect(
+      store.currentCharacterData.features.some(
+        (f) => f.title === 'Infernal Resistance',
+      ),
+    ).toBe(false)
+    // Abyssal traits should be present
+    expect(
+      store.currentCharacterData.features.some(
+        (f) => f.title === 'Abyssal Resistance',
+      ),
+    ).toBe(true)
+  })
+
+  it('is a no-op when species has no subChoices', () => {
+    const store = createStore()
+    store.currentCharacterData.species = 'Human'
+    store.currentCharacterData.features = []
+    store.applySubChoice('nonexistent')
+
+    expect(store.currentCharacterData.subChoice).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Store: displaySpeciesName getter
+// ---------------------------------------------------------------------------
+
+describe('character store — displaySpeciesName getter', () => {
+  function createStore() {
+    setActivePinia(createPinia())
+    return useCharacterStore()
+  }
+
+  it('returns just the species name when subChoice is null', () => {
+    const store = createStore()
+    store.currentCharacterData.species = 'Goliath'
+    store.currentCharacterData.subChoice = null
+
+    expect(store.displaySpeciesName).toBe('Goliath')
+  })
+
+  it('returns combined name when subChoice is set (Goliath Cloud Giant)', () => {
+    const store = createStore()
+    store.currentCharacterData.species = 'Goliath'
+    store.currentCharacterData.subChoice = 'cloud'
+
+    expect(store.displaySpeciesName).toBe('Goliath (Cloud Giant)')
+  })
+
+  it('returns just the species name when species is null', () => {
+    const store = createStore()
+    store.currentCharacterData.species = null
+    store.currentCharacterData.subChoice = 'irrelevant'
+
+    expect(store.displaySpeciesName).toBeNull()
+  })
+
+  it('returns just the species name when subChoice does not match any option', () => {
+    const store = createStore()
+    store.currentCharacterData.species = 'Goliath'
+    store.currentCharacterData.subChoice = 'nonexistent-ancestry'
+
+    expect(store.displaySpeciesName).toBe('Goliath')
   })
 })
