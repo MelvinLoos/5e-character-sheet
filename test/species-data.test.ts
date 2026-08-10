@@ -149,9 +149,9 @@ describe('Trait counts per species', () => {
     Gnome: 2,
     Halfling: 4,
     Dragonborn: 5,
-    Goliath: 4,
+    Goliath: 2,
     Orc: 3,
-    Tiefling: 4,
+    Tiefling: 2,
     Aasimar: 5,
   }
 
