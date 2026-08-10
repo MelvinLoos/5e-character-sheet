@@ -388,6 +388,9 @@ export function applyClassFeatures(char: CharacterData): CharacterData {
 /**
  * Replace species-granted traits in the character's feature list and update
  * movement speed if the species defines one.
+ *
+ * Also includes traits from the selected subChoice (lineage/ancestry/legacy)
+ * if one is set on the character.
  */
 export function applySpeciesTraits(char: CharacterData): CharacterData {
   if (!char.species) return { ...char }
@@ -395,11 +398,17 @@ export function applySpeciesTraits(char: CharacterData): CharacterData {
   const speciesData = DND_RULES.SPECIES[char.species]
   if (!speciesData) return { ...char }
 
-  // Collect all species trait titles for removal
+  // Collect all species trait titles for removal (base + subChoice traits from ALL species)
   const allSpeciesTraitTitles = new Set<string>()
   for (const sp of Object.values(DND_RULES.SPECIES)) {
     for (const trait of sp.traits || []) {
       if (trait.title) allSpeciesTraitTitles.add(trait.title)
+    }
+    // Also collect subChoice trait titles so they get removed on species change
+    for (const sc of sp.subChoices || []) {
+      for (const trait of sc.traits || []) {
+        if (trait.title) allSpeciesTraitTitles.add(trait.title)
+      }
     }
   }
 
@@ -407,17 +416,50 @@ export function applySpeciesTraits(char: CharacterData): CharacterData {
     (f) => !allSpeciesTraitTitles.has(f.title),
   )
 
-  // Build new traits
+  // Build new traits from base species
   const newTraits: CharacterFeature[] = (speciesData.traits || []).map((trait) => {
-    const t = trait as { title: string; desc: string; key?: boolean; uses?: { total: number; per: string } }
+    const t = trait as {
+      title: string
+      desc: string
+      key?: boolean
+      uses?: { total: number; per: string }
+      minTier?: number
+    }
     return {
       title: t.title || '',
       desc: t.desc || '',
       key: !!t.key,
       casterType: null,
       uses: t.uses ? { total: t.uses.total, per: t.uses.per } : undefined,
+      minTier: t.minTier,
     }
   })
+
+  // Append subChoice traits if one is selected
+  if (char.subChoice && speciesData.subChoices) {
+    const selectedSubChoice = speciesData.subChoices.find(
+      (sc) => sc.id === char.subChoice,
+    )
+    if (selectedSubChoice) {
+      for (const trait of selectedSubChoice.traits || []) {
+        const t = trait as {
+          title: string
+          desc: string
+          key?: boolean
+          uses?: { total: number; per: string }
+          minTier?: number
+        }
+        newTraits.push({
+          title: t.title || '',
+          desc: t.desc || '',
+          key: !!t.key,
+          casterType: null,
+          uses: t.uses ? { total: t.uses.total, per: t.uses.per } : undefined,
+          minTier: t.minTier,
+        })
+      }
+    }
+  }
 
   const speed = speciesData.speed || char.combat.speed
 

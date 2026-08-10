@@ -343,10 +343,10 @@ describe('applySpeciesTraits', () => {
     expect(result.combat.speed).toBe('30ft')
   })
 
-  it('sets Dwarf speed to 25ft', () => {
+  it('sets Dwarf speed to 30ft', () => {
     const char = makeChar({ species: 'Dwarf', features: [] })
     const result = applySpeciesTraits(char)
-    expect(result.combat.speed).toBe('25ft')
+    expect(result.combat.speed).toBe('30ft')
   })
 
   it('replaces old species traits on switch', () => {
@@ -357,7 +357,7 @@ describe('applySpeciesTraits', () => {
     const result = applySpeciesTraits(char)
     // Halfling does NOT have Darkvision
     expect(result.features.some((f) => f.title === 'Darkvision')).toBe(false)
-    expect(result.features.some((f) => f.title === 'Lucky')).toBe(true)
+    expect(result.features.some((f) => f.title === 'Luck')).toBe(true)
   })
 
   it('does nothing for null species', () => {
