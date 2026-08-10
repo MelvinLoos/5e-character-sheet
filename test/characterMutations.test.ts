@@ -335,18 +335,20 @@ describe('applyClassFeatures', () => {
 // ---------------------------------------------------------------------------
 
 describe('applySpeciesTraits', () => {
-  it('adds Elf traits (Darkvision, Fey Ancestry, Trance) and speed 30ft', () => {
+  it('adds Elf traits (Darkvision, Fey Ancestry, Trance, Keen Senses) and speed 30ft', () => {
     const char = makeChar({ species: 'Elf', features: [] })
     const result = applySpeciesTraits(char)
     expect(result.features.some((f) => f.title === 'Darkvision')).toBe(true)
     expect(result.features.some((f) => f.title === 'Fey Ancestry')).toBe(true)
+    expect(result.features.some((f) => f.title === 'Trance')).toBe(true)
+    expect(result.features.some((f) => f.title === 'Keen Senses')).toBe(true)
     expect(result.combat.speed).toBe('30ft')
   })
 
-  it('sets Dwarf speed to 25ft', () => {
+  it('sets Dwarf speed to 30ft', () => {
     const char = makeChar({ species: 'Dwarf', features: [] })
     const result = applySpeciesTraits(char)
-    expect(result.combat.speed).toBe('25ft')
+    expect(result.combat.speed).toBe('30ft')
   })
 
   it('replaces old species traits on switch', () => {
@@ -357,7 +359,7 @@ describe('applySpeciesTraits', () => {
     const result = applySpeciesTraits(char)
     // Halfling does NOT have Darkvision
     expect(result.features.some((f) => f.title === 'Darkvision')).toBe(false)
-    expect(result.features.some((f) => f.title === 'Lucky')).toBe(true)
+    expect(result.features.some((f) => f.title === 'Luck')).toBe(true)
   })
 
   it('does nothing for null species', () => {
