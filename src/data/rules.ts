@@ -677,24 +677,29 @@ export const SPECIES: Record<string, SpeciesData> = {
       },
       {
         title: 'Fey Ancestry',
-        desc: 'You have advantage on saving throws against being Charmed, and magic can’t put you to sleep.',
+        desc: 'You have advantage on saving throws against being Charmed, and magic can\'t put you to sleep.',
         key: true,
       },
       {
         title: 'Trance',
-        desc: 'You don’t need to sleep. Instead, you meditate deeply, remaining semiconscious, for 4 hours a day.',
+        desc: 'You don\'t need to sleep. Instead, you meditate deeply, remaining semiconscious, for 4 hours a day.',
         key: false,
+      },
+      {
+        title: 'Keen Senses',
+        desc: 'You have proficiency in the Perception skill.',
+        key: true,
       },
     ],
   },
   Dwarf: {
     description:
       'Bold and hardy, dwarves are known as skilled warriors, miners, and workers of stone and metal.',
-    speed: '25ft',
+    speed: '30ft',
     traits: [
       {
         title: 'Darkvision',
-        desc: 'You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.',
+        desc: 'You can see in dim light within 120 feet of you as if it were bright light, and in darkness as if it were dim light.',
         key: true,
       },
       {
@@ -707,12 +712,17 @@ export const SPECIES: Record<string, SpeciesData> = {
         desc: 'Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in the History skill and add double your proficiency bonus to the check.',
         key: false,
       },
+      {
+        title: 'Dwarven Toughness',
+        desc: 'Your hit point maximum increases by 1, and it increases by 1 again whenever you gain a level.',
+        key: true,
+      },
     ],
   },
   Gnome: {
     description:
       'Small humanoids known for their eccentric sense of humor, inquisitiveness, and engineering prowess.',
-    speed: '25ft',
+    speed: '30ft',
     traits: [
       {
         title: 'Darkvision',
@@ -720,7 +730,7 @@ export const SPECIES: Record<string, SpeciesData> = {
         key: true,
       },
       {
-        title: 'Gnome Cunning',
+        title: 'Gnomish Cunning',
         desc: 'You have advantage on all Intelligence, Wisdom, and Charisma saving throws against magic.',
         key: true,
       },
@@ -729,21 +739,26 @@ export const SPECIES: Record<string, SpeciesData> = {
   Halfling: {
     description:
       'A practical and resilient people, halflings prefer the comforts of home but can be surprisingly capable adventurers.',
-    speed: '25ft',
+    speed: '30ft',
     traits: [
       {
-        title: 'Lucky',
-        desc: 'When you roll a 1 on a d20 for an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll.',
+        title: 'Luck',
+        desc: 'When you roll a 1 on the d20 of a D20 Test, you can reroll the die, and you must use the new roll.',
         key: true,
       },
       {
         title: 'Brave',
-        desc: 'You have advantage on saving throws against being Frightened.',
+        desc: 'You have Advantage on saving throws to avoid or end the Frightened condition.',
         key: true,
       },
       {
         title: 'Halfling Nimbleness',
-        desc: 'You can move through the space of any creature that is of a size larger than yours.',
+        desc: 'You can move through the space of any creature that is a size larger than you, but you can\'t stop in the same space.',
+        key: false,
+      },
+      {
+        title: 'Naturally Stealthy',
+        desc: 'You have proficiency in the Stealth skill.',
         key: false,
       },
     ],
@@ -753,6 +768,11 @@ export const SPECIES: Record<string, SpeciesData> = {
       'A proud race that claims descent from dragons, with a knack for breathing fire, acid, or other damaging elements.',
     speed: '30ft',
     traits: [
+      {
+        title: 'Darkvision',
+        desc: 'You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.',
+        key: true,
+      },
       {
         title: 'Draconic Ancestry',
         desc: 'You have a draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath weapon and damage resistance are determined by the dragon type.',
@@ -768,12 +788,17 @@ export const SPECIES: Record<string, SpeciesData> = {
         desc: 'You have resistance to the damage type associated with your draconic ancestry.',
         key: false,
       },
+      {
+        title: 'Draconic Flight',
+        desc: 'Starting at 5th level (Tier 2), as a Bonus Action you can sprout spectral wings for 10 minutes. During that time you gain a Fly Speed equal to your Speed. You can use this trait a number of times equal to your Proficiency Bonus, regaining expended uses after a Long Rest.',
+        key: true,
+      },
     ],
   },
   Goliath: {
     description:
       'Massive and powerful humanoids who live in the highest mountains, known for their strength and athleticism.',
-    speed: '30ft',
+    speed: '35ft',
     traits: [
       {
         title: 'Little Giant',
@@ -785,6 +810,16 @@ export const SPECIES: Record<string, SpeciesData> = {
         desc: 'When you take damage, you can use your reaction to roll a d12. Add your Constitution modifier to the number rolled, and reduce the damage by that total.',
         key: true,
       },
+      {
+        title: 'Powerful Build',
+        desc: 'You have Advantage on any ability check you make to end the Grappled condition. You also count as one size larger when determining your carrying capacity.',
+        key: false,
+      },
+      {
+        title: 'Large Form',
+        desc: 'Starting at 5th level (Tier 2), as a Bonus Action you can change your size to Large for 10 minutes. While Large, you have Advantage on Strength checks and your Speed increases by 10 feet. You can use this trait a number of times equal to your Proficiency Bonus, regaining expended uses after a Long Rest.',
+        key: true,
+      },
     ],
   },
   Orc: {
@@ -794,7 +829,7 @@ export const SPECIES: Record<string, SpeciesData> = {
     traits: [
       {
         title: 'Darkvision',
-        desc: 'You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.',
+        desc: 'You can see in dim light within 120 feet of you as if it were bright light, and in darkness as if it were dim light.',
         key: true,
       },
       {
@@ -825,6 +860,11 @@ export const SPECIES: Record<string, SpeciesData> = {
         key: true,
       },
       {
+        title: 'Otherworldly Presence',
+        desc: 'You know the Thaumaturgy cantrip. When you cast it with this trait, the spell\'s range is doubled and you can target objects that aren\'t being worn or carried.',
+        key: false,
+      },
+      {
         title: 'Infernal Legacy',
         desc: 'You know the Thaumaturgy cantrip.',
         key: false,
@@ -848,8 +888,18 @@ export const SPECIES: Record<string, SpeciesData> = {
       },
       {
         title: 'Healing Hands',
-        desc: 'As an action, you can touch a creature and cause it to regain a number of hit points equal to your level.',
+        desc: 'As a Magic action, you can touch a creature and roll a number of d4s equal to your Proficiency Bonus. The creature regains a number of hit points equal to the total. You can use this trait a number of times equal to your Proficiency Bonus, regaining expended uses after a Long Rest.',
+        key: true,
+      },
+      {
+        title: 'Light Bearer',
+        desc: 'You know the Light cantrip. Charisma is your spellcasting ability for it.',
         key: false,
+      },
+      {
+        title: 'Celestial Revelation',
+        desc: 'When you reach character level 3, you can transform as a Bonus Action using one of the options below (Heavenly Wings, Inner Radiance, or Necrotic Shroud). The transformation lasts 1 minute, and you can use it once per Long Rest.',
+        key: true,
       },
     ],
   },
