@@ -79,8 +79,8 @@ function handleClose() {
           :class="[
             'p-4 rounded-lg border-2 cursor-pointer transition-all duration-200',
             currentSubChoice === option.id
-              ? 'border-sheet-red bg-red-50 selected'
-              : 'border-sheet-border hover:border-sheet-red/50 hover:bg-surface-container-high',
+              ? 'border-sheet-red bg-sheet-red/10 selected'
+              : 'border-sheet-border hover:border-sheet-red/40 hover:bg-surface-container-high',
           ]"
           @click="handleSelect(option.id)"
         >
@@ -88,7 +88,7 @@ function handleClose() {
             <h3 class="text-lg font-bold text-on-surface">{{ option.label }}</h3>
             <span
               v-if="currentSubChoice === option.id"
-              class="text-xs font-bold text-sheet-red bg-red-100 px-2 py-0.5 rounded-full"
+              class="text-xs font-bold text-sheet-bg bg-sheet-red px-2 py-0.5 rounded-full"
             >
               Selected
             </span>
