@@ -669,12 +669,14 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   /**
-   * Apply a species change: set the species value, then pipe the character
-   * through species traits and derived stat recalculation.
+   * Apply a species change: set the species value, clear any previous
+   * subChoice (since sub-choices are species-specific), then pipe the
+   * character through species traits and derived stat recalculation.
    */
   function applySpeciesChange(newSpecies: string): void {
     if (!currentCharacterData.value) return
     currentCharacterData.value.species = newSpecies
+    currentCharacterData.value.subChoice = null
     currentCharacterData.value = applySpeciesTraits(currentCharacterData.value)
     currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
   }

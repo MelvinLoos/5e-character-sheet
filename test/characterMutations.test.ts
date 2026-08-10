@@ -335,11 +335,13 @@ describe('applyClassFeatures', () => {
 // ---------------------------------------------------------------------------
 
 describe('applySpeciesTraits', () => {
-  it('adds Elf traits (Darkvision, Fey Ancestry, Trance) and speed 30ft', () => {
+  it('adds Elf traits (Darkvision, Fey Ancestry, Trance, Keen Senses) and speed 30ft', () => {
     const char = makeChar({ species: 'Elf', features: [] })
     const result = applySpeciesTraits(char)
     expect(result.features.some((f) => f.title === 'Darkvision')).toBe(true)
     expect(result.features.some((f) => f.title === 'Fey Ancestry')).toBe(true)
+    expect(result.features.some((f) => f.title === 'Trance')).toBe(true)
+    expect(result.features.some((f) => f.title === 'Keen Senses')).toBe(true)
     expect(result.combat.speed).toBe('30ft')
   })
 

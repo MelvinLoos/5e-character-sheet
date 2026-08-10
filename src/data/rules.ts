@@ -1042,6 +1042,16 @@ export const SPECIES: Record<string, SpeciesData> = {
           },
         ],
       },
+      {
+        title: 'Powerful Build',
+        desc: 'You have Advantage on any ability check you make to end the Grappled condition. You also count as one size larger when determining your carrying capacity.',
+        key: false,
+      },
+      {
+        title: 'Large Form',
+        desc: 'Starting at 5th level (Tier 2), as a Bonus Action you can change your size to Large for 10 minutes. While Large, you have Advantage on Strength checks and your Speed increases by 10 feet. You can use this trait a number of times equal to your Proficiency Bonus, regaining expended uses after a Long Rest.',
+        key: true,
+      },
     ],
   },
   Orc: {
