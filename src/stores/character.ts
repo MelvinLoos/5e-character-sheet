@@ -682,6 +682,42 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   /**
+   * Apply a subChoice selection: set the subChoice ID, merge the selected
+   * subChoice's traits into the feature list, and recalculate derived stats.
+   * This is a no-op if the current species has no subChoices defined.
+   */
+  function applySubChoice(subChoiceId: string): void {
+    if (!currentCharacterData.value) return
+    const species = currentCharacterData.value.species
+    if (!species) return
+
+    const speciesData = DND_RULES.SPECIES[species]
+    if (!speciesData?.subChoices) return
+
+    currentCharacterData.value.subChoice = subChoiceId
+    currentCharacterData.value = applySpeciesTraits(currentCharacterData.value)
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+  }
+
+  /**
+   * Returns the display name for the current species, including the
+   * sub-choice label when one is selected. E.g. "Goliath (Cloud Giant)".
+   */
+  const displaySpeciesName = computed(() => {
+    const species = currentCharacterData.value?.species
+    if (!species) return null
+
+    const subChoice = currentCharacterData.value?.subChoice
+    if (!subChoice) return species
+
+    const speciesData = DND_RULES.SPECIES[species]
+    const match = speciesData?.subChoices?.find((sc) => sc.id === subChoice)
+    if (!match) return species
+
+    return `${species} (${match.label})`
+  })
+
+  /**
    * Apply background bonus selection changes by rebuilding ability scores
    * and recalculating derived stats.
    */
@@ -859,8 +895,11 @@ export const useCharacterStore = defineStore('character', () => {
     applyBackgroundChange,
     applyClassChange,
     applySpeciesChange,
+    applySubChoice,
     applyBonusSelectionChange,
     recalculateAll,
+    // Getters
+    displaySpeciesName,
     // Modals
     closeErrorModal: () => (errorModal.value.show = false),
     closeShareModal: () => (shareModal.value.show = false),
