@@ -143,12 +143,9 @@ describe('applySpeciesTraits — minTier propagation', () => {
     const result = applySpeciesTraits(char)
 
     expect(result.features.some((f) => f.title === 'Darkvision')).toBe(true)
-    expect(result.features.some((f) => f.title === 'Hellish Resistance')).toBe(
-      true,
-    )
-    expect(result.features.some((f) => f.title === 'Infernal Legacy')).toBe(
-      true,
-    )
+    expect(
+      result.features.some((f) => f.title === 'Otherworldly Presence'),
+    ).toBe(true)
   })
 })
 
