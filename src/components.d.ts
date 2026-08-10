@@ -45,6 +45,7 @@ declare module 'vue' {
     SkillsList: typeof import('./components/sheet/SkillsList.vue')['default']
     SpellcastingBlock: typeof import('./components/sheet/SpellcastingBlock.vue')['default']
     StartingEquipmentWizard: typeof import('./components/creation/StartingEquipmentWizard.vue')['default']
+    SubChoiceModal: typeof import('./components/modals/SubChoiceModal.vue')['default']
     ThemeToggle: typeof import('./components/ThemeToggle.vue')['default']
     UpdateNotification: typeof import('./components/UpdateNotification.vue')['default']
   }
@@ -85,6 +86,7 @@ declare global {
   const SkillsList: typeof import('./components/sheet/SkillsList.vue')['default']
   const SpellcastingBlock: typeof import('./components/sheet/SpellcastingBlock.vue')['default']
   const StartingEquipmentWizard: typeof import('./components/creation/StartingEquipmentWizard.vue')['default']
+  const SubChoiceModal: typeof import('./components/modals/SubChoiceModal.vue')['default']
   const ThemeToggle: typeof import('./components/ThemeToggle.vue')['default']
   const UpdateNotification: typeof import('./components/UpdateNotification.vue')['default']
 }
