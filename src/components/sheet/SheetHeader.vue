@@ -1,13 +1,55 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+import feather from 'feather-icons'
 import { useCharacterStore } from '@/stores/character'
 import * as DND_RULES from '@/data/rules'
 import { useCharacterInfo } from '@/composables/useCharacterInfo'
 import InfoButton from '@/components/ui/InfoButton.vue'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
+import SubChoiceModal from '@/components/modals/SubChoiceModal.vue'
 import decorativeBackdrop from '@/assets/decorative-backdrop.png'
 
 const store = useCharacterStore()
 const { speciesInfo, classInfo, backgroundInfo } = useCharacterInfo()
+
+// SubChoice modal state
+const isSubChoiceModalOpen = ref(false)
+
+/** Whether the current species has subChoices the user can pick from. */
+const currentSpeciesHasSubChoices = computed(() => {
+  const species = store.currentCharacterData.species
+  if (!species) return false
+  const speciesData = DND_RULES.SPECIES[species]
+  return (speciesData?.subChoices?.length ?? 0) > 0
+})
+
+function onSpeciesChange(event: Event) {
+  const newSpecies = (event.target as HTMLSelectElement).value
+  store.applySpeciesChange(newSpecies)
+
+  // If the new species has subChoices, open the modal
+  const speciesData = DND_RULES.SPECIES[newSpecies]
+  if (speciesData?.subChoices?.length) {
+    isSubChoiceModalOpen.value = true
+  }
+}
+
+function onSubChoiceSelect(subChoiceId: string) {
+  store.applySubChoice(subChoiceId)
+  isSubChoiceModalOpen.value = false
+}
+
+function onSubChoiceModalClose() {
+  isSubChoiceModalOpen.value = false
+  // Gracefully handle no selection — subChoice remains null,
+  // displaySpeciesName shows just the species name
+}
+
+function openSubChoiceModal() {
+  if (currentSpeciesHasSubChoices.value) {
+    isSubChoiceModalOpen.value = true
+  }
+}
 
 function decrementTier() {
   if (store.currentCharacterData) {
@@ -108,7 +150,7 @@ function incrementTier() {
           </div>
 
           <!-- Species -->
-          <div class="flex-1 min-w-[140px]">
+          <div class="flex-[2] min-w-[180px]">
             <label
               class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1 select-none"
             >
@@ -119,21 +161,35 @@ function incrementTier() {
                 :content="speciesInfo.content"
               />
             </label>
-            <select
-              v-if="store.isEditing"
-              :value="store.currentCharacterData.species"
-              @change="store.applySpeciesChange(($event.target as HTMLSelectElement).value)"
-              class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
-            >
-              <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
-                {{ key }}
-              </option>
-            </select>
-            <div
-              v-else
-              class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md select-none"
-            >
-              {{ store.currentCharacterData.species }}
+            <!-- Edit mode: dropdown + subChoice trigger -->
+            <div v-if="store.isEditing" class="flex flex-col gap-1">
+              <select
+                :value="store.currentCharacterData.species"
+                @change="onSpeciesChange"
+                class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
+              >
+                <option v-for="(speciesData, key) in DND_RULES.SPECIES" :key="key" :value="key">
+                  {{ key }}
+                </option>
+              </select>
+              <!-- Edit affordance for subChoice -->
+              <button
+                v-if="currentSpeciesHasSubChoices"
+                @click="openSubChoiceModal"
+                class="text-xs text-tertiary hover:text-sheet-red flex items-center gap-1 self-start px-1"
+                title="Change lineage / ancestry"
+              >
+                <span v-html="feather.icons?.['edit-2']?.toSvg({ width: 12, height: 12 })"></span>
+                {{ store.displaySpeciesName || 'Choose lineage...' }}
+              </button>
+            </div>
+            <!-- View mode: display combined name (static) -->
+            <div v-else>
+              <div
+                class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md select-none"
+              >
+                {{ store.displaySpeciesName }}
+              </div>
             </div>
           </div>
 
@@ -199,5 +255,14 @@ function incrementTier() {
         </div>
       </div>
     </section>
+
+    <!-- SubChoice Modal -->
+    <SubChoiceModal
+      :is-open="isSubChoiceModalOpen"
+      :species-key="store.currentCharacterData.species ?? ''"
+      :current-sub-choice="store.currentCharacterData.subChoice ?? null"
+      @select="onSubChoiceSelect"
+      @close="onSubChoiceModalClose"
+    />
   </ElevatedCard>
 </template>
