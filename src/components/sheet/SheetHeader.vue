@@ -183,21 +183,13 @@ function incrementTier() {
                 {{ store.displaySpeciesName || 'Choose lineage...' }}
               </button>
             </div>
-            <!-- View mode: display combined name + edit button -->
-            <div v-else class="flex items-center gap-2">
+            <!-- View mode: display combined name (static) -->
+            <div v-else>
               <div
-                class="flex-1 bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md select-none"
+                class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md select-none"
               >
                 {{ store.displaySpeciesName }}
               </div>
-              <button
-                v-if="currentSpeciesHasSubChoices && !store.isEditing"
-                @click="openSubChoiceModal"
-                class="info-button flex-shrink-0"
-                title="Change lineage / ancestry"
-              >
-                <span v-html="feather.icons?.['edit-2']?.toSvg({ width: 14, height: 14 })"></span>
-              </button>
             </div>
           </div>
 
