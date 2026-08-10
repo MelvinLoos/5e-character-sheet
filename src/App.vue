@@ -32,7 +32,7 @@ onMounted(async () => {
     <MobileHeader v-if="store.currentCharacterData" />
 
     <main
-      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-mobile-safe md:pb-0 p-container-padding flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
+      class="flex-grow ml-0 md:ml-64 pt-20 md:pt-0 pb-mobile-safe md:pb-0 flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
     >
       <div
         v-if="!store.currentCharacterData"
