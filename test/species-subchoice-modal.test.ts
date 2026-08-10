@@ -17,6 +17,41 @@ function mockSubChoices(): SubChoice[] {
   return speciesData?.subChoices ?? []
 }
 
+/**
+ * Query the document body for teleported modal elements.
+ * <Teleport to="body"> moves content outside the mount wrapper,
+ * so we must search document.body directly.
+ */
+function backdrop() {
+  return document.body.querySelector('.modal-backdrop') as HTMLElement | null
+}
+
+function content() {
+  return document.body.querySelector('.modal-content') as HTMLElement | null
+}
+
+function options() {
+  return document.body.querySelectorAll(
+    '[data-test="subchoice-option"]',
+  ) as NodeListOf<HTMLElement>
+}
+
+function optionById(id: string) {
+  return document.body.querySelector(
+    `[data-test="subchoice-option"][data-id="${id}"]`,
+  ) as HTMLElement | null
+}
+
+function closeBtn() {
+  return document.body.querySelector(
+    '[data-test="modal-close-btn"]',
+  ) as HTMLElement | null
+}
+
+function selectedCards() {
+  return document.body.querySelectorAll('.selected') as NodeListOf<HTMLElement>
+}
+
 function createWrapper(
   props: {
     isOpen?: boolean
@@ -44,41 +79,45 @@ function createWrapper(
 describe('SubChoiceModal', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    // Clean up any leftover teleported content between tests
+    document.body.innerHTML = ''
   })
 
   describe('rendering', () => {
     it('renders nothing when isOpen is false', () => {
-      const wrapper = createWrapper({ isOpen: false })
-      expect(wrapper.find('.modal-backdrop').exists()).toBe(false)
+      createWrapper({ isOpen: false })
+      expect(backdrop()).toBeNull()
     })
 
     it('renders the modal backdrop and content when isOpen is true', () => {
-      const wrapper = createWrapper()
-      expect(wrapper.find('.modal-backdrop').exists()).toBe(true)
-      expect(wrapper.find('.modal-content').exists()).toBe(true)
+      createWrapper()
+      expect(backdrop()).not.toBeNull()
+      expect(content()).not.toBeNull()
     })
 
     it('renders all sub-choice options for the species', () => {
-      const wrapper = createWrapper()
-      const options = mockSubChoices()
-      const optionCards = wrapper.findAll('[data-test="subchoice-option"]')
-      expect(optionCards).toHaveLength(options.length)
+      createWrapper()
+      const expectedCount = mockSubChoices().length
+      expect(options()).toHaveLength(expectedCount)
     })
 
     it('displays each option label', () => {
-      const wrapper = createWrapper()
-      const options = mockSubChoices()
-      for (const option of options) {
-        expect(wrapper.text()).toContain(option.label)
+      createWrapper()
+      const text = document.body.textContent || ''
+      for (const opt of mockSubChoices()) {
+        expect(text).toContain(opt.label)
       }
     })
 
     it('displays each option description when present', () => {
-      const wrapper = createWrapper()
-      const options = mockSubChoices()
-      const withDesc = options.filter((o) => o.description)
-      for (const option of withDesc) {
-        expect(wrapper.text()).toContain(option.description!)
+      createWrapper()
+      const text = document.body.textContent || ''
+      const descriptions = mockSubChoices()
+        .filter((opt) => opt.description)
+        .map((opt) => opt.description!)
+      expect(descriptions.length).toBeGreaterThan(0)
+      for (const desc of descriptions) {
+        expect(text).toContain(desc)
       }
     })
   })
@@ -86,71 +125,70 @@ describe('SubChoiceModal', () => {
   describe('selection', () => {
     it('emits "select" with the subChoice id when an option is clicked', async () => {
       const wrapper = createWrapper()
-      const options = mockSubChoices()
-      const firstOption = wrapper.findAll('[data-test="subchoice-option"]')[0]
-      await firstOption.trigger('click')
+      const expectedOptions = mockSubChoices()
+      const firstOption = options()[0]
+      firstOption.click()
 
       expect(wrapper.emitted('select')).toBeTruthy()
-      expect(wrapper.emitted('select')![0]).toEqual([options[0].id])
+      expect(wrapper.emitted('select')![0]).toEqual([expectedOptions[0].id])
     })
 
     it('visually highlights the currently selected subChoice', () => {
-      const options = mockSubChoices()
-      const selectedId = options[1]?.id ?? options[0].id
-      const wrapper = createWrapper({ currentSubChoice: selectedId })
-      const selectedCard = wrapper.find(`[data-test="subchoice-option"][data-id="${selectedId}"]`)
-      expect(selectedCard.exists()).toBe(true)
-      expect(selectedCard.classes()).toContain('selected')
+      const expectedOptions = mockSubChoices()
+      const selectedId = expectedOptions[1]?.id ?? expectedOptions[0].id
+      createWrapper({ currentSubChoice: selectedId })
+      const card = optionById(selectedId)
+      expect(card).not.toBeNull()
+      expect(card!.classList.contains('selected')).toBe(true)
     })
   })
 
   describe('close behavior', () => {
     it('emits "close" when the close (X) button is clicked', async () => {
       const wrapper = createWrapper()
-      const closeBtn = wrapper.find('[data-test="modal-close-btn"]')
-      expect(closeBtn.exists()).toBe(true)
-      await closeBtn.trigger('click')
+      const btn = closeBtn()
+      expect(btn).not.toBeNull()
+      btn!.click()
       expect(wrapper.emitted('close')).toBeTruthy()
     })
 
     it('emits "close" when the backdrop is clicked', async () => {
       const wrapper = createWrapper()
-      const backdrop = wrapper.find('.modal-backdrop')
-      await backdrop.trigger('click')
+      const bg = backdrop()
+      bg!.click()
       expect(wrapper.emitted('close')).toBeTruthy()
     })
 
     it('does NOT emit "close" when clicking inside the modal content', async () => {
       const wrapper = createWrapper()
-      const content = wrapper.find('.modal-content')
-      await content.trigger('click')
+      const ct = content()
+      ct!.click()
       expect(wrapper.emitted('close')).toBeFalsy()
     })
   })
 
   describe('edge cases', () => {
     it('renders nothing when speciesKey is empty', () => {
-      const wrapper = createWrapper({ speciesKey: '' })
-      expect(wrapper.find('.modal-backdrop').exists()).toBe(false)
+      createWrapper({ speciesKey: '' })
+      expect(backdrop()).toBeNull()
     })
 
     it('renders nothing when species has no subChoices', () => {
       // Human has no subChoices
-      const wrapper = createWrapper({ speciesKey: 'Human' })
-      expect(wrapper.find('.modal-backdrop').exists()).toBe(false)
+      createWrapper({ speciesKey: 'Human' })
+      expect(backdrop()).toBeNull()
     })
 
     it('renders nothing when speciesKey is invalid', () => {
-      const wrapper = createWrapper({ speciesKey: 'NonExistentSpecies' })
-      expect(wrapper.find('.modal-backdrop').exists()).toBe(false)
+      createWrapper({ speciesKey: 'NonExistentSpecies' })
+      expect(backdrop()).toBeNull()
     })
 
     it('does not crash when currentSubChoice does not match any option', () => {
-      const wrapper = createWrapper({ currentSubChoice: 'nonexistent-id' })
-      expect(wrapper.find('.modal-backdrop').exists()).toBe(true)
+      createWrapper({ currentSubChoice: 'nonexistent-id' })
+      expect(backdrop()).not.toBeNull()
       // No option should have the 'selected' class
-      const selectedCards = wrapper.findAll('.selected')
-      expect(selectedCards).toHaveLength(0)
+      expect(selectedCards().length).toBe(0)
     })
   })
 })

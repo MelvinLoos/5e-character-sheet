@@ -47,12 +47,13 @@ function handleClose() {
 </script>
 
 <template>
-  <div
-    v-if="isOpen && subChoices.length > 0"
-    class="modal-backdrop"
-    @click="handleBackdropClick"
-  >
-    <div class="modal-content max-w-2xl w-full mx-4">
+  <Teleport to="body">
+    <div
+      v-if="isOpen && subChoices.length > 0"
+      class="modal-backdrop"
+      @click="handleBackdropClick"
+    >
+      <div class="modal-content max-w-2xl w-full mx-4">
       <!-- Modal Header -->
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-fell text-sheet-red">
@@ -113,6 +114,7 @@ function handleClose() {
           </div>
         </div>
       </div>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
