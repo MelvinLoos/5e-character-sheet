@@ -150,7 +150,7 @@ function incrementTier() {
           </div>
 
           <!-- Species -->
-          <div class="flex-1 min-w-[140px]">
+          <div class="flex-[2] min-w-[180px]">
             <label
               class="flex justify-between items-center font-label-md text-label-md text-on-surface-variant mb-1 select-none"
             >
