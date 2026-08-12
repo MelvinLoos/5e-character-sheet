@@ -98,8 +98,8 @@ Copy `.env.example` to `.env` and provide values for the following variables. A 
 | `VITE_SUPABASE_URL`      | Client (Vite)     | Supabase project URL used for online character sharing. Exposed to the browser via `import.meta.env`.             |
 | `VITE_SUPABASE_ANON_KEY` | Client (Vite)     | Supabase anonymous (public) client key. Public, but kept in config rather than hard-coded.                        |
 | `GEMINI_API_KEY`         | Server (Netlify)  | Google Gemini API key used by the Netlify serverless function for AI generation. A secret, never sent to the browser. |
-| `DISCORD_BOT_TOKEN`      | Server (Netlify)  | Discord Bot token used to post in-app feedback to a community channel. A secret, never sent to the browser.        |
-| `DISCORD_FEEDBACK_CHANNEL_ID` | Server (Netlify) | ID of the Discord channel that receives in-app feedback.                                                           |
+| `DISCORD_BOT_TOKEN`      | Server (Netlify)  | Discord Bot token used to post in-app feedback threads to a community Forum channel. A secret, never sent to the browser. |
+| `DISCORD_FEEDBACK_CHANNEL_ID` | Server (Netlify) | ID of the Discord **Forum** channel that receives in-app feedback.                                                 |
 
 > **Note:** When the Supabase variables are not set, the app still runs — online sharing is gracefully disabled and a warning is logged to the console.
 
@@ -107,9 +107,12 @@ Copy `.env.example` to `.env` and provide values for the following variables. A 
 
 ### Discord Bot Integration (In-App Feedback)
 
-The in-app "Give Feedback" widget posts feedback to a community Discord channel via the
-[Discord Bot REST API](https://discord.com/developers/docs/resources/message#create-message)
-(route `POST /channels/{channel.id}/messages`). To enable it:
+The in-app "Give Feedback" widget posts each feedback as a new post thread in a community
+Discord **Forum** channel via the
+[Discord Bot REST API](https://discord.com/developers/docs/resources/channel#start-thread-in-forum-or-media-channel)
+(route `POST /channels/{channel.id}/threads`). Each thread is titled
+`[Bug|Feature|General] Feedback [from <username>]` and contains an embed with the feedback
+details (type, reporter, message, and environment context). To enable it:
 
 1. **Create a Bot** on the existing Discord Application in the
    [Discord Developer Portal](https://discord.com/developers/applications): open your application,
@@ -117,11 +120,13 @@ The in-app "Give Feedback" widget posts feedback to a community Discord channel 
 2. **Invite the Bot** to the community server with **Send Messages** permissions. Use an invite URL
    with the `bot` scope and `permissions=2048`:
    `https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=2048&scope=bot`
-3. **Get the channel ID** of the target feedback channel (Discord → Settings → Advanced →
-   Developer Mode, then right-click the channel → **Copy Channel ID**).
-4. **Configure Netlify** (Site settings → Environment variables) with:
+3. **Create the Forum channel**: in your community server, create a channel with the type
+   **Forum** (e.g. `#feedback-forum`) where feedback threads will be posted.
+4. **Get the channel ID** of that **Forum** channel (Discord → Settings → Advanced →
+   Developer Mode, then right-click the Forum channel → **Copy Channel ID**).
+5. **Configure Netlify** (Site settings → Environment variables) with:
    - `DISCORD_BOT_TOKEN` — the bot token from step 1.
-   - `DISCORD_FEEDBACK_CHANNEL_ID` — the channel ID from step 3.
+   - `DISCORD_FEEDBACK_CHANNEL_ID` — the Forum channel ID from step 4.
 
 > **Graceful degradation:** When either variable is unset, the app's availability probe
 > (a `GET` request to the same Netlify function) detects the misconfiguration and the
