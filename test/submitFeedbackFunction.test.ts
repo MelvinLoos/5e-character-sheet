@@ -9,6 +9,7 @@ const submitFeedbackUrl = new URL('../netlify/functions/submit-feedback.mjs', im
 describe('submit-feedback Netlify function (Discord Forum channels)', () => {
   let handler: (req: Request) => Promise<Response>
   let fetchMock: ReturnType<typeof vi.fn>
+  let errorSpy: ReturnType<typeof vi.spyOn>
 
   const CHANNEL_ID = '987654321098765432'
   const BOT_TOKEN = 'secret-bot-token'
@@ -32,11 +33,14 @@ describe('submit-feedback Netlify function (Discord Forum channels)', () => {
       default: (req: Request) => Promise<Response>
     }
     handler = mod.default
+
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
   function buildPostRequest(payload: Record<string, unknown>): Request {
@@ -165,6 +169,69 @@ describe('submit-feedback Netlify function (Discord Forum channels)', () => {
 
       expect(response.status).toBe(503)
       expect(body.code).toBe('SERVICE_UNCONFIGURED')
+    })
+  })
+
+  describe('error logging (Issue #160)', () => {
+    function serializedErrorCalls(): string {
+      return errorSpy.mock.calls.map((call) => call.map(String).join(' ')).join(' ')
+    }
+
+    it('logs the status code and sanitized body when the Discord API responds with an error', async () => {
+      fetchMock = vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ message: 'Invalid Form Body' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      const response = await handler(buildPostRequest(samplePayload()))
+      const body = (await response.json()) as { error: string }
+
+      expect(response.status).toBe(502)
+      expect(body.error).toBe('Failed to deliver feedback to Discord.')
+
+      const args = errorSpy.mock.calls.flat()
+      expect(args).toContain(400)
+      expect(args.some((arg) => String(arg).includes('Invalid Form Body'))).toBe(true)
+    })
+
+    it('logs the exception message when the Discord fetch throws', async () => {
+      fetchMock = vi.fn(() => Promise.reject(new Error('network down')))
+      vi.stubGlobal('fetch', fetchMock)
+
+      const response = await handler(buildPostRequest(samplePayload()))
+      const body = (await response.json()) as { error: string }
+
+      expect(response.status).toBe(500)
+      expect(body.error).toBe('An unexpected error occurred.')
+
+      const serialized = serializedErrorCalls()
+      expect(serialized).toContain('network down')
+      // The raw Error object must not be passed to console.error — only its
+      // sanitized message.
+      expect(errorSpy.mock.calls.flat().some((arg) => arg instanceof Error)).toBe(false)
+    })
+
+    it('redacts the bot token if it appears in the Discord error body', async () => {
+      fetchMock = vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ message: `Invalid Authorization: ${BOT_TOKEN}` }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+      )
+      vi.stubGlobal('fetch', fetchMock)
+
+      await handler(buildPostRequest(samplePayload()))
+
+      const serialized = serializedErrorCalls()
+      expect(serialized).not.toContain(BOT_TOKEN)
+      expect(serialized).toContain('[REDACTED]')
     })
   })
 })
