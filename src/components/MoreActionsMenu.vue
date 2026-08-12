@@ -14,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   showImport: []
+  showFeedback: []
 }>()
 
 const store = useCharacterStore()
@@ -30,6 +31,11 @@ function close() {
 function openImport() {
   close()
   emit('showImport')
+}
+
+function openFeedback() {
+  close()
+  emit('showFeedback')
 }
 
 function saveToLibrary() {
@@ -184,6 +190,15 @@ watch(
                 >
                   <span class="material-symbols-outlined text-2xl">file_upload</span>
                   <span class="text-xs font-label-md">Import Data</span>
+                </button>
+
+                <button
+                  @click="openFeedback"
+                  class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Give Feedback"
+                >
+                  <span class="material-symbols-outlined text-2xl">feedback</span>
+                  <span class="text-xs font-label-md">Give Feedback</span>
                 </button>
               </div>
 

@@ -12,6 +12,7 @@ const guildStore = useGuildStore()
 const route = useRoute()
 const emit = defineEmits<{
   showImport: []
+  showFeedback: []
 }>()
 const geminiPrompt = ref('')
 
@@ -304,6 +305,16 @@ onUnmounted(() => {
                   Manage Server Homebrew
                 </button>
               </div>
+
+              <button
+                @click="emit('showFeedback'); closeMorePopover()"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Give Feedback"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">feedback</span>
+                Give Feedback
+              </button>
 
               <button
                 @click="emit('showImport'); closeMorePopover()"
