@@ -1,16 +1,30 @@
 /**
  * Netlify Function: submit-feedback
  *
- * Receives in-app feedback from the client and posts it to a community
- * Discord channel via the Discord Bot REST API. The bot token and target
- * channel ID are read exclusively from `process.env` on the server and are
- * never exposed to the client bundle.
+ * Receives in-app feedback from the client and posts it as a new thread in a
+ * community Discord Forum channel via the Discord Bot REST API. The bot token
+ * and target channel ID are read exclusively from `process.env` on the server
+ * and are never exposed to the client bundle.
  *
  * Deployed automatically via the [functions] block in netlify.toml.
  */
 const VALID_TYPES = ['bug', 'feature', 'general']
 const MAX_MESSAGE_LENGTH = 4000
+const MAX_THREAD_NAME_LENGTH = 100
 const DISCORD_API_BASE = 'https://discord.com/api/v10'
+
+/**
+ * Discord forum thread names are limited to 100 characters.
+ */
+function buildThreadName(type, discordUsername) {
+  const typeLabel = VALID_TYPES.includes(type) ? `[${type[0].toUpperCase()}${type.slice(1)}]` : '[General]'
+
+  const baseName = discordUsername
+    ? `${typeLabel} Feedback from ${discordUsername}`
+    : `${typeLabel} Feedback`
+
+  return baseName.slice(0, MAX_THREAD_NAME_LENGTH)
+}
 
 function corsHeaders() {
   return {
@@ -105,24 +119,30 @@ export default async (req) => {
       1800,
     )
 
-    // Standard Discord Create Message payload.
+    // Discord "Start Thread in Forum Channel" payload: the embed is nested
+    // inside the `message` object and the thread gets a dynamic title.
+    const threadName = buildThreadName(type, discordUsername)
+
     const discordPayload = {
-      embeds: [
-        {
-          title: 'New Feedback',
-          color: 0x5865f2, // Discord blurple
-          fields: [
-            { name: 'Type', value: type, inline: true },
-            { name: 'Reporter', value: reporterLabel.slice(0, 1024), inline: true },
-            { name: 'Message', value: message.slice(0, 1024) },
-            { name: 'Context', value: contextLabel.slice(0, 1024) },
-          ],
-        },
-      ],
+      name: threadName,
+      message: {
+        embeds: [
+          {
+            title: 'New Feedback',
+            color: 0x5865f2, // Discord blurple
+            fields: [
+              { name: 'Type', value: type, inline: true },
+              { name: 'Reporter', value: reporterLabel.slice(0, 1024), inline: true },
+              { name: 'Message', value: message.slice(0, 1024) },
+              { name: 'Context', value: contextLabel.slice(0, 1024) },
+            ],
+          },
+        ],
+      },
     }
 
     const discordResponse = await fetch(
-      `${DISCORD_API_BASE}/channels/${DISCORD_FEEDBACK_CHANNEL_ID}/messages`,
+      `${DISCORD_API_BASE}/channels/${DISCORD_FEEDBACK_CHANNEL_ID}/threads`,
       {
         method: 'POST',
         headers: {
