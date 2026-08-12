@@ -248,5 +248,31 @@ describe('FeedbackModal', () => {
 
       expect(bodyText()).toContain('Thanks for your feedback!')
     })
+
+    it('shows an offline notice when the feedback service is unconfigured (503 SERVICE_UNCONFIGURED)', async () => {
+      fetchMock = vi.fn(() =>
+        Promise.resolve({
+          ok: false,
+          status: 503,
+          json: () =>
+            Promise.resolve({
+              error: 'Feedback service is unconfigured',
+              code: 'SERVICE_UNCONFIGURED',
+            }),
+        }),
+      )
+      global.fetch = fetchMock as unknown as typeof fetch
+
+      mountOpen()
+
+      setTextarea('Hello from the unconfigured void.')
+      await nextTick()
+      findButton('Submit Feedback').click()
+      await flushPromises()
+
+      expect(bodyText()).toContain(
+        'Feedback submission is currently offline. Please reach out on Discord directly.',
+      )
+    })
   })
 })

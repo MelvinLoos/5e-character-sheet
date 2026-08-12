@@ -2,8 +2,8 @@
  * Feedback submission API client.
  *
  * Sends feedback payloads to the `submit-feedback` Netlify Function. The
- * function is responsible for the actual Discord Webhook POST; the webhook
- * URL is never exposed to the client bundle.
+ * function posts to Discord via the Discord Bot REST API; the bot token is
+ * never exposed to the client bundle.
  */
 
 export type FeedbackType = 'bug' | 'feature' | 'general'
@@ -27,6 +27,21 @@ export interface FeedbackPayload {
   reporter: FeedbackReporter
 }
 
+/**
+ * Error thrown by {@link submitFeedback} when the request fails. Carries the
+ * optional machine-readable `code` returned by the Netlify Function
+ * (e.g. `SERVICE_UNCONFIGURED`), so the UI can render distinct states.
+ */
+export class FeedbackServiceError extends Error {
+  code: string | null
+
+  constructor(message: string, code: string | null = null) {
+    super(message)
+    this.name = 'FeedbackServiceError'
+    this.code = code
+  }
+}
+
 export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
   const response = await fetch('/.netlify/functions/submit-feedback', {
     method: 'POST',
@@ -35,7 +50,15 @@ export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
   })
 
   if (!response.ok) {
-    throw new Error(`Feedback submission failed with status: ${response.status}`)
+    const body = (await response.json().catch(() => null)) as {
+      error?: string
+      code?: string
+    } | null
+
+    throw new FeedbackServiceError(
+      body?.error ?? `Feedback submission failed with status: ${response.status}`,
+      body?.code ?? null,
+    )
   }
 }
 

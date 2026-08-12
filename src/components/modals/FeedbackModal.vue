@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import {
   submitFeedback,
   extractDiscordIdFromAvatarUrl,
+  FeedbackServiceError,
   type FeedbackType,
 } from '@/infra/feedbackService'
 
@@ -22,6 +23,7 @@ const route = useRoute()
 const feedbackType = ref<FeedbackType>('general')
 const feedbackText = ref('')
 const submitState = ref<'idle' | 'sending' | 'success' | 'error'>('idle')
+const serviceOffline = ref(false)
 
 const typeOptions = [
   { value: 'bug', label: 'Bug', icon: 'bug_report' },
@@ -72,8 +74,13 @@ async function handleSubmit() {
       },
     })
     submitState.value = 'success'
-  } catch {
-    submitState.value = 'error'
+  } catch (error) {
+    if (error instanceof FeedbackServiceError && error.code === 'SERVICE_UNCONFIGURED') {
+      serviceOffline.value = true
+      submitState.value = 'error'
+    } else {
+      submitState.value = 'error'
+    }
   }
 }
 
@@ -85,6 +92,7 @@ watch(
       feedbackText.value = ''
       feedbackType.value = 'general'
       submitState.value = 'idle'
+      serviceOffline.value = false
     }
   },
 )
@@ -148,7 +156,10 @@ watch(
               class="w-full bg-surface-variant border border-outline-variant rounded-xl p-3 font-body-md text-sm text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary resize-y mb-4"
             ></textarea>
 
-            <p v-if="submitState === 'error'" class="text-red-600 text-sm mb-4">
+            <p v-if="submitState === 'error' && serviceOffline" class="text-red-600 text-sm mb-4">
+              Feedback submission is currently offline. Please reach out on Discord directly.
+            </p>
+            <p v-else-if="submitState === 'error'" class="text-red-600 text-sm mb-4">
               We couldn't send your feedback. Please try again.
             </p>
 
@@ -160,6 +171,7 @@ watch(
                 Cancel
               </button>
               <button
+                v-if="!serviceOffline"
                 @click="handleSubmit"
                 :disabled="!canSubmit"
                 class="icon-button font-label-md text-sm"

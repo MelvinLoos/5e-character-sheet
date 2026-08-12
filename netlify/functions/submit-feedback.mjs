@@ -1,15 +1,16 @@
 /**
  * Netlify Function: submit-feedback
  *
- * Receives in-app feedback from the client and forwards it to a private
- * Discord channel via webhook. The webhook URL is read exclusively from
- * `process.env.DISCORD_WEBHOOK_URL` on the server and is never exposed to
- * the client bundle.
+ * Receives in-app feedback from the client and posts it to a community
+ * Discord channel via the Discord Bot REST API. The bot token and target
+ * channel ID are read exclusively from `process.env` on the server and are
+ * never exposed to the client bundle.
  *
  * Deployed automatically via the [functions] block in netlify.toml.
  */
 const VALID_TYPES = ['bug', 'feature', 'general']
 const MAX_MESSAGE_LENGTH = 4000
+const DISCORD_API_BASE = 'https://discord.com/api/v10'
 
 function corsHeaders() {
   return {
@@ -30,7 +31,8 @@ function json(data, status) {
 }
 
 export default async (req) => {
-  // Handle CORS preflight requests.
+  // Handle CORS preflight requests before anything else so the browser can
+  // always read the response body (including 503 SERVICE_UNCONFIGURED).
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() })
   }
@@ -41,11 +43,15 @@ export default async (req) => {
   }
 
   try {
-    const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL
+    const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
+    const DISCORD_FEEDBACK_CHANNEL_ID = process.env.DISCORD_FEEDBACK_CHANNEL_ID
 
-    if (!DISCORD_WEBHOOK_URL) {
-      console.error('DISCORD_WEBHOOK_URL not configured on the server.')
-      return json({ error: 'Feedback is not configured on the server.' }, 500)
+    if (!DISCORD_BOT_TOKEN || !DISCORD_FEEDBACK_CHANNEL_ID) {
+      console.error('Discord bot integration is not configured on the server.')
+      return json(
+        { error: 'Feedback service is unconfigured', code: 'SERVICE_UNCONFIGURED' },
+        503,
+      )
     }
 
     const body = await req.json()
@@ -87,8 +93,8 @@ export default async (req) => {
       1800,
     )
 
-    const webhookPayload = {
-      username: 'In-App Feedback',
+    // Standard Discord Create Message payload.
+    const discordPayload = {
       embeds: [
         {
           title: 'New Feedback',
@@ -103,15 +109,21 @@ export default async (req) => {
       ],
     }
 
-    const discordResponse = await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookPayload),
-    })
+    const discordResponse = await fetch(
+      `${DISCORD_API_BASE}/channels/${DISCORD_FEEDBACK_CHANNEL_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(discordPayload),
+      },
+    )
 
     if (!discordResponse.ok) {
       const errorBody = await discordResponse.text()
-      console.error('Discord webhook error:', errorBody)
+      console.error('Discord API error:', errorBody)
       return json({ error: 'Failed to deliver feedback to Discord.' }, 502)
     }
 
