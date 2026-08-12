@@ -189,7 +189,7 @@ onUnmounted(() => {
         v-model="selectedCharacter"
       >
         <option value="" disabled class="bg-primary-container text-on-surface font-body-md text-sm">
-          Midnight Scholar
+          Heroes Guild
         </option>
         <option
           value="new"

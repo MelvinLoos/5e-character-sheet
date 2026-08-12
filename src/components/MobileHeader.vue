@@ -8,7 +8,7 @@ const store = useCharacterStore()
   <header
     class="md:hidden flex justify-between items-center px-4 py-3 w-full top-0 bg-primary-container dark:bg-primary-container shadow-sm z-40 fixed print:hidden"
   >
-    <span class="font-headline-md text-tertiary">Character Sheet</span>
+    <span class="font-headline-md text-tertiary">Heroes Guild</span>
     <div class="flex items-center gap-2">
       <button
         @click="store.toggleEdit()"

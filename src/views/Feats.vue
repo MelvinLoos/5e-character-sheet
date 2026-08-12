@@ -536,7 +536,7 @@ function formatFeatDesc(desc: string): string {
 </script>
 
 <style scoped>
-/* Custom scrollbar for library — gold thumb matching Midnight Scholar tertiary accent */
+/* Custom scrollbar for library — gold thumb matching the Heroes Guild tertiary accent */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--color-tertiary) transparent;

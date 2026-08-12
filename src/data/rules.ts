@@ -1,4 +1,4 @@
-// A simplified library of D&D 2024 rules for the character sheet creator.
+// A simplified library of D&D 2024 rules for the Heroes Guild Character Sheet.
 
 // --- Type definitions for the exported rules data ---
 // All canonical interfaces are now defined in @/types/rules and re-exported here.

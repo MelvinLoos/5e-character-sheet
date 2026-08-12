@@ -233,8 +233,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Multiple character management
 - [x] Community character sharing (Online via Supabase)
 - [x] PDF export functionality
-- [x] Dark / light theme toggle (Midnight Scholar redesign)
-- [ ] Midnight Scholar visual redesign (components in progress)
+- [x] Dark / light theme toggle
+- [ ] Heroes Guild visual redesign (components in progress)
 - [ ] Accessibility compliance pass (WCAG 2.1 AA)
 
 ---

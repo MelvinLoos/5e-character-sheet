@@ -1,6 +1,6 @@
 {
-  "name": "Character Creator: Midnight Scholar",
-  "short_name": "CharCreator",
+  "name": "Heroes Guild Character Sheet",
+  "short_name": "Heroes Guild",
   "description": "A modern, professional, and cozy TTRPG character creator and sheet generator.",
   "start_url": "/",
   "display": "standalone",

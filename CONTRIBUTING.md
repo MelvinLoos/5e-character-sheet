@@ -1,6 +1,6 @@
 # Contributing & Architectural Conventions
 
-Welcome! This document outlines the architectural patterns, state management rules, and quality assurance workflows required when developing or using AI coding agents on this D&D Character Sheet application.
+Welcome! This document outlines the architectural patterns, state management rules, and quality assurance workflows required when developing or using AI coding agents on the Heroes Guild Character Sheet application.
 
 ---
 
