@@ -14,22 +14,22 @@ import type { ClassEquipmentBundle, BackgroundEquipment } from '@/types/equipmen
 
 const store = useCharacterStore()
 
-// ──── Wizard Step Tracking ────
-const currentStep = ref(1)
+// ──── Step IDs ────
+type StepId = 'class' | 'choices' | 'background' | 'trinket' | 'summary'
 
-// Step 1: Class Option Selection
+// ──── Step 1: Class Option Selection ────
 const selectedClassOption = ref<'A' | 'B' | 'C' | null>(null)
 
-// Step 2: Class Equipment Choices (if bundle has choices[])
-const choiceSelections = ref<Record<number, string>>({})  // choiceIndex → itemId
+// ──── Step 2: Class Equipment Choices (if bundle has choices[]) ────
+const choiceSelections = ref<Record<number, string>>({}) // choiceIndex → itemId
 
-// Step 3: Background Option Selection
+// ──── Step 3: Background Option Selection ────
 const selectedBackgroundOption = ref<'A' | 'B' | null>(null)
 
-// Step 4: Trinket Selection
+// ──── Step 4: Trinket Selection ────
 const selectedTrinketId = ref<string | null>(null)
 
-// Completion flag
+// ──── Completion flag ────
 const isComplete = ref(false)
 
 // ──── Computed Data ────
@@ -85,6 +85,33 @@ const showTrinketStep = computed(() => {
 
 const trinketList = computed(() => getTrinketList())
 
+// ──── Does the class have ANY option (A or B) with equipment choices? ────
+const hasClassChoices = computed(() => {
+  if (!classBundles.value) return false
+  const bundles = classBundles.value
+  const optAHasChoices = bundles.optionA?.choices && bundles.optionA.choices.length > 0
+  const optBHasChoices = bundles.optionB?.choices && bundles.optionB.choices.length > 0
+  return optAHasChoices || optBHasChoices
+})
+
+// ──── Dynamic Available Steps ────
+const availableSteps = computed<StepId[]>(() => {
+  const steps: StepId[] = ['class']
+  if (hasClassChoices.value) {
+    steps.push('choices')
+  }
+  steps.push('background')
+  if (showTrinketStep.value) {
+    steps.push('trinket')
+  }
+  steps.push('summary')
+  return steps
+})
+
+const currentStepIndex = ref(0)
+const currentStepId = computed<StepId>(() => availableSteps.value[currentStepIndex.value] ?? 'class')
+const totalSteps = computed(() => availableSteps.value.length)
+
 // Gold preview
 const goldPreview = computed(() => {
   if (!selectedClassOption.value || !backgroundName.value || !selectedBackgroundOption.value) return null
@@ -109,14 +136,32 @@ function selectClassOption(option: 'A' | 'B' | 'C') {
   store.selectClassEquipmentOption(option)
 }
 
-function goToStep2() {
-  if (!selectedClassOption.value) return
+function goToNextStep() {
+  const nextIndex = currentStepIndex.value + 1
+  if (nextIndex >= availableSteps.value.length) return
 
-  // If the bundle has equipment choices, go to step 2. Otherwise go to step 3 (background).
-  if (selectedBundle.value?.choices && selectedBundle.value.choices.length > 0) {
-    currentStep.value = 2
-  } else {
-    currentStep.value = 3
+  // Validate current step before advancing
+  const currentStep = availableSteps.value[currentStepIndex.value]
+  if (currentStep === 'class' && !selectedClassOption.value) return
+  if (currentStep === 'background' && !selectedBackgroundOption.value) return
+  if (currentStep === 'trinket' && !selectedTrinketId.value) return
+
+  // If on choices step, ensure all choices are resolved
+  if (currentStep === 'choices') {
+    const bundle = selectedBundle.value
+    if (bundle?.choices) {
+      for (let i = 0; i < bundle.choices.length; i++) {
+        if (!choiceSelections.value[i]) return
+      }
+    }
+  }
+
+  currentStepIndex.value = nextIndex
+}
+
+function goToPrevStep() {
+  if (currentStepIndex.value > 0) {
+    currentStepIndex.value--
   }
 }
 
@@ -125,35 +170,14 @@ function resolveChoice(choiceIndex: number, itemId: string, quantity: number) {
   store.resolveEquipmentChoice(choiceIndex, itemId, quantity)
 }
 
-function goToBackgroundStep() {
-  // Check for unresolved choices
-  const bundle = selectedBundle.value
-  if (bundle?.choices) {
-    for (let i = 0; i < bundle.choices.length; i++) {
-      if (!choiceSelections.value[i]) return // can't proceed
-    }
-  }
-  currentStep.value = 3
-}
-
 function selectBackgroundOption(option: 'A' | 'B') {
   selectedBackgroundOption.value = option
   store.selectBackgroundEquipmentOption(option)
 }
 
-function goToTrinketOrPreview() {
-  if (!selectedBackgroundOption.value) return
-  currentStep.value = showTrinketStep.value ? 4 : 5
-}
-
 function selectTrinket(trinketId: string) {
   selectedTrinketId.value = trinketId
   store.selectTrinket(trinketId)
-}
-
-function goToPreview() {
-  if (showTrinketStep.value && !selectedTrinketId.value) return
-  currentStep.value = 5
 }
 
 function confirmEquipment() {
@@ -168,7 +192,7 @@ function resetWizard() {
   choiceSelections.value = {}
   selectedTrinketId.value = null
   isComplete.value = false
-  currentStep.value = 1
+  currentStepIndex.value = 0
   store.resetStartingEquipment()
 }
 
@@ -211,31 +235,31 @@ const masteryDescriptions: Record<string, string> = {
       </p>
     </header>
 
-    <!-- Progress Steps -->
+    <!-- Progress Steps (dynamic) -->
     <div class="flex items-center justify-center gap-2 mb-6">
       <div
-        v-for="step in 5"
-        :key="step"
+        v-for="(_stepId, index) in availableSteps"
+        :key="index"
         class="flex items-center gap-2"
       >
         <div
           :class="[
             'w-8 h-8 rounded-full flex items-center justify-center font-label-md text-label-md border',
-            currentStep >= step
+            index <= currentStepIndex
               ? 'bg-tertiary text-on-tertiary border-tertiary'
               : 'bg-surface-container text-on-surface-variant border-outline-variant',
           ]"
         >
-          {{ currentStep > step ? '✓' : step }}
+          {{ index < currentStepIndex ? '✓' : index + 1 }}
         </div>
-        <div v-if="step < 5" class="w-6 h-px" :class="currentStep > step ? 'bg-tertiary' : 'bg-outline-variant'"></div>
+        <div v-if="index < availableSteps.length - 1" class="w-6 h-px" :class="index < currentStepIndex ? 'bg-tertiary' : 'bg-outline-variant'"></div>
       </div>
     </div>
 
-    <!-- ═══ STEP 1: Class Equipment Options (A/B/C) ═══ -->
-    <section v-if="currentStep === 1 && classBundles" class="flex flex-col gap-6">
+    <!-- ═══ STEP: Class Equipment Options (A/B/C) ═══ -->
+    <section v-if="currentStepId === 'class' && classBundles" class="flex flex-col gap-6">
       <h3 class="font-headline-md text-headline-md text-on-surface">
-        Step 1: Choose Your Class Equipment
+        Step {{ currentStepIndex + 1 }} of {{ totalSteps }}: Choose Your Class Equipment
         <span class="font-body-md text-body-md text-on-surface-variant ml-2">— {{ className }} Options</span>
       </h3>
 
@@ -327,7 +351,7 @@ const masteryDescriptions: Record<string, string> = {
 
       <div class="flex justify-end mt-4">
         <button
-          @click="goToStep2"
+          @click="goToNextStep"
           :disabled="!selectedClassOption"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
@@ -336,10 +360,10 @@ const masteryDescriptions: Record<string, string> = {
       </div>
     </section>
 
-    <!-- ═══ STEP 2: Class Equipment Choices ═══ -->
-    <section v-if="currentStep === 2 && selectedBundle?.choices" class="flex flex-col gap-6">
+    <!-- ═══ STEP: Class Equipment Choices ═══ -->
+    <section v-if="currentStepId === 'choices' && selectedBundle?.choices" class="flex flex-col gap-6">
       <h3 class="font-headline-md text-headline-md text-on-surface">
-        Step 2: Make Your Equipment Choices
+        Step {{ currentStepIndex + 1 }} of {{ totalSteps }}: Make Your Equipment Choices
       </h3>
 
       <div
@@ -385,13 +409,13 @@ const masteryDescriptions: Record<string, string> = {
 
       <div class="flex justify-between mt-4">
         <button
-          @click="currentStep = 1"
+          @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
-          @click="goToBackgroundStep"
+          @click="goToNextStep"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           Continue →
@@ -399,10 +423,10 @@ const masteryDescriptions: Record<string, string> = {
       </div>
     </section>
 
-    <!-- ═══ STEP 3: Background Equipment Options (A/B) ═══ -->
-    <section v-if="currentStep === 3 && bgEquipment" class="flex flex-col gap-6">
+    <!-- ═══ STEP: Background Equipment Options (A/B) ═══ -->
+    <section v-if="currentStepId === 'background' && bgEquipment" class="flex flex-col gap-6">
       <h3 class="font-headline-md text-headline-md text-on-surface">
-        Step 3: Choose Your Background Equipment
+        Step {{ currentStepIndex + 1 }} of {{ totalSteps }}: Choose Your Background Equipment
         <span class="font-body-md text-body-md text-on-surface-variant ml-2">— {{ backgroundName }} Options</span>
       </h3>
 
@@ -461,13 +485,13 @@ const masteryDescriptions: Record<string, string> = {
 
       <div class="flex justify-between mt-4">
         <button
-          @click="currentStep = 1"
+          @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
-          @click="goToTrinketOrPreview"
+          @click="goToNextStep"
           :disabled="!selectedBackgroundOption"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
@@ -476,10 +500,10 @@ const masteryDescriptions: Record<string, string> = {
       </div>
     </section>
 
-    <!-- ═══ STEP 4: Trinket Selection ═══ -->
-    <section v-if="currentStep === 4 && showTrinketStep" class="flex flex-col gap-6">
+    <!-- ═══ STEP: Trinket Selection ═══ -->
+    <section v-if="currentStepId === 'trinket' && showTrinketStep" class="flex flex-col gap-6">
       <h3 class="font-headline-md text-headline-md text-on-surface">
-        Step 4: Choose One Tiny Trinket
+        Step {{ currentStepIndex + 1 }} of {{ totalSteps }}: Choose One Tiny Trinket
       </h3>
       <p class="font-body-md text-body-md text-on-surface-variant">
         Your background grants you one free trinket. Choose from the list below:
@@ -507,13 +531,13 @@ const masteryDescriptions: Record<string, string> = {
 
       <div class="flex justify-between mt-4">
         <button
-          @click="currentStep = 3"
+          @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
         </button>
         <button
-          @click="goToPreview"
+          @click="goToNextStep"
           :disabled="!selectedTrinketId"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
@@ -522,10 +546,10 @@ const masteryDescriptions: Record<string, string> = {
       </div>
     </section>
 
-    <!-- ═══ STEP 5: Equipment Summary & Confirm ═══ -->
-    <section v-if="currentStep === 5" class="flex flex-col gap-6">
+    <!-- ═══ STEP: Equipment Summary & Confirm ═══ -->
+    <section v-if="currentStepId === 'summary'" class="flex flex-col gap-6">
       <h3 class="font-headline-md text-headline-md text-on-surface">
-        Equipment Summary
+        Step {{ currentStepIndex + 1 }} of {{ totalSteps }}: Equipment Summary
       </h3>
 
       <div class="bg-surface-container rounded-lg border border-outline-variant p-6 space-y-4">
@@ -633,7 +657,7 @@ const masteryDescriptions: Record<string, string> = {
 
       <div class="flex justify-between mt-4">
         <button
-          @click="currentStep = showTrinketStep ? 4 : 3"
+          @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           ← Back
