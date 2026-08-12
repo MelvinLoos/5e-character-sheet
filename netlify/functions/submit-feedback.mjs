@@ -15,7 +15,7 @@ const DISCORD_API_BASE = 'https://discord.com/api/v10'
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   }
 }
@@ -35,6 +35,18 @@ export default async (req) => {
   // always read the response body (including 503 SERVICE_UNCONFIGURED).
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() })
+  }
+
+  // Availability probe: lets the client decide whether to render the
+  // feedback UI. Reveals only a boolean — never the token.
+  if (req.method === 'GET') {
+    const configured = Boolean(
+      process.env.DISCORD_BOT_TOKEN && process.env.DISCORD_FEEDBACK_CHANNEL_ID,
+    )
+    return json(
+      { configured, code: configured ? null : 'SERVICE_UNCONFIGURED' },
+      200,
+    )
   }
 
   // Only allow POST requests.

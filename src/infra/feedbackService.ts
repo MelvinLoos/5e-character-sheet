@@ -27,6 +27,30 @@ export interface FeedbackPayload {
   reporter: FeedbackReporter
 }
 
+export interface FeedbackAvailability {
+  configured: boolean
+  code: string | null
+}
+
+/**
+ * Probes the feedback service configuration via the Netlify Function's GET
+ * endpoint. Used to decide whether to render the feedback UI at all.
+ */
+export async function checkFeedbackAvailability(): Promise<FeedbackAvailability> {
+  const response = await fetch('/.netlify/functions/submit-feedback')
+
+  if (!response.ok) {
+    throw new Error(`Feedback availability check failed with status: ${response.status}`)
+  }
+
+  const body = (await response.json()) as { configured?: boolean; code?: string | null }
+
+  return {
+    configured: body.configured === true,
+    code: body.code ?? null,
+  }
+}
+
 /**
  * Error thrown by {@link submitFeedback} when the request fails. Carries the
  * optional machine-readable `code` returned by the Netlify Function

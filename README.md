@@ -123,10 +123,13 @@ The in-app "Give Feedback" widget posts feedback to a community Discord channel 
    - `DISCORD_BOT_TOKEN` — the bot token from step 1.
    - `DISCORD_FEEDBACK_CHANNEL_ID` — the channel ID from step 3.
 
-> **Graceful degradation:** When either variable is unset, the Netlify function replies with
-> `503` + `code: SERVICE_UNCONFIGURED`. The feedback modal then shows
-> *"Feedback submission is currently offline. Please reach out on Discord directly."* instead of
-> failing with a generic error.
+> **Graceful degradation:** When either variable is unset, the app's availability probe
+> (a `GET` request to the same Netlify function) detects the misconfiguration and the
+> **"Give Feedback" entry points are hidden entirely** (desktop "More" menu and mobile
+> "More Actions" sheet). A descriptive error is also written to the browser console
+> (development builds) so developers can see that the feedback form is disabled and why.
+> If the configuration disappears mid-session, the modal closes itself after the next
+> submission attempt and the entry points disappear.
 
 ## 🧪 Testing
 

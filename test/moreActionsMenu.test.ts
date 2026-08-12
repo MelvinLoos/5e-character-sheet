@@ -5,6 +5,7 @@ import { defineComponent } from 'vue'
 import MoreActionsMenu from '../src/components/MoreActionsMenu.vue'
 import { useAuthStore } from '../src/stores/authStore'
 import { useGuildStore } from '../src/stores/guildStore'
+import { useFeedbackStore } from '../src/stores/feedbackStore'
 
 vi.mock('../src/infra/supabaseClient', () => ({
   createSupabaseClient: vi.fn(() => ({
@@ -125,6 +126,32 @@ describe('MoreActionsMenu', () => {
 
       expect(guildSelectorIndex).toBeGreaterThanOrEqual(0)
       expect(authButtonIndex).toBeGreaterThan(guildSelectorIndex)
+    })
+  })
+
+  describe('Feedback entry point availability', () => {
+    it('renders the Give Feedback tile when the feedback service is available', () => {
+      const feedbackStore = useFeedbackStore()
+      feedbackStore.availability = 'available'
+
+      mountOpen()
+      expect(bodyText()).toContain('Give Feedback')
+    })
+
+    it('hides the Give Feedback tile when the feedback service is unavailable', () => {
+      const feedbackStore = useFeedbackStore()
+      feedbackStore.availability = 'unavailable'
+
+      mountOpen()
+      expect(bodyText()).not.toContain('Give Feedback')
+    })
+
+    it('hides the Give Feedback tile while availability is unknown', () => {
+      const feedbackStore = useFeedbackStore()
+      feedbackStore.availability = 'unknown'
+
+      mountOpen()
+      expect(bodyText()).not.toContain('Give Feedback')
     })
   })
 

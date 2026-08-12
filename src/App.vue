@@ -3,6 +3,7 @@ import { onMounted, ref, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
+import { useFeedbackStore } from './stores/feedbackStore'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
 
@@ -23,6 +24,9 @@ onMounted(async () => {
   store.initStore()
   // Initialize guild content sync — sets up watchers on activeGuildId
   useGuildContentSyncStore()
+  // Probe the feedback service so unavailable entry points never render
+  // (logs a console error for devs when the service is unconfigured).
+  useFeedbackStore().checkAvailability()
 })
 </script>
 

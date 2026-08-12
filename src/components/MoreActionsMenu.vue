@@ -3,6 +3,7 @@ import { ref, watch, nextTick } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useAuthStore } from '@/stores/authStore'
 import { useGuildStore } from '@/stores/guildStore'
+import { useFeedbackStore } from '@/stores/feedbackStore'
 import AuthButton from './AuthButton.vue'
 import GuildSelector from './GuildSelector.vue'
 import GuildManagementModal from './modals/GuildManagementModal.vue'
@@ -20,6 +21,7 @@ const emit = defineEmits<{
 const store = useCharacterStore()
 useAuthStore()
 const guildStore = useGuildStore()
+const feedbackStore = useFeedbackStore()
 const showGuildManagement = ref(false)
 const menuRef = ref<HTMLDivElement | null>(null)
 const firstItemRef = ref<HTMLButtonElement | null>(null)
@@ -193,6 +195,7 @@ watch(
                 </button>
 
                 <button
+                  v-if="feedbackStore.isFeedbackAvailable"
                   @click="openFeedback"
                   class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   title="Give Feedback"

@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import FeedbackModal from '../src/components/modals/FeedbackModal.vue'
 import { useAuthStore } from '../src/stores/authStore'
+import { useFeedbackStore } from '../src/stores/feedbackStore'
 
 vi.mock('../src/infra/supabaseClient', () => ({
   createSupabaseClient: vi.fn(() => ({
@@ -249,7 +250,9 @@ describe('FeedbackModal', () => {
       expect(bodyText()).toContain('Thanks for your feedback!')
     })
 
-    it('shows an offline notice when the feedback service is unconfigured (503 SERVICE_UNCONFIGURED)', async () => {
+    it('closes the modal and marks the feedback store unavailable when the service is unconfigured (503 SERVICE_UNCONFIGURED)', async () => {
+      const feedbackStore = useFeedbackStore()
+
       fetchMock = vi.fn(() =>
         Promise.resolve({
           ok: false,
@@ -263,14 +266,16 @@ describe('FeedbackModal', () => {
       )
       global.fetch = fetchMock as unknown as typeof fetch
 
-      mountOpen()
+      const wrapper = mountOpen()
 
       setTextarea('Hello from the unconfigured void.')
       await nextTick()
       findButton('Submit Feedback').click()
       await flushPromises()
 
-      expect(bodyText()).toContain(
+      expect(wrapper.emitted('close')).toBeTruthy()
+      expect(feedbackStore.availability).toBe('unavailable')
+      expect(bodyText()).not.toContain(
         'Feedback submission is currently offline. Please reach out on Discord directly.',
       )
     })
