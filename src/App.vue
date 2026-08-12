@@ -3,6 +3,7 @@ import { onMounted, ref, defineAsyncComponent } from 'vue'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
+import { useFeedbackStore } from './stores/feedbackStore'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
 
@@ -10,10 +11,12 @@ import MoreActionsMenu from './components/MoreActionsMenu.vue'
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
 const ErrorModal = defineAsyncComponent(() => import('./components/modals/ErrorModal.vue'))
 const ShareModal = defineAsyncComponent(() => import('./components/modals/ShareModal.vue'))
+const FeedbackModal = defineAsyncComponent(() => import('./components/modals/FeedbackModal.vue'))
 const UpdateNotification = defineAsyncComponent(() => import('./components/UpdateNotification.vue'))
 
 const store = useCharacterStore()
 const showImportModal = ref(false)
+const showFeedbackModal = ref(false)
 const showMoreMenu = ref(false)
 
 onMounted(async () => {
@@ -21,6 +24,9 @@ onMounted(async () => {
   store.initStore()
   // Initialize guild content sync — sets up watchers on activeGuildId
   useGuildContentSyncStore()
+  // Probe the feedback service so unavailable entry points never render
+  // (logs a console error for devs when the service is unconfigured).
+  useFeedbackStore().checkAvailability()
 })
 </script>
 
@@ -28,7 +34,10 @@ onMounted(async () => {
   <div
     class="antialiased min-h-dvh flex flex-col text-on-background bg-background print:bg-white print:block print:min-h-0 select-none print:overflow-visible"
   >
-    <ControlPanel @show-import="showImportModal = true" />
+    <ControlPanel
+      @show-import="showImportModal = true"
+      @show-feedback="showFeedbackModal = true"
+    />
     <MobileHeader v-if="store.currentCharacterData" />
 
     <main
@@ -56,6 +65,7 @@ onMounted(async () => {
     <ErrorModal />
     <ShareModal />
     <ImportModal :show="showImportModal" @close="showImportModal = false" />
+    <FeedbackModal :is-open="showFeedbackModal" @close="showFeedbackModal = false" />
 
     <MobileTabBar
       v-if="store.currentCharacterData"
@@ -67,6 +77,7 @@ onMounted(async () => {
       v-model="showMoreMenu"
       class="print:hidden"
       @show-import="showImportModal = true"
+      @show-feedback="showFeedbackModal = true"
     />
 
     <ThemeToggle class="print:hidden" />

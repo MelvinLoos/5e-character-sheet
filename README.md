@@ -98,8 +98,38 @@ Copy `.env.example` to `.env` and provide values for the following variables. A 
 | `VITE_SUPABASE_URL`      | Client (Vite)     | Supabase project URL used for online character sharing. Exposed to the browser via `import.meta.env`.             |
 | `VITE_SUPABASE_ANON_KEY` | Client (Vite)     | Supabase anonymous (public) client key. Public, but kept in config rather than hard-coded.                        |
 | `GEMINI_API_KEY`         | Server (Netlify)  | Google Gemini API key used by the Netlify serverless function for AI generation. A secret, never sent to the browser. |
+| `DISCORD_BOT_TOKEN`      | Server (Netlify)  | Discord Bot token used to post in-app feedback to a community channel. A secret, never sent to the browser.        |
+| `DISCORD_FEEDBACK_CHANNEL_ID` | Server (Netlify) | ID of the Discord channel that receives in-app feedback.                                                           |
 
 > **Note:** When the Supabase variables are not set, the app still runs — online sharing is gracefully disabled and a warning is logged to the console.
+
+## 🚀 Deployment
+
+### Discord Bot Integration (In-App Feedback)
+
+The in-app "Give Feedback" widget posts feedback to a community Discord channel via the
+[Discord Bot REST API](https://discord.com/developers/docs/resources/message#create-message)
+(route `POST /channels/{channel.id}/messages`). To enable it:
+
+1. **Create a Bot** on the existing Discord Application in the
+   [Discord Developer Portal](https://discord.com/developers/applications): open your application,
+   go to the **Bot** tab, and use "Reset Token" to obtain the bot token.
+2. **Invite the Bot** to the community server with **Send Messages** permissions. Use an invite URL
+   with the `bot` scope and `permissions=2048`:
+   `https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=2048&scope=bot`
+3. **Get the channel ID** of the target feedback channel (Discord → Settings → Advanced →
+   Developer Mode, then right-click the channel → **Copy Channel ID**).
+4. **Configure Netlify** (Site settings → Environment variables) with:
+   - `DISCORD_BOT_TOKEN` — the bot token from step 1.
+   - `DISCORD_FEEDBACK_CHANNEL_ID` — the channel ID from step 3.
+
+> **Graceful degradation:** When either variable is unset, the app's availability probe
+> (a `GET` request to the same Netlify function) detects the misconfiguration and the
+> **"Give Feedback" entry points are hidden entirely** (desktop "More" menu and mobile
+> "More Actions" sheet). A descriptive error is also written to the browser console
+> (development builds) so developers can see that the feedback form is disabled and why.
+> If the configuration disappears mid-session, the modal closes itself after the next
+> submission attempt and the entry points disappear.
 
 ## 🧪 Testing
 

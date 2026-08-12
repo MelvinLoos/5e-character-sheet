@@ -3,6 +3,7 @@ import { ref, watch, nextTick } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useAuthStore } from '@/stores/authStore'
 import { useGuildStore } from '@/stores/guildStore'
+import { useFeedbackStore } from '@/stores/feedbackStore'
 import AuthButton from './AuthButton.vue'
 import GuildSelector from './GuildSelector.vue'
 import GuildManagementModal from './modals/GuildManagementModal.vue'
@@ -14,11 +15,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   showImport: []
+  showFeedback: []
 }>()
 
 const store = useCharacterStore()
 useAuthStore()
 const guildStore = useGuildStore()
+const feedbackStore = useFeedbackStore()
 const showGuildManagement = ref(false)
 const menuRef = ref<HTMLDivElement | null>(null)
 const firstItemRef = ref<HTMLButtonElement | null>(null)
@@ -30,6 +33,11 @@ function close() {
 function openImport() {
   close()
   emit('showImport')
+}
+
+function openFeedback() {
+  close()
+  emit('showFeedback')
 }
 
 function saveToLibrary() {
@@ -184,6 +192,16 @@ watch(
                 >
                   <span class="material-symbols-outlined text-2xl">file_upload</span>
                   <span class="text-xs font-label-md">Import Data</span>
+                </button>
+
+                <button
+                  v-if="feedbackStore.isFeedbackAvailable"
+                  @click="openFeedback"
+                  class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Give Feedback"
+                >
+                  <span class="material-symbols-outlined text-2xl">feedback</span>
+                  <span class="text-xs font-label-md">Give Feedback</span>
                 </button>
               </div>
 
