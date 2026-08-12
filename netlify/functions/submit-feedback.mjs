@@ -11,7 +11,21 @@
 const VALID_TYPES = ['bug', 'feature', 'general']
 const MAX_MESSAGE_LENGTH = 4000
 const MAX_THREAD_NAME_LENGTH = 100
+const MAX_LOG_LENGTH = 1500
 const DISCORD_API_BASE = 'https://discord.com/api/v10'
+
+/**
+ * Removes known secrets (e.g. the Discord bot token) from text before it is
+ * written to the server logs, then truncates the result so a verbose API
+ * response cannot flood the logs. Callers decide which secrets apply.
+ */
+function redactSecrets(text, secrets) {
+  let safe = String(text ?? '')
+  for (const secret of secrets.filter(Boolean)) {
+    safe = safe.split(secret).join('[REDACTED]')
+  }
+  return safe.slice(0, MAX_LOG_LENGTH)
+}
 
 /**
  * Discord forum thread names are limited to 100 characters.
@@ -68,10 +82,12 @@ export default async (req) => {
     return json({ error: 'Method Not Allowed' }, 405)
   }
 
-  try {
-    const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
-    const DISCORD_FEEDBACK_CHANNEL_ID = process.env.DISCORD_FEEDBACK_CHANNEL_ID
+  // Hoisted so both the error branch and the catch can redact the token
+  // from anything that ends up in the logs.
+  const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
+  const DISCORD_FEEDBACK_CHANNEL_ID = process.env.DISCORD_FEEDBACK_CHANNEL_ID
 
+  try {
     if (!DISCORD_BOT_TOKEN || !DISCORD_FEEDBACK_CHANNEL_ID) {
       console.error('Discord bot integration is not configured on the server.')
       return json(
@@ -155,13 +171,21 @@ export default async (req) => {
 
     if (!discordResponse.ok) {
       const errorBody = await discordResponse.text()
-      console.error('Discord API error:', errorBody)
+      console.error(
+        'Discord API error:',
+        discordResponse.status,
+        redactSecrets(errorBody, [DISCORD_BOT_TOKEN]),
+      )
       return json({ error: 'Failed to deliver feedback to Discord.' }, 502)
     }
 
     return new Response(null, { status: 204, headers: corsHeaders() })
   } catch (error) {
-    console.error('Error in submit-feedback function:', error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(
+      'Error in submit-feedback function:',
+      redactSecrets(message, [DISCORD_BOT_TOKEN]),
+    )
     return json({ error: 'An unexpected error occurred.' }, 500)
   }
 }
