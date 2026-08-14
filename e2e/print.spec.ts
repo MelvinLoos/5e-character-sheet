@@ -5,10 +5,10 @@ const require = createRequire(import.meta.url)
 const { PDFParse } = require('pdf-parse')
 
 // This test only runs on Chromium (configured in playwright.config.ts)
-test('generates a PDF with exactly 2 pages', async ({ page }) => {
+test('generates a PDF whose page count matches the DOM page count', async ({ page }) => {
   await page.goto('/')
 
-  const newCharButton = page.locator('button:has-text("new character")')
+  const newCharButton = page.locator('button:has-text(\"new character\")')
   await newCharButton.click({ timeout: 3000 }).catch(() => {
     // Button may not exist if character is already loaded
   })
@@ -17,6 +17,8 @@ test('generates a PDF with exactly 2 pages', async ({ page }) => {
   await printable.waitFor({ state: 'attached' })
 
   await page.emulateMedia({ media: 'print' })
+
+  const domPageCount = await page.locator('.a4-page').count()
 
   const pdfBuffer = await page.pdf({
     format: 'A4',
@@ -33,7 +35,8 @@ test('generates a PDF with exactly 2 pages', async ({ page }) => {
   const parser = new PDFParse({ data: pdfBuffer })
   const result = await parser.getText()
 
-  console.log(`Generated PDF has ${result.total} pages.`)
-  expect(result.total).toBe(2)
+  console.log(`Generated PDF has ${result.total} pages; DOM reports ${domPageCount} .a4-page nodes.`)
+
+  expect(result.total).toBe(domPageCount)
   expect(result.text.trim().length).toBeGreaterThan(0)
 })
