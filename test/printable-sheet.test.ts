@@ -107,4 +107,60 @@ describe('PrintableSheet (component integration)', () => {
 
     expect(pages.length).toBe(2)
   })
+
+  it('fills skill proficiency checkbox when character is proficient', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.proficiencies.skills = ['arcana', 'sleightofhand']
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const skillRows = wrapper.findAll('tbody tr')
+
+    const arcanaRow = skillRows.find((row) => row.text().includes('Arcana'))
+    expect(arcanaRow).toBeTruthy()
+    expect(arcanaRow!.find('.skill-prof-filled').exists()).toBe(true)
+
+    const acrobaticsRow = skillRows.find((row) => row.text().includes('Acrobatics'))
+    expect(acrobaticsRow).toBeTruthy()
+    expect(acrobaticsRow!.find('.skill-prof-filled').exists()).toBe(false)
+  })
+
+  it('renders the Current HP box without placeholder text', () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createBaseCharacter()
+
+    const wrapper = mount(PrintableSheet)
+    const hpBox = wrapper.find('.hp-current-box')
+
+    expect(hpBox.exists()).toBe(true)
+    expect(hpBox.text()).toBe('')
+    expect(hpBox.text()).not.toContain('Current HP')
+  })
+
+  it('caps the Page 2 Spells and Features indices at 15 items each', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = Array.from({ length: 20 }, (_, i) => ({
+      title: `Feature ${i + 1}`,
+      desc: `Description for feature ${i + 1}.`,
+    }))
+    character.spells = Array.from({ length: 20 }, (_, i) => ({
+      name: `Spell ${i + 1}`,
+      level: (i % 9) + 1,
+      desc: `Description for spell ${i + 1}.`,
+      school: 'Evocation',
+    }))
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const indexItems = wrapper.findAll('[data-testid=\"page-two-index-item\"]')
+
+    const featureItems = indexItems.filter((item) => item.text().startsWith('Feature'))
+    const spellItems = indexItems.filter((item) => item.text().startsWith('Spell'))
+
+    expect(featureItems.length).toBe(15)
+    expect(spellItems.length).toBe(15)
+    expect(wrapper.text()).toContain('+5 more')
+  })
 })
