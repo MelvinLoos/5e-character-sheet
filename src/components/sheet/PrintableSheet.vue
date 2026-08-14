@@ -9,19 +9,19 @@ const { sortedSpells } = useSpellcasting()
 
 const char = computed(() => store.currentCharacterData)
 
-// Helper to format ability modifiers
+const abilityEntries = computed(() => Object.entries(DND_RULES.ABILITIES))
+const skillEntries = computed(() => Object.entries(DND_RULES.SKILLS))
+
 function getAbilityMod(stat: string) {
   const mod = store.abilityMods[stat] ?? 0
   return (mod >= 0 ? '+' : '') + mod
 }
 
-// Helper to check skill proficiency
 function isSkillProficient(name: string) {
   const normName = name.toLowerCase().replace(/ /g, '')
   return char.value.proficiencies.skills.includes(normName)
 }
 
-// Helper to calculate skill modifier
 function getSkillMod(name: string, stat: string) {
   const baseMod = store.abilityMods[stat] ?? 0
   const profBonus = isSkillProficient(name) ? store.profBonus : 0
@@ -29,518 +29,362 @@ function getSkillMod(name: string, stat: string) {
   return (total >= 0 ? '+' : '') + total
 }
 
-// Calculate spell slots based on caster type and level
-const spellSlots = computed<Record<string, number>>(() => {
-  const features = char.value?.features || []
-  const spellcastingFeature = features.find(
-    (f: { casterType?: string | null }) =>
-      typeof f.casterType === 'string' && f.casterType !== 'none',
-  )
-  const casterType = spellcastingFeature ? spellcastingFeature.casterType : null
-
-  if (casterType && casterType !== 'none') {
-    if (!char.value?.renownTier) return {}
-    const level = char.value.renownTier
-    const progression = SPELL_SLOT_PROGRESSION[casterType as keyof typeof SPELL_SLOT_PROGRESSION]
-    return (progression?.[level] || {}) as Record<string, number>
-  }
-  return {}
-})
-
-const SPELL_SLOT_PROGRESSION = DND_RULES.SPELL_SLOT_PROGRESSION
-
-// Get key features (feats)
-const feats = computed(() => {
-  return char.value?.features || []
-})
-
-// Get attacks with calculated bonuses
 const attacks = computed(() => {
   const arr = char.value?.attacks || []
-  return arr.map(
-    (atk: {
-      name: string
-      atkStat?: string | null
-      customAtkValue?: number
-      dmgStat?: string | null
-      customDmgValue?: number
-      dmgBonus?: number
-      dmgDie?: string
-      type?: string
-      weaponMastery?: string
-      notes?: string
-    }) => {
-      let atkBonus = 0
-      if (atk.atkStat) {
-        if (atk.atkStat === 'custom') {
-          atkBonus = atk.customAtkValue || 0
-        } else {
-          atkBonus = (store.abilityMods[atk.atkStat] ?? 0) + store.profBonus
-        }
+  return arr.map((atk) => {
+    let atkBonus = 0
+    if (atk.atkStat) {
+      if (atk.atkStat === 'custom') {
+        atkBonus = atk.customAtkValue || 0
+      } else {
+        atkBonus = (store.abilityMods[atk.atkStat] ?? 0) + store.profBonus
       }
+    }
 
-      let dmgBonusStr = ''
-      if (atk.dmgStat) {
-        let dmgMod = 0
-        if (atk.dmgStat === 'custom') {
-          dmgMod = (atk.customDmgValue || 0) + (atk.dmgBonus || 0)
-        } else {
-          dmgMod = (store.abilityMods[atk.dmgStat] ?? 0) + (atk.dmgBonus || 0)
-        }
-        dmgBonusStr = (dmgMod >= 0 ? '+' : '') + dmgMod
-      } else if (atk.dmgBonus) {
-        dmgBonusStr = (atk.dmgBonus >= 0 ? '+' : '') + atk.dmgBonus
+    let dmgBonusStr = ''
+    if (atk.dmgStat) {
+      let dmgMod = 0
+      if (atk.dmgStat === 'custom') {
+        dmgMod = (atk.customDmgValue || 0) + (atk.dmgBonus || 0)
+      } else {
+        dmgMod = (store.abilityMods[atk.dmgStat] ?? 0) + (atk.dmgBonus || 0)
       }
+      dmgBonusStr = (dmgMod >= 0 ? '+' : '') + dmgMod
+    } else if (atk.dmgBonus) {
+      dmgBonusStr = (atk.dmgBonus >= 0 ? '+' : '') + atk.dmgBonus
+    }
 
-      const damageStr = `${atk.dmgDie || ''}${dmgBonusStr} ${atk.type || ''}`
+    const damageStr = `${atk.dmgDie || ''}${dmgBonusStr} ${atk.type || ''}`
 
-      return {
-        name: atk.name,
-        bonus: atkBonus,
-        damage: damageStr,
-        notes: (atk.weaponMastery ? `[${atk.weaponMastery}] ` : '') + (atk.notes || ''),
-      }
-    },
-  )
+    return {
+      name: atk.name,
+      bonus: atkBonus,
+      damage: damageStr,
+      notes: (atk.weaponMastery ? `[${atk.weaponMastery}] ` : '') + (atk.notes || ''),
+    }
+  })
 })
+
+const feats = computed(() => char.value?.features || [])
+const appendixFeatures = computed(() => feats.value.filter((f) => !!f.desc?.trim()))
+const appendixSpells = computed(() => sortedSpells.value.filter((s) => !!s.desc?.trim()))
+const hasAppendix = computed(() => appendixFeatures.value.length > 0 || appendixSpells.value.length > 0)
+
+function formatSpellLevel(level: number) {
+  if (level === 0) return 'Cantrip'
+  if (level === 1) return '1st'
+  if (level === 2) return '2nd'
+  if (level === 3) return '3rd'
+  return `${level}th`
+}
 </script>
 
 <template>
   <div class="printable-sheet-container hidden print:block bg-white text-black p-0 m-0 w-full">
-    <!-- PAGE 1 -->
+    <!-- PAGE 1: Core Vitals & Skills -->
     <main
       class="a4-page p-8 border-black font-body-md text-body-md bg-white text-black"
       style="width: 794px; min-height: 1123px; margin: 0 auto; page-break-after: always"
     >
-      <!-- Header Section -->
-      <header class="border-b-4 border-black pb-4 mb-8 flex justify-between items-end">
+      <!-- Header -->
+      <header class="border-b-4 border-black pb-4 mb-6 flex justify-between items-end">
         <div>
-          <h1 class="font-display-lg text-display-lg leading-none mb-1 tracking-tight text-black">
+          <h1 class="font-display-lg text-display-lg leading-none mb-1 tracking-tight text-black uppercase">
             {{ char.name || 'Unnamed Hero' }}
           </h1>
-          <h2 class="font-headline-md text-headline-md text-black">
-            <span style="font-family: Manrope, sans-serif; font-size: 18px">
-              {{ char.class || 'Class' }} - {{ store.displaySpeciesName || char.species || 'Species' }}
-            </span>
-          </h2>
+          <p class="font-headline-md text-headline-md text-black">
+            {{ store.displaySpeciesName || char.species || 'Species' }}
+            {{ char.class || 'Class' }}{{ char.class ? ` ${store.derivedLevel}` : '' }}
+          </p>
         </div>
-        <div class="text-right">
-          <div class="font-headline-md text-headline-md uppercase tracking-widest text-black">
-            Tier {{ char.renownTier || 1 }}
+        <div class="text-right uppercase font-bold space-y-1">
+          <div class="font-label-md text-label-md text-black">
+            Renown:
+            <span class="border-b-2 border-black px-2">{{ char.renownTier || 1 }}</span>
           </div>
-          <div class="font-label-md text-label-md uppercase text-black">Aspirant</div>
+          <div class="font-label-md text-label-md text-black">
+            Job:
+            <span class="border-b-2 border-black px-2">{{ char.jobInParty || '—' }}</span>
+          </div>
         </div>
       </header>
 
       <div class="grid grid-cols-12 gap-6">
         <!-- Left Column: Stats & Vitals -->
-        <div class="col-span-4 flex flex-col gap-8">
+        <div class="col-span-5 flex flex-col gap-6">
           <!-- Ability Scores -->
-          <section class="border-2 border-black p-4 rounded-lg bg-white">
-            <h3
-              class="font-headline-md text-headline-md border-b-2 border-black mb-4 pb-1 text-left text-black"
+          <section class="grid grid-cols-2 gap-3">
+            <div
+              v-for="[key, label] in abilityEntries"
+              :key="key"
+              class="border-2 border-black p-2 text-center bg-white"
             >
-              Abilities
-            </h3>
-            <div class="space-y-4">
-              <!-- STR -->
-              <div class="flex items-center justify-between">
-                <div
-                  class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg text-black bg-white"
-                >
-                  {{ char.abilityScores.str }}
-                </div>
-                <div class="text-center w-16">
-                  <div class="font-label-md text-label-md uppercase text-xs text-black">STR</div>
-                  <div class="font-headline-md text-headline-md text-black">
-                    {{ getAbilityMod('str') }}
-                  </div>
-                </div>
-              </div>
-              <!-- DEX -->
-              <div class="flex items-center justify-between">
-                <div
-                  class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg text-black bg-white"
-                >
-                  {{ char.abilityScores.dex }}
-                </div>
-                <div class="text-center w-16">
-                  <div class="font-label-md text-label-md uppercase text-xs text-black">DEX</div>
-                  <div class="font-headline-md text-headline-md text-black">
-                    {{ getAbilityMod('dex') }}
-                  </div>
-                </div>
-              </div>
-              <!-- CON -->
-              <div class="flex items-center justify-between">
-                <div
-                  class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg text-black bg-white"
-                >
-                  {{ char.abilityScores.con }}
-                </div>
-                <div class="text-center w-16">
-                  <div class="font-label-md text-label-md uppercase text-xs text-black">CON</div>
-                  <div class="font-headline-md text-headline-md text-black">
-                    {{ getAbilityMod('con') }}
-                  </div>
-                </div>
-              </div>
-              <!-- INT -->
-              <div class="flex items-center justify-between">
-                <div
-                  class="w-12 h-12 rounded-full border-4 border-black flex items-center justify-center font-headline-lg text-headline-lg font-bold text-black bg-white"
-                >
-                  {{ char.abilityScores.int }}
-                </div>
-                <div class="text-center w-16">
-                  <div class="font-label-md text-label-md uppercase text-xs text-black">INT</div>
-                  <div class="font-headline-md text-headline-md font-bold text-black">
-                    {{ getAbilityMod('int') }}
-                  </div>
-                </div>
-              </div>
-              <!-- WIS -->
-              <div class="flex items-center justify-between">
-                <div
-                  class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg text-black bg-white"
-                >
-                  {{ char.abilityScores.wis }}
-                </div>
-                <div class="text-center w-16">
-                  <div class="font-label-md text-label-md uppercase text-xs text-black">WIS</div>
-                  <div class="font-headline-md text-headline-md text-black">
-                    {{ getAbilityMod('wis') }}
-                  </div>
-                </div>
-              </div>
-              <!-- CHA -->
-              <div class="flex items-center justify-between">
-                <div
-                  class="w-12 h-12 rounded-full border-2 border-black flex items-center justify-center font-headline-lg text-headline-lg text-black bg-white"
-                >
-                  {{ char.abilityScores.cha }}
-                </div>
-                <div class="text-center w-16">
-                  <div class="font-label-md text-label-md uppercase text-xs text-black">CHA</div>
-                  <div class="font-headline-md text-headline-md text-black">
-                    {{ getAbilityMod('cha') }}
-                  </div>
-                </div>
+              <span class="font-label-md text-label-md uppercase block leading-tight text-black">{{ label }}</span>
+              <span class="font-headline-lg text-headline-lg text-black">{{ char.abilityScores[key] ?? 10 }}</span>
+              <div class="border-t border-black mt-1 py-1 bg-gray-100 text-lg font-headline-md text-headline-md text-black">
+                {{ getAbilityMod(key) }}
               </div>
             </div>
           </section>
 
-          <!-- Vitals -->
-          <section class="grid grid-cols-2 gap-2">
-            <div class="border-2 border-black p-2 text-center rounded bg-white">
-              <div class="font-label-md text-label-md text-xs uppercase text-black">
-                Armor Class
+          <!-- Combat Vitals -->
+          <section class="border-4 border-black p-4 space-y-4 bg-white">
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="border border-black p-1 bg-white">
+                <span class="text-[10px] font-bold block uppercase text-black">Armor Class</span>
+                <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ store.computedArmorClass }}</span>
               </div>
-              <div class="font-headline-lg text-headline-lg text-black">{{ char.combat.ac }}</div>
-            </div>
-            <div class="border-2 border-black p-2 text-center rounded bg-white">
-              <div class="font-label-md text-label-md text-xs uppercase text-black">Initiative</div>
-              <div class="font-headline-lg text-headline-lg text-black">
-                {{ getAbilityMod('dex') }}
+              <div class="border border-black p-1 bg-white">
+                <span class="text-[10px] font-bold block uppercase text-black">Initiative</span>
+                <span class="text-2xl font-headline-lg text-headline-lg text-black">
+                  {{ store.initiativeMod >= 0 ? '+' : '' }}{{ store.initiativeMod }}
+                </span>
               </div>
-            </div>
-            <div class="border-2 border-black p-2 text-center rounded bg-white">
-              <div class="font-label-md text-label-md text-xs uppercase text-black">Speed</div>
-              <div class="font-headline-lg text-headline-lg text-black">
-                {{ char.combat.speed || '30ft' }}
+              <div class="border border-black p-1 bg-white">
+                <span class="text-[10px] font-bold block uppercase text-black">Speed</span>
+                <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ store.walkingSpeed }}</span>
               </div>
             </div>
-            <div class="border-2 border-black p-2 text-center rounded bg-white">
-              <div class="font-label-md text-label-md text-xs uppercase text-black">
-                Proficiency
+
+            <div class="flex gap-2">
+              <div class="flex-grow border border-black p-2 relative bg-white">
+                <span class="text-[10px] font-bold block uppercase text-black">Hit Points (Max: {{ store.maxHp }})</span>
+                <div
+                  class="h-12 border-2 border-dashed border-gray-300 mt-1 flex items-center justify-center text-gray-400 italic text-xs"
+                >
+                  Current HP
+                </div>
               </div>
-              <div class="font-headline-lg text-headline-lg text-black">+{{ store.profBonus }}</div>
-            </div>
-            <div class="col-span-2 border-2 border-black p-3 text-center rounded bg-white">
-              <div class="font-label-md text-label-md text-xs uppercase mb-1 text-black">
-                Hit Points
-              </div>
-              <div class="flex justify-center items-end gap-2">
-                <span class="font-headline-lg text-headline-lg leading-none text-black"
-                  ><span class="w-8 inline-block"></span
-                ></span>
-                <span class="text-black font-bold pb-1">/ {{ store.maxHp }}</span>
+              <div class="w-20 border border-black p-2 text-center bg-white">
+                <span class="text-[10px] font-bold block uppercase text-black">Proficiency</span>
+                <span class="text-2xl font-headline-lg text-headline-lg text-black">+{{ store.profBonus }}</span>
               </div>
             </div>
           </section>
         </div>
 
-        <!-- Middle & Right Columns: Skills & Talents -->
-        <div class="col-span-8 flex flex-col gap-8">
-          <!-- Skills -->
-          <section class="border-2 border-black p-4 rounded-lg bg-white">
-            <h3
-              class="font-headline-md text-headline-md border-b-2 border-black mb-4 pb-1 text-black"
-            >
+        <!-- Right Column: Skills -->
+        <div class="col-span-7">
+          <section class="border-2 border-black bg-white">
+            <h3 class="bg-black text-white px-2 py-1 text-sm font-headline-md text-headline-md uppercase tracking-widest">
               Skills
             </h3>
-            <div class="columns-2 gap-6 space-y-1">
-              <div
-                v-for="[name, stat] in Object.entries(DND_RULES.SKILLS)"
-                :key="name"
-                class="flex justify-between border-b border-black pb-1 text-black"
-              >
-                <span class="flex items-center gap-2 text-black">
-                  <span
-                    class="w-3 h-3 rounded-full inline-block border-2 border-black"
-                    :class="isSkillProficient(name) ? 'bg-black' : 'bg-white'"
-                  ></span>
-                  {{ name }} <span class="text-xs text-black">({{ stat.toUpperCase() }})</span>
-                </span>
-                <span :class="isSkillProficient(name) ? 'font-bold text-black' : 'text-black'">
-                  {{ getSkillMod(name, stat) }}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <!-- Feats / Features -->
-          <section class="border-2 border-black p-4 rounded-lg flex-1 bg-white">
-            <h3
-              class="font-headline-md text-headline-md border-b-2 border-black mb-4 pb-1 text-black"
-            >
-              Feats & Features
-            </h3>
-            <div class="space-y-4">
-              <div
-                v-for="feat in feats.slice(0, 3)"
-                :key="feat.title"
-                class="border-2 border-black p-3 rounded bg-white"
-              >
-                <h4
-                  class="font-label-md text-label-md uppercase font-bold flex items-center gap-2 text-black"
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="border-b-2 border-black bg-gray-50 uppercase text-[10px]">
+                  <th class="px-2 py-1 w-8 text-black">Prof</th>
+                  <th class="px-2 py-1 text-black">Skill (Ability)</th>
+                  <th class="px-2 py-1 text-right text-black">Bonus</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="([name, stat], index) in skillEntries"
+                  :key="name"
+                  :class="['border-b border-gray-200', index % 2 === 1 ? 'bg-gray-50' : '']"
                 >
-                  {{ feat.title }}
-                </h4>
-                <p class="text-sm mt-1 text-black">{{ feat.desc }}</p>
-              </div>
-              <div
-                v-if="feats.length === 0"
-                class="border-2 border-black p-3 rounded border-dashed flex items-center justify-center min-h-[80px] bg-white"
-              >
-                <span class="text-black italic font-body-md text-body-md"
-                  >No feats or features recorded.</span
-                >
-              </div>
-            </div>
+                  <td class="px-2 py-1 text-center font-bold">
+                    <div
+                      :class="[
+                        'w-3 h-3 border border-black mx-auto',
+                        isSkillProficient(name) ? 'bg-black' : 'bg-white',
+                      ]"
+                    ></div>
+                  </td>
+                  <td class="px-2 py-1 text-black">
+                    {{ name }} <span class="text-[10px] text-gray-500 uppercase">({{ stat.toUpperCase() }})</span>
+                  </td>
+                  <td class="px-2 py-1 text-right font-headline-md text-headline-md text-black">
+                    {{ getSkillMod(name, stat) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </section>
         </div>
       </div>
     </main>
 
-    <!-- PAGE 2 -->
+    <!-- PAGE 2: Combat, Magic, & Inventory -->
     <main
+      class="a4-page p-6 border-black font-body-md text-body-md bg-white text-black"
+      style="width: 794px; min-height: 1123px; margin: 0 auto; page-break-after: always"
+    >
+      <!-- Spellcasting Vitals -->
+      <section v-if="store.spellSlots && Object.keys(store.spellSlots).length" class="grid grid-cols-2 gap-4 mb-4">
+        <div class="border-2 border-black p-2 flex justify-around items-center bg-white">
+          <div class="text-center">
+            <span class="text-xs font-bold uppercase block text-black">Spell Attack</span>
+            <span class="text-2xl font-headline-lg text-headline-lg text-black">
+              {{ store.spellAttack >= 0 ? '+' : '' }}{{ store.spellAttack }}
+            </span>
+          </div>
+          <div class="w-px h-10 bg-black"></div>
+          <div class="text-center">
+            <span class="text-xs font-bold uppercase block text-black">Save DC</span>
+            <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ store.spellSaveDC }}</span>
+          </div>
+        </div>
+        <div class="border-2 border-black p-2 bg-white">
+          <span class="text-xs font-bold uppercase block mb-1 text-black">Spell Slots</span>
+          <div class="flex justify-between gap-1">
+            <div v-for="level in [1, 2, 3, 4, 5]" :key="level" class="flex flex-col items-center">
+              <span class="text-[10px] font-bold text-black">L{{ level }}</span>
+              <div class="flex gap-0.5">
+                <div
+                  v-for="slotIndex in store.spellSlots[`level${level}`] || 0"
+                  :key="slotIndex"
+                  class="w-3.5 h-3.5 border border-black bg-white"
+                ></div>
+                <div v-if="!(store.spellSlots[`level${level}`] || 0)" class="text-xs text-black italic">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Attacks Table -->
+      <section class="border-2 border-black mb-4 bg-white">
+        <h3 class="bg-black text-white px-2 py-1 text-sm font-headline-md text-headline-md uppercase tracking-widest">
+          Attacks
+        </h3>
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="border-b border-black bg-gray-50 uppercase text-[10px]">
+              <th class="px-2 py-1 text-black">Name</th>
+              <th class="px-2 py-1 text-black">Bonus</th>
+              <th class="px-2 py-1 text-black">Damage/Type</th>
+              <th class="px-2 py-1 text-black">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="atk in attacks" :key="atk.name" class="border-b border-gray-200">
+              <td class="px-2 py-2 font-bold text-black">{{ atk.name }}</td>
+              <td class="px-2 py-2 font-headline-md text-headline-md text-black">
+                {{ atk.bonus >= 0 ? '+' : '' }}{{ atk.bonus }}
+              </td>
+              <td class="px-2 py-2 text-black">{{ atk.damage }}</td>
+              <td class="px-2 py-2 text-[10px] text-black">{{ atk.notes }}</td>
+            </tr>
+            <tr v-if="attacks.length === 0">
+              <td colspan="4" class="px-2 py-4 text-center text-black italic">No attacks recorded.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Inventory Summary & Gear -->
+      <section class="grid grid-cols-2 gap-4 mb-4">
+        <div class="border-2 border-black bg-white">
+          <div class="bg-black text-white px-2 py-1 text-[10px] font-headline-md text-headline-md uppercase flex justify-between">
+            <span>Inventory & Gear</span>
+            <span>Gold: {{ char.gold ?? 0 }}gp</span>
+          </div>
+          <div class="p-2 space-y-2">
+            <div class="flex justify-between text-[10px] font-bold border-b border-black pb-1 text-black">
+              <span>Supply: {{ char.supply ?? 0 }}</span>
+              <span>Influence: {{ char.influence ?? 0 }}</span>
+            </div>
+            <ul class="text-[11px] space-y-1">
+              <li
+                v-for="item in char.equippedGear"
+                :key="item.id"
+                class="flex justify-between items-center border-b border-gray-100 last:border-0"
+              >
+                <span class="text-black">{{ item.name }}</span>
+                <span class="text-[9px] text-gray-500 uppercase">{{ item.slotCost }} slot</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="border-2 border-black bg-white">
+          <div class="bg-black text-white px-2 py-1 text-[10px] font-headline-md text-headline-md uppercase">Consumables</div>
+          <div class="p-2">
+            <ul class="text-[11px] space-y-1">
+              <li
+                v-for="item in char.consumables"
+                :key="item.id"
+                class="flex justify-between items-center border-b border-gray-100 last:border-0"
+              >
+                <span class="text-black">{{ item.name }}</span>
+                <span class="font-bold text-black">{{ item.usageDie }}</span>
+              </li>
+            </ul>
+            <div v-if="!char.consumables?.length" class="text-black italic text-center py-2 text-[11px]">
+              No consumables.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom: Features & Spells Index -->
+      <section class="flex-grow grid grid-cols-2 gap-4 overflow-hidden">
+        <div class="space-y-2">
+          <h3 class="text-xs font-bold uppercase border-b border-black text-black">Class Features Index</h3>
+          <ul class="text-[10px] space-y-1">
+            <li v-for="feat in feats" :key="feat.title" class="flex justify-between text-black">
+              <span class="font-bold">{{ feat.title }}</span>
+            </li>
+          </ul>
+          <div v-if="!feats.length" class="text-black italic text-[10px]">No features recorded.</div>
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-xs font-bold uppercase border-b border-black text-black">Spells Index</h3>
+          <ul class="text-[10px] space-y-1">
+            <li v-for="spell in sortedSpells" :key="spell.id || spell.name" class="flex justify-between text-black">
+              <span class="font-bold">{{ spell.name }}</span>
+              <span class="italic text-gray-500">{{ formatSpellLevel(spell.level) }} {{ spell.school || '' }}</span>
+            </li>
+          </ul>
+          <div v-if="!sortedSpells.length" class="text-black italic text-[10px]">No spells recorded.</div>
+        </div>
+      </section>
+
+      <div
+        v-if="hasAppendix"
+        class="text-center text-[10px] font-bold uppercase py-2 border-t-2 border-black text-black"
+      >
+        Continues in Appendix
+      </div>
+    </main>
+
+    <!-- PAGE 3+: The Appendix -->
+    <main
+      v-if="hasAppendix"
       class="a4-page p-6 border-black font-body-md text-body-md bg-white text-black"
       style="width: 794px; min-height: 1123px; margin: 0 auto"
     >
-      <!-- Spellcasting Vitals & Slots Tracker -->
-      <section class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
-        <!-- Vitals -->
-        <div class="md:col-span-4 grid grid-cols-2 gap-2">
-          <div class="border border-black p-2 rounded-sm text-center bg-white">
-            <p class="font-label-md text-label-md text-black uppercase mb-0.5 text-xs">
-              Spell Attack
-            </p>
-            <div class="font-display-lg text-display-lg text-black text-3xl leading-none">
-              {{ store.spellAttack >= 0 ? '+' : '' }}{{ store.spellAttack }}
-            </div>
-          </div>
-          <div class="border border-black p-2 rounded-sm text-center bg-white">
-            <p class="font-label-md text-label-md text-black uppercase mb-0.5 text-xs">
-              Spell Save DC
-            </p>
-            <div class="font-display-lg text-display-lg text-black text-3xl leading-none">
-              {{ store.spellSaveDC }}
-            </div>
-          </div>
-        </div>
-        <!-- Slots Tracker -->
-        <div class="md:col-span-8 border border-black p-2 rounded-sm bg-white">
-          <h3
-            class="font-headline-md text-headline-md text-black mb-1 border-b border-black pb-1 text-sm"
-          >
-            Spell Slots
-          </h3>
-          <div class="grid grid-cols-5 gap-2">
-            <div v-for="level in [1, 2, 3, 4, 5]" :key="level" class="flex flex-col items-center">
-              <span class="font-label-md text-label-md mb-0.5 text-black text-xs"
-                >Level {{ level }}</span
-              >
-              <div class="flex gap-1">
-                <div
-                  v-for="slotIndex in spellSlots[`level${level}`] || 0"
-                  :key="slotIndex"
-                  class="w-3.5 h-3.5 border border-black rounded-sm bg-white"
-                ></div>
-                <div v-if="!(spellSlots[`level${level}`] || 0)" class="text-xs text-black italic">
-                  -
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <header class="border-b-4 border-black pb-4 mb-4">
+        <h2 class="font-headline-lg text-headline-lg text-black uppercase tracking-tight">Appendix & Detailed Reference</h2>
+        <p class="text-xs italic text-gray-500">Full descriptions for all feats, features, and spells.</p>
+      </header>
 
-      <!-- Selected Spells -->
-      <section class="mt-4" v-if="sortedSpells.length > 0">
-        <h3
-          class="font-headline-lg text-headline-lg border-b-2 border-black pb-1 mb-2 text-black uppercase tracking-wider text-xl"
+      <div class="space-y-4">
+        <article
+          v-for="feat in appendixFeatures"
+          :key="'appendix-feat-' + feat.title"
+          class="border border-black p-3 break-inside-avoid bg-white"
         >
-          Selected Spells
-        </h3>
-        <div class="border border-black rounded-sm overflow-hidden bg-white">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-black bg-white">
-                <th
-                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-black text-xs"
-                >
-                  Spell Name
-                </th>
-                <th
-                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-center text-black text-xs"
-                >
-                  Level
-                </th>
-                <th class="p-1.5 font-label-md text-label-md uppercase text-black text-xs">
-                  School
-                </th>
-              </tr>
-            </thead>
-            <tbody class="font-body-md bg-white text-sm">
-              <tr
-                v-for="(spell, index) in sortedSpells"
-                :key="index"
-                class="border-b border-black"
-              >
-                <td class="p-1.5 border-r border-black h-7 text-black">{{ spell.name }}</td>
-                <td class="p-1.5 border-r border-black text-center text-black">
-                  {{ spell.level === 0 ? 'Cantrip' : spell.level }}
-                </td>
-                <td class="p-1.5 text-black">{{ spell.school || '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+          <header class="flex justify-between items-baseline border-b border-black mb-2 pb-1">
+            <h3 class="font-headline-md text-headline-md uppercase text-sm text-black">{{ feat.title }}</h3>
+          </header>
+          <p class="text-xs leading-relaxed whitespace-pre-wrap text-black">{{ feat.desc }}</p>
+        </article>
 
-      <!-- Attacks -->
-      <section class="mt-4">
-        <h3
-          class="font-headline-lg text-headline-lg border-b-2 border-black pb-1 mb-2 text-black uppercase tracking-wider text-xl"
+        <article
+          v-for="spell in appendixSpells"
+          :key="'appendix-spell-' + (spell.id || spell.name)"
+          class="border border-black p-3 break-inside-avoid bg-gray-50 bg-opacity-30"
         >
-          Attacks
-        </h3>
-        <div class="border border-black rounded-sm overflow-hidden bg-white">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-black bg-white">
-                <th
-                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-black text-xs"
-                >
-                  Weapon Name
-                </th>
-                <th
-                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-center text-black text-xs"
-                >
-                  Atk Bonus
-                </th>
-                <th
-                  class="p-1.5 font-label-md text-label-md uppercase border-r border-black text-black text-xs"
-                >
-                  Damage/Type
-                </th>
-                <th class="p-1.5 font-label-md text-label-md uppercase text-black text-xs">
-                  Notes
-                </th>
-              </tr>
-            </thead>
-            <tbody class="font-body-md bg-white text-sm">
-              <tr
-                v-for="(atk, index) in attacks.slice(0, 4)"
-                :key="index"
-                class="border-b border-black"
-              >
-                <td class="p-1.5 border-r border-black h-8 text-black">{{ atk.name }}</td>
-                <td class="p-1.5 border-r border-black text-center text-black">
-                  {{ atk.bonus >= 0 ? '+' : '' }}{{ atk.bonus }}
-                </td>
-                <td class="p-1.5 border-r border-black text-black">{{ atk.damage }}</td>
-                <td class="p-1.5 text-black text-xs">{{ atk.notes }}</td>
-              </tr>
-              <!-- Fill empty rows if less than 4 attacks -->
-              <tr
-                v-for="i in Math.max(0, 4 - attacks.length)"
-                :key="'empty-' + i"
-                class="border-b border-black"
-              >
-                <td class="p-1.5 border-r border-black h-8"></td>
-                <td class="p-1.5 border-r border-black text-center"></td>
-                <td class="p-1.5 border-r border-black"></td>
-                <td class="p-1.5"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Inventory & Equipment Block -->
-        <div class="mt-3 border border-black p-2 rounded-sm bg-white">
-          <h4
-            class="font-label-md text-label-md uppercase mb-1 border-b border-black pb-0.5 text-black text-xs"
-          >
-            Inventory & Equipment
-          </h4>
-          <div class="text-black text-xs overflow-hidden space-y-1">
-            <!-- Tri-Currency Row -->
-            <div
-              class="flex justify-between border-b border-black/10 pb-1 mb-1 font-bold text-[10px]"
-            >
-              <span>Gold: {{ char?.gold ?? 0 }} GP</span>
-              <span>Supply: {{ char?.supply ?? 0 }}</span>
-              <span>Influence: {{ char?.influence ?? 0 }}</span>
-            </div>
-            <!-- Gear List -->
-            <div v-if="char?.equippedGear && char.equippedGear.length > 0" class="space-y-0.5">
-              <div
-                v-for="item in char.equippedGear.slice(0, 3)"
-                :key="item.id"
-                class="flex justify-between text-[10px]"
-              >
-                <span class="truncate font-medium">⚔️ {{ item.name }}</span>
-                <span class="text-black/60 shrink-0">Cost: {{ item.slotCost }}</span>
-              </div>
-            </div>
-            <!-- Consumables List -->
-            <div
-              v-if="char?.consumables && char.consumables.length > 0"
-              class="space-y-0.5 pt-1 border-t border-black/10"
-            >
-              <div
-                v-for="item in char.consumables.slice(0, 3)"
-                :key="item.id"
-                class="flex justify-between text-[10px]"
-              >
-                <span class="truncate">🎒 {{ item.name }}</span>
-                <span class="text-black/60 shrink-0">{{ item.usageDie }}</span>
-              </div>
-            </div>
-            <div
-              v-if="
-                (!char?.equippedGear || char.equippedGear.length === 0) &&
-                (!char?.consumables || char.consumables.length === 0)
-              "
-              class="text-black/50 italic text-center py-4"
-            >
-              No equipment or consumables.
-            </div>
-          </div>
-        </div>
-      </section>
+          <header class="flex justify-between items-baseline border-b border-black mb-2 pb-1">
+            <h4 class="font-headline-md text-headline-md uppercase text-sm italic text-black">{{ spell.name }}</h4>
+            <span class="text-[10px] uppercase font-bold text-black">
+              {{ formatSpellLevel(spell.level) }}<span v-if="spell.school"> • {{ spell.school }}</span>
+            </span>
+          </header>
+          <p class="text-xs leading-relaxed whitespace-pre-wrap text-black">{{ spell.desc }}</p>
+        </article>
+      </div>
     </main>
   </div>
 </template>
