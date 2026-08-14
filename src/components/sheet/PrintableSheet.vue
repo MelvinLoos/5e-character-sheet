@@ -65,9 +65,18 @@ const attacks = computed(() => {
   })
 })
 
+const MAX_PAGE_TWO_FEATURES = 8
+const MAX_PAGE_TWO_SPELLS = 8
+const MAX_ATTACKS = 6
+const MAX_EQUIPPED_GEAR = 6
+const MAX_CONSUMABLES = 4
+
 const feats = computed(() => char.value?.features || [])
-const pageTwoFeats = computed(() => feats.value.slice(0, 15))
-const pageTwoSpells = computed(() => sortedSpells.value.slice(0, 15))
+const pageTwoFeats = computed(() => feats.value.slice(0, MAX_PAGE_TWO_FEATURES))
+const pageTwoSpells = computed(() => sortedSpells.value.slice(0, MAX_PAGE_TWO_SPELLS))
+const cappedAttacks = computed(() => attacks.value.slice(0, MAX_ATTACKS))
+const cappedEquippedGear = computed(() => (char.value?.equippedGear || []).slice(0, MAX_EQUIPPED_GEAR))
+const cappedConsumables = computed(() => (char.value?.consumables || []).slice(0, MAX_CONSUMABLES))
 const appendixFeatures = computed(() => feats.value.filter((f) => !!f.desc?.trim()))
 const appendixSpells = computed(() => sortedSpells.value.filter((s) => !!s.desc?.trim()))
 const hasAppendix = computed(() => appendixFeatures.value.length > 0 || appendixSpells.value.length > 0)
@@ -85,7 +94,7 @@ function formatSpellLevel(level: number) {
   <div class="printable-sheet-container hidden print:block bg-white text-black p-0 m-0 w-full">
     <!-- PAGE 1: Core Vitals & Skills -->
     <main
-      class="a4-page p-8 border-black font-body-md text-body-md bg-white text-black"
+      class="a4-page a4-page--fixed p-8 border-black font-body-md text-body-md bg-white text-black"
       style="width: 794px; min-height: 1123px; margin: 0 auto; page-break-after: always"
     >
       <!-- Header -->
@@ -205,7 +214,7 @@ function formatSpellLevel(level: number) {
 
     <!-- PAGE 2: Combat, Magic, & Inventory -->
     <main
-      class="a4-page p-6 border-black font-body-md text-body-md bg-white text-black"
+      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black"
       style="width: 794px; min-height: 1123px; margin: 0 auto; page-break-after: always"
     >
       <!-- Spellcasting Vitals -->
@@ -255,8 +264,8 @@ function formatSpellLevel(level: number) {
               <th class="px-2 py-1 text-black">Notes</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="atk in attacks" :key="atk.name" class="border-b border-gray-200">
+            <tbody>
+            <tr v-for="atk in cappedAttacks" :key="atk.name" class="border-b border-gray-200">
               <td class="px-2 py-2 font-bold text-black">{{ atk.name }}</td>
               <td class="px-2 py-2 font-headline-md text-headline-md text-black">
                 {{ atk.bonus >= 0 ? '+' : '' }}{{ atk.bonus }}
@@ -264,8 +273,13 @@ function formatSpellLevel(level: number) {
               <td class="px-2 py-2 text-black">{{ atk.damage }}</td>
               <td class="px-2 py-2 text-[10px] text-black">{{ atk.notes }}</td>
             </tr>
-            <tr v-if="attacks.length === 0">
+            <tr v-if="cappedAttacks.length === 0">
               <td colspan="4" class="px-2 py-4 text-center text-black italic">No attacks recorded.</td>
+            </tr>
+            <tr v-if="(char.attacks || []).length > cappedAttacks.length">
+              <td colspan="4" class="px-2 py-1 text-center text-[10px] italic text-gray-500 text-black">
+                +{{ (char.attacks || []).length - cappedAttacks.length }} more attacks
+              </td>
             </tr>
           </tbody>
         </table>
@@ -285,7 +299,7 @@ function formatSpellLevel(level: number) {
             </div>
             <ul class="text-[11px] space-y-1">
               <li
-                v-for="item in char.equippedGear"
+                v-for="item in cappedEquippedGear"
                 :key="item.id"
                 class="flex justify-between items-center border-b border-gray-100 last:border-0"
               >
@@ -300,7 +314,7 @@ function formatSpellLevel(level: number) {
           <div class="p-2">
             <ul class="text-[11px] space-y-1">
               <li
-                v-for="item in char.consumables"
+                v-for="item in cappedConsumables"
                 :key="item.id"
                 class="flex justify-between items-center border-b border-gray-100 last:border-0"
               >
@@ -308,8 +322,11 @@ function formatSpellLevel(level: number) {
                 <span class="font-bold text-black">{{ item.usageDie }}</span>
               </li>
             </ul>
-            <div v-if="!char.consumables?.length" class="text-black italic text-center py-2 text-[11px]">
+            <div v-if="!cappedConsumables.length" class="text-black italic text-center py-2 text-[11px]">
               No consumables.
+            </div>
+            <div v-if="(char.consumables || []).length > cappedConsumables.length" class="text-[10px] italic text-gray-500 text-black text-center pt-1">
+              +{{ (char.consumables || []).length - cappedConsumables.length }} more consumables
             </div>
           </div>
         </div>
@@ -365,7 +382,7 @@ function formatSpellLevel(level: number) {
     <!-- PAGE 3+: The Appendix -->
     <main
       v-if="hasAppendix"
-      class="a4-page p-6 border-black font-body-md text-body-md bg-white text-black"
+      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black"
       style="width: 794px; min-height: 1123px; margin: 0 auto"
     >
       <header class="border-b-4 border-black pb-4 mb-4">
@@ -447,7 +464,7 @@ function formatSpellLevel(level: number) {
 @media print {
   @page {
     size: A4;
-    margin: 0.5cm;
+    margin: 0;
   }
   body {
     background: white !important;
@@ -457,16 +474,18 @@ function formatSpellLevel(level: number) {
     display: block !important;
     background: white !important;
   }
-  .a4-page {
+  .a4-page--fixed {
     border: none !important;
     margin: 0 auto !important;
-    padding: 0 !important;
+    padding: 0.5cm !important;
     width: 100% !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
     box-shadow: none !important;
     background: white !important;
     color: black !important;
-    min-height: 0 !important;
-    height: auto !important;
+    overflow: hidden !important;
   }
   .a4-page:not(:last-child) {
     page-break-after: always;
@@ -483,9 +502,14 @@ function formatSpellLevel(level: number) {
   }
 }
 
-.a4-page {
+.a4-page--fixed {
+  display: flex;
+  flex-direction: column;
   width: 210mm;
+  height: 297mm;
   min-height: 297mm;
+  max-height: 297mm;
+  overflow: hidden;
   background: white !important;
   color: black !important;
 }
