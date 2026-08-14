@@ -66,6 +66,8 @@ const attacks = computed(() => {
 })
 
 const feats = computed(() => char.value?.features || [])
+const pageTwoFeats = computed(() => feats.value.slice(0, 15))
+const pageTwoSpells = computed(() => sortedSpells.value.slice(0, 15))
 const appendixFeatures = computed(() => feats.value.filter((f) => !!f.desc?.trim()))
 const appendixSpells = computed(() => sortedSpells.value.filter((s) => !!s.desc?.trim()))
 const hasAppendix = computed(() => appendixFeatures.value.length > 0 || appendixSpells.value.length > 0)
@@ -149,11 +151,7 @@ function formatSpellLevel(level: number) {
             <div class="flex gap-2">
               <div class="flex-grow border border-black p-2 relative bg-white">
                 <span class="text-[10px] font-bold block uppercase text-black">Hit Points (Max: {{ store.maxHp }})</span>
-                <div
-                  class="h-12 border-2 border-dashed border-gray-300 mt-1 flex items-center justify-center text-gray-400 italic text-xs"
-                >
-                  Current HP
-                </div>
+                <div class="hp-current-box h-12 border-2 border-dashed border-gray-300 mt-1"></div>
               </div>
               <div class="w-20 border border-black p-2 text-center bg-white">
                 <span class="text-[10px] font-bold block uppercase text-black">Proficiency</span>
@@ -186,8 +184,8 @@ function formatSpellLevel(level: number) {
                   <td class="px-2 py-1 text-center font-bold">
                     <div
                       :class="[
-                        'w-3 h-3 border border-black mx-auto',
-                        isSkillProficient(name) ? 'bg-black' : 'bg-white',
+                        'skill-prof w-3 h-3 border border-black mx-auto',
+                        isSkillProficient(name) ? 'skill-prof-filled' : '',
                       ]"
                     ></div>
                   </td>
@@ -322,8 +320,16 @@ function formatSpellLevel(level: number) {
         <div class="space-y-2">
           <h3 class="text-xs font-bold uppercase border-b border-black text-black">Class Features Index</h3>
           <ul class="text-[10px] space-y-1">
-            <li v-for="feat in feats" :key="feat.title" class="flex justify-between text-black">
+            <li
+              v-for="feat in pageTwoFeats"
+              :key="feat.title"
+              data-testid="page-two-index-item"
+              class="flex justify-between text-black"
+            >
               <span class="font-bold">{{ feat.title }}</span>
+            </li>
+            <li v-if="feats.length > pageTwoFeats.length" class="text-[10px] italic text-gray-500 text-black">
+              +{{ feats.length - pageTwoFeats.length }} more<span v-if="hasAppendix"> — see Appendix</span>
             </li>
           </ul>
           <div v-if="!feats.length" class="text-black italic text-[10px]">No features recorded.</div>
@@ -331,9 +337,17 @@ function formatSpellLevel(level: number) {
         <div class="space-y-2">
           <h3 class="text-xs font-bold uppercase border-b border-black text-black">Spells Index</h3>
           <ul class="text-[10px] space-y-1">
-            <li v-for="spell in sortedSpells" :key="spell.id || spell.name" class="flex justify-between text-black">
+            <li
+              v-for="spell in pageTwoSpells"
+              :key="spell.id || spell.name"
+              data-testid="page-two-index-item"
+              class="flex justify-between text-black"
+            >
               <span class="font-bold">{{ spell.name }}</span>
               <span class="italic text-gray-500">{{ formatSpellLevel(spell.level) }} {{ spell.school || '' }}</span>
+            </li>
+            <li v-if="sortedSpells.length > pageTwoSpells.length" class="text-[10px] italic text-gray-500 text-black">
+              +{{ sortedSpells.length - pageTwoSpells.length }} more<span v-if="hasAppendix"> — see Appendix</span>
             </li>
           </ul>
           <div v-if="!sortedSpells.length" class="text-black italic text-[10px]">No spells recorded.</div>
@@ -463,6 +477,9 @@ function formatSpellLevel(level: number) {
     background-color: transparent !important;
     text-shadow: none !important;
     box-shadow: none !important;
+  }
+  .skill-prof-filled {
+    background-color: black !important;
   }
 }
 
