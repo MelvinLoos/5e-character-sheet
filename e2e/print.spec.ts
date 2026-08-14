@@ -23,12 +23,7 @@ test('generates a PDF whose page count matches the DOM page count', async ({ pag
   const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
-    margin: {
-      top: '0.5cm',
-      bottom: '0.5cm',
-      left: '0.5cm',
-      right: '0.5cm',
-    },
+    preferCSSPageSize: true,
   })
 
   // Parse PDF to get page count and verify non-empty text

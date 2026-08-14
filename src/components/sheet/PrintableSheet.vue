@@ -94,8 +94,8 @@ function formatSpellLevel(level: number) {
   <div class="printable-sheet-container hidden print:block bg-white text-black p-0 m-0 w-full">
     <!-- PAGE 1: Core Vitals & Skills -->
     <main
-      class="a4-page a4-page--fixed p-8 border-black font-body-md text-body-md bg-white text-black"
-      style="width: 794px; min-height: 1123px; margin: 0 auto; page-break-after: always"
+      class="a4-page a4-page--fixed p-8 border-black font-body-md text-body-md bg-white text-black overflow-hidden"
+      style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto; page-break-after: always"
     >
       <!-- Header -->
       <header class="border-b-4 border-black pb-4 mb-6 flex justify-between items-end">
@@ -214,8 +214,8 @@ function formatSpellLevel(level: number) {
 
     <!-- PAGE 2: Combat, Magic, & Inventory -->
     <main
-      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black"
-      style="width: 794px; min-height: 1123px; margin: 0 auto; page-break-after: always"
+      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black overflow-hidden"
+      style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto; page-break-after: always"
     >
       <!-- Spellcasting Vitals -->
       <section v-if="store.spellSlots && Object.keys(store.spellSlots).length" class="grid grid-cols-2 gap-4 mb-4">
@@ -333,7 +333,7 @@ function formatSpellLevel(level: number) {
       </section>
 
       <!-- Bottom: Features & Spells Index -->
-      <section class="flex-grow grid grid-cols-2 gap-4 overflow-hidden">
+      <section class="flex-grow grid grid-cols-2 gap-4 min-h-0 overflow-hidden">
         <div class="space-y-2">
           <h3 class="text-xs font-bold uppercase border-b border-black text-black">Class Features Index</h3>
           <ul class="text-[10px] space-y-1">
@@ -373,7 +373,8 @@ function formatSpellLevel(level: number) {
 
       <div
         v-if="hasAppendix"
-        class="text-center text-[10px] font-bold uppercase py-2 border-t-2 border-black text-black"
+        data-testid="appendix-footer"
+        class="mt-auto flex-shrink-0 text-center text-[10px] font-bold uppercase py-2 border-t-2 border-black text-black"
       >
         Continues in Appendix
       </div>
@@ -382,8 +383,8 @@ function formatSpellLevel(level: number) {
     <!-- PAGE 3+: The Appendix -->
     <main
       v-if="hasAppendix"
-      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black"
-      style="width: 794px; min-height: 1123px; margin: 0 auto"
+      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black overflow-hidden"
+      style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto"
     >
       <header class="border-b-4 border-black pb-4 mb-4">
         <h2 class="font-headline-lg text-headline-lg text-black uppercase tracking-tight">Appendix & Detailed Reference</h2>
@@ -479,15 +480,16 @@ function formatSpellLevel(level: number) {
     margin: 0 auto !important;
     padding: 0.5cm !important;
     width: 100% !important;
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-height: 297mm !important;
+    height: 296.5mm !important;
+    min-height: 296.5mm !important;
+    max-height: 296.5mm !important;
     box-shadow: none !important;
     background: white !important;
     color: black !important;
     overflow: hidden !important;
   }
   .a4-page:not(:last-child) {
+    break-after: page;
     page-break-after: always;
   }
   * {
@@ -505,10 +507,11 @@ function formatSpellLevel(level: number) {
 .a4-page--fixed {
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   width: 210mm;
-  height: 297mm;
-  min-height: 297mm;
-  max-height: 297mm;
+  height: 296.5mm;
+  min-height: 296.5mm;
+  max-height: 296.5mm;
   overflow: hidden;
   background: white !important;
   color: black !important;

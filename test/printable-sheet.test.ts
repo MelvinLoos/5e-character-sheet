@@ -179,6 +179,36 @@ describe('PrintableSheet (component integration)', () => {
     })
   })
 
+  it('clamps every page to a strict A4 height with overflow hidden', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = [{ title: 'Alert', desc: 'You gain a +5 bonus to initiative.' }]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const pages = wrapper.findAll('.a4-page--fixed')
+
+    expect(pages.length).toBeGreaterThan(0)
+    pages.forEach((page) => {
+      const style = page.attributes('style') || ''
+      expect(style).toMatch(/max-height:\s*\d+(\.\d+)?mm/)
+      expect(page.classes()).toContain('overflow-hidden')
+    })
+  })
+
+  it('anchors the appendix footer to the bottom of page 2 so it cannot orphan', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = [{ title: 'Alert', desc: 'You gain a +5 bonus to initiative.' }]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const footer = wrapper.find('[data-testid="appendix-footer"]')
+
+    expect(footer.exists()).toBe(true)
+    expect(footer.classes()).toContain('mt-auto')
+  })
+
   it('renders exactly three pages for a dense character without overflowing into a fourth page', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()
