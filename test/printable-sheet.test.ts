@@ -138,7 +138,7 @@ describe('PrintableSheet (component integration)', () => {
     expect(hpBox.text()).not.toContain('Current HP')
   })
 
-  it('caps the Page 2 Spells and Features indices at 15 items each', () => {
+  it('caps the Page 2 Spells and Features indices at 8 items each', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()
     character.features = Array.from({ length: 20 }, (_, i) => ({
@@ -154,13 +154,72 @@ describe('PrintableSheet (component integration)', () => {
     store.currentCharacterData = character
 
     const wrapper = mount(PrintableSheet)
-    const indexItems = wrapper.findAll('[data-testid=\"page-two-index-item\"]')
+    const indexItems = wrapper.findAll('[data-testid="page-two-index-item"]')
 
     const featureItems = indexItems.filter((item) => item.text().startsWith('Feature'))
     const spellItems = indexItems.filter((item) => item.text().startsWith('Spell'))
 
-    expect(featureItems.length).toBe(15)
-    expect(spellItems.length).toBe(15)
-    expect(wrapper.text()).toContain('+5 more')
+    expect(featureItems.length).toBe(8)
+    expect(spellItems.length).toBe(8)
+    expect(wrapper.text()).toContain('+12 more')
+  })
+
+  it('applies the fixed A4 page class to every rendered page', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = [{ title: 'Alert', desc: 'You gain a +5 bonus to initiative.' }]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const pages = wrapper.findAll('.a4-page')
+
+    expect(pages.length).toBeGreaterThan(0)
+    pages.forEach((page) => {
+      expect(page.classes()).toContain('a4-page--fixed')
+    })
+  })
+
+  it('renders exactly three pages for a dense character without overflowing into a fourth page', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+
+    character.attacks = Array.from({ length: 10 }, (_, i) => ({
+      name: `Attack ${i + 1}`,
+      atkStat: 'int',
+      dmgDie: '1d8',
+      type: 'force',
+      notes: `Note text for attack ${i + 1}.`,
+    }))
+
+    character.equippedGear = Array.from({ length: 10 }, (_, i) => ({
+      id: `gear-${i + 1}`,
+      name: `Gear Item ${i + 1}`,
+      slotCost: 1,
+    }))
+
+    character.consumables = Array.from({ length: 10 }, (_, i) => ({
+      id: `consumable-${i + 1}`,
+      name: `Consumable ${i + 1}`,
+      usageDie: 'd6',
+    }))
+
+    character.features = Array.from({ length: 12 }, (_, i) => ({
+      title: `Feature ${i + 1}`,
+      desc: `Description for feature ${i + 1}.`,
+    }))
+
+    character.spells = Array.from({ length: 12 }, (_, i) => ({
+      name: `Spell ${i + 1}`,
+      level: (i % 9) + 1,
+      desc: `Description for spell ${i + 1}.`,
+      school: 'Evocation',
+    }))
+
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const pages = wrapper.findAll('.a4-page')
+
+    expect(pages.length).toBe(3)
   })
 })
