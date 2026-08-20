@@ -25,32 +25,32 @@ const { clampCurrentHp } = useCombat()
         >
           <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           <span
-            class="material-symbols-outlined text-4xl text-secondary mb-2 relative z-10"
+            class="material-symbols-outlined text-4xl text-tertiary mb-2 relative z-10"
             style="font-variation-settings: 'FILL' 1"
             >shield</span
           >
           <span
-            class="font-label-md text-label-md text-secondary-fixed-dim uppercase tracking-wider relative z-10 select-none"
+            class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider relative z-10 select-none"
             >Armor Class</span
           >
-          <div class="font-headline-lg text-headline-lg text-white mt-1 relative z-10 font-bold">
+          <div class="font-headline-lg text-headline-lg text-on-surface mt-1 relative z-10 font-bold">
             <input
               v-if="store.isEditing && store.currentCharacterData.combat.isAcOverride"
               v-model.number="store.currentCharacterData.combat.ac"
               type="number"
-              class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-white font-bold p-0"
+              class="w-16 bg-transparent border-none focus:ring-0 text-center font-headline-lg text-headline-lg text-on-surface font-bold p-0"
             />
             <span v-else>
               {{ store.computedArmorClass }}
             </span>
           </div>
           <label
-            class="relative z-10 mt-2 inline-flex items-center gap-2 cursor-pointer font-body-sm text-body-sm text-secondary-fixed-dim select-none"
+            class="relative z-10 mt-2 inline-flex items-center gap-2 cursor-pointer font-body-sm text-body-sm text-on-surface-variant select-none"
           >
             <input
               v-model="store.currentCharacterData.combat.isAcOverride"
               type="checkbox"
-              class="form-checkbox h-4 w-4 rounded border-secondary-fixed-dim bg-secondary-container text-primary focus:ring-primary"
+              class="form-checkbox h-4 w-4 rounded border-outline-variant bg-surface-container text-primary focus:ring-primary"
             />
             <span>Override AC</span>
           </label>
