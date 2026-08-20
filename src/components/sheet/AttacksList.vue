@@ -253,7 +253,7 @@ const { editableAttacks, addAttack, removeAttack } = useCombat()
             <button
               v-if="store.isEditing"
               @click="removeAttack(index)"
-              class="ml-2 w-6 h-6 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-white hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out flex items-center justify-center shrink-0 select-none"
+              class="ml-2 w-6 h-6 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-on-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out flex items-center justify-center shrink-0 select-none"
               title="Remove Attack"
             >
               <span class="material-symbols-outlined text-[14px]">close</span>

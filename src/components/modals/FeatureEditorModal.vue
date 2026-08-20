@@ -379,7 +379,7 @@ function removeModifier(stat: string) {
                 </button>
                 <div
                   v-if="showHelp.key"
-                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                  class="absolute top-full right-0 mt-2 p-3 bg-surface-container-high border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
                 >
                   <div class="font-bold mb-1">Key Feature</div>
                   <div class="text-xs">Key features appear on the front page.</div>
@@ -455,7 +455,7 @@ function removeModifier(stat: string) {
                 </button>
                 <div
                   v-if="showHelp.ability"
-                  class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                  class="absolute top-full right-0 mt-2 p-3 bg-surface-container-high border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
                 >
                   <div class="font-bold mb-1">Ability Modifiers</div>
                   <div class="text-xs">
@@ -476,7 +476,7 @@ function removeModifier(stat: string) {
                 <div
                   v-for="(val, stat) in formData.abilityModifiers"
                   :key="stat"
-                  class="flex items-center justify-between bg-white px-2 py-1 rounded border border-gray-200 text-sm"
+                  class="flex items-center justify-between bg-surface-container-high px-2 py-1 rounded border border-gray-200 text-sm"
                 >
                   <span>
                     <span class="font-bold uppercase">{{ stat }}</span
@@ -546,7 +546,7 @@ function removeModifier(stat: string) {
                   </button>
                   <div
                     v-if="showHelp.grants"
-                    class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                    class="absolute top-full right-0 mt-2 p-3 bg-surface-container-high border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
                   >
                     <div class="font-bold mb-1">Granted Spell Levels</div>
                     <div class="text-xs">
@@ -646,7 +646,7 @@ function removeModifier(stat: string) {
                       </button>
                       <div
                         v-if="showHelp.reset"
-                        class="absolute top-full right-0 mt-2 p-3 bg-white border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
+                        class="absolute top-full right-0 mt-2 p-3 bg-surface-container-high border-2 border-sheet-border rounded-lg shadow-lg z-20 w-64 text-sm"
                       >
                         <div class="font-bold mb-1">Reset Condition</div>
                         <div class="text-xs">
