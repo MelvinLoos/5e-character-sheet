@@ -25,7 +25,7 @@ const { clampCurrentHp } = useCombat()
         >
           <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           <span
-            class="material-symbols-outlined text-4xl text-secondary mb-2 relative z-10"
+            class="material-symbols-outlined text-4xl text-tertiary mb-2 relative z-10"
             style="font-variation-settings: 'FILL' 1"
             >shield</span
           >
