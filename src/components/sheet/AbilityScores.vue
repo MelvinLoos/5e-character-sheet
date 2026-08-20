@@ -168,7 +168,7 @@ watch(
           <button
             @click="store.adjustPointBuyScore(key, -1)"
             :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8) <= 8"
-            class="text-outline hover:text-white hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
+            class="text-on-surface-variant hover:text-on-surface hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
           >
             <span class="material-symbols-outlined text-sm">remove</span>
           </button>
@@ -183,7 +183,7 @@ watch(
               (store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 15) >= 15 ||
               store.pointBuyPointsRemaining <= 0
             "
-            class="text-outline hover:text-white hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
+            class="text-on-surface-variant hover:text-on-surface hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
           >
             <span class="material-symbols-outlined text-sm">add</span>
           </button>

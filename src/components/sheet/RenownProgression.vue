@@ -102,7 +102,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
               :class="
                 (store.currentCharacterData?.renownMilestones || 0) >= i
                   ? 'text-on-tertiary'
-                  : 'text-outline'
+                  : 'text-on-surface-variant'
               "
             >
               Milestone {{ i }}

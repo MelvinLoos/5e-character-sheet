@@ -55,7 +55,7 @@ const closeIcon = computed(() =>
           aria-hidden="true"
         ></div>
         <div
-          class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6 ring-1 ring-black/5 overflow-hidden"
+          class="relative bg-surface-container-high rounded-xl shadow-2xl max-w-sm w-full p-6 ring-1 ring-black/5 overflow-hidden"
         >
           <div class="flex justify-between items-start mb-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
