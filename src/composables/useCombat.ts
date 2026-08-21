@@ -2,8 +2,13 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
+import { WEAPONS_CATALOG } from '@/data/equipment-items'
 import type { ComputedRef, WritableComputedRef } from 'vue'
-import type { Attack } from '@/types/character'
+import type { Attack, EquippedGear } from '@/types/character'
+import type { EquipmentItem } from '@/types/equipment'
+
+/** Maximum number of attacks shown in the offensive overview. */
+export const MAX_ATTACKS = 5
 
 /**
  * Generate a short unique identifier for attacks that lack a stable id.
@@ -11,6 +16,80 @@ import type { Attack } from '@/types/character'
  */
 export function generateId(): string {
   return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
+}
+
+/**
+ * Resolves the attack stat for a weapon catalog entry.
+ *
+ * Priority:
+ * 1. Catalog's explicit `weapon.atkStat` (e.g. finesse weapons → dex).
+ * 2. Finesse tag → better of dex / str.
+ * 3. Ranged tag → dex.
+ * 4. Default: str.
+ */
+function resolveAtkStat(weapon: EquipmentItem, abilityMods: Record<string, number>): string {
+  if (weapon.weapon?.atkStat) return weapon.weapon.atkStat
+  if (weapon.tags?.includes('finesse')) {
+    return (abilityMods.dex ?? 0) >= (abilityMods.str ?? 0) ? 'dex' : 'str'
+  }
+  if (weapon.tags?.includes('ranged')) return 'dex'
+  return 'str'
+}
+
+/**
+ * Converts a damage die string (e.g. "1d8", "2d6") to average damage for sorting.
+ */
+function avgDamage(die: string): number {
+  const m = die.match(/^(\d+)d(\d+)$/)
+  if (!m) return 0
+  const count = Number(m[1])
+  const sides = Number(m[2])
+  return count * ((sides + 1) / 2)
+}
+
+/**
+ * Auto-populates the character's attacks array from equipped weapons.
+ *
+ * Scans `equippedGear` for items with a matching `WEAPONS_CATALOG` entry,
+ * resolves the correct attack/damage stats, and returns the top `MAX_ATTACKS`
+ * sorted by average damage (descending).
+ *
+ * @param equippedGear - The character's currently equipped items.
+ * @param abilityMods - The character's current ability score modifiers.
+ * @returns An array of up to `MAX_ATTACKS` Attack objects.
+ */
+export function autoSeedAttacks(
+  equippedGear: EquippedGear[],
+  abilityMods: Record<string, number>,
+): Attack[] {
+  const weaponAttacks: Attack[] = []
+
+  for (const gear of equippedGear) {
+    if (gear.type !== 'Weapon') continue
+    const catalogId = gear.catalogId ?? gear.id
+    const weapon = WEAPONS_CATALOG[catalogId]
+    if (!weapon?.weapon) continue
+
+    const atkStat = resolveAtkStat(weapon, abilityMods)
+
+    weaponAttacks.push({
+      id: generateId(),
+      name: gear.name,
+      atkStat,
+      dmgStat: atkStat,
+      dmgDie: weapon.weapon.versatileDie && atkStat === 'str' ? weapon.weapon.versatileDie : weapon.weapon.damageDie,
+      dmgBonus: 0,
+      type: weapon.weapon.damageType,
+      weaponMastery: weapon.weapon.mastery || '',
+      notes: weapon.tags?.includes('versatile')
+        ? `Versatile ${weapon.weapon.versatileDie} (1H: ${weapon.weapon.damageDie})`
+        : '',
+    })
+  }
+
+  // Sort by average damage descending, take top MAX_ATTACKS
+  weaponAttacks.sort((a, b) => avgDamage(b.dmgDie) - avgDamage(a.dmgDie))
+  return weaponAttacks.slice(0, MAX_ATTACKS)
 }
 
 /**

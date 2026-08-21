@@ -31,6 +31,7 @@ import {
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
 import { loadSchema, getSchema, validateCharacterData } from '@/domain'
 import { calculateArmorClass } from '@/utils/acCalculator'
+import { autoSeedAttacks } from '@/composables/useCombat'
 import { STORAGE_KEYS } from '../constants/storage-keys'
 
 export const useCharacterStore = defineStore('character', () => {
@@ -314,6 +315,28 @@ export const useCharacterStore = defineStore('character', () => {
       combat.hp_current = calculatedMax
     }
     combat.hp_max = calculatedMax
+
+    // Auto-seed attacks from equipped weapons when attacks list is empty
+    _autoSeedAttacksIfNeeded()
+  }
+
+  /**
+   * Auto-populate attacks from equipped weapons when the attacks array is empty
+   * but the character has weapons equipped. Only runs once — preserves user edits.
+   */
+  function _autoSeedAttacksIfNeeded(): void {
+    const char = currentCharacterData.value
+    if (!char) return
+
+    const attacks = char.attacks || []
+    if (attacks.length > 0) return
+
+    const equippedGear = char.equippedGear || []
+    const hasWeapons = equippedGear.some((g) => g.type === 'Weapon')
+    if (!hasWeapons) return
+
+    const mods = abilityMods.value
+    char.attacks = autoSeedAttacks(equippedGear, mods)
   }
 
   function _migrateLegacyCharacter(data: unknown): CharacterData {

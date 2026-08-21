@@ -1,27 +1,41 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
-import { useCombat } from '@/composables/useCombat'
+import { useCombat, MAX_ATTACKS } from '@/composables/useCombat'
 import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
 const { editableAttacks, addAttack, removeAttack } = useCombat()
+
+const attackCount = computed(() => store.currentCharacterData.attacks?.length || 0)
+const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
 </script>
 
 <template>
-  <section class="flex flex-col gap-4 mt-6">
+  <section class="flex flex-col gap-4">
     <div class="flex items-center justify-between border-b border-primary-container pb-2">
       <h2 class="font-headline-md text-headline-md text-primary">Attacks</h2>
-      <button
-        v-if="store.isEditing"
-        @click="addAttack"
-        class="bg-primary-container text-primary border border-primary/30 px-3 py-1 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out text-sm select-none"
-        title="Add Attack"
-      >
-        <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Attack
-      </button>
+      <div class="flex items-center gap-2">
+        <span
+          v-if="atMaxAttacks"
+          class="text-xs font-label-sm text-tertiary italic"
+          title="Maximum of 5 attacks allowed"
+        >
+          Max {{ MAX_ATTACKS }} attacks
+        </span>
+        <button
+          v-if="store.isEditing"
+          @click="addAttack"
+          :disabled="atMaxAttacks"
+          class="bg-primary-container text-primary border border-primary/30 px-3 py-1 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out text-sm select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+          title="Add Attack"
+        >
+          <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Attack
+        </button>
+      </div>
     </div>
     <div
-      v-if="store.currentCharacterData.attacks.length === 0"
+      v-if="attackCount === 0"
       class="italic text-center font-body-md text-on-surface-variant p-4 bg-surface-container-high rounded-lg border border-outline-variant"
     >
       No attacks defined.
