@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { nextTick } from 'vue'
 import { useCharacterStore } from '../src/stores/character'
+import { useProgressionStore } from '../src/stores/progression'
 import type { CharacterData } from '@/domain'
 
 function makeChar(overrides: Partial<CharacterData> = {}): CharacterData {
@@ -45,10 +46,12 @@ function makeChar(overrides: Partial<CharacterData> = {}): CharacterData {
 
 describe('Tier Reactivity — Vue integration', () => {
   let store: ReturnType<typeof useCharacterStore>
+  let progressionStore: ReturnType<typeof useProgressionStore>
 
   beforeEach(() => {
     setActivePinia(createPinia())
     store = useCharacterStore()
+    progressionStore = useProgressionStore()
   })
 
   it('derivedLevel updates reactively when renownTier changes', () => {
@@ -66,15 +69,15 @@ describe('Tier Reactivity — Vue integration', () => {
     store.currentCharacterData = makeChar({ renownTier: 1 })
 
     // Tier 1 → level 3 full caster
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
 
     // Advance to Tier 2 → level 6 full caster
     store.currentCharacterData.renownTier = 2
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
 
     // Advance to Tier 3 → level 10 full caster
     store.currentCharacterData.renownTier = 3
-    expect(store.spellSlots).toEqual({
+    expect(progressionStore.spellSlots).toEqual({
       level1: 4,
       level2: 3,
       level3: 3,
@@ -85,7 +88,7 @@ describe('Tier Reactivity — Vue integration', () => {
 
   it('spellSlots reacts when tier decreases (T3 → T1)', () => {
     store.currentCharacterData = makeChar({ renownTier: 3 })
-    expect(store.spellSlots).toEqual({
+    expect(progressionStore.spellSlots).toEqual({
       level1: 4,
       level2: 3,
       level3: 3,
@@ -94,7 +97,7 @@ describe('Tier Reactivity — Vue integration', () => {
     })
 
     store.currentCharacterData.renownTier = 1
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
   })
 
   it('derivedLevel and profBonus chain react together', async () => {
@@ -124,7 +127,7 @@ describe('Tier Reactivity — Vue integration', () => {
       },
     })
     // Tier 2 provides { level1:4, level2:3, level3:3 }
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
 
     // Demote to Tier 1 — slots become { level1:4, level2:2 }
     // level3 disappears entirely, so any level3 spent data would be stale
@@ -136,7 +139,7 @@ describe('Tier Reactivity — Vue integration', () => {
     // Simulate what the component does on tier decrease:
     store.currentCharacterData.renownTier = 1
     // Manually apply the clamping logic:
-    const newSlots = store.spellSlots // { level1:4, level2:2 }
+    const newSlots = progressionStore.spellSlots // { level1:4, level2:2 }
     const slotsSpent = store.currentCharacterData.spellcasting?.slotsSpent || {}
     for (const [key, max] of Object.entries(newSlots)) {
       if ((slotsSpent[key] || 0) > max) {
@@ -177,18 +180,18 @@ describe('Tier Reactivity — Vue integration', () => {
         },
       ],
     })
-    expect(store.spellSlots).toEqual({})
+    expect(progressionStore.spellSlots).toEqual({})
     expect(store.derivedLevel).toBe(10) // derivedLevel works for other computed
   })
 
   it('multiple tier changes maintain consistent state', () => {
     store.currentCharacterData = makeChar({ renownTier: 1 })
     expect(store.derivedLevel).toBe(3)
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
 
     store.currentCharacterData.renownTier = 3
     expect(store.derivedLevel).toBe(10)
-    expect(store.spellSlots).toEqual({
+    expect(progressionStore.spellSlots).toEqual({
       level1: 4,
       level2: 3,
       level3: 3,
@@ -198,10 +201,10 @@ describe('Tier Reactivity — Vue integration', () => {
 
     store.currentCharacterData.renownTier = 2
     expect(store.derivedLevel).toBe(6)
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
 
     store.currentCharacterData.renownTier = 1
     expect(store.derivedLevel).toBe(3)
-    expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+    expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
   })
 })

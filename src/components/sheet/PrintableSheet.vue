@@ -5,7 +5,7 @@ import { useSpellcasting } from '@/composables/useSpellcasting'
 import * as DND_RULES from '@/data/rules'
 
 const store = useCharacterStore()
-const { sortedSpells } = useSpellcasting()
+const { sortedSpells, displaySpellSlots } = useSpellcasting()
 
 const char = computed(() => store.currentCharacterData)
 
@@ -218,7 +218,7 @@ function formatSpellLevel(level: number) {
       style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto; page-break-after: always"
     >
       <!-- Spellcasting Vitals -->
-      <section v-if="store.spellSlots && Object.keys(store.spellSlots).length" class="grid grid-cols-2 gap-4 mb-4">
+      <section v-if="displaySpellSlots && Object.keys(displaySpellSlots).length" class="grid grid-cols-2 gap-4 mb-4">
         <div class="border-2 border-black p-2 flex justify-around items-center bg-white">
           <div class="text-center">
             <span class="text-xs font-bold uppercase block text-black">Spell Attack</span>
@@ -239,11 +239,11 @@ function formatSpellLevel(level: number) {
               <span class="text-[10px] font-bold text-black">L{{ level }}</span>
               <div class="flex gap-0.5">
                 <div
-                  v-for="slotIndex in store.spellSlots[`level${level}`] || 0"
+                  v-for="slotIndex in displaySpellSlots[`level${level}`] || 0"
                   :key="slotIndex"
                   class="w-3.5 h-3.5 border border-black bg-white"
                 ></div>
-                <div v-if="!(store.spellSlots[`level${level}`] || 0)" class="text-xs text-black italic">-</div>
+                <div v-if="!(displaySpellSlots[`level${level}`] || 0)" class="text-xs text-black italic">-</div>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useRulesStore } from '@/stores/rulesStore'
+import { computeGrantedSpellSlots } from '@/domain'
 import type { Ref, ComputedRef, WritableComputedRef } from 'vue'
 import type { CharacterFeature, CharacterSpell } from '@/types/character'
 import type { CasterType } from '@/types/enums'
@@ -140,38 +141,26 @@ export function useSpellcasting(
   // ---------------------------------------------------------------------------
 
   /**
-   * Builds a slot map for granted-spell features (e.g. Magic Initiate).
-   * Excludes cantrips (level 0).
-   * Example output: { level1: 1, level2: 1 }
+   * Slot map for feat/trait-granted spells (e.g. Magic Initiate).
+   *
+   * Delegates to the spell slot service so the aggregation rules are shared
+   * with the progression store. Returns the raw granted contribution (does not
+   * include class-based slots); use `displaySpellSlots` for the total.
    */
   const grantedSpellSlots: ComputedRef<Record<string, number>> = computed(() => {
-    if (casterType.value !== 'granted') return {}
-
     const features = (store.currentCharacterData?.features || []) as CharacterFeature[]
-    const grantedLevels = new Set<number>()
-    for (const f of features) {
-      if (f.grantsSpells && Array.isArray(f.grantedSpellLevels)) {
-        for (const lvl of f.grantedSpellLevels) {
-          if (typeof lvl === 'number' && lvl >= 1 && lvl <= 9) {
-            grantedLevels.add(lvl)
-          }
-        }
-      }
-    }
-
-    const slots: Record<string, number> = {}
-    for (const lvl of Array.from(grantedLevels).sort((a, b) => a - b)) {
-      slots[`level${lvl}`] = (slots[`level${lvl}`] || 0) + 1
-    }
-    return slots
+    return computeGrantedSpellSlots(features)
   })
 
   /**
-   * Merges class-based spell slots (from Pinia store getter)
-   * with feat/trait-granted spell slots.
+   * Total spell slots — class-based + feat/trait-granted, additively merged.
+   *
+   * This is the single source of truth (progressionStore.spellSlots) used by
+   * both the interactive sheet and the printable sheet, so they can never
+   * diverge.
    */
   const displaySpellSlots: ComputedRef<Record<string, number>> = computed(() => {
-    return { ...progression.spellSlots, ...grantedSpellSlots.value }
+    return progression.spellSlots
   })
 
   /**

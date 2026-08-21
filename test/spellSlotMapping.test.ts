@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { getEffectiveLevel, TIER_TO_LEVEL } from '../src/data/rules'
 import { useCharacterStore } from '../src/stores/character'
+import { useProgressionStore } from '../src/stores/progression'
 import type { CharacterData } from '@/domain'
 
 // ────────────────────────────────────────────────────
@@ -91,10 +92,12 @@ function makeChar(overrides: Partial<CharacterData> = {}): CharacterData {
 
 describe('spellSlots store getter — Tier-based slot calculation', () => {
   let store: ReturnType<typeof useCharacterStore>
+  let progressionStore: ReturnType<typeof useProgressionStore>
 
   beforeEach(() => {
     setActivePinia(createPinia())
     store = useCharacterStore()
+    progressionStore = useProgressionStore()
   })
 
   // ── Full Caster (Wizard, Cleric, Bard, Druid, Sorcerer) ──
@@ -112,7 +115,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 1,
         features: [fullCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
     })
 
     it('Tier 2 → level 6 full caster: 4×L1 + 3×L2 + 3×L3', () => {
@@ -120,7 +123,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 2,
         features: [fullCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
     })
 
     it('Tier 3 → level 10 full caster: 4×L1 + 3×L2 + 3×L3 + 3×L4 + 2×L5', () => {
@@ -128,7 +131,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 3,
         features: [fullCasterFeature],
       })
-      expect(store.spellSlots).toEqual({
+      expect(progressionStore.spellSlots).toEqual({
         level1: 4,
         level2: 3,
         level3: 3,
@@ -153,7 +156,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 1,
         features: [halfCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 3 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 3 })
     })
 
     it('Tier 2 → level 6 half caster: 4×L1 + 2×L2', () => {
@@ -161,7 +164,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 2,
         features: [halfCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
     })
 
     it('Tier 3 → level 10 half caster: 4×L1 + 3×L2 + 2×L3', () => {
@@ -169,7 +172,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 3,
         features: [halfCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 3, level3: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 2 })
     })
   })
 
@@ -188,7 +191,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 1,
         features: [pactFeature],
       })
-      expect(store.spellSlots).toEqual({ level2: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level2: 2 })
     })
 
     it('Tier 2 → level 6 pact caster: 2×L3 slots', () => {
@@ -196,7 +199,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 2,
         features: [pactFeature],
       })
-      expect(store.spellSlots).toEqual({ level3: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level3: 2 })
     })
 
     it('Tier 3 → level 10 pact caster: 2×L5 slots', () => {
@@ -204,7 +207,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 3,
         features: [pactFeature],
       })
-      expect(store.spellSlots).toEqual({ level5: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level5: 2 })
     })
   })
 
@@ -223,7 +226,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 1,
         features: [thirdCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 2 })
     })
 
     it('Tier 2 → level 6 third caster: 3×L1', () => {
@@ -231,7 +234,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 2,
         features: [thirdCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 3 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 3 })
     })
 
     it('Tier 3 → level 10 third caster: 4×L1 + 3×L2', () => {
@@ -239,7 +242,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         renownTier: 3,
         features: [thirdCasterFeature],
       })
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 3 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3 })
     })
   })
 
@@ -258,7 +261,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
           },
         ],
       })
-      expect(store.spellSlots).toEqual({})
+      expect(progressionStore.spellSlots).toEqual({})
     })
 
     it('returns empty object when renownTier is out of bounds', () => {
@@ -274,7 +277,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
         ],
       })
       // getEffectiveLevel(99) → 3, so it should return level 3 full caster slots
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
     })
 
     it('reactively updates when tier is changed', () => {
@@ -289,15 +292,15 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
           },
         ],
       })
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
 
       // Advance to Tier 2
       store.currentCharacterData.renownTier = 2
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
 
       // Advance to Tier 3
       store.currentCharacterData.renownTier = 3
-      expect(store.spellSlots).toEqual({
+      expect(progressionStore.spellSlots).toEqual({
         level1: 4,
         level2: 3,
         level3: 3,
@@ -307,7 +310,7 @@ describe('spellSlots store getter — Tier-based slot calculation', () => {
 
       // Demote back to Tier 1
       store.currentCharacterData.renownTier = 1
-      expect(store.spellSlots).toEqual({ level1: 4, level2: 2 })
+      expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
     })
   })
 })

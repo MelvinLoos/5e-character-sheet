@@ -108,21 +108,6 @@ export const useCharacterStore = defineStore('character', () => {
     return hp
   })
 
-  const spellSlots = computed<Record<string, number>>(() => {
-    if (!currentCharacterData.value) return {}
-    const features = currentCharacterData.value.features || []
-    const spellcastingFeature = features.find(
-      (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
-    )
-    if (!spellcastingFeature?.casterType) return {}
-    const level = derivedLevel.value
-    const progression =
-      DND_RULES.SPELL_SLOT_PROGRESSION[
-        spellcastingFeature.casterType as keyof typeof DND_RULES.SPELL_SLOT_PROGRESSION
-      ]
-    return (progression?.[level] || {}) as Record<string, number>
-  })
-
   const keyFeatures = computed(() => currentCharacterData.value?.features.filter((f) => f.key) || [])
   const otherFeatures = computed(() => currentCharacterData.value?.features.filter((f) => !f.key) || [])
 
@@ -851,7 +836,6 @@ export const useCharacterStore = defineStore('character', () => {
     profBonus,
     maxHp,
     derivedLevel,
-    spellSlots,
     keyFeatures,
     otherFeatures,
     spellcastingAbility,
