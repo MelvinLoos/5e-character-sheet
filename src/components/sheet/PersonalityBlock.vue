@@ -32,22 +32,22 @@ const store = useCharacterStore()
 
     <!-- Backstory -->
     <section
-      class="parchment-texture rounded-lg border border-[#cca72f] p-8 shadow-md relative overflow-hidden"
+      class="parchment-texture rounded-lg border border-tertiary-container p-8 shadow-md relative overflow-hidden"
     >
       <!-- Decorative corners -->
-      <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#574400]"></div>
-      <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#574400]"></div>
-      <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#574400]"></div>
-      <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#574400]"></div>
+      <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-on-tertiary-fixed-variant dark:border-tertiary-container"></div>
+      <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-on-tertiary-fixed-variant dark:border-tertiary-container"></div>
+      <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-on-tertiary-fixed-variant dark:border-tertiary-container"></div>
+      <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-on-tertiary-fixed-variant dark:border-tertiary-container"></div>
 
       <div class="flex items-center gap-3 mb-6">
         <span
-          class="material-symbols-outlined text-[#574400] text-3xl"
+          class="material-symbols-outlined text-on-tertiary-fixed-variant dark:text-tertiary text-3xl"
           style="font-variation-settings: 'FILL' 1"
           >menu_book</span
         >
         <h3
-          class="font-display-lg text-headline-lg text-[#241a00] border-b-2 border-[#cca72f] pb-1 inline-block"
+          class="font-display-lg text-headline-lg text-on-tertiary-fixed dark:text-on-background border-b-2 border-tertiary-container pb-1 inline-block"
         >
           Backstory
         </h3>
@@ -56,13 +56,13 @@ const store = useCharacterStore()
       <textarea
         v-if="store.isEditing"
         v-model="store.currentCharacterData.personality.notes"
-        class="w-full bg-transparent border border-[#cca72f]/30 rounded p-4 text-[#241a00] font-headline-md text-lg leading-relaxed focus:border-[#574400] outline-none transition-all"
+        class="w-full bg-transparent border border-tertiary-container/30 rounded p-4 text-on-tertiary-fixed dark:text-on-surface font-headline-md text-lg leading-relaxed focus:border-on-tertiary-fixed-variant dark:focus:border-tertiary outline-none transition-all"
         placeholder="Begin your tale here... Where were you born? What drove you to the life of an aspirant?"
         style="min-height: 400px; font-family: 'EB Garamond', serif"
       ></textarea>
       <p
         v-else
-        class="text-[#241a00] font-headline-md text-lg leading-relaxed italic bg-transparent border border-[#cca72f]/30 rounded p-4"
+        class="text-on-tertiary-fixed dark:text-on-surface font-headline-md text-lg leading-relaxed italic bg-transparent border border-tertiary-container/30 rounded p-4"
         style="min-height: 400px; font-family: 'EB Garamond', serif"
       >
         {{ store.currentCharacterData.personality.notes || 'No backstory written yet.' }}
