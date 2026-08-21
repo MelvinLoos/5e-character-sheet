@@ -52,7 +52,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
 
 <template>
   <section
-    class="bg-surface-container-highest rounded-lg p-6 border border-outline-variant shadow-sm w-full"
+    class="bg-surface-container-highest rounded-lg p-6 border border-outline-variant shadow-sm"
   >
     <div class="flex justify-between items-center border-b border-primary-container pb-3 mb-6">
       <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
