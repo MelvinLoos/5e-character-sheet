@@ -2,8 +2,9 @@ import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useCharacterStore } from './character'
 import * as DND_RULES from '@/data/rules'
-import { getMod, pointBuyCosts } from '@/domain'
+import { getMod, pointBuyCosts, computeSpellSlots } from '@/domain'
 import { applyBackgroundBonuses } from '@/utils/characterMutations'
+import type { CharacterFeature } from '@/types/character'
 
 /**
  * Progression Store — derived stats, point-buy, and combat vitals.
@@ -111,21 +112,18 @@ export const useProgressionStore = defineStore('progression', () => {
     return species ? DND_RULES.SPECIES[species]?.speed ?? '30ft' : '30ft'
   })
 
+  /**
+   * Total spell slots for the character — the single source of truth.
+   *
+   * Additively merges class-based progression (from SPELL_SLOT_PROGRESSION)
+   * with feat/trait-granted spells (e.g. Magic Initiate). Both the interactive
+   * sheet and the printable sheet consume this exact value so they can never
+   * diverge.
+   */
   const spellSlots = computed<Record<string, number>>(() => {
     if (!characterStore.currentCharacterData) return {}
-
-    const features = characterStore.currentCharacterData.features || []
-    const spellcastingFeature = features.find(
-      (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
-    )
-    if (!spellcastingFeature?.casterType) return {}
-
-    const level = derivedLevel.value
-    const progression =
-      DND_RULES.SPELL_SLOT_PROGRESSION[
-        spellcastingFeature.casterType as keyof typeof DND_RULES.SPELL_SLOT_PROGRESSION
-      ]
-    return (progression?.[level] || {}) as Record<string, number>
+    const features = (characterStore.currentCharacterData.features || []) as CharacterFeature[]
+    return computeSpellSlots(features, derivedLevel.value)
   })
 
   // ---------------------------------------------------------------------------

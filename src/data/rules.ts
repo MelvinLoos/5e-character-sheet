@@ -270,7 +270,7 @@ export const SPELL_SLOT_PROGRESSION: Record<string, SpellSlotsByLevel> = {
     },
   },
   half: {
-    1: {},
+    1: { level1: 2 },
     2: { level1: 2 },
     3: { level1: 3 },
     4: { level1: 3 },
