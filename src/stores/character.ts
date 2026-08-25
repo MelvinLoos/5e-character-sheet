@@ -33,6 +33,7 @@ import {
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
 import { loadSchema, getSchema, validateCharacterData } from '@/domain'
 import { calculateArmorClass } from '@/utils/acCalculator'
+import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { autoSeedAttacks } from '@/composables/useCombat'
 import { STORAGE_KEYS } from '../constants/storage-keys'
 
@@ -735,24 +736,10 @@ export const useCharacterStore = defineStore('character', () => {
     const choice = classData.featureChoices.find((c) => c.id === choiceId)
     if (!choice) return
 
-    // Resolve max count: Record<number, number> for level-keyed, or number with optional tier scaling
+    // Resolve max count via the shared feature-choice rules helper.
     const tier = char.renownTier || 1
     const level = DND_RULES.getEffectiveLevel(tier)
-    let maxCount: number
-    if (typeof choice.count === 'number') {
-      maxCount = choice.count
-      if (choice.scalesPerTier) {
-        // Tier 1 = base count, Tier 2 = +1, Tier 3 = +2
-        maxCount = choice.count + (tier - 1)
-      }
-    } else {
-      // Level-keyed record: find the highest level <= current level
-      const levels = Object.keys(choice.count).map(Number).sort((a, b) => a - b)
-      maxCount = levels[0] ? choice.count[levels[0]] ?? 0 : 0
-      for (const lvl of levels) {
-        if (lvl <= level) maxCount = choice.count[lvl] ?? maxCount
-      }
-    }
+    const maxCount = effectiveMaxCountForChoice(choice, tier)
 
     if (optionIds.length > maxCount) {
       // Truncate to the maximum allowed count

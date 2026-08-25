@@ -7,11 +7,14 @@ import GuildSelector from './GuildSelector.vue'
 import GuildManagementModal from './modals/GuildManagementModal.vue'
 import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
+import CompletionBadge from './ui/CompletionBadge.vue'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 
 const store = useCharacterStore()
 const guildStore = useGuildStore()
 const feedbackStore = useFeedbackStore()
 const route = useRoute()
+const { badges } = useCharacterCompletion()
 const emit = defineEmits<{
   showImport: []
   showFeedback: []
@@ -85,6 +88,13 @@ const navLinks = [
 const queryParams = computed(() => {
   return route.query.id ? { query: { id: route.query.id } } : {}
 })
+
+const navEntries = computed(() =>
+  navLinks.map((link) => ({
+    ...link,
+    badge: badges.value[link.name],
+  })),
+)
 
 // More popover state
 const showMorePopover = ref(false)
@@ -248,18 +258,21 @@ onUnmounted(() => {
 
     <!-- Navigation Links -->
     <ul v-if="store.currentCharacterData" class="flex flex-col gap-1 px-4 mb-6">
-      <li v-for="link in navLinks" :key="link.name">
+      <li v-for="entry in navEntries" :key="entry.name">
         <router-link
-          :to="{ name: link.name, ...queryParams }"
+          :to="{ name: entry.name, ...queryParams }"
           class="flex items-center gap-3 px-4 py-3 transition-colors font-label-lg"
           :class="[
-            route.name === link.name
+            route.name === entry.name
               ? 'border-r-4 border-tertiary bg-surface-variant/30 text-primary font-bold'
               : 'text-on-surface-variant hover:bg-surface-variant hover:text-on-surface',
           ]"
+          :aria-label="entry.badge ? `${entry.label} — ${entry.badge.label}` : undefined"
+          :title="entry.badge?.label"
         >
-          <span class="material-symbols-outlined text-[1.25rem]">{{ link.icon }}</span>
-          {{ link.label }}
+          <span class="material-symbols-outlined text-[1.25rem]">{{ entry.icon }}</span>
+          <span class="flex-1">{{ entry.label }}</span>
+          <CompletionBadge v-if="entry.badge" :badge="entry.badge" />
         </router-link>
       </li>
 
