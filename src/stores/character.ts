@@ -687,6 +687,68 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   /**
+   * Apply feature choice selections (e.g. Eldritch Invocations).
+   * Validates count, stores selections, merges selected option traits
+   * into the character's feature list, and recalculates derived stats.
+   */
+  function applyFeatureChoice(choiceId: string, optionIds: string[]): void {
+    if (!currentCharacterData.value) return
+
+    const choice = DND_RULES.FEATURE_CHOICES[choiceId]
+    if (!choice) return
+
+    // Validate count
+    if (optionIds.length > choice.count) {
+      optionIds = optionIds.slice(0, choice.count)
+    }
+
+    // Validate that all selected option IDs exist in the choice
+    const validIds = choice.options.map((o) => o.id)
+    const validSelections = optionIds.filter((id) => validIds.includes(id))
+
+    // Store selections on character data
+    if (!currentCharacterData.value.featureChoices) {
+      currentCharacterData.value.featureChoices = {}
+    }
+    currentCharacterData.value.featureChoices[choiceId] = validSelections
+
+    // Merge selected option traits into features, removing stale ones first
+    _applyFeatureChoiceTraits(choiceId, validSelections)
+
+    // Recalculate derived stats
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+  }
+
+  /**
+   * Internal: merge feature-choice option traits into the character's feature list.
+   * Removes any previously-applied traits from this choice before adding new ones.
+   */
+  function _applyFeatureChoiceTraits(choiceId: string, optionIds: string[]): void {
+    if (!currentCharacterData.value) return
+
+    const choice = DND_RULES.FEATURE_CHOICES[choiceId]
+    if (!choice) return
+
+    // Remove previously-applied feature-choice traits (marked with source prefix)
+    currentCharacterData.value.features = (currentCharacterData.value.features || []).filter(
+      (f) => !f.source?.startsWith(`feature-choice:${choiceId}`),
+    )
+
+    // Add traits from each selected option
+    for (const optionId of optionIds) {
+      const option = choice.options.find((o) => o.id === optionId)
+      if (!option) continue
+      for (const trait of option.traits) {
+        currentCharacterData.value.features.push({
+          ...trait,
+          source: `feature-choice:${choiceId}`,
+          key: trait.key ?? false,
+        } as unknown as (typeof currentCharacterData.value.features)[number])
+      }
+    }
+  }
+
+  /**
    * Returns the display name for the current species, including the
    * sub-choice label when one is selected. E.g. "Goliath (Cloud Giant)".
    */

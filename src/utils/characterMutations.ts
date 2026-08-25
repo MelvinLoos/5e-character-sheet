@@ -76,7 +76,7 @@ export function migrateCharacterData(data: unknown): CharacterData {
     migrated.features = []
   }
 
-  // Ensure featureChoices (no regressions for existing saved characters)
+// Ensure featureChoices (no regressions for existing saved characters)
   if (!migrated.featureChoices) {
     migrated.featureChoices = {}
   }

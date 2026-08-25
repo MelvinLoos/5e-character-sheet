@@ -3,8 +3,11 @@ import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
+import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
 import type { CharacterFeature } from '@/types/character'
+import * as DND_RULES from '@/data/rules'
+import type { FeatureChoice } from '@/types/rules'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
@@ -22,6 +25,35 @@ const isNewFeature = ref(false)
 const editingFeatureRef = ref<CharacterFeature | null>(null)
 
 const categories = ['All Forms', 'Combat', 'Magic', 'Utility']
+
+// --- Feature choice modal state ---
+const isFeatureChoiceOpen = ref(false)
+const activeFeatureChoiceId = ref('')
+
+// --- Eligible feature choices based on character's class ---
+const eligibleFeatureChoices = computed<FeatureChoice[]>(() => {
+  const charClass = store.currentCharacterData?.class
+  if (!charClass) return []
+  const charTier = store.currentCharacterData?.renownTier ?? 1
+  return Object.values(DND_RULES.FEATURE_CHOICES).filter(
+    (fc) =>
+      fc.classBinding === charClass &&
+      (!fc.minTier || fc.minTier <= charTier),
+  )
+})
+
+function currentFeatureChoiceSelections(choiceId: string): string[] {
+  return store.currentCharacterData?.featureChoices?.[choiceId] ?? []
+}
+
+function openFeatureChoiceModal(choiceId: string) {
+  activeFeatureChoiceId.value = choiceId
+  isFeatureChoiceOpen.value = true
+}
+
+function handleFeatureChoiceSelect(optionIds: string[]) {
+  store.applyFeatureChoice(activeFeatureChoiceId.value, optionIds)
+}
 
 // --- Available feats from rulesStore ---
 interface LocalFeat {
@@ -371,6 +403,53 @@ function setActiveCategory(cat: string) {
       </div>
     </section>
 
+    <!-- Eligible Feature Choices Section -->
+    <section
+      v-if="eligibleFeatureChoices.length > 0"
+      class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
+    >
+      <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
+        <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
+          <span class="material-symbols-outlined text-3xl">fact_check</span>
+          Class Features &amp; Choices
+        </h3>
+      </div>
+
+      <div
+        v-for="fc in eligibleFeatureChoices"
+        :key="fc.id"
+        class="bg-surface-container-high border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors shadow-sm"
+      >
+        <div class="flex items-start justify-between">
+          <div>
+            <h4 class="font-headline-md text-headline-md text-tertiary mb-1">
+              {{ fc.label }}
+            </h4>
+            <p class="text-sm text-on-surface-variant mb-2">
+              {{ fc.description }}
+            </p>
+            <p class="text-xs text-on-surface-variant">
+              Choose {{ fc.count }} of {{ fc.options.length }} options
+            </p>
+            <p
+              v-if="currentFeatureChoiceSelections(fc.id).length > 0"
+              class="text-xs text-tertiary mt-1 font-semibold"
+            >
+              {{ currentFeatureChoiceSelections(fc.id).length }} selected
+            </p>
+          </div>
+          <button
+            v-if="store.isEditing"
+            @click="openFeatureChoiceModal(fc.id)"
+            class="bg-primary-container text-primary border border-primary/30 px-3 py-1.5 rounded-lg font-label-md flex items-center gap-1.5 hover:bg-surface-variant transition-colors whitespace-nowrap shadow-sm text-sm"
+          >
+            <span class="material-symbols-outlined text-base">edit</span>
+            Manage
+          </button>
+        </div>
+      </div>
+    </section>
+
     <!-- Feat Library Modal -->
     <div
       v-if="showFeatLibrary && store.isEditing"
@@ -510,6 +589,15 @@ function setActiveCategory(cat: string) {
         </div>
       </div>
     </div>
+
+    <!-- Feature Choice Modal (for class-based selections like Eldritch Invocations) -->
+    <FeatureChoiceModal
+      :is-open="isFeatureChoiceOpen"
+      :choice-id="activeFeatureChoiceId"
+      :current-selections="currentFeatureChoiceSelections(activeFeatureChoiceId)"
+      @select="handleFeatureChoiceSelect"
+      @close="isFeatureChoiceOpen = false"
+    />
 
     <!-- Feature Editor Modal (for custom/manual entries) -->
     <FeatureEditorModal

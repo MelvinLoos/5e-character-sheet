@@ -121,5 +121,37 @@ export interface BackgroundData {
   equipment?: BackgroundEquipment
 }
 
+/** An option within a feature-choice (e.g. a specific Eldritch Invocation). */
+export interface FeatureChoiceOption {
+  /** Unique identifier (e.g. "agonizing-blast", "devils-sight"). */
+  id: string
+  /** Display label shown to the player (e.g. "Agonizing Blast"). */
+  label: string
+  /** Optional flavour description for the option. */
+  description?: string
+  /** Traits granted by selecting this option. */
+  traits: RulesFeature[]
+  /** Optional prerequisite (e.g. "Warlock level 5+"). */
+  prerequisite?: string
+}
+
+/** A "choose N from [list]" feature choice (e.g. Eldritch Invocations). */
+export interface FeatureChoice {
+  /** Unique identifier (e.g. "eldritch-invocations"). */
+  id: string
+  /** Display label shown to the player (e.g. "Eldritch Invocations"). */
+  label: string
+  /** Optional description explaining what this choice is. */
+  description?: string
+  /** How many options the player must select. */
+  count: number
+  /** The class this feature choice is bound to (e.g. "Warlock"). */
+  classBinding?: string
+  /** Minimum tier required before this choice becomes available. */
+  minTier?: number
+  /** The list of selectable options. */
+  options: FeatureChoiceOption[]
+}
+
 /** Alias for the nested spell slot records keyed by caster level. */
 export type SpellSlotsByLevel = Record<number, Record<string, number>>
