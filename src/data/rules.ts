@@ -12,8 +12,9 @@ export type {
   BackgroundData,
   SpellSlotsByLevel,
   SubChoice,
-  FeatureChoice,
+FeatureChoice,
   FeatureChoiceOption,
+  FeatureChoicePrerequisites,
 } from '@/types/rules'
 
 // Also import for internal use
@@ -22,6 +23,7 @@ import type {
   SpeciesData,
   BackgroundData,
   SpellSlotsByLevel,
+  FeatureChoiceOption,
 } from '@/types/rules'
 import type { CharacterFeature } from '@/types/character'
 import type { AbilityKey, CasterType } from '@/types/enums'
@@ -199,6 +201,211 @@ export const FEATS: CharacterFeature[] = [
     featureType: 'General Feat',
     grantsSpells: true,
     grantedSpellLevels: [0, 1],
+  },
+]
+
+/**
+ * Eldritch Invocations catalog — 28 options from the 2024 SRD.
+ *
+ * Each entry is a FeatureChoiceOption that can be selected by Warlocks
+ * (and potentially other classes/feats) when a class defines a featureChoices
+ * rule pointing at this catalog.
+ */
+export const INVOCATIONS: FeatureChoiceOption[] = [
+  {
+    id: 'agonizing-blast',
+    label: 'Agonizing Blast',
+    description: "Choose one of your known Warlock cantrips that deals damage. You can add your Charisma modifier to that spell's damage rolls.",
+    traits: [{ title: 'Agonizing Blast', desc: "Choose one of your known Warlock cantrips that deals damage. You can add your Charisma modifier to that spell's damage rolls.", key: true }],
+    prerequisites: { minLevel: 2, requiresCantrip: 'damage' },
+    repeatable: true,
+  },
+  {
+    id: 'armor-of-shadows',
+    label: 'Armor of Shadows',
+    description: 'You can cast Mage Armor on yourself without expending a spell slot.',
+    traits: [{ title: 'Armor of Shadows', desc: 'You can cast Mage Armor on yourself without expending a spell slot.', key: true }],
+  },
+  {
+    id: 'ascendant-step',
+    label: 'Ascendant Step',
+    description: 'You can cast Levitate on yourself without expending a spell slot.',
+    traits: [{ title: 'Ascendant Step', desc: 'You can cast Levitate on yourself without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 5 },
+  },
+  {
+    id: 'devils-sight',
+    label: "Devil's Sight",
+    description: 'You can see normally in Dim Light and Darkness (both magical and nonmagical) within 120 feet of yourself.',
+    traits: [{ title: "Devil's Sight", desc: 'You can see normally in Dim Light and Darkness (both magical and nonmagical) within 120 feet of yourself.', key: true }],
+    prerequisites: { minLevel: 2 },
+  },
+  {
+    id: 'devouring-blade',
+    label: 'Devouring Blade',
+    description: 'The Extra Attack of your Thirsting Blade invocation confers two extra attacks rather than one.',
+    traits: [{ title: 'Devouring Blade', desc: 'The Extra Attack of your Thirsting Blade invocation confers two extra attacks rather than one.', key: true }],
+    prerequisites: { minLevel: 12, requiresInvocation: 'thirsting-blade' },
+  },
+  {
+    id: 'eldritch-mind',
+    label: 'Eldritch Mind',
+    description: 'You have Advantage on Constitution saving throws that you make to maintain Concentration.',
+    traits: [{ title: 'Eldritch Mind', desc: 'You have Advantage on Constitution saving throws that you make to maintain Concentration.', key: true }],
+  },
+  {
+    id: 'eldritch-smite',
+    label: 'Eldritch Smite',
+    description: 'Once per turn when you hit a creature with your pact weapon, you can expend a Pact Magic spell slot to deal an extra 1d8 Force damage to the target, plus another 1d8 per level of the spell slot, and you can give the target the Prone condition if it is Huge or smaller.',
+    traits: [{ title: 'Eldritch Smite', desc: 'Once per turn when you hit a creature with your pact weapon, you can expend a Pact Magic spell slot to deal an extra 1d8 Force damage to the target, plus another 1d8 per level of the spell slot, and you can give the target the Prone condition if it is Huge or smaller.', key: true }],
+    prerequisites: { minLevel: 5, requiresInvocation: 'pact-of-the-blade' },
+  },
+  {
+    id: 'eldritch-spear',
+    label: 'Eldritch Spear',
+    description: 'Choose one of your known Warlock cantrips that deals damage and has a range of 10+ feet. When you cast that spell, its range increases by a number of feet equal to 30 times your Warlock level.',
+    traits: [{ title: 'Eldritch Spear', desc: 'Choose one of your known Warlock cantrips that deals damage and has a range of 10+ feet. When you cast that spell, its range increases by a number of feet equal to 30 times your Warlock level.', key: true }],
+    prerequisites: { minLevel: 2, requiresCantrip: 'damage' },
+    repeatable: true,
+  },
+  {
+    id: 'fiendish-vigor',
+    label: 'Fiendish Vigor',
+    description: "You can cast False Life on yourself without expending a spell slot. When you cast the spell with this feature, you don't roll the die for the Temporary Hit Points; you automatically get the highest number on the die.",
+    traits: [{ title: 'Fiendish Vigor', desc: "You can cast False Life on yourself without expending a spell slot. When you cast the spell with this feature, you don't roll the die for the Temporary Hit Points; you automatically get the highest number on the die.", key: true }],
+    prerequisites: { minLevel: 2 },
+  },
+  {
+    id: 'gaze-of-two-minds',
+    label: 'Gaze of Two Minds',
+    description: "You can use a Bonus Action to touch a willing creature and perceive through its senses until the end of your next turn. As long as the creature is on the same plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this connection. While perceiving through the other creature's senses, you benefit from any special senses possessed by that creature, and you can cast spells as if you were in your space or the other creature's space if the two of you are within 60 feet of each other.",
+    traits: [{ title: 'Gaze of Two Minds', desc: "You can use a Bonus Action to touch a willing creature and perceive through its senses until the end of your next turn. As long as the creature is on the same plane of existence as you, you can take a Bonus Action on subsequent turns to maintain this connection. While perceiving through the other creature's senses, you benefit from any special senses possessed by that creature, and you can cast spells as if you were in your space or the other creature's space if the two of you are within 60 feet of each other.", key: true }],
+    prerequisites: { minLevel: 5 },
+  },
+  {
+    id: 'gift-of-the-depths',
+    label: 'Gift of the Depths',
+    description: 'You can breathe underwater, and you gain a Swim Speed equal to your Speed. You can also cast Water Breathing once without expending a spell slot. You regain the ability to cast it in this way again when you finish a Long Rest.',
+    traits: [{ title: 'Gift of the Depths', desc: 'You can breathe underwater, and you gain a Swim Speed equal to your Speed. You can also cast Water Breathing once without expending a spell slot. You regain the ability to cast it in this way again when you finish a Long Rest.', key: true }],
+    prerequisites: { minLevel: 5 },
+  },
+  {
+    id: 'gift-of-the-protectors',
+    label: 'Gift of the Protectors',
+    description: "A new page appears in your Book of Shadows when you conjure it. With your permission, a creature can take an action to write its name on that page, which can contain a number of names equal to your Charisma modifier (minimum of one name). When any creature whose name is on the page is reduced to 0 Hit Points but not killed outright, the creature magically drops to 1 Hit Point instead. Once this magic is triggered, no creature can benefit from it until you finish a Long Rest. As a Magic action, you can erase a name on the page by touching it.",
+    traits: [{ title: 'Gift of the Protectors', desc: "A new page appears in your Book of Shadows when you conjure it. With your permission, a creature can take an action to write its name on that page, which can contain a number of names equal to your Charisma modifier (minimum of one name). When any creature whose name is on the page is reduced to 0 Hit Points but not killed outright, the creature magically drops to 1 Hit Point instead. Once this magic is triggered, no creature can benefit from it until you finish a Long Rest. As a Magic action, you can erase a name on the page by touching it.", key: true }],
+    prerequisites: { minLevel: 9, requiresInvocation: 'pact-of-the-tome' },
+  },
+  {
+    id: 'investment-of-the-chain-master',
+    label: 'Investment of the Chain Master',
+    description: 'When you cast Find Familiar, you infuse the summoned familiar with a measure of your eldritch power, granting the creature the following benefits. Aerial or Aquatic: The familiar gains either a Fly Speed or a Swim Speed (your choice) of 40 feet. Quick Attack: As a Bonus Action, you can command the familiar to take the Attack action. Necrotic or Radiant Damage: Whenever the familiar deals Bludgeoning, Piercing, or Slashing damage, you can make it deal Necrotic or Radiant damage instead. Your Save DC: If the familiar forces a creature to make a saving throw, it uses your spell save DC. Resistance: When the familiar takes damage, you can take a Reaction to grant it Resistance against that damage.',
+    traits: [{ title: 'Investment of the Chain Master', desc: 'When you cast Find Familiar, you infuse the summoned familiar with a measure of your eldritch power, granting the creature the following benefits. Aerial or Aquatic: The familiar gains either a Fly Speed or a Swim Speed (your choice) of 40 feet. Quick Attack: As a Bonus Action, you can command the familiar to take the Attack action. Necrotic or Radiant Damage: Whenever the familiar deals Bludgeoning, Piercing, or Slashing damage, you can make it deal Necrotic or Radiant damage instead. Your Save DC: If the familiar forces a creature to make a saving throw, it uses your spell save DC. Resistance: When the familiar takes damage, you can take a Reaction to grant it Resistance against that damage.', key: true }],
+    prerequisites: { minLevel: 5, requiresInvocation: 'pact-of-the-chain' },
+  },
+  {
+    id: 'lessons-of-the-first-ones',
+    label: 'Lessons of the First Ones',
+    description: 'You have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.',
+    traits: [{ title: 'Lessons of the First Ones', desc: 'You have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.', key: true }],
+    prerequisites: { minLevel: 2 },
+    repeatable: true,
+  },
+  {
+    id: 'lifedrinker',
+    label: 'Lifedrinker',
+    description: 'Once per turn when you hit a creature with your pact weapon, you can deal an extra 1d6 Necrotic, Psychic, or Radiant damage (your choice) to the creature, and you can expend one of your Hit Point Dice to roll it and regain a number of Hit Points equal to the roll plus your Constitution modifier (minimum of 1 Hit Point).',
+    traits: [{ title: 'Lifedrinker', desc: 'Once per turn when you hit a creature with your pact weapon, you can deal an extra 1d6 Necrotic, Psychic, or Radiant damage (your choice) to the creature, and you can expend one of your Hit Point Dice to roll it and regain a number of Hit Points equal to the roll plus your Constitution modifier (minimum of 1 Hit Point).', key: true }],
+    prerequisites: { minLevel: 9, requiresInvocation: 'pact-of-the-blade' },
+  },
+  {
+    id: 'mask-of-many-faces',
+    label: 'Mask of Many Faces',
+    description: 'You can cast Disguise Self without expending a spell slot.',
+    traits: [{ title: 'Mask of Many Faces', desc: 'You can cast Disguise Self without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 2 },
+  },
+  {
+    id: 'master-of-myriad-forms',
+    label: 'Master of Myriad Forms',
+    description: 'You can cast Alter Self without expending a spell slot.',
+    traits: [{ title: 'Master of Myriad Forms', desc: 'You can cast Alter Self without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 5 },
+  },
+  {
+    id: 'misty-visions',
+    label: 'Misty Visions',
+    description: 'You can cast Silent Image without expending a spell slot.',
+    traits: [{ title: 'Misty Visions', desc: 'You can cast Silent Image without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 2 },
+  },
+  {
+    id: 'one-with-shadows',
+    label: 'One with Shadows',
+    description: "While you're in an area of Dim Light or Darkness, you can cast Invisibility on yourself without expending a spell slot.",
+    traits: [{ title: 'One with Shadows', desc: "While you're in an area of Dim Light or Darkness, you can cast Invisibility on yourself without expending a spell slot.", key: true }],
+    prerequisites: { minLevel: 5 },
+  },
+  {
+    id: 'otherworldly-leap',
+    label: 'Otherworldly Leap',
+    description: 'You can cast Jump on yourself without expending a spell slot.',
+    traits: [{ title: 'Otherworldly Leap', desc: 'You can cast Jump on yourself without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 2 },
+  },
+  {
+    id: 'pact-of-the-blade',
+    label: 'Pact of the Blade',
+    description: "As a Bonus Action, you can conjure a pact weapon in your hand—a Simple or Martial Melee weapon of your choice with which you bond—or create a bond with a magic weapon you touch; you can't bond with a magic weapon if someone else is attuned to it or another Warlock is bonded with it. Until the bond ends, you have proficiency with the weapon, and you can use it as a Spellcasting Focus. Whenever you attack with the bonded weapon, you can use your Charisma modifier for the attack and damage rolls instead of using Strength or Dexterity; and you can cause the weapon to deal Necrotic, Psychic, or Radiant damage or its normal damage type. Your bond with the weapon ends if you use this feature's Bonus Action again, if the weapon is more than 5 feet away from you for 1 minute or more, or if you die. A conjured weapon disappears when the bond ends.",
+    traits: [{ title: 'Pact of the Blade', desc: "As a Bonus Action, you can conjure a pact weapon in your hand—a Simple or Martial Melee weapon of your choice with which you bond—or create a bond with a magic weapon you touch. Until the bond ends, you have proficiency with the weapon, you can use it as a Spellcasting Focus, and you can use your Charisma modifier for attack and damage rolls. You can also cause the weapon to deal Necrotic, Psychic, or Radiant damage instead of its normal damage type.", key: true }],
+  },
+  {
+    id: 'pact-of-the-chain',
+    label: 'Pact of the Chain',
+    description: 'You learn the Find Familiar spell and can cast it as a Magic action without expending a spell slot. When you cast the spell, you choose one of the normal forms for your familiar or one of the following special forms: Imp, Pseudodragon, Quasit, Skeleton, Sphinx of Wonder, Sprite, or Venomous Snake. Additionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its Reaction.',
+    traits: [{ title: 'Pact of the Chain', desc: 'You learn the Find Familiar spell and can cast it as a Magic action without expending a spell slot. You can choose special familiar forms: Imp, Pseudodragon, Quasit, Skeleton, Sphinx of Wonder, Sprite, or Venomous Snake. Additionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack with its Reaction.', key: true }],
+  },
+  {
+    id: 'pact-of-the-tome',
+    label: 'Pact of the Tome',
+    description: "Stitching together strands of shadow, you conjure forth a book in your hand at the end of a Short or Long Rest. This Book of Shadows (you determine its appearance) contains eldritch magic that only you can access, granting you the benefits below. The book disappears if you conjure another book with this feature or if you die. Cantrips and Rituals: When the book appears, choose three cantrips, and choose two level 1 spells that have the Ritual tag. The spells can be from any class's spell list, and they must be spells you don't already have prepared. While the book is on your person, you have the chosen spells prepared, and they function as Warlock spells for you. Spellcasting Focus: You can use the book as a Spellcasting Focus.",
+    traits: [{ title: 'Pact of the Tome', desc: "You conjure a Book of Shadows at the end of a Short or Long Rest. When the book appears, choose three cantrips and two level 1 Ritual spells from any class's spell list (that you don't already have prepared). While the book is on your person, you have the chosen spells prepared and they function as Warlock spells for you. You can use the book as a Spellcasting Focus.", key: true }],
+  },
+  {
+    id: 'repelling-blast',
+    label: 'Repelling Blast',
+    description: 'Choose one of your known Warlock cantrips that requires an attack roll. When you hit a Large or smaller creature with that cantrip, you can push the creature up to 10 feet straight away from you.',
+    traits: [{ title: 'Repelling Blast', desc: 'Choose one of your known Warlock cantrips that requires an attack roll. When you hit a Large or smaller creature with that cantrip, you can push the creature up to 10 feet straight away from you.', key: true }],
+    prerequisites: { minLevel: 2, requiresCantrip: 'attack-roll' },
+    repeatable: true,
+  },
+  {
+    id: 'thirsting-blade',
+    label: 'Thirsting Blade',
+    description: 'You gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.',
+    traits: [{ title: 'Thirsting Blade', desc: 'You gain the Extra Attack feature for your pact weapon only. With that feature, you can attack twice with the weapon instead of once when you take the Attack action on your turn.', key: true }],
+    prerequisites: { minLevel: 5, requiresInvocation: 'pact-of-the-blade' },
+  },
+  {
+    id: 'visions-of-distant-realms',
+    label: 'Visions of Distant Realms',
+    description: 'You can cast Arcane Eye without expending a spell slot.',
+    traits: [{ title: 'Visions of Distant Realms', desc: 'You can cast Arcane Eye without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 9 },
+  },
+  {
+    id: 'whispers-of-the-grave',
+    label: 'Whispers of the Grave',
+    description: 'You can cast Speak with Dead without expending a spell slot.',
+    traits: [{ title: 'Whispers of the Grave', desc: 'You can cast Speak with Dead without expending a spell slot.', key: true }],
+    prerequisites: { minLevel: 7 },
+  },
+  {
+    id: 'witch-sight',
+    label: 'Witch Sight',
+    description: 'You have Truesight with a range of 30 feet.',
+    traits: [{ title: 'Witch Sight', desc: 'You have Truesight with a range of 30 feet.', key: true }],
+    prerequisites: { minLevel: 15 },
   },
 ]
 
@@ -701,7 +908,120 @@ export const CLASSES: Record<string, ClassData> = {
       count: 2,
       from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'],
     },
-    features: [],
+    features: [
+      {
+        title: 'Magical Cunning',
+        desc: "If all your Pact Magic spell slots are expended, you can perform an esoteric rite for 1 minute. At the end of the rite, you regain half of those spell slots (round up). Once you use this feature, you can't do so again until you finish a Long Rest.",
+        uses: { total: 1, per: 'Long Rest' },
+        key: true,
+      },
+      {
+        title: 'Warlock Subclass',
+        desc: 'You choose a Warlock subclass: Archfey, Celestial, Fiend, or Great Old One. Your choice grants you features at Warlock level 3 and again at levels 6, 10, and 14.',
+        key: true,
+      },
+      {
+        title: 'Contact Patron',
+        desc: "In the past, you usually contacted your patron through intermediaries. Now you can communicate directly. You can cast Contact Other Plane at will, without expending a spell slot, to contact your patron. Once you use this feature, you can't do so again until you finish a Long Rest.",
+        uses: { total: 1, per: 'Long Rest' },
+        key: true,
+        minTier: 2,
+      },
+    ],
+    featureChoices: [
+      {
+        id: 'eldritch-invocations',
+        label: 'Eldritch Invocations',
+        description: "Choose from the invocations below to customize your Warlock's magical abilities. You may select the indicated number of invocations at your current tier.",
+        count: 2,
+        scalesPerTier: true,
+        options: [
+          {
+            id: 'agonizing-blast',
+            label: 'Agonizing Blast',
+            description: 'When you cast Eldritch Blast, add your Charisma modifier to the damage it deals on a hit.',
+            prerequisite: 'Warlock:level:1',
+            traits: [
+              { title: 'Agonizing Blast', desc: 'When you cast Eldritch Blast, add your Charisma modifier to the damage it deals on a hit.', key: false, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'armor-of-shadows',
+            label: 'Armor of Shadows',
+            description: 'You can cast Mage Armor on yourself at will, without expending a spell slot or material components.',
+            traits: [
+              { title: 'Armor of Shadows', desc: 'You can cast Mage Armor on yourself at will, without expending a spell slot or material components.', key: true, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'devils-sight',
+            label: "Devil's Sight",
+            description: 'You can see normally in darkness, both magical and nonmagical, to a distance of 120 feet.',
+            traits: [
+              { title: "Devil's Sight", desc: 'You can see normally in darkness, both magical and nonmagical, to a distance of 120 feet.', key: true, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'repelling-blast',
+            label: 'Repelling Blast',
+            description: 'When you hit a creature with Eldritch Blast, you can push the creature up to 10 feet away from you in a straight line.',
+            prerequisite: 'Warlock:level:1',
+            traits: [
+              { title: 'Repelling Blast', desc: 'When you hit a creature with Eldritch Blast, you can push the creature up to 10 feet away from you in a straight line.', key: false, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'mask-of-many-faces',
+            label: 'Mask of Many Faces',
+            description: 'You can cast Disguise Self at will, without expending a spell slot.',
+            traits: [
+              { title: 'Mask of Many Faces', desc: 'You can cast Disguise Self at will, without expending a spell slot.', key: false, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'eldritch-mind',
+            label: 'Eldritch Mind',
+            description: 'You have Advantage on Constitution saving throws that you make to maintain your Concentration on a spell.',
+            traits: [
+              { title: 'Eldritch Mind', desc: 'You have Advantage on Constitution saving throws that you make to maintain your Concentration on a spell.', key: true, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'fiendish-vigor',
+            label: 'Fiendish Vigor',
+            description: 'You can cast False Life on yourself at will as a 1st-level spell, without expending a spell slot or material components.',
+            traits: [
+              { title: 'Fiendish Vigor', desc: 'You can cast False Life on yourself at will as a 1st-level spell, without expending a spell slot or material components.', key: false, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'eldritch-sight',
+            label: 'Eldritch Sight',
+            description: 'You can cast Detect Magic at will, without expending a spell slot.',
+            traits: [
+              { title: 'Eldritch Sight', desc: 'You can cast Detect Magic at will, without expending a spell slot.', key: false, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'otherworldly-leap',
+            label: 'Otherworldly Leap',
+            description: 'You can cast Jump on yourself at will, without expending a spell slot or material components.',
+            traits: [
+              { title: 'Otherworldly Leap', desc: 'You can cast Jump on yourself at will, without expending a spell slot or material components.', key: false, featureType: 'Class Feature' },
+            ],
+          },
+          {
+            id: 'lessons-of-the-first-ones',
+            label: 'Lessons of the First Ones',
+            description: 'You have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.',
+            prerequisite: 'Warlock:level:1',
+            traits: [
+              { title: 'Lessons of the First Ones', desc: 'You have received knowledge from an elder entity of the multiverse, allowing you to gain one Origin feat of your choice.', key: true, featureType: 'Class Feature' },
+            ],
+          },
+        ],
+      },
+    ],
   },
   Wizard: {
     description: 'A scholarly magic-user capable of manipulating the structures of reality.',

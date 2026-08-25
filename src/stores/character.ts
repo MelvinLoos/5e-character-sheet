@@ -724,13 +724,23 @@ export const useCharacterStore = defineStore('character', () => {
     const choice = classData.featureChoices.find((c) => c.id === choiceId)
     if (!choice) return
 
-    // Enforce count: resolve via getEffectiveLevel with tier scaling
+    // Resolve max count: Record<number, number> for level-keyed, or number with optional tier scaling
     const tier = char.renownTier || 1
     const level = DND_RULES.getEffectiveLevel(tier)
-    let maxCount = choice.count
-    if (choice.scalesPerTier) {
-      // Tier 1 = base count, Tier 2 = +1, Tier 3 = +2
-      maxCount = choice.count + (tier - 1)
+    let maxCount: number
+    if (typeof choice.count === 'number') {
+      maxCount = choice.count
+      if (choice.scalesPerTier) {
+        // Tier 1 = base count, Tier 2 = +1, Tier 3 = +2
+        maxCount = choice.count + (tier - 1)
+      }
+    } else {
+      // Level-keyed record: find the highest level <= current level
+      const levels = Object.keys(choice.count).map(Number).sort((a, b) => a - b)
+      maxCount = levels[0] ? choice.count[levels[0]] ?? 0 : 0
+      for (const lvl of levels) {
+        if (lvl <= level) maxCount = choice.count[lvl] ?? maxCount
+      }
     }
 
     if (optionIds.length > maxCount) {
@@ -740,8 +750,9 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Validate each option exists and meets prerequisites
     const validOptionIds: string[] = []
+    const availableOptions = choice.options ?? []
     for (const optionId of optionIds) {
-      const option = choice.options.find((o) => o.id === optionId)
+      const option = availableOptions.find((o) => o.id === optionId)
       if (!option) continue
 
       // Check prerequisite (basic format: "Fighter:level:3")

@@ -756,7 +756,8 @@ export function applyFeatureChoices(char: CharacterData): CharacterData {
       if (!selectedOptionIds || selectedOptionIds.length === 0) continue
 
       for (const optionId of selectedOptionIds) {
-        const option = choice.options.find((o) => o.id === optionId)
+        const availableOptions = choice.options ?? []
+        const option = availableOptions.find((o) => o.id === optionId)
         if (!option) continue
 
         for (const trait of option.traits || []) {

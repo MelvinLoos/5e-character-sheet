@@ -199,7 +199,7 @@ export interface CharacterData {
   species: string | null
   /** Selected sub-choice ID (e.g. "high-elf") for species with lineages/ancestries/legacies. */
   subChoice?: string | null
-  /** Selected feature choice options keyed by choice ID (e.g. { "fighting-style": ["defense"] }). */
+  /** Selected feature choice options keyed by choice ID (e.g. { "fighting-style": ["defense"], "eldritch-invocations": ["agonizing-blast"] }). */
   featureChoices?: Record<string, string[]>
   background: string | null
   pointBuyBaseScores: Record<string, number>
