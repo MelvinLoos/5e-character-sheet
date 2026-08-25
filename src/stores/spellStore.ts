@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useCharacterStore } from './character'
 import { useProgressionStore } from './progression'
+import { getSpellcastingAbility } from '@/data/rules'
 import type { CharacterFeature } from '@/types/character'
 
 /**
@@ -135,9 +136,14 @@ export const useSpellStore = defineStore('spellStore', () => {
         (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
     )
 
-    if (hasSpellcasting && !data.spellcasting) {
-      data.spellcasting = { ability: 'int' }
-    } else if (!hasSpellcasting) {
+    if (hasSpellcasting) {
+      // Derive the casting ability from the character's class
+      const ability = getSpellcastingAbility(data.class)
+      data.spellcasting = {
+        ...(data.spellcasting ?? {}),
+        ability,
+      }
+    } else {
       data.spellcasting = null
     }
   }

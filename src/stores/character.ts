@@ -352,10 +352,12 @@ export const useCharacterStore = defineStore('character', () => {
         (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
     )
 
-    if (hasSpellcasting && !currentCharacterData.value.spellcasting) {
-      // Set up spellcasting object with default ability
+    if (hasSpellcasting) {
+      // Derive the casting ability from the character's class
+      const ability = DND_RULES.getSpellcastingAbility(currentCharacterData.value.class)
       currentCharacterData.value.spellcasting = {
-        ability: 'int', // Default to Intelligence as specified
+        ...(currentCharacterData.value.spellcasting ?? {}),
+        ability,
       }
     } else if (!hasSpellcasting) {
       // Remove spellcasting object if no spellcasting source exists

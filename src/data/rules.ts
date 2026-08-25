@@ -22,7 +22,7 @@ import type {
   SpellSlotsByLevel,
 } from '@/types/rules'
 import type { CharacterFeature } from '@/types/character'
-import type { CasterType } from '@/types/enums'
+import type { AbilityKey, CasterType } from '@/types/enums'
 
 /**
  * Maps a Renown Tier to its equivalent standard D&D 5.5e character level.
@@ -154,6 +154,34 @@ export const CLASS_SPELLCASTING_FEATS: Record<string, CharacterFeature> = {
     source: 'Class',
     featureType: 'Class Feature',
   },
+}
+
+/**
+ * The spellcasting ability used by each spellcasting class.
+ * Non-casters are absent; {@link getSpellcastingAbility} falls back to 'int'.
+ */
+export const CLASS_SPELLCASTING_ABILITY: Record<string, AbilityKey> = {
+  Bard: 'cha',
+  Cleric: 'wis',
+  Druid: 'wis',
+  Paladin: 'cha',
+  Ranger: 'wis',
+  Sorcerer: 'cha',
+  Warlock: 'cha',
+  Wizard: 'int',
+}
+
+/**
+ * Resolve the spellcasting ability for a given class name.
+ *
+ * Returns the mapped {@link AbilityKey} for known spellcaster classes;
+ * falls back to `'int'` when the class is not a known spellcaster,
+ * or when `className` is `null` / `undefined`.
+ */
+export function getSpellcastingAbility(
+  className: string | null | undefined,
+): AbilityKey {
+  return (className && CLASS_SPELLCASTING_ABILITY[className]) || 'int'
 }
 
 /**
