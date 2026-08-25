@@ -56,7 +56,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
   >
     <div class="flex justify-between items-center border-b border-primary-container pb-3 mb-6">
       <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
-        <span class="material-symbols-outlined">military_tech</span> Renown & Progression<InfoButton topic="renown-system" />
+        <span class="material-symbols-outlined">military_tech</span> Progression<InfoButton topic="renown-system" />
       </h3>
       <div class="flex flex-col items-end">
         <span class="font-label-md text-label-md text-tertiary uppercase tracking-widest">
