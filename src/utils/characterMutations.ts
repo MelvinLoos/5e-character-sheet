@@ -76,6 +76,11 @@ export function migrateCharacterData(data: unknown): CharacterData {
     migrated.features = []
   }
 
+  // Ensure featureChoices (no regressions for existing saved characters)
+  if (!migrated.featureChoices) {
+    migrated.featureChoices = {}
+  }
+
   // v1 -> v2 migration: move class-based casterType from features into
   // a dedicated class-granted spellcasting feat.
   const currentVersion = typeof migrated.version === 'number' ? migrated.version : 1
@@ -694,6 +699,98 @@ export function applyStartingEquipment(
 }
 
 // ---------------------------------------------------------------------------
+// applyFeatureChoices
+// ---------------------------------------------------------------------------
+
+/**
+ * Replace feature-choice-granted traits in the character's feature list.
+ *
+ * Mirrors `applySpeciesTraits`: builds a removal set of every trait title
+ * defined across ALL classes' featureChoices options, filters those titles
+ * out of the current features array, then re-appends the traits for any
+ * options the player has currently selected on the character (respecting
+ * `minTier` on both the choice and individual options).
+ */
+export function applyFeatureChoices(char: CharacterData): CharacterData {
+  // Collect all choice-granted feature titles for removal (from ALL classes).
+  // We always filter these out, even when the current class has no
+  // featureChoices, so that a class switch cleans up stale traits.
+  const allChoiceFeatureTitles = new Set<string>()
+  for (const cls of Object.values(DND_RULES.CLASSES)) {
+    for (const choice of cls.featureChoices || []) {
+      for (const option of choice.options || []) {
+        for (const trait of option.traits || []) {
+          if (trait.title) allChoiceFeatureTitles.add(trait.title)
+        }
+      }
+    }
+  }
+
+  if (allChoiceFeatureTitles.size === 0) return { ...char }
+
+  // Filter out any existing choice-granted features
+  const filteredFeatures = (char.features || []).filter(
+    (f) => !allChoiceFeatureTitles.has(f.title),
+  )
+
+  // Re-append traits for currently selected options (only if class has featureChoices)
+  if (!char.class) {
+    return {
+      ...char,
+      features: filteredFeatures,
+    }
+  }
+
+  const classData = DND_RULES.CLASSES[char.class]
+  const charFeatureChoices = char.featureChoices || {}
+  const renownTier = char.renownTier || 1
+
+  const newFeatureChoiceTraits: CharacterFeature[] = []
+
+  if (classData?.featureChoices) {
+    for (const choice of classData.featureChoices) {
+      // Respect choice minTier
+      if (choice.minTier !== undefined && renownTier < choice.minTier) continue
+
+      const selectedOptionIds = charFeatureChoices[choice.id]
+      if (!selectedOptionIds || selectedOptionIds.length === 0) continue
+
+      for (const optionId of selectedOptionIds) {
+        const option = choice.options.find((o) => o.id === optionId)
+        if (!option) continue
+
+        for (const trait of option.traits || []) {
+          const t = trait as {
+            title: string
+            desc: string
+            key?: boolean
+            uses?: { total: number; per: string }
+            minTier?: number
+          }
+
+          // Respect per-trait minTier
+          if (t.minTier !== undefined && renownTier < t.minTier) continue
+
+          newFeatureChoiceTraits.push({
+            title: t.title || '',
+            desc: t.desc || '',
+            key: !!t.key,
+            casterType: null,
+            uses: t.uses ? { total: t.uses.total, per: t.uses.per } : undefined,
+            minTier: t.minTier,
+          })
+        }
+      }
+    }
+  }
+
+  return {
+    ...char,
+    features: [...filteredFeatures, ...newFeatureChoiceTraits],
+  }
+}
+
+// ---------------------------------------------------------------------------
 // applyAllChanges (convenience pipeline)
 // ---------------------------------------------------------------------------
 
@@ -712,6 +809,7 @@ export function applyAllChanges(char: CharacterData): CharacterData {
   result = applyBackgroundFeature(result)
   result = applyClassFeatures(result)
   result = applySpeciesTraits(result)
+  result = applyFeatureChoices(result)
   result = calculateDerivedStats(result)
   return result
 }

@@ -12,6 +12,8 @@ export type {
   BackgroundData,
   SpellSlotsByLevel,
   SubChoice,
+  FeatureChoice,
+  FeatureChoiceOption,
 } from '@/types/rules'
 
 // Also import for internal use
@@ -478,6 +480,55 @@ export const CLASSES: Record<string, ClassData> = {
         desc: 'On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level.',
         uses: { total: 1, per: 'Short Rest' },
         key: true,
+      },
+    ],
+    featureChoices: [
+      {
+        id: 'fighting-style',
+        label: 'Fighting Style',
+        description: 'You gain a Fighting Style feat of your choice.',
+        count: 1,
+        options: [
+          {
+            id: 'defense',
+            label: 'Defense',
+            description: 'While wearing armor, you gain a +1 bonus to AC.',
+            traits: [
+              {
+                title: 'Fighting Style: Defense',
+                desc: 'While you are wearing armor, you gain a +1 bonus to AC.',
+                key: false,
+                featureType: 'Class Feature',
+              },
+            ],
+          },
+          {
+            id: 'dueling',
+            label: 'Dueling',
+            description: 'When wielding a melee weapon in one hand and no other weapons, you gain +2 to damage rolls.',
+            traits: [
+              {
+                title: 'Fighting Style: Dueling',
+                desc: 'When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.',
+                key: false,
+                featureType: 'Class Feature',
+              },
+            ],
+          },
+          {
+            id: 'great-weapon-fighting',
+            label: 'Great Weapon Fighting',
+            description: 'Reroll 1s and 2s on damage dice for two-handed weapons.',
+            traits: [
+              {
+                title: 'Fighting Style: Great Weapon Fighting',
+                desc: 'When you roll damage for an attack you make with a melee weapon that you are wielding with two hands, you can reroll any 1 or 2 on a damage die. You must use the new roll, even if it is a 1 or a 2.',
+                key: false,
+                featureType: 'Class Feature',
+              },
+            ],
+          },
+        ],
       },
     ],
   },

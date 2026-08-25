@@ -39,6 +39,39 @@ export interface SkillChoice {
   from: string[] | 'any'
 }
 
+/** An option within a class feature choice (e.g. a specific Fighting Style). */
+export interface FeatureChoiceOption {
+  /** Unique identifier (e.g. "defense", "dueling"). */
+  id: string
+  /** Display label (e.g. "Defense", "Dueling"). */
+  label: string
+  /** Optional flavour description. */
+  description?: string
+  /** Traits granted when this option is selected. */
+  traits: RulesFeature[]
+  /** Optional prerequisite string (e.g. "Fighter:level:3"). */
+  prerequisite?: string
+}
+
+/** A class feature choice where the player picks one or more options.
+ *  Examples: Fighting Style (Fighter/Paladin), Eldritch Invocations (Warlock). */
+export interface FeatureChoice {
+  /** Unique identifier (e.g. "fighting-style", "eldritch-invocations"). */
+  id: string
+  /** Display label for the choice group. */
+  label: string
+  /** Optional flavour description. */
+  description?: string
+  /** Base number of options the player may select. */
+  count: number
+  /** If true, count scales: Tier 2 = +1, Tier 3 = +2. */
+  scalesPerTier?: boolean
+  /** Available options for this choice. */
+  options: FeatureChoiceOption[]
+  /** Minimum Renown Tier (1-3) required before this choice is available. */
+  minTier?: number
+}
+
 /** Class definition in the rules compendium. */
 export interface ClassData {
   description?: string
@@ -50,6 +83,8 @@ export interface ClassData {
   fixedSkills?: string[]
   /** Optional "choose N from [list]" skill proficiency rule. */
   skillChoices?: SkillChoice
+  /** Class feature choices where players pick from a catalogue of options. */
+  featureChoices?: FeatureChoice[]
 }
 
 /** Species definition in the rules compendium. */

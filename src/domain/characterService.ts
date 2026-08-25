@@ -106,6 +106,7 @@ export const createBlankCharacter = (): CharacterData => {
     renownMilestones: 0,
     species: defaultSpecies,
     subChoice: null,
+    featureChoices: {},
     background: defaultBackground,
     pointBuyBaseScores: baseScores,
     backgroundBonusSelections: defaultSelections,
