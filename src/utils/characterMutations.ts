@@ -361,12 +361,19 @@ export function applyClassFeatures(char: CharacterData): CharacterData {
 
   // Build new features from rules data
   const newFeatures: CharacterFeature[] = (classData.features || []).map((feat) => {
-    const f = feat as { title: string; desc: string; key?: boolean; uses?: { total: number; per: string } }
+    const f = feat as {
+      title: string
+      desc: string
+      key?: boolean
+      uses?: { total: number; per: string }
+      minTier?: number
+    }
     return {
       title: f.title || '',
       desc: f.desc || '',
       key: !!f.key,
       uses: f.uses ? { total: f.uses.total, per: f.uses.per } : undefined,
+      minTier: f.minTier,
     }
   })
 

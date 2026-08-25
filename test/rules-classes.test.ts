@@ -74,4 +74,89 @@ describe('CLASSES dictionary', () => {
       expect(spellcasting).toBeUndefined()
     })
   })
+
+  describe('Warlock', () => {
+    it('has a Warlock entry', () => {
+      expect(CLASSES.Warlock).toBeDefined()
+    })
+
+    it('is a pact-magic caster via CLASS_SPELLCASTING_FEATS', () => {
+      const spellcasting = CLASS_SPELLCASTING_FEATS.Warlock
+      expect(spellcasting).toBeDefined()
+      expect(spellcasting.casterType).toBe('pact')
+    })
+
+    it('has 3 Tier 1 features: Magical Cunning, Warlock Subclass, Contact Patron', () => {
+      const titles = CLASSES.Warlock?.features.map((f) => f.title)
+      expect(titles).toEqual(
+        expect.arrayContaining([
+          'Magical Cunning',
+          'Warlock Subclass',
+          'Contact Patron',
+        ]),
+      )
+      expect(CLASSES.Warlock?.features).toHaveLength(3)
+    })
+
+    it('has Contact Patron gated at minTier 2', () => {
+      const contactPatron = CLASSES.Warlock?.features.find(
+        (f) => f.title === 'Contact Patron',
+      )
+      expect(contactPatron).toBeDefined()
+      expect(contactPatron?.minTier).toBe(2)
+    })
+
+    it('has Magical Cunning with 1 use per Long Rest', () => {
+      const magicalCunning = CLASSES.Warlock?.features.find(
+        (f) => f.title === 'Magical Cunning',
+      )
+      expect(magicalCunning?.uses).toEqual({ total: 1, per: 'Long Rest' })
+    })
+
+    it('has Eldritch Invocations featureChoice with 10 options', () => {
+      const choices = CLASSES.Warlock?.featureChoices
+      expect(choices).toBeDefined()
+      const invocations = choices?.find((c) => c.id === 'eldritch-invocations')
+      expect(invocations).toBeDefined()
+      expect(invocations?.label).toBe('Eldritch Invocations')
+      expect(invocations?.count).toBe(2)
+      expect(invocations?.scalesPerTier).toBe(true)
+      expect(invocations?.options).toHaveLength(10)
+    })
+
+    it('has invocation options with correct trait titles', () => {
+      const invocations = CLASSES.Warlock?.featureChoices?.find(
+        (c) => c.id === 'eldritch-invocations',
+      )
+      const optionTitles = invocations?.options?.map((o) => o.label)
+      expect(optionTitles).toEqual(
+        expect.arrayContaining([
+          'Agonizing Blast',
+          'Armor of Shadows',
+          "Devil's Sight",
+          'Repelling Blast',
+          'Mask of Many Faces',
+          'Eldritch Mind',
+          'Fiendish Vigor',
+          'Eldritch Sight',
+          'Otherworldly Leap',
+          'Lessons of the First Ones',
+        ]),
+      )
+    })
+
+    it('has prerequisite gating on Agonizing Blast, Repelling Blast, and Lessons of the First Ones', () => {
+      const invocations = CLASSES.Warlock?.featureChoices?.find(
+        (c) => c.id === 'eldritch-invocations',
+      )
+      const withPrereqs = invocations?.options?.filter((o) => o.prerequisite)
+      expect(withPrereqs?.map((o) => o.id)).toEqual(
+        expect.arrayContaining([
+          'agonizing-blast',
+          'repelling-blast',
+          'lessons-of-the-first-ones',
+        ]),
+      )
+    })
+  })
 })
