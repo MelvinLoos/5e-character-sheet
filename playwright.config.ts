@@ -108,5 +108,9 @@ export default defineConfig({
     command: process.env.CI ? 'npm run preview' : 'npm run dev',
     port: process.env.CI ? 4173 : 5173,
     reuseExistingServer: !process.env.CI,
+    env: {
+      // Keep e2e runs hermetic: don't emit analytics events or require PostHog config.
+      VITE_POSTHOG_DISABLED: 'true',
+    },
   },
 })
