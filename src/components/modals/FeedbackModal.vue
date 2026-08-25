@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { capturePostHogEvent } from '@/utils/posthog'
 import { useFeedbackStore } from '@/stores/feedbackStore'
 import {
   submitFeedback,
@@ -75,6 +76,9 @@ async function handleSubmit() {
       },
     })
     submitState.value = 'success'
+    capturePostHogEvent('feedback_submitted', {
+      feedback_type: feedbackType.value,
+    })
   } catch (error) {
     if (error instanceof FeedbackServiceError && error.code === 'SERVICE_UNCONFIGURED') {
       feedbackStore.markUnavailable()

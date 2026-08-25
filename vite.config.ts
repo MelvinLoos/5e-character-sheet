@@ -43,7 +43,8 @@ export default defineConfig(({ mode }) => {
   ],
   define: {
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || '')
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || ''),
+    'import.meta.env.VITE_POSTHOG_DISABLED': JSON.stringify(env.VITE_POSTHOG_DISABLED === 'true' ? 'true' : 'false')
   },
   build: {
     // Encourage Rollup to split large vendor chunks into smaller pieces

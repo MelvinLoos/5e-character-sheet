@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { capturePostHogEvent } from '@/utils/posthog'
 import { EQUIPMENT_CATALOG } from '@/data/equipment-items'
 import { CLASS_BUNDLES, CLASS_FOCUS_MAP } from '@/data/equipment-bundles'
 import {
@@ -183,6 +184,11 @@ function selectTrinket(trinketId: string) {
 function confirmEquipment() {
   store.confirmStartingEquipment()
   isComplete.value = true
+  capturePostHogEvent('starting_equipment_configured', {
+    class_option: selectedClassOption.value,
+    background_option: selectedBackgroundOption.value,
+    trinket_selected: Boolean(selectedTrinketId.value),
+  })
   store.resetStartingEquipment()
 }
 

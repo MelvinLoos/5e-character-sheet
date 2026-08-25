@@ -28,6 +28,7 @@
     "idb-keyval": "^6.2.5",
     "pinia": "^3.0.3",
     "postcss": "^8.5.6",
+    "posthog-js": "^1.418.17",
     "vue": "^3.5.22",
     "vue-router": "^5.1.0",
     "vuedraggable": "^4.1.0"
