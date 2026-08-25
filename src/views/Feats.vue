@@ -6,8 +6,11 @@ import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
 import type { CharacterFeature } from '@/types/character'
-import * as DND_RULES from '@/data/rules'
 import type { FeatureChoice } from '@/types/rules'
+import {
+  eligibleFeatureChoices as eligibleFeatureChoicesHelper,
+  effectiveMaxCountForChoice as effectiveMaxCountForChoiceHelper,
+} from '@/utils/featureChoiceRules'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
@@ -32,11 +35,9 @@ const activeFeatureChoice = ref<FeatureChoice | null>(null)
 
 // --- Eligible feature choices based on character's class ---
 const eligibleFeatureChoices = computed<FeatureChoice[]>(() => {
-  const charClass = store.currentCharacterData?.class
-  if (!charClass) return []
-  const charTier = store.currentCharacterData?.renownTier ?? 1
-  return (DND_RULES.CLASSES[charClass]?.featureChoices || []).filter(
-    (fc) => !fc.minTier || fc.minTier <= charTier,
+  return eligibleFeatureChoicesHelper(
+    store.currentCharacterData?.class,
+    store.currentCharacterData?.renownTier,
   )
 })
 
@@ -46,12 +47,7 @@ function currentFeatureChoiceSelections(choiceId: string): string[] {
 
 /** Compute the effective max count for a feature choice, accounting for tier scaling. */
 function effectiveMaxCountForChoice(fc: FeatureChoice): number {
-  if (typeof fc.count !== 'number') return 0
-  const tier = store.currentCharacterData?.renownTier ?? 1
-  if (fc.scalesPerTier) {
-    return fc.count + (tier - 1)
-  }
-  return fc.count
+  return effectiveMaxCountForChoiceHelper(fc, store.currentCharacterData?.renownTier)
 }
 
 function openFeatureChoiceModal(choice: FeatureChoice) {
