@@ -56,7 +56,7 @@ function handleClose() {
       <div class="modal-content max-w-2xl w-full mx-4">
       <!-- Modal Header -->
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-fell text-sheet-red">
+        <h2 class="text-2xl font-fell text-tertiary">
           Choose Your {{ speciesLabel }} Lineage
         </h2>
         <button
@@ -79,8 +79,8 @@ function handleClose() {
           :class="[
             'p-4 rounded-lg border-2 cursor-pointer transition-all duration-200',
             currentSubChoice === option.id
-              ? 'border-sheet-red bg-sheet-red/10 selected'
-              : 'border-sheet-border hover:border-sheet-red/40 hover:bg-surface-container-high',
+              ? 'border-tertiary bg-tertiary-container/20 selected'
+              : 'border-sheet-border hover:border-tertiary/50 hover:bg-surface-container-high',
           ]"
           @click="handleSelect(option.id)"
         >
@@ -88,7 +88,7 @@ function handleClose() {
             <h3 class="text-lg font-bold text-on-surface">{{ option.label }}</h3>
             <span
               v-if="currentSubChoice === option.id"
-              class="text-xs font-bold text-sheet-bg bg-sheet-red px-2 py-0.5 rounded-full"
+              class="text-xs font-bold text-on-tertiary bg-tertiary px-2 py-0.5 rounded-full"
             >
               Selected
             </span>

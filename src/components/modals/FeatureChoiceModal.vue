@@ -93,7 +93,7 @@ function handleClose() {
         <!-- Modal Header -->
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-2xl font-fell text-sheet-red">
+            <h2 class="text-2xl font-fell text-tertiary">
               {{ choice.label }}
             </h2>
             <p
@@ -141,8 +141,8 @@ function handleClose() {
             :class="[
               'p-4 rounded-lg border-2 cursor-pointer transition-all duration-200',
               isSelected(option.id)
-                ? 'border-sheet-red bg-sheet-red/10 selected'
-                : 'border-sheet-border hover:border-sheet-red/40 hover:bg-surface-container-high',
+                ? 'border-tertiary bg-tertiary-container/20 selected'
+                : 'border-sheet-border hover:border-tertiary/50 hover:bg-surface-container-high',
             ]"
             @click="toggleOption(option.id)"
           >
@@ -152,7 +152,7 @@ function handleClose() {
                   :class="[
                     'w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0',
                     isSelected(option.id)
-                      ? 'bg-sheet-red border-sheet-red text-sheet-bg'
+                      ? 'bg-tertiary border-tertiary text-on-tertiary'
                       : 'border-sheet-border',
                   ]"
                 >
@@ -162,7 +162,7 @@ function handleClose() {
               </div>
               <span
                 v-if="isSelected(option.id)"
-                class="text-xs font-bold text-sheet-bg bg-sheet-red px-2 py-0.5 rounded-full"
+                class="text-xs font-bold text-on-tertiary bg-tertiary px-2 py-0.5 rounded-full"
               >
                 Selected
               </span>
@@ -198,7 +198,7 @@ function handleClose() {
               data-test="modal-confirm-btn"
               @click="handleConfirm"
               :disabled="!canConfirm"
-              class="px-4 py-2 rounded-lg bg-sheet-red text-sheet-bg font-label-md hover:bg-sheet-red/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 rounded-lg bg-tertiary text-on-tertiary font-label-md hover:bg-tertiary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Confirm Selections
             </button>
