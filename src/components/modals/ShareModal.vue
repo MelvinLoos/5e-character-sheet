@@ -19,7 +19,7 @@ function copyToClipboard() {
 <template>
   <div v-if="store.shareModal.show" class="modal-backdrop backdrop-blur-sm bg-black/40">
     <div class="modal-content rounded-xl">
-      <h2 class="text-xl font-bold text-sheet-red mb-4">Character Shared!</h2>
+      <h2 class="text-xl font-bold text-tertiary mb-4">Character Shared!</h2>
       <p class="mb-4">Your character has been saved to the archives. Share this link:</p>
       <div class="flex items-center gap-2 mb-6">
         <input

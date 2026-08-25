@@ -114,7 +114,7 @@ watch(
         <div class="modal-content rounded-xl">
           <!-- Success state -->
           <template v-if="submitState === 'success'">
-            <h2 class="text-xl font-bold text-sheet-red mb-4">Thanks for your feedback!</h2>
+            <h2 class="text-xl font-bold text-tertiary mb-4">Thanks for your feedback!</h2>
             <p class="mb-6">Your feedback has been delivered to the Guild.</p>
             <button @click="close" class="icon-button">
               <span class="material-symbols-outlined text-base">check</span>
@@ -124,7 +124,7 @@ watch(
 
           <!-- Form / loading / error state -->
           <template v-else>
-            <h2 class="text-xl font-bold text-sheet-red mb-4">Give Feedback</h2>
+            <h2 class="text-xl font-bold text-tertiary mb-4">Give Feedback</h2>
             <p class="mb-4 text-sm">
               Help us improve the app. Your feedback goes straight to the Guild's private
               Discord channel.

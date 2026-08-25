@@ -332,7 +332,7 @@ function removeModifier(stat: string) {
     <div class="modal-content max-w-4xl w-full mx-4">
       <!-- Modal Header -->
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-fell text-sheet-red">{{ modalTitle }}</h2>
+        <h2 class="text-2xl font-fell text-tertiary">{{ modalTitle }}</h2>
         <button @click="handleCancel" class="info-button" title="Close">
           <span v-html="feather.icons?.x?.toSvg({ width: 20, height: 20 })"></span>
         </button>
