@@ -38,7 +38,9 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page.getByText('Eldritch Invocations')).toBeVisible()
 
     // Click the "Manage" button to open the invocation selection modal
-    await page.locator('button', { hasText: 'Manage' }).click()
+    await page
+      .locator('[data-test="feature-choice-manage-eldritch-invocations"]')
+      .click()
 
     // Verify modal is open and shows invocation options
     await expect(page.getByText(/Armor of Shadows/)).toBeVisible()
@@ -84,7 +86,9 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page.getByText(/Feats & Talents/)).toBeVisible()
 
     // Open invocation modal and select one option
-    await page.locator('button', { hasText: 'Manage' }).click()
+    await page
+      .locator('[data-test="feature-choice-manage-eldritch-invocations"]')
+      .click()
     await expect(page.getByText(/Armor of Shadows/)).toBeVisible()
     await page.locator('[data-id="armor-of-shadows"]').click()
     await page.locator('[data-test="modal-confirm-btn"]').click()
@@ -147,7 +151,9 @@ test.describe('Warlock Eldritch Invocations', () => {
 
     await page.getByRole('link', { name: /Feats/ }).first().click()
     await expect(page.getByText(/Feats & Talents/)).toBeVisible()
-    await page.locator('button', { hasText: 'Manage' }).click()
+    await page
+      .locator('[data-test="feature-choice-manage-eldritch-invocations"]')
+      .click()
     await page.locator('[data-id="armor-of-shadows"]').click()
     await page.locator('[data-test="modal-confirm-btn"]').click()
     await expect(page.getByText('1 selected')).toBeVisible()
@@ -185,7 +191,9 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page.getByText(/Feats & Talents/)).toBeVisible()
 
     // Open invocation modal
-    await page.locator('button', { hasText: 'Manage' }).click()
+    await page
+      .locator('[data-test="feature-choice-manage-eldritch-invocations"]')
+      .click()
 
     // Verify that options with prerequisites display their prerequisite text
     const agonizingOption = page.locator('[data-id="agonizing-blast"]')

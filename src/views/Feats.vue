@@ -450,6 +450,7 @@ function setActiveCategory(cat: string) {
           </div>
           <button
             v-if="store.isEditing"
+            :data-test="`feature-choice-manage-${fc.id}`"
             @click="openFeatureChoiceModal(fc)"
             class="bg-primary-container text-primary border border-primary/30 px-3 py-1.5 rounded-lg font-label-md flex items-center gap-1.5 hover:bg-surface-variant transition-colors whitespace-nowrap shadow-sm text-sm"
           >
