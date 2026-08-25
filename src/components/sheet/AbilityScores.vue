@@ -138,7 +138,7 @@ watch(
       </div>
     </div>
 
-    <div class="grid grid-cols-3 sm:grid-cols-6" style="gap: 4rem">
+    <div class="grid grid-cols-2 sm:grid-cols-6 gap-4 sm:gap-16">
       <div
         v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
         :key="key"
