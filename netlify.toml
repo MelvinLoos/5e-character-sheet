@@ -18,7 +18,7 @@ node_bundler = "esbuild"
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://www.transparenttextures.com https://cdn.discordapp.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://discord.com https://eu.i.posthog.com; worker-src blob:; font-src 'self' data: https://fonts.gstatic.com; manifest-src 'self'; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://www.transparenttextures.com https://cdn.discordapp.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://discord.com https://eu.i.posthog.com; worker-src 'self' blob:; font-src 'self' data: https://fonts.gstatic.com; manifest-src 'self'; frame-ancestors 'none';"
 
 # Cache static assets (JS, CSS, images) for 1 year
 [[headers]]
