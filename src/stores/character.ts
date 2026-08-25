@@ -303,8 +303,8 @@ export const useCharacterStore = defineStore('character', () => {
     // Setup spellcasting object if character has valid casterType
     _setupSpellcasting()
 
-    // Ensure background skills are properly applied
-    updateBackgroundSkills()
+    // Apply full mutation pipeline (cleanup stale skills, apply class/background skills, features, derived stats)
+    currentCharacterData.value = applyAllChanges(currentCharacterData.value)
 
     // Sync HP with calculated values
     // If hp_current matches the stored hp_max (or is new), update it to the calculated maxHp
@@ -628,30 +628,6 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Setup spellcasting based on current features
     _setupSpellcasting()
-  }
-
-  // Helper function to update background skills
-  function updateBackgroundSkills(): void {
-    if (!currentCharacterData.value || !currentCharacterData.value.background) return
-
-    const backgroundData = DND_RULES.BACKGROUNDS[currentCharacterData.value.background]
-    if (!backgroundData || !backgroundData.skills) return
-
-    // Get current skill proficiencies
-    const currentSkills = new Set(currentCharacterData.value.proficiencies.skills)
-
-    // Normalize background skill names (lowercase, no spaces)
-    const backgroundSkills = backgroundData.skills.map((skill: string) =>
-      skill.toLowerCase().replace(/ /g, ''),
-    )
-
-    // Add background skills to proficiencies if not already there
-    backgroundSkills.forEach((skill: string) => {
-      currentSkills.add(skill)
-    })
-
-    // Update character data
-    currentCharacterData.value.proficiencies.skills = Array.from(currentSkills)
   }
 
   // --- Explicit Actions (replacing implicit watchers) ---

@@ -148,9 +148,12 @@ export function useSkills(characterStore?: ReturnType<typeof useCharacterStore>)
     const options = classSkillOptions.value
     if (!options) return true
 
-    // Skill must be in the class's allowed list (unless 'any')
+    // Skill must be in the class's allowed list (unless 'any').
+    // However, a skill that is already proficient (e.g. from a previous
+    // class selection) must still be toggle-able so the player can
+    // remove it — skip this check for skills the player already has.
     if (options.from !== 'any' && !options.from.some((s) => normalizeSkillName(s) === normName)) {
-      return true
+      if (!isProficient.value(skillName)) return true
     }
 
     // If no remaining choices and the skill isn't already selected, disable it

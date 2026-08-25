@@ -285,6 +285,28 @@ describe('useSkills', () => {
       // Already-selected skills remain enabled (can be toggled off)
       expect(isSkillDisabled('Athletics')).toBe(false)
     })
+
+    it('allows toggling OFF a skill already proficient but outside class list', () => {
+      // Simulate a character that switched from Bard (from:'any') to Fighter.
+      // Arcana is proficient but is NOT in Fighter's skillChoices.from list.
+      store.currentCharacterData.class = 'Fighter'
+      store.currentCharacterData.proficiencies.skills = ['arcana', 'athletics']
+      const { isSkillDisabled } = useSkills(store)
+      // Arcana is proficient but outside Fighter's list → should be toggle-able OFF
+      expect(isSkillDisabled('Arcana')).toBe(false)
+      // Athletics is in Fighter's list and selected → should also be toggle-able
+      expect(isSkillDisabled('Athletics')).toBe(false)
+      // A non-proficient skill outside Fighter's list → should be disabled
+      expect(isSkillDisabled('Stealth')).toBe(true)
+    })
+
+    it('still disables adding a non-class-list skill that is not proficient', () => {
+      store.currentCharacterData.class = 'Fighter'
+      store.currentCharacterData.proficiencies.skills = ['athletics']
+      const { isSkillDisabled } = useSkills(store)
+      // Arcana is not proficient and not in Fighter's list → disabled
+      expect(isSkillDisabled('Arcana')).toBe(true)
+    })
   })
 
   describe('toggleProficiency with constraints', () => {
@@ -315,6 +337,18 @@ describe('useSkills', () => {
 
       toggleProficiency('Perception')
       expect(store.currentCharacterData.proficiencies.skills).toContain('perception')
+    })
+
+    it('allows toggling OFF a stale skill outside current class list', () => {
+      // Simulate switching from Bard to Fighter: Arcana is proficient but
+      // not in Fighter's from list → player must be able to remove it.
+      store.currentCharacterData.class = 'Fighter'
+      store.currentCharacterData.proficiencies.skills = ['arcana', 'athletics']
+      const { toggleProficiency } = useSkills(store)
+
+      toggleProficiency('Arcana')
+      expect(store.currentCharacterData.proficiencies.skills).not.toContain('arcana')
+      expect(store.currentCharacterData.proficiencies.skills).toContain('athletics')
     })
   })
 })
