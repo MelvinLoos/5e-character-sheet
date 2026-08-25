@@ -7,6 +7,10 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, afterEach } from 'vitest'
 import FeatureChoiceModal from '../src/components/modals/FeatureChoiceModal.vue'
+import { CLASSES } from '../src/data/rules'
+import type { FeatureChoice } from '../src/types/rules'
+
+const warlockInvocations: FeatureChoice = CLASSES.Warlock!.featureChoices![0]
 
 function qs(sel: string) { return document.body.querySelector(sel) }
 function qsa(sel: string) { return document.body.querySelectorAll(sel) }
@@ -22,40 +26,40 @@ describe('FeatureChoiceModal.vue', () => {
   afterEach(() => { document.body.innerHTML = '' })
 
   it('does not render when isOpen is false', () => {
-    mountOpen({ isOpen: false, choiceId: 'eldritch-invocations', currentSelections: [] })
+    mountOpen({ isOpen: false, choice: warlockInvocations, currentSelections: [] })
     expect(qs('[data-test="feature-choice-option"]')).toBeNull()
   })
 
-  it('does not render when choiceId is empty', () => {
-    mountOpen({ isOpen: true, choiceId: '', currentSelections: [] })
+  it('does not render when choice is null', () => {
+    mountOpen({ isOpen: true, choice: null, currentSelections: [] })
     expect(qs('[data-test="feature-choice-option"]')).toBeNull()
   })
 
   it('renders the choice label', () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     expect(document.body.textContent!).toContain('Eldritch Invocations')
   })
 
   it('renders all options', () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
-    expect(qsa('[data-test="feature-choice-option"]').length).toBe(22)
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
+    expect(qsa('[data-test="feature-choice-option"]').length).toBe(warlockInvocations.options!.length)
   })
 
   it('shows remaining count', () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     const c = qs('[data-test="remaining-count"]')
     expect(c!.textContent).toContain('0 / 2 selected')
   })
 
   it('show prerequisite indicators', () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     const o = qs('[data-id="agonizing-blast"]')
     expect(o!.textContent).toContain('Prerequisite:')
-    expect(o!.textContent).toContain('Eldritch Blast cantrip')
+    expect(o!.textContent).toContain('Warlock:level:1')
   })
 
   it('toggle on click via document.body', async () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     const el = qs('[data-id="agonizing-blast"]') as HTMLElement
     el.click()
     await Promise.resolve()
@@ -66,38 +70,38 @@ describe('FeatureChoiceModal.vue', () => {
   })
 
   it('prevents exceeding max selections', async () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     ;(qs('[data-id="agonizing-blast"]') as HTMLElement).click()
     ;(qs('[data-id="armor-of-shadows"]') as HTMLElement).click()
-    ;(qs('[data-id="beast-speech"]') as HTMLElement).click()
-    expect((qs('[data-id="beast-speech"]') as HTMLElement).classList.contains('selected')).toBe(false)
+    ;(qs('[data-id="devils-sight"]') as HTMLElement).click()
+    expect((qs('[data-id="devils-sight"]') as HTMLElement).classList.contains('selected')).toBe(false)
   })
 
   it('preselects from currentSelections', () => {
-    mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: ['devils-sight'] })
+    mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: ['devils-sight'] })
     expect((qs('[data-id="devils-sight"]') as HTMLElement).classList.contains('selected')).toBe(true)
   })
 
   it('emits close on cancel click', () => {
-    const w = mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    const w = mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     ;(qs('[data-test="modal-cancel-btn"]') as HTMLElement).click()
     expect(w.emitted().close).toBeTruthy()
   })
 
   it('emits close on X button', () => {
-    const w = mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    const w = mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     ;(qs('[data-test="modal-close-btn"]') as HTMLElement).click()
     expect(w.emitted().close).toBeTruthy()
   })
 
   it('emits close on backdrop click', () => {
-    const w = mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    const w = mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     ;(qs('.modal-backdrop') as HTMLElement).click()
     expect(w.emitted().close).toBeTruthy()
   })
 
   it('emits select and close on confirm', () => {
-    const w = mountOpen({ isOpen: true, choiceId: 'eldritch-invocations', currentSelections: [] })
+    const w = mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
     ;(qs('[data-id="agonizing-blast"]') as HTMLElement).click()
     ;(qs('[data-id="armor-of-shadows"]') as HTMLElement).click()
     ;(qs('[data-test="modal-confirm-btn"]') as HTMLElement).click()

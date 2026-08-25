@@ -28,7 +28,7 @@ const categories = ['All Forms', 'Combat', 'Magic', 'Utility']
 
 // --- Feature choice modal state ---
 const isFeatureChoiceOpen = ref(false)
-const activeFeatureChoiceId = ref('')
+const activeFeatureChoice = ref<FeatureChoice | null>(null)
 
 // --- Eligible feature choices based on character's class ---
 const eligibleFeatureChoices = computed<FeatureChoice[]>(() => {
@@ -44,13 +44,15 @@ function currentFeatureChoiceSelections(choiceId: string): string[] {
   return store.currentCharacterData?.featureChoices?.[choiceId] ?? []
 }
 
-function openFeatureChoiceModal(choiceId: string) {
-  activeFeatureChoiceId.value = choiceId
+function openFeatureChoiceModal(choice: FeatureChoice) {
+  activeFeatureChoice.value = choice
   isFeatureChoiceOpen.value = true
 }
 
 function handleFeatureChoiceSelect(optionIds: string[]) {
-  store.applyFeatureChoice(activeFeatureChoiceId.value, optionIds)
+  if (activeFeatureChoice.value) {
+    store.applyFeatureChoice(activeFeatureChoice.value.id, optionIds)
+  }
 }
 
 // --- Available feats from rulesStore ---
@@ -438,7 +440,7 @@ function setActiveCategory(cat: string) {
           </div>
           <button
             v-if="store.isEditing"
-            @click="openFeatureChoiceModal(fc.id)"
+            @click="openFeatureChoiceModal(fc)"
             class="bg-primary-container text-primary border border-primary/30 px-3 py-1.5 rounded-lg font-label-md flex items-center gap-1.5 hover:bg-surface-variant transition-colors whitespace-nowrap shadow-sm text-sm"
           >
             <span class="material-symbols-outlined text-base">edit</span>
@@ -591,8 +593,8 @@ function setActiveCategory(cat: string) {
     <!-- Feature Choice Modal (for class-based selections like Eldritch Invocations) -->
     <FeatureChoiceModal
       :is-open="isFeatureChoiceOpen"
-      :choice-id="activeFeatureChoiceId"
-      :current-selections="currentFeatureChoiceSelections(activeFeatureChoiceId)"
+      :choice="activeFeatureChoice"
+      :current-selections="activeFeatureChoice ? currentFeatureChoiceSelections(activeFeatureChoice.id) : []"
       @select="handleFeatureChoiceSelect"
       @close="isFeatureChoiceOpen = false"
     />

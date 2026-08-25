@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import feather from 'feather-icons'
-import * as DND_RULES from '@/data/rules'
 import type { FeatureChoice } from '@/types/rules'
 
 const props = defineProps({
@@ -9,9 +8,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  choiceId: {
-    type: String,
-    default: '',
+  choice: {
+    type: Object as () => FeatureChoice | null,
+    default: null,
   },
   currentSelections: {
     type: Array as () => string[],
@@ -21,10 +20,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'close'])
 
-const choice = computed<FeatureChoice | null>(() => {
-  if (!props.choiceId) return null
-  return DND_RULES.FEATURE_CHOICES[props.choiceId] ?? null
-})
+const choice = computed<FeatureChoice | null>(() => props.choice)
 
 const selectedIds = ref<string[]>([...props.currentSelections])
 
