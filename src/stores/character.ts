@@ -15,6 +15,7 @@ import { logger } from '../utils/logger'
 import {
   migrateCharacterData,
   applySpeciesTraits,
+  applyFeatureChoices,
   applyBackgroundBonuses,
   calculateDerivedStats,
   applyAllChanges,
@@ -704,6 +705,83 @@ export const useCharacterStore = defineStore('character', () => {
   })
 
   /**
+   * Apply a feature choice selection: set the selected option IDs for a given
+   * choice ID, validate against the class's featureChoices rule and catalog,
+   * persist to the character's featureChoices record, and re-run calculations.
+   *
+   * Mirrors `applySubChoice`. Enforces count (resolved via `getEffectiveLevel`
+   * with tier scaling) and prerequisites.
+   */
+  function applyFeatureChoice(choiceId: string, optionIds: string[]): void {
+    if (!currentCharacterData.value) return
+    const char = currentCharacterData.value
+    const className = char.class
+    if (!className) return
+
+    const classData = DND_RULES.CLASSES[className]
+    if (!classData?.featureChoices) return
+
+    const choice = classData.featureChoices.find((c) => c.id === choiceId)
+    if (!choice) return
+
+    // Resolve max count: Record<number, number> for level-keyed, or number with optional tier scaling
+    const tier = char.renownTier || 1
+    const level = DND_RULES.getEffectiveLevel(tier)
+    let maxCount: number
+    if (typeof choice.count === 'number') {
+      maxCount = choice.count
+      if (choice.scalesPerTier) {
+        // Tier 1 = base count, Tier 2 = +1, Tier 3 = +2
+        maxCount = choice.count + (tier - 1)
+      }
+    } else {
+      // Level-keyed record: find the highest level <= current level
+      const levels = Object.keys(choice.count).map(Number).sort((a, b) => a - b)
+      maxCount = levels[0] ? choice.count[levels[0]] ?? 0 : 0
+      for (const lvl of levels) {
+        if (lvl <= level) maxCount = choice.count[lvl] ?? maxCount
+      }
+    }
+
+    if (optionIds.length > maxCount) {
+      // Truncate to the maximum allowed count
+      optionIds = optionIds.slice(0, maxCount)
+    }
+
+    // Validate each option exists and meets prerequisites
+    const validOptionIds: string[] = []
+    const availableOptions = choice.options ?? []
+    for (const optionId of optionIds) {
+      const option = availableOptions.find((o) => o.id === optionId)
+      if (!option) continue
+
+      // Check prerequisite (basic format: "Fighter:level:3")
+      if (option.prerequisite) {
+        const parts = option.prerequisite.split(':')
+        if (parts.length >= 3 && parts[0] === className && parts[1] === 'level') {
+          const part2 = parts[2]
+          if (part2 !== undefined) {
+            const requiredLevel = parseInt(part2, 10)
+            if (!isNaN(requiredLevel) && level < requiredLevel) continue
+          }
+        }
+      }
+
+      validOptionIds.push(optionId)
+    }
+
+    // Persist to character data
+    if (!char.featureChoices) {
+      char.featureChoices = {}
+    }
+    char.featureChoices[choiceId] = validOptionIds
+
+    // Re-run calculations
+    currentCharacterData.value = applyFeatureChoices(currentCharacterData.value)
+    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+  }
+
+  /**
    * Apply background bonus selection changes by rebuilding ability scores
    * and recalculating derived stats.
    */
@@ -881,6 +959,7 @@ export const useCharacterStore = defineStore('character', () => {
     applyClassChange,
     applySpeciesChange,
     applySubChoice,
+    applyFeatureChoice,
     applyBonusSelectionChange,
     recalculateAll,
     // Getters

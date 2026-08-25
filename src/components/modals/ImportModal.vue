@@ -198,7 +198,7 @@ function close() {
     <div v-if="show" class="modal-backdrop backdrop-blur-sm bg-black/40">
       <div class="modal-content max-w-2xl rounded-xl">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-sheet-red">Import 5e.tools Data</h2>
+          <h2 class="text-xl font-bold text-tertiary">Import 5e.tools Data</h2>
           <button @click="close" class="icon-button" title="Close">
             <span v-html="feather.icons.x.toSvg()"></span>
           </button>

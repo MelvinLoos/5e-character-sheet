@@ -28,6 +28,50 @@ export interface SubChoice {
   /** Traits granted by selecting this sub-choice. */
   traits: RulesFeature[]
 }
+/** Prerequisites a catalog option may require before it can be selected. */
+export interface FeatureChoicePrerequisites {
+  /** Minimum effective level (resolved via getEffectiveLevel(tier)). */
+  minLevel?: number
+  /** Requires another option by id (e.g. 'pact-of-the-blade', 'thirsting-blade'). */
+  requiresInvocation?: string
+  /** Requires a known Warlock cantrip that deals damage ('damage') or deals damage via an attack roll ('attack-roll'). */
+  requiresCantrip?: 'damage' | 'attack-roll'
+}
+
+/** A single selectable option within a feature-choice catalog. */
+export interface FeatureChoiceOption {
+  id: string
+  label: string
+  description?: string
+  /** Features granted when this option is selected. */
+  traits: RulesFeature[]
+  /** Inline string prerequisite (e.g. \"Warlock:level:1\") for simple gating. */
+  prerequisite?: string
+  /** Structured prerequisites for external catalog options. */
+  prerequisites?: FeatureChoicePrerequisites
+  /** e.g. Agonizing Blast, Eldritch Spear, Repelling Blast, Lessons of the First Ones. */
+  repeatable?: boolean
+}
+
+/** A "choose N from catalog" rule attached to a class. */
+export interface FeatureChoice {
+  /** Unique identifier (e.g. "fighting-style", "eldritch-invocations"). */
+  id: string
+  /** Display label for the choice group. */
+  label: string
+  /** Optional flavour description. */
+  description?: string
+  /** Key into the catalog registry (e.g. 'invocations') — used for external catalogs. */
+  catalogId?: string
+  /** Fixed count, or count keyed by effective level (e.g. { 1: 1, 2: 3, 5: 5, ... }). */
+  count: number | Record<number, number>
+  /** If true and count is a number: Tier 2 = +1, Tier 3 = +2. */
+  scalesPerTier?: boolean
+  /** Inline options — used when options are defined directly on the class entry. */
+  options?: FeatureChoiceOption[]
+  /** Minimum Renown Tier (1-3) required before this choice is available. */
+  minTier?: number
+}
 
 /**
  * Represents a "choose N from [list]" skill proficiency rule.
@@ -50,6 +94,8 @@ export interface ClassData {
   fixedSkills?: string[]
   /** Optional "choose N from [list]" skill proficiency rule. */
   skillChoices?: SkillChoice
+/** Class feature choices where players pick from a catalogue of options. */
+  featureChoices?: FeatureChoice[]
 }
 
 /** Species definition in the rules compendium. */

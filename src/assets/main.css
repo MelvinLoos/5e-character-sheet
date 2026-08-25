@@ -224,7 +224,7 @@ html.light {
   }
 
   .section-header {
-    @apply font-fell text-2xl text-sheet-red border-b-2 border-sheet-accent pb-1 mb-3 tracking-wide;
+    @apply font-fell text-2xl text-tertiary border-b-2 border-sheet-accent pb-1 mb-3 tracking-wide;
   }
 
   .stat-box {
@@ -252,7 +252,7 @@ html.light {
 
   .proficient::before {
     content: '♦';
-    @apply mr-2 text-sheet-red;
+    @apply mr-2 text-tertiary;
   }
 
   .feature-box,
@@ -285,12 +285,12 @@ html.light {
   .control-panel button,
   .icon-button,
   .editor-button {
-    @apply bg-sheet-red text-sheet-bg border border-sheet-border p-2 rounded-sm cursor-pointer transition-all duration-200 ease-out flex items-center justify-center select-none;
+    @apply bg-tertiary text-on-tertiary border border-sheet-border p-2 rounded-sm cursor-pointer transition-all duration-200 ease-out flex items-center justify-center select-none;
   }
   .control-panel button:not(:disabled):hover,
   .icon-button:not(:disabled):hover,
   .editor-button:not(:disabled):hover {
-    @apply bg-sheet-red-dark;
+    @apply bg-tertiary-fixed-dim;
     transform: scale(1.05);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   }
@@ -400,7 +400,7 @@ html.light {
     @apply w-12 text-center bg-sheet-bg border border-sheet-accent;
   }
   .edit-mode-small-btn {
-    @apply text-xs px-2 py-1 ml-2 rounded-full bg-sheet-red text-sheet-bg border-none cursor-pointer;
+    @apply text-xs px-2 py-1 ml-2 rounded-full bg-tertiary text-on-tertiary border-none cursor-pointer;
   }
 
   .info-button {
@@ -418,7 +418,7 @@ html.light {
   }
 
   .loading-spinner {
-    @apply border-4 border-gray-200 border-t-sheet-red rounded-full w-8 h-8 animate-spin;
+    @apply border-4 border-gray-200 border-t-tertiary rounded-full w-8 h-8 animate-spin;
   }
 
   /* Route transition: cross-fade with subtle horizontal slide */
