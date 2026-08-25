@@ -44,6 +44,16 @@ function currentFeatureChoiceSelections(choiceId: string): string[] {
   return store.currentCharacterData?.featureChoices?.[choiceId] ?? []
 }
 
+/** Compute the effective max count for a feature choice, accounting for tier scaling. */
+function effectiveMaxCountForChoice(fc: FeatureChoice): number {
+  if (typeof fc.count !== 'number') return 0
+  const tier = store.currentCharacterData?.renownTier ?? 1
+  if (fc.scalesPerTier) {
+    return fc.count + (tier - 1)
+  }
+  return fc.count
+}
+
 function openFeatureChoiceModal(choice: FeatureChoice) {
   activeFeatureChoice.value = choice
   isFeatureChoiceOpen.value = true
@@ -429,7 +439,7 @@ function setActiveCategory(cat: string) {
               {{ fc.description }}
             </p>
             <p class="text-xs text-on-surface-variant">
-              Choose up to {{ typeof fc.count === 'number' ? fc.count : '?' }} of {{ fc.options?.length ?? 0 }} options
+              Choose up to {{ effectiveMaxCountForChoice(fc) }} of {{ fc.options?.length ?? 0 }} options
             </p>
             <p
               v-if="currentFeatureChoiceSelections(fc.id).length > 0"
@@ -595,6 +605,7 @@ function setActiveCategory(cat: string) {
       :is-open="isFeatureChoiceOpen"
       :choice="activeFeatureChoice"
       :current-selections="activeFeatureChoice ? currentFeatureChoiceSelections(activeFeatureChoice.id) : []"
+      :effective-max-count="activeFeatureChoice ? effectiveMaxCountForChoice(activeFeatureChoice) : 0"
       @select="handleFeatureChoiceSelect"
       @close="isFeatureChoiceOpen = false"
     />

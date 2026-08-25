@@ -18,7 +18,10 @@ function qsa(sel: string) { return document.body.querySelectorAll(sel) }
 function mountOpen(props: Record<string, unknown> = {}) {
   return mount(FeatureChoiceModal, {
     attachTo: document.body,
-    props: { ...props },
+    props: {
+      effectiveMaxCount: 2,
+      ...props,
+    },
   })
 }
 

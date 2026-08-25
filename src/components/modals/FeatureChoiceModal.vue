@@ -16,6 +16,11 @@ const props = defineProps({
     type: Array as () => string[],
     default: () => [] as string[],
   },
+  /** The effective max count, accounting for tier scaling. */
+  effectiveMaxCount: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const emit = defineEmits(['select', 'close'])
@@ -35,9 +40,7 @@ watch(
 )
 
 const maxCount = computed(() => {
-  if (!choice.value) return 0
-  if (typeof choice.value.count === 'number') return choice.value.count
-  return 0
+  return props.effectiveMaxCount
 })
 
 const remainingCount = computed(() => {
@@ -61,7 +64,10 @@ function toggleOption(optionId: string) {
 }
 
 function handleConfirm() {
-  emit('select', [...selectedIds.value])
+  // Snapshot selected IDs before emitting to prevent reactive
+  // side effects from overwriting them during parent re-renders.
+  const snapshot = [...selectedIds.value]
+  emit('select', snapshot)
   emit('close')
 }
 
@@ -118,7 +124,7 @@ function handleClose() {
           >check_circle</span>
           <span v-else class="material-symbols-outlined text-base">info</span>
           <span data-test="remaining-count">
-            {{ selectedIds.length }} / {{ choice.count }} selected
+            {{ selectedIds.length }} / {{ maxCount }} selected
             <template v-if="remainingCount > 0">
               — {{ remainingCount }} remaining
             </template>

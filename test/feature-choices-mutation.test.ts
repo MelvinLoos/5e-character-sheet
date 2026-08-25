@@ -1,9 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
+import 'fake-indexeddb/auto'
+import { setActivePinia, createPinia } from 'pinia'
 import {
   migrateCharacterData,
   applyFeatureChoices,
   applyAllChanges,
 } from '@/utils/characterMutations'
+import { useCharacterStore } from '@/stores/character'
 import { createBlankCharacter } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 
@@ -412,5 +415,74 @@ describe('applyAllChanges — Warlock invocations', () => {
     expect(
       result.features.some((f) => f.title === 'Armor of Shadows'),
     ).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Store integration: applyFeatureChoice persists 2 invocations
+// ---------------------------------------------------------------------------
+
+describe('applyFeatureChoice store action — two invocations regression', () => {
+  let store: ReturnType<typeof useCharacterStore>
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    store = useCharacterStore()
+
+    const blank = createBlankCharacter()
+    store.currentCharacterData = {
+      ...blank,
+      name: 'Test Warlock',
+      class: 'Warlock',
+      renownTier: 1,
+      species: 'Human',
+      background: 'Acolyte',
+      backgroundBonusSelections: { plusTwo: null, plusOne: null },
+      pointBuyBaseScores: { ...baseScores },
+      abilityScores: { ...baseScores },
+      features: [],
+      proficiencies: { savingThrows: [], skills: [] },
+      featureChoices: {},
+    } as CharacterData
+  })
+
+  it('persists two invocations when applyFeatureChoice is called with two IDs', () => {
+    store.applyFeatureChoice('eldritch-invocations', [
+      'armor-of-shadows',
+      'devils-sight',
+    ])
+
+    const choices = store.currentCharacterData.featureChoices
+    expect(choices).toBeDefined()
+    const invocations = choices?.['eldritch-invocations']
+    expect(invocations).toBeDefined()
+    expect(invocations).toHaveLength(2)
+    expect(invocations).toContain('armor-of-shadows')
+    expect(invocations).toContain('devils-sight')
+  })
+
+  it('persists two invocations with Agonizing Blast (has prerequisite)', () => {
+    store.applyFeatureChoice('eldritch-invocations', [
+      'agonizing-blast',
+      'armor-of-shadows',
+    ])
+
+    const choices = store.currentCharacterData.featureChoices
+    const invocations = choices?.['eldritch-invocations']
+    expect(invocations).toHaveLength(2)
+    expect(invocations).toContain('agonizing-blast')
+    expect(invocations).toContain('armor-of-shadows')
+  })
+
+  it('preserves featureChoices through applyAllChanges', () => {
+    store.applyFeatureChoice('eldritch-invocations', [
+      'armor-of-shadows',
+      'devils-sight',
+    ])
+    store.recalculateAll()
+
+    const choices = store.currentCharacterData.featureChoices
+    const invocations = choices?.['eldritch-invocations']
+    expect(invocations).toHaveLength(2)
   })
 })
