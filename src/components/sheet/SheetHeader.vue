@@ -176,7 +176,7 @@ function incrementTier() {
               <button
                 v-if="currentSpeciesHasSubChoices"
                 @click="openSubChoiceModal"
-                class="text-xs text-tertiary hover:text-sheet-red flex items-center gap-1 self-start px-1"
+                class="text-xs text-tertiary hover:text-tertiary-fixed flex items-center gap-1 self-start px-1"
                 title="Change lineage / ancestry"
               >
                 <span v-html="feather.icons?.['edit-2']?.toSvg({ width: 12, height: 12 })"></span>
