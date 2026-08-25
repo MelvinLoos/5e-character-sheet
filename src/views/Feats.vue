@@ -35,10 +35,8 @@ const eligibleFeatureChoices = computed<FeatureChoice[]>(() => {
   const charClass = store.currentCharacterData?.class
   if (!charClass) return []
   const charTier = store.currentCharacterData?.renownTier ?? 1
-  return Object.values(DND_RULES.FEATURE_CHOICES).filter(
-    (fc) =>
-      fc.classBinding === charClass &&
-      (!fc.minTier || fc.minTier <= charTier),
+  return (DND_RULES.CLASSES[charClass]?.featureChoices || []).filter(
+    (fc) => !fc.minTier || fc.minTier <= charTier,
   )
 })
 
@@ -429,7 +427,7 @@ function setActiveCategory(cat: string) {
               {{ fc.description }}
             </p>
             <p class="text-xs text-on-surface-variant">
-              Choose {{ fc.count }} of {{ fc.options.length }} options
+              Choose up to {{ typeof fc.count === 'number' ? fc.count : '?' }} of {{ fc.options?.length ?? 0 }} options
             </p>
             <p
               v-if="currentFeatureChoiceSelections(fc.id).length > 0"

@@ -142,6 +142,5 @@ export const createBlankCharacter = (): CharacterData => {
     personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
     spellcasting: null,
     spells: [],
-    featureChoices: {},
   }
 }

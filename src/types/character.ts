@@ -220,6 +220,4 @@ export interface CharacterData {
   inventorySlots: number
   equippedGear: EquippedGear[]
   consumables: Consumable[]
-  /** Feature choice selections keyed by choiceId → selected optionIds. */
-  featureChoices: Record<string, string[]>
 }

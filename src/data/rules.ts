@@ -1653,7 +1653,6 @@ export const FEATURE_CHOICES: Record<string, import('@/types/rules').FeatureChoi
     description:
       'In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability.',
     count: 2,
-    classBinding: 'Warlock',
     minTier: 1,
     options: [
       {

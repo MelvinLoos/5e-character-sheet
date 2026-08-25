@@ -38,13 +38,18 @@ watch(
   },
 )
 
-const remainingCount = computed(() => {
+const maxCount = computed(() => {
   if (!choice.value) return 0
-  return Math.max(0, choice.value.count - selectedIds.value.length)
+  if (typeof choice.value.count === 'number') return choice.value.count
+  return 0
+})
+
+const remainingCount = computed(() => {
+  return Math.max(0, maxCount.value - selectedIds.value.length)
 })
 
 const canConfirm = computed(() => {
-  return selectedIds.value.length <= (choice.value?.count ?? 0)
+  return selectedIds.value.length <= maxCount.value
 })
 
 function isSelected(optionId: string): boolean {
@@ -54,7 +59,7 @@ function isSelected(optionId: string): boolean {
 function toggleOption(optionId: string) {
   if (isSelected(optionId)) {
     selectedIds.value = selectedIds.value.filter((id) => id !== optionId)
-  } else if (selectedIds.value.length < (choice.value?.count ?? 0)) {
+  } else if (selectedIds.value.length < maxCount.value) {
     selectedIds.value = [...selectedIds.value, optionId]
   }
 }
@@ -177,7 +182,7 @@ function handleClose() {
         <!-- Footer -->
         <div class="flex justify-between items-center mt-6 pt-4 border-t border-sheet-border">
           <span class="text-sm text-on-surface-variant">
-            {{ choice.options.length }} invocations available
+            {{ choice.options?.length ?? 0 }} invocations available
           </span>
           <div class="flex gap-3">
             <button
