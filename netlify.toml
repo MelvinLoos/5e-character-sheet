@@ -1,6 +1,7 @@
 [build]
   publish = "dist"
   command = "npm run build"
+  secrets_scan_omit_paths = ".env.example,netlify.toml"
 
 [functions]
 directory = "netlify/functions/"
