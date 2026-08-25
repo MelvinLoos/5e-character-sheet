@@ -500,4 +500,25 @@ describe('applyAllChanges', () => {
     expect(result.features.some((f) => f.title === 'Rage')).toBe(true)
     expect(result.features.some((f) => f.title === 'Darkvision')).toBe(true) // Elf trait preserved
   })
+
+  it('cleans up stale skills when switching from Bard (any) to Fighter', () => {
+    // Simulate a character that was a Bard (from: 'any') with Arcana
+    // selected, then switched to Fighter. Arcana is not in Fighter's
+    // skillChoices.from list → should be removed by cleanupInvalidSkills.
+    const char = makeChar({
+      class: 'Fighter',
+      species: 'Human',
+      background: 'Acolyte',
+      features: [],
+      proficiencies: { savingThrows: [], skills: ['arcana', 'athletics', 'insight', 'religion'] },
+    })
+    const result = applyAllChanges(char)
+    // insight & religion are kept (Acolyte fixed skills)
+    expect(result.proficiencies.skills).toContain('insight')
+    expect(result.proficiencies.skills).toContain('religion')
+    // athletics is in Fighter's from list → kept
+    expect(result.proficiencies.skills).toContain('athletics')
+    // arcana is NOT in Fighter's list and NOT an Acolyte skill → removed
+    expect(result.proficiencies.skills).not.toContain('arcana')
+  })
 })
