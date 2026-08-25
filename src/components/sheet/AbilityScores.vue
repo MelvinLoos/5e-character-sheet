@@ -138,7 +138,7 @@ watch(
       </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+    <div class="grid grid-cols-3 sm:grid-cols-6" style="gap: 4rem">
       <div
         v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
         :key="key"
@@ -155,7 +155,7 @@ watch(
           >{{ key.toUpperCase() }}</span
         >
         <div
-          class="font-display-lg text-[56px] leading-none text-on-surface font-bold my-2 select-none"
+          class="font-display-lg text-[44px] leading-none text-on-surface font-bold my-1 select-none"
           :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
         >
           {{ formatMod(store.abilityMods[key] ?? 0) }}

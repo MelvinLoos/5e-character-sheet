@@ -576,9 +576,12 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
       !!f.grantsSpells,
   )
   let spellcasting = char.spellcasting
-  if (hasSpellcasting && !spellcasting) {
-    spellcasting = { ability: 'int' }
-  } else if (!hasSpellcasting) {
+  if (hasSpellcasting) {
+    // Derive the casting ability from the character's class (Bard/Cleric/etc.),
+    // falling back to Intelligence for feat/trait-only casters without a class.
+    const ability = DND_RULES.getSpellcastingAbility(char.class)
+    spellcasting = { ...(spellcasting ?? {}), ability }
+  } else {
     spellcasting = null
   }
 
