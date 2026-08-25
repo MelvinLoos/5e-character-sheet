@@ -887,6 +887,28 @@ export const CLASSES: Record<string, ClassData> = {
         key: false,
       },
     ],
+    featureChoices: [
+      {
+        id: 'rogue-subclass',
+        label: 'Rogue Subclass',
+        description: 'Choose a Rogue subclass. Your choice grants you features at Rogue level 3 and again at levels 9, 13, and 17.',
+        count: 1,
+        options: [
+          {
+            id: 'thief',
+            label: 'Thief',
+            description: 'You focus on agility and cunning. The classic rogue, quick hands and quicker wits.',
+            traits: [
+              { title: 'Fast Hands', desc: "You can use the bonus action granted by your Cunning Action to make a Dexterity (Sleight of Hand) check, use your thieves' tools to disarm a trap or open a lock, or take the Use an Object action.", key: true, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Second-Story Work', desc: 'You gain the ability to climb faster than normal; climbing no longer costs you extra movement. In addition, when you make a running jump, the distance you cover increases by a number of feet equal to your Dexterity modifier.', key: false, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Supreme Sneak', desc: 'You have advantage on a Dexterity (Stealth) check if you move no more than half your speed on the same turn.', key: true, featureType: 'Class Feature', minTier: 3 },
+              { title: 'Use Magic Device', desc: 'You have learned enough about the workings of magic that you can improvise the use of items even when they are not intended for you. You ignore all class, race, and level requirements on the use of magic items.', key: true, featureType: 'Class Feature', minTier: 4 },
+              { title: "Thief's Reflexes", desc: "You can take two turns during the first round of any combat. You take your first turn at your normal initiative and your second turn at your initiative minus 10. You can't use this feature when you are surprised.", key: true, featureType: 'Class Feature', minTier: 4 },
+            ],
+          },
+        ],
+      },
+    ],
   },
   Sorcerer: {
     description: 'A spellcaster who draws on inherent magic from a gift or bloodline.',
@@ -898,6 +920,28 @@ export const CLASSES: Record<string, ClassData> = {
       from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'],
     },
     features: [],
+    featureChoices: [
+      {
+        id: 'sorcerer-origin',
+        label: 'Sorcerer Origin',
+        description: 'Choose a sorcerer origin that describes the source of your innate magical power. Your choice grants you features at Sorcerer level 3 and again at levels 6, 14, and 18.',
+        count: 1,
+        options: [
+          {
+            id: 'draconic-sorcery',
+            label: 'Draconic Sorcery',
+            description: 'Your innate magic comes from draconic magic that was mingled with your blood or that of your ancestors.',
+            traits: [
+              { title: 'Draconic Resilience', desc: "As magic flows through your body, it causes physical traits of your dragon ancestors to manifest. Your hit point maximum increases by 1 and increases by 1 again whenever you gain a level in this class. Additionally, parts of your skin are covered by a thin sheen of dragon-like scales. When you aren't wearing armor, your AC equals 10 + your Dexterity modifier + your Charisma modifier.", key: true, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Draconic Spells', desc: "You learn additional spells when you reach certain levels in this class, as shown on the Draconic Spells table. Each of these spells counts as a sorcerer spell for you, but it doesn't count against the number of sorcerer spells you know.", key: true, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Elemental Affinity', desc: 'When you cast a spell that deals damage of the type associated with your draconic ancestry, you can add your Charisma modifier to one damage roll of that spell. At the same time, you can spend 1 sorcery point to gain resistance to that damage type for 1 hour.', key: true, featureType: 'Class Feature', minTier: 2 },
+              { title: 'Dragon Wings', desc: 'You can use a bonus action to manifest a pair of spectral dragon wings from your back. While the wings exist, you have a flying speed equal to your current walking speed. The wings last until you dismiss them as a bonus action or until you are incapacitated.', key: true, featureType: 'Class Feature', minTier: 4 },
+              { title: 'Dragon Companion', desc: 'You can use your action to summon a dragon spirit. It manifests in an unoccupied space that you can see within 30 feet of you. The spirit is an ally to you and your companions and obeys your commands. In combat, the spirit shares your initiative count but takes its turn immediately after yours.', key: true, featureType: 'Class Feature', minTier: 4 },
+            ],
+          },
+        ],
+      },
+    ],
   },
   Warlock: {
     description: 'A wielder of magic that is derived from a bargain with an extraplanar entity.',
@@ -1021,6 +1065,26 @@ export const CLASSES: Record<string, ClassData> = {
           },
         ],
       },
+      {
+        id: 'warlock-subclass',
+        label: 'Warlock Subclass',
+        description: 'Choose a Warlock subclass that defines your patron. Your choice grants you features at Warlock level 3 and again at levels 6, 10, and 14.',
+        count: 1,
+        options: [
+          {
+            id: 'fiend-patron',
+            label: 'Fiend Patron',
+            description: 'You have made a pact with a fiend from the Lower Planes, a being whose aims are evil—even if you strive against those aims.',
+            traits: [
+              { title: "Dark One's Blessing", desc: 'When you reduce a hostile creature to 0 hit points, you gain temporary hit points equal to your Charisma modifier + your warlock level (minimum of 1).', key: true, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Fiend Spells', desc: "You learn additional spells when you reach certain levels in this class, as shown on the Fiend Spells table. Each of these spells counts as a warlock spell for you, but it doesn't count against the number of warlock spells you know.", key: true, featureType: 'Class Feature', minTier: 1 },
+              { title: "Dark One's Own Luck", desc: "When you make an ability check or a saving throw, you can use this feature to add a d10 to your roll. You can do so after seeing the initial roll but before any of the roll's effects occur. Once you use this feature, you can't use it again until you finish a short or long rest.", key: true, featureType: 'Class Feature', minTier: 2 },
+              { title: 'Fiendish Resilience', desc: 'You can choose one damage type when you finish a short or long rest. You gain resistance to that damage type until you choose a different one with this feature. Damage from magical weapons or silver weapons ignores this resistance.', key: true, featureType: 'Class Feature', minTier: 3 },
+              { title: 'Hurl Through Hell', desc: "When you hit a creature with an attack, you can use this feature to instantly transport the target through the Lower Planes. The target disappears and is transported to a nightmarish landscape. If the target is not a fiend, it takes 10d10 psychic damage as it reels from its horrific experience. Once you use this feature, you can't use it again until you finish a long rest.", key: true, featureType: 'Class Feature', minTier: 4 },
+            ],
+          },
+        ],
+      },
     ],
   },
   Wizard: {
@@ -1037,6 +1101,28 @@ export const CLASSES: Record<string, ClassData> = {
         title: 'Arcane Recovery',
         desc: 'Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up).',
         key: false,
+      },
+    ],
+    featureChoices: [
+      {
+        id: 'wizard-school',
+        label: 'Arcane School',
+        description: 'Choose a school of magic. Your choice grants you features at Wizard level 3 and again at levels 6, 10, and 14.',
+        count: 1,
+        options: [
+          {
+            id: 'evoker',
+            label: 'Evoker',
+            description: 'You focus your study on magic that creates powerful elemental effects such as bitter cold, searing flame, rolling thunder, crackling lightning, and burning acid.',
+            traits: [
+              { title: 'Evocation Savant', desc: 'The gold and time you must spend to copy an Evocation spell into your spellbook is halved.', key: false, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Potent Cantrip', desc: "Your damaging cantrips affect even creatures that avoid the brunt of the effect. When a creature succeeds on a saving throw against your cantrip, the creature takes half the cantrip's damage (if any) but suffers no additional effect from the cantrip.", key: true, featureType: 'Class Feature', minTier: 1 },
+              { title: 'Sculpt Spells', desc: "You can create pockets of relative safety within the effects of your evocation spells. When you cast an evocation spell that affects other creatures that you can see, you can choose a number of them equal to 1 + the spell's level. The chosen creatures automatically succeed on their saving throws against the spell, and they take no damage if they would normally take half damage on a successful save.", key: true, featureType: 'Class Feature', minTier: 2 },
+              { title: 'Empowered Evocation', desc: 'You can add your Intelligence modifier (minimum of +1) to one damage roll of any wizard evocation spell you cast.', key: true, featureType: 'Class Feature', minTier: 3 },
+              { title: 'Overchannel', desc: 'When you cast a wizard spell of 5th level or lower that deals damage, you can deal maximum damage with that spell. The first time you do so, you suffer no adverse effect. If you use this feature again before you finish a long rest, you take 2d12 necrotic damage for each level of the spell, immediately after you cast it. Each time you use this feature again before finishing a long rest, the necrotic damage per spell level increases by 1d12.', key: true, featureType: 'Class Feature', minTier: 4 },
+            ],
+          },
+        ],
       },
     ],
   },
