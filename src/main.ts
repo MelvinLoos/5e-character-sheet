@@ -6,11 +6,19 @@ import router from './router'
 import './assets/main.css'
 import { initSupabase } from './infra/sharingService'
 import { setSwUpdateCallback } from './utils/swUpdateBus'
+import { initPostHog, capturePostHogException } from './utils/posthog'
 
 const app = createApp(App)
 
+initPostHog()
+
 app.use(createPinia())
 app.use(router)
+
+app.config.errorHandler = (error) => {
+  capturePostHogException(error)
+}
+
 app.mount('#app')
 
 // Initialize Supabase client before auth so guild stores can query

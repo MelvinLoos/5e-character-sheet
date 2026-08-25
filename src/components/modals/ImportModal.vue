@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRulesStore } from '@/stores/rulesStore'
+import { capturePostHogEvent } from '@/utils/posthog'
 import { mapSpells, mapFeats, type AppSpell } from '@/utils/fiveToolsAdapter'
 import feather from 'feather-icons'
 
@@ -152,6 +153,10 @@ function importData(data: unknown[]) {
     rulesStore.importData(selectedCategory.value, data)
     status.value = 'success'
     statusMessage.value = `Successfully imported ${data.length} ${selectedCategory.value}!`
+    capturePostHogEvent('rules_data_imported', {
+      category: selectedCategory.value,
+      item_count: data.length,
+    })
 
     setTimeout(() => {
       close()

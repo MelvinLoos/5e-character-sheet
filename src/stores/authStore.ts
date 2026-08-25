@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { createSupabaseClient } from '../infra/supabaseClient'
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { logger } from '../utils/logger'
+import { identifyPostHogUser, resetPostHogUser } from '../utils/posthog'
 
 export type AuthStatus = 'loggedOut' | 'loading' | 'authenticated'
 
@@ -26,12 +27,27 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => status.value === 'authenticated')
   const isLoading = computed(() => status.value === 'loading')
 
+  function identifyUser(session: Session) {
+    const user = session.user
+    const name = user.user_metadata?.full_name
+    identifyPostHogUser(user.id, {
+      ...(typeof user.email === 'string' ? { email: user.email } : {}),
+      ...(typeof name === 'string' ? { name } : {}),
+    })
+  }
+
+  function resetPostHog() {
+    resetPostHogUser()
+  }
+
   function updateUserFromSession(session: Session | null) {
     const user = session?.user ?? null
     userId.value = user?.id ?? null
     discordUsername.value = user?.user_metadata?.full_name ?? null
     discordAvatarUrl.value = user?.user_metadata?.avatar_url ?? null
     _providerToken = (session?.provider_token as string | undefined) ?? null
+
+    if (session) identifyUser(session)
   }
 
   function handleAuthChange(event: AuthChangeEvent, session: Session | null) {
@@ -39,6 +55,7 @@ export const useAuthStore = defineStore('auth', () => {
       status.value = 'authenticated'
       updateUserFromSession(session)
     } else if (event === 'SIGNED_OUT') {
+      resetPostHog()
       status.value = 'loggedOut'
       userId.value = null
       discordUsername.value = null
@@ -110,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
       return
     }
 
+    resetPostHog()
     status.value = 'loggedOut'
     userId.value = null
     discordUsername.value = null
@@ -130,6 +148,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (error || !data.session) {
       logger.error('Auth callback error:', error?.message ?? 'No session returned')
+      resetPostHog()
       status.value = 'loggedOut'
       userId.value = null
       discordUsername.value = null

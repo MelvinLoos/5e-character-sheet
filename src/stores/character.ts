@@ -12,6 +12,7 @@ import {
 import type { CharacterData } from '@/domain'
 
 import { logger } from '../utils/logger'
+import { capturePostHogEvent } from '../utils/posthog'
 import {
   migrateCharacterData,
   applySpeciesTraits,
@@ -446,6 +447,9 @@ export const useCharacterStore = defineStore('character', () => {
     _clearDraft()
     // Remember this as the last loaded/saved character
     _setCurrentCharacterId(session, currentCharacterData.value.name)
+    capturePostHogEvent('character_saved_to_library', {
+      save_type: existingIndex > -1 ? 'update' : 'new',
+    })
   }
 
   function handleNewCharacter(): void {
@@ -453,6 +457,7 @@ export const useCharacterStore = defineStore('character', () => {
     _clearCurrentCharacterId()
     _setCharacter(createBlankCharacter())
     isEditing.value = true
+    capturePostHogEvent('character_created')
   }
 
   function toggleEdit(): void {
@@ -495,6 +500,7 @@ export const useCharacterStore = defineStore('character', () => {
         ...(generatedData.data as Record<string, unknown>),
       })
       saveToLibrary()
+      capturePostHogEvent('character_generated')
     } catch (error) {
       logger.error('Error generating character:', error)
       _showErrorModal([`Error generating character: ${(error as Error).message}`])
@@ -511,6 +517,7 @@ export const useCharacterStore = defineStore('character', () => {
     }
     if (!currentCharacterData.value) return
 
+    const isCopyOfSharedCharacter = Boolean(sourceCharacterId.value)
     _showLoading('Saving character to the archives...')
     try {
       const newId = await shareCharacterToSupabase(
@@ -526,6 +533,9 @@ export const useCharacterStore = defineStore('character', () => {
 
       history.pushState({}, '', newUrl)
       sourceCharacterId.value = newId
+      capturePostHogEvent('character_shared', {
+        share_type: isCopyOfSharedCharacter ? 'copy' : 'new',
+      })
     } catch (error) {
       logger.error('Error sharing character:', error)
       _showErrorModal([`Could not share character: ${(error as Error).message}`])
@@ -546,6 +556,7 @@ export const useCharacterStore = defineStore('character', () => {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    capturePostHogEvent('character_exported')
   }
 
   // --- Direct Data Mutations ---
