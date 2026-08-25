@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import CompletionBadge from './ui/CompletionBadge.vue'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 
 const route = useRoute()
 
 defineEmits<{
   showMore: []
 }>()
+
+const { badges } = useCharacterCompletion()
 
 const navLinks = [
   { name: 'identity', label: 'Identity', icon: 'person' },
@@ -16,6 +20,13 @@ const navLinks = [
   { name: 'inventory', label: 'Inventory', icon: 'backpack' },
   { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
 ]
+
+const navEntries = computed(() =>
+  navLinks.map((link) => ({
+    ...link,
+    badge: badges.value[link.name],
+  })),
+)
 
 const queryParams = computed(() => {
   return route.query.id ? { query: { id: route.query.id } } : {}
@@ -28,18 +39,27 @@ const queryParams = computed(() => {
   >
     <div class="flex items-center justify-around h-full max-w-lg mx-auto">
       <router-link
-        v-for="link in navLinks.slice(0, 3)"
-        :key="link.name"
-        :to="{ name: link.name, ...queryParams }"
+        v-for="entry in navEntries.slice(0, 3)"
+        :key="entry.name"
+        :to="{ name: entry.name, ...queryParams }"
         class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all duration-200 ease-out active:scale-95 select-none"
         :class="
-          route.name === link.name
+          route.name === entry.name
             ? 'text-tertiary'
             : 'text-on-surface-variant hover:text-on-surface'
         "
+        :aria-label="entry.badge ? `${entry.label} — ${entry.badge.label}` : undefined"
+        :title="entry.badge?.label"
       >
-        <span class="material-symbols-outlined text-[1.35rem]">{{ link.icon }}</span>
-        <span class="text-[10px] font-label-md leading-none">{{ link.label }}</span>
+        <span class="relative">
+          <span class="material-symbols-outlined text-[1.35rem]">{{ entry.icon }}</span>
+          <CompletionBadge
+            v-if="entry.badge"
+            :badge="entry.badge"
+            class="absolute -top-1.5 -right-2"
+          />
+        </span>
+        <span class="text-[10px] font-label-md leading-none">{{ entry.label }}</span>
       </router-link>
 
       <button
@@ -52,18 +72,27 @@ const queryParams = computed(() => {
       </button>
 
       <router-link
-        v-for="link in navLinks.slice(3)"
-        :key="link.name"
-        :to="{ name: link.name, ...queryParams }"
+        v-for="entry in navEntries.slice(3)"
+        :key="entry.name"
+        :to="{ name: entry.name, ...queryParams }"
         class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all duration-200 ease-out active:scale-95 select-none"
         :class="
-          route.name === link.name
+          route.name === entry.name
             ? 'text-tertiary'
             : 'text-on-surface-variant hover:text-on-surface'
         "
+        :aria-label="entry.badge ? `${entry.label} — ${entry.badge.label}` : undefined"
+        :title="entry.badge?.label"
       >
-        <span class="material-symbols-outlined text-[1.35rem]">{{ link.icon }}</span>
-        <span class="text-[10px] font-label-md leading-none">{{ link.label }}</span>
+        <span class="relative">
+          <span class="material-symbols-outlined text-[1.35rem]">{{ entry.icon }}</span>
+          <CompletionBadge
+            v-if="entry.badge"
+            :badge="entry.badge"
+            class="absolute -top-1.5 -right-2"
+          />
+        </span>
+        <span class="text-[10px] font-label-md leading-none">{{ entry.label }}</span>
       </router-link>
     </div>
   </nav>
