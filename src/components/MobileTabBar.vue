@@ -59,7 +59,7 @@ const queryParams = computed(() => {
             class="absolute -top-1.5 -right-2"
           />
         </span>
-        <span class="text-[10px] font-label-md leading-none">{{ entry.label }}</span>
+        <span class="text-[10px] font-label-md leading-none truncate max-w-full">{{ (route.name === entry.name && entry.badge) ? entry.badge.label : entry.label }}</span>
       </router-link>
 
       <button
@@ -92,7 +92,7 @@ const queryParams = computed(() => {
             class="absolute -top-1.5 -right-2"
           />
         </span>
-        <span class="text-[10px] font-label-md leading-none">{{ entry.label }}</span>
+        <span class="text-[10px] font-label-md leading-none truncate max-w-full">{{ (route.name === entry.name && entry.badge) ? entry.badge.label : entry.label }}</span>
       </router-link>
     </div>
   </nav>
