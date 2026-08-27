@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useAuthStore } from '@/stores/authStore'
 import { useGuildStore } from '@/stores/guildStore'
@@ -21,6 +21,35 @@ const emit = defineEmits<{
 const store = useCharacterStore()
 useAuthStore()
 const guildStore = useGuildStore()
+
+interface Character {
+  name: string
+  [key: string]: unknown
+}
+
+const characterSelectOptions = computed(() => {
+  return Object.entries(store.characterLibrary).map(([session, chars]) => ({
+    label: session,
+    options: (chars as unknown as Character[]).map((char: Character) => ({
+      text: char.name,
+      value: `${session}|${char.name}`,
+    })),
+  }))
+})
+
+const selectedCharacter = computed({
+  get: () =>
+    store.currentCharacterData ? `${store.sessionName}|${store.currentCharacterData.name}` : '',
+  set: (value) => {
+    if (value === 'new') {
+      store.handleNewCharacter()
+      close()
+    } else if (value) {
+      store.loadCharacterFromLibrary(value)
+      close()
+    }
+  },
+})
 const feedbackStore = useFeedbackStore()
 const showGuildManagement = ref(false)
 const menuRef = ref<HTMLDivElement | null>(null)
@@ -145,6 +174,44 @@ watch(
               <div class="w-12 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
 
               <h3 class="font-headline-md text-tertiary mb-4 px-2">More Actions</h3>
+
+              <!-- Character Select -->
+              <div class="px-2 mb-4">
+                <select
+                  class="w-full bg-surface-variant border border-outline-variant rounded-xl p-3 text-on-surface font-label-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary appearance-none cursor-pointer"
+                  v-model="selectedCharacter"
+                >
+                  <option
+                    v-if="store.currentCharacterData"
+                    :value="`${store.sessionName}|${store.currentCharacterData.name}`"
+                    disabled
+                    class="hidden"
+                  >
+                    {{ store.currentCharacterData.name }}
+                  </option>
+                  <option
+                    value="new"
+                    class="bg-surface-container text-tertiary font-label-md text-sm font-bold"
+                  >
+                    + New Character
+                  </option>
+                  <optgroup
+                    v-for="group in characterSelectOptions"
+                    :key="group.label"
+                    :label="group.label"
+                    class="bg-surface-container text-on-surface-variant font-label-md text-sm"
+                  >
+                    <option
+                      v-for="char in group.options"
+                      :key="char.value"
+                      :value="char.value"
+                      class="bg-surface-container text-on-surface font-label-md text-sm"
+                    >
+                      {{ char.text }}
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <button
