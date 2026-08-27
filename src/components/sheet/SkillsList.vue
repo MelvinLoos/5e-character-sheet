@@ -3,9 +3,11 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { formatMod } from '@/domain'
 import { useSkills, normalizeSkillName } from '@/composables/useSkills'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 
 const store = useCharacterStore()
+const { badges } = useCharacterCompletion()
 const {
   allSkillMods,
   toggleProficiency,
@@ -45,12 +47,15 @@ function isLocked(skillName: string): boolean {
 
 <template>
   <section class="flex flex-col gap-4">
-    <div class="flex items-center justify-between border-b border-primary-container pb-2">
+    <div
+      class="flex items-center justify-between border-b pb-2"
+      :class="badges.skills ? 'border-red-600/50' : 'border-primary-container'"
+    >
       <h3 class="font-headline-md text-headline-md text-primary select-none">Skills</h3>
       <span
         v-if="store.isEditing"
-        class="text-sm font-label-md text-on-surface-variant select-none"
-        :class="remainingChoices > 0 ? 'text-tertiary' : ''"
+        class="text-sm font-label-md select-none"
+        :class="badges.skills ? 'text-red-600 font-semibold' : remainingChoices > 0 ? 'text-tertiary' : 'text-on-surface-variant'"
       >
         {{ choiceHeader }}
       </span>
