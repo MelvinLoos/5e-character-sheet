@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "D&D 5e Subclass Import",
+  "description": "A schema for importing custom subclasses into the Heroes Guild Character Sheet. Each subclass belongs to a parent class and provides features at specific levels. GMs and LLMs can use this schema to author subclass data that integrates with the character creator.",
+  "type": "object",
+  "properties": {
+    "subclasses": {
+      "type": "array",
+      "description": "An array of subclass definitions to import.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The display name of the subclass (e.g. 'Champion', 'Circle of the Moon').",
+            "errorMessage": "Subclass name must be a non-empty string."
+          },
+          "parentClass": {
+            "type": "string",
+            "description": "The name of the parent class this subclass belongs to (e.g. 'Fighter', 'Druid'). This must match a class name defined in the rules compendium.",
+            "errorMessage": "Parent class must be a non-empty string."
+          },
+          "description": {
+            "type": "string",
+            "description": "Flavour text describing the subclass archetype.",
+            "errorMessage": "Description must be a string."
+          },
+          "features": {
+            "type": "array",
+            "description": "The features granted by this subclass. Each feature becomes available at the specified level.",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The display name of the feature (e.g. 'Improved Critical', 'Combat Superiority').",
+                  "errorMessage": "Feature name must be a non-empty string."
+                },
+                "level": {
+                  "type": "integer",
+                  "description": "The effective character level at which this feature is granted (1-20). For the West Marches tier system, features with level ≤ 3 are Tier 1, level ≤ 6 are Tier 2, level ≤ 10 are Tier 3.",
+                  "minimum": 1,
+                  "maximum": 20,
+                  "errorMessage": "Feature level must be an integer between 1 and 20."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "The full rules text for this feature. Markdown formatting is supported.",
+                  "errorMessage": "Feature description must be a non-empty string."
+                }
+              },
+              "required": ["name", "level", "description"],
+              "additionalProperties": false
+            },
+            "errorMessage": "Subclass must have at least one feature."
+          }
+        },
+        "required": ["name", "parentClass", "features"],
+        "additionalProperties": false
+      },
+      "errorMessage": "Subclasses must be an array."
+    }
+  },
+  "required": ["subclasses"],
+  "additionalProperties": false,
+  "errorMessage": {
+    "required": {
+      "subclasses": "The root object must contain a 'subclasses' array."
+    }
+  }
+}
