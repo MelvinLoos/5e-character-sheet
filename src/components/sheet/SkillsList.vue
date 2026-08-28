@@ -53,7 +53,7 @@ function isLocked(skillName: string): boolean {
     >
       <h3 class="font-headline-md text-headline-md text-primary select-none">Skills</h3>
       <span
-        v-if="store.isEditing"
+        v-if="badges.skills || store.isEditing"
         class="text-sm font-label-md select-none"
         :class="badges.skills ? 'text-red-600 font-semibold' : remainingChoices > 0 ? 'text-tertiary' : 'text-on-surface-variant'"
       >

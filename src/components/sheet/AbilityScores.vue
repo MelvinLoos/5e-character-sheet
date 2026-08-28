@@ -96,7 +96,7 @@ watch(
         Ability Scores<InfoButton topic="point-buy" />
       </h3>
       <span
-        v-if="badges.identity && store.isEditing"
+        v-if="badges.identity"
         class="font-label-md text-label-md text-red-600 bg-red-600/10 px-3 py-1 rounded-full border border-red-600/30 select-none animate-pulse"
       >
         {{ badges.identity.label }}
