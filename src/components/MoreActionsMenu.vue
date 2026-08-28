@@ -168,7 +168,7 @@ watch(
           <Transition name="slide-up">
             <div
               v-if="modelValue"
-              class="w-full bg-surface-container rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.3)] border-t border-outline-variant p-4 pb-8"
+              class="w-full bg-surface-container rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.3)] border-t border-outline-variant p-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] max-h-dvh overflow-y-auto overscroll-contain"
               @click.stop
             >
               <div class="w-12 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
