@@ -8,6 +8,7 @@ import {
   SPECIES,
   BACKGROUNDS,
 } from '@/data/rules'
+import type { SubclassImport } from '@/types/rules'
 import { logger } from '@/utils/logger'
 import { get, set } from 'idb-keyval'
 
@@ -23,6 +24,8 @@ interface RulesState {
   baseFeats: unknown[]
   guildSpells: unknown[]
   guildFeats: unknown[]
+  baseSubclasses: SubclassImport[]
+  guildSubclasses: SubclassImport[]
 }
 
 export const useRulesStore = defineStore('rules', {
@@ -38,6 +41,8 @@ export const useRulesStore = defineStore('rules', {
     baseFeats: [],
     guildSpells: [],
     guildFeats: [],
+    baseSubclasses: [],
+    guildSubclasses: [],
   }),
 
   getters: {
@@ -47,25 +52,29 @@ export const useRulesStore = defineStore('rules', {
     allBackgrounds: (state) => state.backgrounds,
     allSpells: (state) => [...state.baseSpells, ...state.guildSpells],
     allFeats: (state) => [...state.baseFeats, ...state.guildFeats],
+    allSubclasses: (state): SubclassImport[] => [
+      ...state.baseSubclasses,
+      ...state.guildSubclasses,
+    ],
   },
 
   actions: {
     /**
      * Import data into a specific category, replacing existing data.
-     * For spells and feats, data goes into the base layer (baseSpells/baseFeats),
-     * leaving the guild overlay untouched.
-     * @param category - The data category to replace (e.g., 'spells', 'feats', 'classes')
+     * For spells, feats, and subclasses, data goes into the base layer
+     * (baseSpells/baseFeats/baseSubclasses), leaving the guild overlay untouched.
+     * @param category - The data category to replace (e.g., 'spells', 'feats', 'subclasses', 'classes')
      * @param dataArray - The array of data to import
      */
     importData(category: string, dataArray: unknown[]) {
-      const validCategories = ['spells', 'feats', 'classes', 'species', 'backgrounds'] as const
+      const validCategories = ['spells', 'feats', 'subclasses', 'classes', 'species', 'backgrounds'] as const
 
       if (!validCategories.includes(category as (typeof validCategories)[number])) {
         logger.warn(`Invalid category: ${category}. Valid categories:`, validCategories)
         return
       }
 
-      // For arrays (spells, feats), map to base layer
+      // For arrays (spells, feats, subclasses), map to base layer
       if (category === 'spells') {
         this.baseSpells = [...dataArray]
         set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
@@ -73,6 +82,11 @@ export const useRulesStore = defineStore('rules', {
       }
       if (category === 'feats') {
         this.baseFeats = [...dataArray]
+        set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
+        return
+      }
+      if (category === 'subclasses') {
+        this.baseSubclasses = [...(dataArray as SubclassImport[])]
         set('dndRulesLibrary', JSON.parse(JSON.stringify(this.$state)))
         return
       }
@@ -111,6 +125,15 @@ export const useRulesStore = defineStore('rules', {
     },
 
     /**
+     * Inject guild-scoped subclasses into the overlay array.
+     * This replaces any previously injected guild subclasses without affecting
+     * the base layer.
+     */
+    injectGuildSubclasses(subclasses: SubclassImport[]): void {
+      this.guildSubclasses = [...subclasses]
+    },
+
+    /**
      * Remove all guild-scoped content from the store.
      * This clears the guild overlay without touching base data.
      * Safe to call when no guild content is present (idempotent).
@@ -118,11 +141,12 @@ export const useRulesStore = defineStore('rules', {
     stripGuildContent(): void {
       this.guildSpells = []
       this.guildFeats = []
+      this.guildSubclasses = []
     },
 
     /**
      * Reset a category to its original state (from rules.js).
-     * For spells/feats, resets only the base layer — guild overlay
+     * For spells/feats/subclasses, resets only the base layer — guild overlay
      * is managed separately by guildContentSyncStore.
      */
     resetCategory(category: string) {
@@ -130,6 +154,7 @@ export const useRulesStore = defineStore('rules', {
       const mappedCategory =
         category === 'spells' ? 'baseSpells' :
         category === 'feats' ? 'baseFeats' :
+        category === 'subclasses' ? 'baseSubclasses' :
         category
 
       const defaults: Partial<RulesState> = {
@@ -142,6 +167,7 @@ export const useRulesStore = defineStore('rules', {
         backgrounds: JSON.parse(JSON.stringify(BACKGROUNDS)),
         baseSpells: [],
         baseFeats: [],
+        baseSubclasses: [],
       }
 
       if (mappedCategory in defaults) {
@@ -159,6 +185,7 @@ export const useRulesStore = defineStore('rules', {
      * `spells` and `feats`. After the dual-state refactor, these were renamed
      * to `baseSpells` and `baseFeats`. If the stored state contains the old
      * keys, their values are migrated to the new keys before merging.
+     * Subclasses follow the same dual-state pattern (`subclasses` -> `baseSubclasses`).
      */
     async loadFromStorage(): Promise<void> {
       try {
@@ -173,6 +200,10 @@ export const useRulesStore = defineStore('rules', {
             storedState.baseFeats = storedState.feats
             delete storedState.feats
           }
+          if ('subclasses' in storedState && !('baseSubclasses' in storedState)) {
+            storedState.baseSubclasses = storedState.subclasses
+            delete storedState.subclasses
+          }
 
           // Remove old keys if they exist alongside new keys (cleanup)
           if ('spells' in storedState) {
@@ -180,6 +211,9 @@ export const useRulesStore = defineStore('rules', {
           }
           if ('feats' in storedState) {
             delete storedState.feats
+          }
+          if ('subclasses' in storedState) {
+            delete storedState.subclasses
           }
 
           // Merge stored state with current state utilizing the mutator function
