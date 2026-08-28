@@ -4,9 +4,11 @@ import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
 import { formatMod } from '@/domain'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
+const { badges } = useCharacterCompletion()
 
 // Animation state for points counter
 const pointsAnimationClass = ref('')
@@ -86,10 +88,21 @@ watch(
 
 <template>
   <section class="flex flex-col gap-6">
-    <div class="flex justify-between items-end border-b border-primary-container pb-2">
-      <h3 class="font-headline-md text-headline-md text-primary select-none">Ability Scores<InfoButton topic="point-buy" /></h3>
+    <div
+      class="flex justify-between items-end border-b pb-2"
+      :class="badges.identity ? 'border-red-600/50' : 'border-primary-container'"
+    >
+      <h3 class="font-headline-md text-headline-md text-primary select-none">
+        Ability Scores<InfoButton topic="point-buy" />
+      </h3>
       <span
-        v-if="store.isEditing"
+        v-if="badges.identity"
+        class="font-label-md text-label-md text-red-600 bg-red-600/10 px-3 py-1 rounded-full border border-red-600/30 select-none animate-pulse"
+      >
+        {{ badges.identity.label }}
+      </span>
+      <span
+        v-else-if="store.isEditing"
         class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30 select-none"
         :class="{
           'text-error border-error/30 bg-error/10': store.pointBuyPointsRemaining < 0,

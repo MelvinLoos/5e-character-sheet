@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import AttacksList from '@/components/sheet/AttacksList.vue'
 
 const store = useCharacterStore()
+const { badges } = useCharacterCompletion()
 </script>
 
 <template>
   <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
     <SheetHeader />
+
+    <div
+      v-if="badges.identity"
+      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
+    >
+      <span class="material-symbols-outlined text-red-600">warning</span>
+      <p class="font-label-md text-red-600">{{ badges.identity.label }}</p>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Row 1: Ability Scores (full width) -->

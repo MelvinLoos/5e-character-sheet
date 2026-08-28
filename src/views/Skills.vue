@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 const store = useCharacterStore()
+const { badges } = useCharacterCompletion()
 </script>
 
 <template>
@@ -25,6 +27,14 @@ const store = useCharacterStore()
         </div>
       </div>
     </header>
+
+    <div
+      v-if="badges.skills"
+      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2 mb-4"
+    >
+      <span class="material-symbols-outlined text-red-600">warning</span>
+      <p class="font-label-md text-red-600">{{ badges.skills.label }}</p>
+    </div>
 
     <div class="flex flex-col gap-2">
       <SavingThrows />

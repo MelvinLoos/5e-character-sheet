@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
@@ -14,6 +15,7 @@ import {
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
+const { badges } = useCharacterCompletion()
 
 // --- State ---
 const searchFilter = ref('')
@@ -247,6 +249,14 @@ function setActiveCategory(cat: string) {
       </div>
     </header>
 
+    <div
+      v-if="badges.feats"
+      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
+    >
+      <span class="material-symbols-outlined text-red-600">warning</span>
+      <p class="font-label-md text-red-600">{{ badges.feats.label }}</p>
+    </div>
+
     <!-- Selected Feats Section -->
     <section
       class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
@@ -412,13 +422,23 @@ function setActiveCategory(cat: string) {
     <!-- Eligible Feature Choices Section -->
     <section
       v-if="eligibleFeatureChoices.length > 0"
-      class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
+      class="bg-surface-container rounded-lg p-6 border shadow-sm flex-1"
+      :class="badges.feats ? 'border-red-600/50' : 'border-outline-variant'"
     >
-      <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
+      <div
+        class="flex justify-between items-end border-b pb-4 mb-6"
+        :class="badges.feats ? 'border-red-600/30' : 'border-surface-variant'"
+      >
         <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
           <span class="material-symbols-outlined text-3xl">fact_check</span>
           Class Features &amp; Choices
         </h3>
+        <span
+          v-if="badges.feats"
+          class="font-label-md text-label-md text-red-600 bg-red-600/10 px-3 py-1 rounded-full border border-red-600/30 select-none animate-pulse"
+        >
+          {{ badges.feats.label }}
+        </span>
       </div>
 
       <div
