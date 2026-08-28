@@ -249,6 +249,14 @@ function setActiveCategory(cat: string) {
       </div>
     </header>
 
+    <div
+      v-if="badges.feats"
+      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
+    >
+      <span class="material-symbols-outlined text-red-600">warning</span>
+      <p class="font-label-md text-red-600">{{ badges.feats.label }}</p>
+    </div>
+
     <!-- Selected Feats Section -->
     <section
       class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
