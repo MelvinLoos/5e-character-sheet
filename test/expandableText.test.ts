@@ -103,6 +103,18 @@ describe('ExpandableText', () => {
     expect(wrapper.get('button').text()).toBe('Show more')
   })
 
+  it('collapses and re-measures when text changes', async () => {
+    const wrapper = await mountComponent({ text: LONG_TEXT })
+
+    await wrapper.get('button').trigger('click')
+    await wrapper.setProps({ text: 'Short text.' })
+    await nextTick()
+    await nextTick()
+
+    expect(wrapper.find('button').exists()).toBe(false)
+    expect(wrapper.get('p').attributes('style')).toContain('-webkit-line-clamp: 4')
+  })
+
   it('applies the provided text classes to the description paragraph', async () => {
     const wrapper = await mountComponent({
       text: LONG_TEXT,
