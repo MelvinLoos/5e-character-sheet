@@ -10,6 +10,9 @@ import { useRulesStore } from '@/stores/rulesStore'
 import { createBlankCharacter } from '@/domain'
 import type { CharacterData, CharacterSpell } from '@/types/character'
 
+const originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight')
+const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')
+
 // ---------------------------------------------------------------------------
 // jsdom does not perform layout, so scrollHeight/clientHeight are always 0.
 // Mock them so that "long" texts overflow the fixed 40px clientHeight.
@@ -32,8 +35,17 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollHeight
-  delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientHeight
+  if (originalScrollHeight) {
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', originalScrollHeight)
+  } else {
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollHeight
+  }
+
+  if (originalClientHeight) {
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', originalClientHeight)
+  } else {
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientHeight
+  }
 })
 
 const LONG_DESC =
@@ -97,7 +109,9 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     expect(findDescription(wrapper, LONG_DESC)?.attributes('style')).toContain(
       '-webkit-line-clamp: 4',
     )
-    expect(findDescription(wrapper, 'Short boom.')?.attributes('style')).toBeUndefined()
+    expect(findDescription(wrapper, 'Short boom.')?.attributes('style')).toContain(
+      '-webkit-line-clamp: 4',
+    )
   })
 
   it('reveals the full description when "Show more" is clicked', async () => {

@@ -65,6 +65,7 @@ onBeforeUnmount(() => {
 watch(
   () => [props.text, props.lines],
   async () => {
+    isExpanded.value = false
     await nextTick()
     measureOverflow()
   },
@@ -76,7 +77,7 @@ watch(
     <p
       ref="contentRef"
       :class="textClass"
-      :style="!isExpanded && isOverflowing ? clampStyle : undefined"
+      :style="!isExpanded ? clampStyle : undefined"
     >
       {{ text }}
     </p>

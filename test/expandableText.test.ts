@@ -3,6 +3,9 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
 
+const originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight')
+const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')
+
 // ---------------------------------------------------------------------------
 // jsdom does not perform layout, so scrollHeight/clientHeight are always 0.
 // Mock them to simulate real overflow behaviour: the mocked scrollHeight is
@@ -26,8 +29,17 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollHeight
-  delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientHeight
+  if (originalScrollHeight) {
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', originalScrollHeight)
+  } else {
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollHeight
+  }
+
+  if (originalClientHeight) {
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', originalClientHeight)
+  } else {
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientHeight
+  }
 })
 
 const LONG_TEXT =
