@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
+import ExpandableText from '@/components/ui/ExpandableText.vue'
 
 import draggable from 'vuedraggable'
 
@@ -268,12 +269,14 @@ const allowedLevels = computed(() => {
                 </div>
               </div>
 
-              <p
-                class="font-body-md text-body-md leading-snug line-clamp-4"
-                :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"
-              >
-                {{ spell.desc }}
-              </p>
+              <ExpandableText
+                :text="spell.desc"
+                :lines="4"
+                :text-class="[
+                  'font-body-md text-body-md leading-snug',
+                  spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface',
+                ]"
+              />
 
                 <!-- Delete button -->
                 <button
@@ -369,12 +372,14 @@ const allowedLevels = computed(() => {
               </div>
             </div>
 
-            <p
-              class="font-body-md text-body-md leading-snug line-clamp-4"
-              :class="spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface'"
-            >
-              {{ spell.desc }}
-            </p>
+            <ExpandableText
+              :text="spell.desc"
+              :lines="4"
+              :text-class="[
+                'font-body-md text-body-md leading-snug',
+                spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface',
+              ]"
+            />
 
                 <!-- Delete button -->
                 <button
@@ -491,7 +496,11 @@ const allowedLevels = computed(() => {
                   spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`
                 }}</span>
               </div>
-              <p class="text-xs text-on-surface-variant line-clamp-2 mb-3">{{ spell.desc }}</p>
+              <ExpandableText
+                :text="spell.desc"
+                :lines="2"
+                text-class="text-xs text-on-surface-variant mb-3"
+              />
 
               <div class="flex justify-between items-end">
                 <div
@@ -585,12 +594,5 @@ const allowedLevels = computed(() => {
 
 .spell-drag-handle {
   transition: opacity 0.2s ease;
-}
-
-.line-clamp-4 {
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 </style>
