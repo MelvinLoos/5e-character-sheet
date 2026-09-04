@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import 'fake-indexeddb/auto'
 import { setActivePinia, createPinia } from 'pinia'
 import SpellcastingBlock from '@/components/sheet/SpellcastingBlock.vue'
@@ -60,8 +62,8 @@ function createWizardCharacter(spells: CharacterSpell[]): CharacterData {
   } as unknown as CharacterData
 }
 
-function mountBlock() {
-  return mount(SpellcastingBlock, {
+async function mountBlock() {
+  const wrapper = mount(SpellcastingBlock, {
     global: {
       stubs: {
         'material-symbols-outlined': {
@@ -70,22 +72,25 @@ function mountBlock() {
       },
     },
   })
+  // ExpandableText measures overflow in onMounted; flush the resulting render.
+  await nextTick()
+  return wrapper
 }
 
 /** Finds the paragraph element that renders the given text. */
-function findDescription(wrapper: ReturnType<typeof mountBlock>, text: string) {
+function findDescription(wrapper: VueWrapper, text: string) {
   return wrapper.findAll('p').find((p) => p.text() === text)
 }
 
 describe('SpellcastingBlock spell descriptions (#212)', () => {
-  it('shows a "Show more" toggle on spells whose description overflows', () => {
+  it('shows a "Show more" toggle on spells whose description overflows', async () => {
     const store = useCharacterStore()
     store.currentCharacterData = createWizardCharacter([
       { id: 'long', name: 'Mage Armor', level: 1, desc: LONG_DESC, prepared: false },
       { id: 'short', name: 'Fire Bolt', level: 0, desc: 'Short boom.', prepared: false },
     ])
 
-    const wrapper = mountBlock()
+    const wrapper = await mountBlock()
     const toggleButtons = wrapper.findAll('button').filter((b) => b.text() === 'Show more')
 
     expect(toggleButtons).toHaveLength(1)
@@ -101,7 +106,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
       { id: 'long', name: 'Mage Armor', level: 1, desc: LONG_DESC, prepared: false },
     ])
 
-    const wrapper = mountBlock()
+    const wrapper = await mountBlock()
     const toggle = wrapper.findAll('button').find((b) => b.text() === 'Show more')
     expect(toggle).toBeDefined()
 
@@ -109,7 +114,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
 
     expect(toggle!.text()).toBe('Show less')
     expect(toggle!.attributes('aria-expanded')).toBe('true')
-    expect(findDescription(wrapper, LONG_DESC)?.attributes('style')).not.toContain(
+    expect(findDescription(wrapper, LONG_DESC)?.attributes('style') ?? '').not.toContain(
       '-webkit-line-clamp',
     )
   })
@@ -120,7 +125,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
       { id: 'long', name: 'Mage Armor', level: 1, desc: LONG_DESC, prepared: false },
     ])
 
-    const wrapper = mountBlock()
+    const wrapper = await mountBlock()
     const toggle = wrapper.findAll('button').find((b) => b.text() === 'Show more')!
 
     await toggle.trigger('click')
@@ -145,8 +150,12 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     })
     store.isEditing = true
 
-    const wrapper = mountBlock()
-    await wrapper.findAll('button').find((b) => b.text() === 'Add Spell')!.trigger('click')
+    const wrapper = await mountBlock()
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Add Spell'))!
+      .trigger('click')
+    await nextTick()
 
     expect(wrapper.text()).toContain('Spell Library')
     expect(wrapper.text()).toContain('Library Cantrip')
