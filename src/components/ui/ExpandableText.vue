@@ -70,6 +70,7 @@ watch(
     await nextTick()
     measureOverflow()
   },
+  { deep: true },
 )
 </script>
 

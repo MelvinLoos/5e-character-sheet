@@ -115,6 +115,37 @@ describe('ExpandableText', () => {
     expect(wrapper.get('p').attributes('style')).toContain('-webkit-line-clamp: 4')
   })
 
+  it('collapses and re-measures when lines changes', async () => {
+    const wrapper = await mountComponent({ text: LONG_TEXT, lines: 2 })
+
+    await wrapper.get('button').trigger('click')
+    await wrapper.setProps({ lines: 1 })
+    await nextTick()
+    await nextTick()
+
+    expect(wrapper.get('button').text()).toBe('Show more')
+    expect(wrapper.get('button').attributes('aria-expanded')).toBe('false')
+    expect(wrapper.get('p').attributes('style')).toContain('-webkit-line-clamp: 1')
+  })
+
+  it('re-measures when textClass changes', async () => {
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.classList.contains('tight-height') ? 10 : 500
+      },
+    })
+
+    const wrapper = await mountComponent({ text: LONG_TEXT, textClass: 'normal-height' })
+    expect(wrapper.find('button').exists()).toBe(false)
+
+    await wrapper.setProps({ textClass: 'tight-height' })
+    await nextTick()
+    await nextTick()
+
+    expect(wrapper.find('button').exists()).toBe(true)
+  })
+
   it('applies the provided text classes to the description paragraph', async () => {
     const wrapper = await mountComponent({
       text: LONG_TEXT,
