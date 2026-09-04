@@ -29,6 +29,23 @@ const isOverflowing = ref(false)
 const isExpanded = ref(false)
 const contentId = useId()
 
+function textClassSignature(
+  value: string | string[] | Record<string, boolean>,
+): string {
+  if (Array.isArray(value)) {
+    return value.map((item) => textClassSignature(item)).join('|')
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.entries(value)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, enabled]) => `${key}:${enabled ? '1' : '0'}`)
+      .join('|')
+  }
+  return value
+}
+
+const normalizedTextClass = computed(() => textClassSignature(props.textClass))
+
 /** Line-clamp styles applied while collapsed. */
 const clampStyle = computed<CSSProperties>(() => ({
   display: '-webkit-box',
@@ -64,13 +81,12 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => [props.text, props.lines, props.textClass],
+  () => [props.text, props.lines, normalizedTextClass.value],
   async () => {
     isExpanded.value = false
     await nextTick()
     measureOverflow()
   },
-  { deep: true },
 )
 </script>
 
