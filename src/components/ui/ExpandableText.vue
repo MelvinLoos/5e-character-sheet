@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => [props.text, props.lines],
+  () => [props.text, props.lines, props.textClass],
   async () => {
     isExpanded.value = false
     await nextTick()
