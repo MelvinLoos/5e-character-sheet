@@ -39,15 +39,21 @@ const clampStyle = computed<CSSProperties>(() => ({
 /** Detect whether the rendered text exceeds the visible clamp height. */
 function measureOverflow(): void {
   const el = contentRef.value
-  if (!el) return
+  // Only measure while collapsed; when expanded the element will typically not overflow.
+  if (!el || isExpanded.value) return
   isOverflowing.value = el.scrollHeight > el.clientHeight + 1
 }
 
-function toggle(): void {
+async function toggle(): Promise<void> {
   isExpanded.value = !isExpanded.value
+  if (!isExpanded.value) {
+    await nextTick()
+    measureOverflow()
+  }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   measureOverflow()
   window.addEventListener('resize', measureOverflow)
 })
