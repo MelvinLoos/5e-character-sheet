@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import type { CSSProperties } from 'vue'
 
 /**
@@ -27,6 +27,7 @@ const props = withDefaults(
 const contentRef = ref<HTMLElement | null>(null)
 const isOverflowing = ref(false)
 const isExpanded = ref(false)
+const contentId = useId()
 
 /** Line-clamp styles applied while collapsed. */
 const clampStyle = computed<CSSProperties>(() => ({
@@ -76,6 +77,7 @@ watch(
   <div>
     <p
       ref="contentRef"
+      :id="contentId"
       :class="textClass"
       :style="!isExpanded ? clampStyle : undefined"
     >
@@ -85,6 +87,7 @@ watch(
       v-if="isOverflowing"
       type="button"
       :aria-expanded="isExpanded"
+      :aria-controls="contentId"
       class="mt-1 mb-3 text-xs font-bold text-tertiary hover:text-tertiary-fixed hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
       @click="toggle"
     >

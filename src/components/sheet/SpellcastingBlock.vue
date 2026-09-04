@@ -496,11 +496,11 @@ const allowedLevels = computed(() => {
                   spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`
                 }}</span>
               </div>
-<ExpandableText
-  :text="spell.desc"
-  :lines="2"
-  text-class="text-xs text-on-surface-variant mb-3"
-/>
+              <ExpandableText
+                :text="spell.desc"
+                :lines="2"
+                text-class="text-xs text-on-surface-variant mb-3"
+              />
 
               <div class="flex justify-between items-end">
                 <div
