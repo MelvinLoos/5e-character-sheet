@@ -907,3 +907,46 @@ html.light {
 .grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
+
+/* ---------------------------------------------------------------------------
+ * Markdown-rendered description content (issue #215).
+ *
+ * markdown-it emits plain <p>/<ul>/<li>/<strong>/<em>; Tailwind's preflight
+ * strips list styles, so restore them with the app's tertiary bullet-dot
+ * treatment. Applied via the .markdown-content class on v-html containers.
+ * ------------------------------------------------------------------------- */
+.markdown-content p {
+  margin: 0 0 0.5rem;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.markdown-content li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-content li:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background-color: var(--color-tertiary);
+}
