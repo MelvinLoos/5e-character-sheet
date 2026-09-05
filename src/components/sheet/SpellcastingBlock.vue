@@ -272,6 +272,7 @@ const allowedLevels = computed(() => {
               <ExpandableText
                 :text="spell.desc"
                 :lines="4"
+                markdown
                 :text-class="[
                   'font-body-md text-body-md leading-snug',
                   spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface',
@@ -375,6 +376,7 @@ const allowedLevels = computed(() => {
             <ExpandableText
               :text="spell.desc"
               :lines="4"
+              markdown
               :text-class="[
                 'font-body-md text-body-md leading-snug',
                 spell.prepared ? 'text-on-secondary-fixed' : 'text-on-surface',
@@ -499,6 +501,7 @@ const allowedLevels = computed(() => {
               <ExpandableText
                 :text="spell.desc"
                 :lines="2"
+                markdown
                 text-class="text-xs text-on-surface-variant mb-3"
               />
 

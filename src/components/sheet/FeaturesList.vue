@@ -6,6 +6,7 @@ import draggable from 'vuedraggable'
 import type { CharacterFeature } from '@/types/character'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
+import { renderMarkdown } from '@/utils/markdown'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
@@ -27,15 +28,6 @@ function toggleExpand(title: string) {
   } else {
     expandedFeatures.value.add(title)
   }
-}
-
-function formattedDesc(feature: CharacterFeature): string {
-  return feature.desc
-    .replace(
-      /<li>/g,
-      "<li class='pl-4 relative before:content-[\\'\\'] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full'>",
-    )
-    .replace(/<ul>/g, "<ul class='list-none space-y-2 relative my-2'>")
 }
 
 const props = defineProps({
@@ -389,7 +381,8 @@ watch(
                 class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
               >
                 <div
-                  v-html="formattedDesc(feature)"
+                  class="markdown-content"
+                  v-html="renderMarkdown(feature.desc)"
                 ></div>
               </div>
             </div>
@@ -495,6 +488,7 @@ watch(
                   <ExpandableText
                     :text="feature.desc"
                     :lines="2"
+                    markdown
                     text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed"
                   />
                 </div>

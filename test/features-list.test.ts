@@ -197,7 +197,9 @@ describe('FeaturesList feature archives expandable descriptions (#214)', () => {
     expect(toggleButtons).toHaveLength(1)
 
     const longDesc = wrapper.findAll('p').find((p) => p.text() === LONG_DESC)
-    expect(longDesc?.attributes('style')).toContain('-webkit-line-clamp: 2')
+    expect(longDesc?.element.parentElement?.getAttribute('style')).toContain(
+      'max-height: 2lh',
+    )
     // Short descriptions get the (harmless) clamp style but no toggle button.
     const shortDesc = wrapper.findAll('p').find((p) => p.text() === 'Short.')
     expect(shortDesc?.element.parentElement?.querySelector('button')).toBeNull()
@@ -221,5 +223,81 @@ describe('FeaturesList feature archives expandable descriptions (#214)', () => {
     // The archive card's own click handler adds the feature — the toggle must not bubble.
     expect(store.currentCharacterData.features.length).toBe(0)
     expect(wrapper.text()).toContain('Feature Archives')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Markdown rendering of feature descriptions (#215)
+// ---------------------------------------------------------------------------
+
+describe('FeaturesList markdown descriptions (#215)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  function makeCharacter(features: unknown[]) {
+    return {
+      name: 'Test',
+      title: '',
+      class: null,
+      level: 1,
+      species: null,
+      background: null,
+      pointBuyBaseScores: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 },
+      backgroundBonusSelections: { plusTwo: null, plusOne: null },
+      abilityScores: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 },
+      profBonus: 2,
+      proficiencies: { savingThrows: [], skills: [] },
+      combat: { ac: 10, hp_max: 1, speed: '30ft' },
+      attacks: [],
+      features,
+      equipment: '',
+      personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
+      spellcasting: null,
+      spells: [],
+    } as any
+  }
+
+  async function expandFeature(wrapper: ReturnType<typeof mount>, title: string) {
+    const header = wrapper
+      .findAll('div')
+      .find((d) => d.classes().includes('cursor-pointer') && d.text().includes(title))
+    expect(header).toBeDefined()
+    await header!.trigger('click')
+    await nextTick()
+  }
+
+  it('renders Markdown formatting in expanded feature descriptions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = makeCharacter([
+      {
+        title: 'Rage',
+        desc: '**Rage.** You *fight* fiercely.\n\n- +2 damage\n- Advantage on Strength checks',
+      },
+    ])
+
+    const wrapper = mount(FeaturesList, {
+      props: { features: store.currentCharacterData.features, editable: false },
+    })
+    await expandFeature(wrapper, 'Rage')
+
+    expect(wrapper.html()).toContain('<strong>Rage.</strong>')
+    expect(wrapper.html()).toContain('<em>fight</em>')
+    expect(wrapper.html()).toContain('<li>+2 damage</li>')
+    expect(wrapper.html()).not.toContain('**Rage.**')
+  })
+
+  it('escapes raw HTML in feature descriptions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = makeCharacter([
+      { title: 'Trap', desc: '<script>alert(1)</script>' },
+    ])
+
+    const wrapper = mount(FeaturesList, {
+      props: { features: store.currentCharacterData.features, editable: false },
+    })
+    await expandFeature(wrapper, 'Trap')
+
+    expect(wrapper.html()).not.toContain('<script>')
   })
 })

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import type { CSSProperties } from 'vue'
+import { renderMarkdown } from '@/utils/markdown'
 
 /**
  * Renders text clamped to a fixed number of lines with a "Show more /
@@ -8,6 +9,10 @@ import type { CSSProperties } from 'vue'
  *
  * Fixes #212: spell descriptions were permanently cut off with no way to
  * read them in full.
+ *
+ * With `markdown` enabled (fixes #215), the text is rendered as safe
+ * Markdown: formatting is applied, legacy HTML is normalized, and raw HTML
+ * is escaped.
  */
 const props = withDefaults(
   defineProps<{
@@ -17,10 +22,13 @@ const props = withDefaults(
     lines?: number
     /** Extra classes forwarded to the description paragraph. */
     textClass?: string | string[] | Record<string, boolean>
+    /** Render `text` as Markdown (safe: raw HTML is escaped, legacy HTML is normalized). */
+    markdown?: boolean
   }>(),
   {
     lines: 4,
     textClass: '',
+    markdown: false,
   },
 )
 
@@ -28,6 +36,9 @@ const contentRef = ref<HTMLElement | null>(null)
 const isOverflowing = ref(false)
 const isExpanded = ref(false)
 const contentId = useId()
+
+/** Rendered Markdown HTML (only used when the `markdown` prop is enabled). */
+const renderedHtml = computed(() => (props.markdown ? renderMarkdown(props.text) : ''))
 
 function textClassSignature(
   value: string | string[] | Record<string, boolean>,
@@ -46,13 +57,27 @@ function textClassSignature(
 
 const normalizedTextClass = computed(() => textClassSignature(props.textClass))
 
-/** Line-clamp styles applied while collapsed. */
-const clampStyle = computed<CSSProperties>(() => ({
-  display: '-webkit-box',
-  WebkitLineClamp: props.lines,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-}))
+/**
+ * Line-clamp styles applied while collapsed.
+ *
+ * Markdown mode uses a `max-height` based on the `lh` (line-height) unit
+ * instead of `-webkit-line-clamp`, which is unreliable when the element
+ * contains block children like <p>/<ul>.
+ */
+const clampStyle = computed<CSSProperties>(() => {
+  if (props.markdown) {
+    return {
+      maxHeight: `${props.lines}lh`,
+      overflow: 'hidden',
+    }
+  }
+  return {
+    display: '-webkit-box',
+    WebkitLineClamp: props.lines,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  }
+})
 
 /** Detect whether the rendered text exceeds the visible clamp height. */
 function measureOverflow(): void {
@@ -81,7 +106,7 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => [props.text, props.lines, normalizedTextClass.value],
+  () => [props.text, props.lines, normalizedTextClass.value, props.markdown],
   async () => {
     isExpanded.value = false
     await nextTick()
@@ -93,6 +118,7 @@ watch(
 <template>
   <div>
     <p
+      v-if="!markdown"
       ref="contentRef"
       :id="contentId"
       :class="textClass"
@@ -100,6 +126,14 @@ watch(
     >
       {{ text }}
     </p>
+    <div
+      v-else
+      ref="contentRef"
+      :id="contentId"
+      :class="[textClass, 'markdown-content']"
+      :style="!isExpanded ? clampStyle : undefined"
+      v-html="renderedHtml"
+    ></div>
     <button
       v-if="isOverflowing"
       type="button"

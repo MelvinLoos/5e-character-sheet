@@ -544,7 +544,9 @@ describe('Feats.vue expandable library descriptions (#214)', () => {
     expect(toggleButtons).toHaveLength(1)
 
     const longDesc = wrapper.findAll('p').find((p) => p.text() === LONG_DESC)
-    expect(longDesc?.attributes('style')).toContain('-webkit-line-clamp: 2')
+    expect(longDesc?.element.parentElement?.getAttribute('style')).toContain(
+      'max-height: 2lh',
+    )
     // Short descriptions get the (harmless) clamp style but no toggle button.
     const shortDesc = wrapper.findAll('p').find((p) => p.text() === 'Short.')
     expect(shortDesc?.element.parentElement?.querySelector('button')).toBeNull()
@@ -567,15 +569,69 @@ describe('Feats.vue expandable library descriptions (#214)', () => {
     expect(toggle!.text()).toBe('Show less')
     expect(toggle!.attributes('aria-expanded')).toBe('true')
     expect(
-      wrapper.findAll('p').find((p) => p.text() === LONG_DESC)?.attributes('style') ?? '',
-    ).not.toContain('-webkit-line-clamp')
+      wrapper
+        .findAll('p')
+        .find((p) => p.text() === LONG_DESC)?.element.parentElement?.getAttribute('style') ?? '',
+    ).not.toContain('max-height')
 
     await toggle!.trigger('click')
 
     expect(toggle!.text()).toBe('Show more')
     expect(
-      wrapper.findAll('p').find((p) => p.text() === LONG_DESC)?.attributes('style'),
-    ).toContain('-webkit-line-clamp: 2')
+      wrapper
+        .findAll('p')
+        .find((p) => p.text() === LONG_DESC)?.element.parentElement?.getAttribute('style'),
+    ).toContain('max-height: 2lh')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Markdown rendering of feat descriptions (#215)
+// ---------------------------------------------------------------------------
+
+describe('Feats.vue markdown descriptions (#215)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  async function expandFeat(wrapper: ReturnType<typeof mount>, title: string) {
+    const header = wrapper
+      .findAll('div')
+      .find((d) => d.classes().includes('cursor-pointer') && d.text().includes(title))
+    expect(header).toBeDefined()
+    await header!.trigger('click')
+    await nextTick()
+  }
+
+  it('renders Markdown formatting in expanded feat descriptions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = makeMinimalCharacter([
+      {
+        title: 'Alert',
+        desc: '**Alert.** You are *always* ready.\n\n- +5 initiative\n- Cannot be surprised',
+        key: false,
+      },
+    ])
+
+    const wrapper = mount(Feats)
+    await expandFeat(wrapper, 'Alert')
+
+    expect(wrapper.html()).toContain('<strong>Alert.</strong>')
+    expect(wrapper.html()).toContain('<em>always</em>')
+    expect(wrapper.html()).toContain('<li>+5 initiative</li>')
+    expect(wrapper.html()).not.toContain('**Alert.**')
+  })
+
+  it('escapes raw HTML in feat descriptions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = makeMinimalCharacter([
+      { title: 'Trap Feat', desc: '<script>alert(1)</script>', key: false },
+    ])
+
+    const wrapper = mount(Feats)
+    await expandFeat(wrapper, 'Trap Feat')
+
+    expect(wrapper.html()).not.toContain('<script>')
   })
 })
 })

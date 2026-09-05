@@ -7,6 +7,7 @@ import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
+import { renderMarkdown } from '@/utils/markdown'
 import type { CharacterFeature } from '@/types/character'
 import type { FeatureChoice } from '@/types/rules'
 import {
@@ -393,7 +394,7 @@ function setActiveCategory(cat: string) {
             v-show="expandedFeatures.has(feat.title)"
             class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
           >
-            <div v-html="formatFeatDesc(feat.desc)"></div>
+            <div class="markdown-content" v-html="renderMarkdown(feat.desc)"></div>
           </div>
 
           <!-- Edit button -->
@@ -576,6 +577,7 @@ function setActiveCategory(cat: string) {
               <ExpandableText
                 :text="feat.desc"
                 :lines="2"
+                markdown
                 text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-3"
               />
 
@@ -639,18 +641,6 @@ function setActiveCategory(cat: string) {
     />
   </div>
 </template>
-
-<script lang="ts">
-function formatFeatDesc(desc: string): string {
-  if (!desc) return ''
-  return desc
-    .replace(
-      /<li>/g,
-      '<li class="pl-4 relative before:content-[\'\'] before:absolute before:left-0 before:top-2 before:w-1.5 before:h-1.5 before:bg-tertiary before:rounded-full">',
-    )
-    .replace(/<ul>/g, '<ul class="list-none space-y-2 relative my-2">')
-}
-</script>
 
 <style scoped>
 /* Custom scrollbar for library — gold thumb matching the Heroes Guild tertiary accent */

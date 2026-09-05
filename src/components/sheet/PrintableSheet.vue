@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useSpellcasting } from '@/composables/useSpellcasting'
+import { renderMarkdown } from '@/utils/markdown'
 import * as DND_RULES from '@/data/rules'
 
 const store = useCharacterStore()
@@ -400,7 +401,10 @@ function formatSpellLevel(level: number) {
           <header class="flex justify-between items-baseline border-b border-black mb-2 pb-1">
             <h3 class="font-headline-md text-headline-md uppercase text-sm text-black">{{ feat.title }}</h3>
           </header>
-          <p class="text-xs leading-relaxed whitespace-pre-wrap text-black">{{ feat.desc }}</p>
+          <div
+            class="appendix-markdown text-xs leading-relaxed whitespace-pre-wrap text-black"
+            v-html="renderMarkdown(feat.desc)"
+          ></div>
         </article>
 
         <article
@@ -414,7 +418,10 @@ function formatSpellLevel(level: number) {
               {{ formatSpellLevel(spell.level) }}<span v-if="spell.school"> • {{ spell.school }}</span>
             </span>
           </header>
-          <p class="text-xs leading-relaxed whitespace-pre-wrap text-black">{{ spell.desc }}</p>
+          <div
+            class="appendix-markdown text-xs leading-relaxed whitespace-pre-wrap text-black"
+            v-html="renderMarkdown(spell.desc)"
+          ></div>
         </article>
       </div>
     </main>
@@ -423,6 +430,24 @@ function formatSpellLevel(level: number) {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+/* Markdown-rendered appendix content (#215). Tailwind's preflight strips
+   list styles, so restore them for print. :deep() is required because v-html
+   content does not receive the scoped data attribute. */
+.appendix-markdown :deep(p) {
+  margin: 0.25rem 0;
+}
+
+.appendix-markdown :deep(ul),
+.appendix-markdown :deep(ol) {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+
+.appendix-markdown :deep(ol) {
+  list-style: decimal;
+}
 
 .font-display-lg {
   font-family: 'EB Garamond', serif;

@@ -7,6 +7,7 @@
 
 import type { CharacterSpell, CharacterFeature } from '@/types/character'
 import { logger } from '@/utils/logger'
+import { legacyHtmlToMarkdown } from '@/utils/markdown'
 
 /**
  * Validate that a raw object conforms to the CharacterSpell shape.
@@ -42,7 +43,7 @@ export function normalizeGuildSpell(raw: Record<string, unknown>): CharacterSpel
   return {
     name: String(raw.name || '').trim(),
     level: Math.max(0, Math.min(9, Number(raw.level) || 0)),
-    desc: String(raw.desc || ''),
+    desc: legacyHtmlToMarkdown(String(raw.desc || '')),
     school: typeof raw.school === 'string' ? (raw.school as CharacterSpell['school']) : undefined,
     castingTime: typeof raw.castingTime === 'string' ? raw.castingTime : undefined,
     range: typeof raw.range === 'string' ? raw.range : undefined,
@@ -83,7 +84,7 @@ export function isValidGuildFeat(data: unknown): data is CharacterFeature {
 export function normalizeGuildFeat(raw: Record<string, unknown>): CharacterFeature {
   return {
     title: String(raw.title || '').trim(),
-    desc: String(raw.desc || ''),
+    desc: legacyHtmlToMarkdown(String(raw.desc || '')),
     key: false,
     source: typeof raw.source === 'string' ? raw.source : 'Guild',
     featureType: typeof raw.featureType === 'string' ? raw.featureType : 'Guild Feat',
