@@ -1379,7 +1379,7 @@ export const CLASSES: Record<string, ClassData> = {
         desc: "In the past, you usually contacted your patron through intermediaries. Now you can communicate directly. You can cast Contact Other Plane at will, without expending a spell slot, to contact your patron. Once you use this feature, you can't do so again until you finish a Long Rest.",
         uses: { total: 1, per: 'Long Rest' },
         key: true,
-        minTier: 2,
+        minTier: 3,
       },
     ],
     featureChoices: [
@@ -1387,8 +1387,7 @@ export const CLASSES: Record<string, ClassData> = {
         id: 'eldritch-invocations',
         label: 'Eldritch Invocations',
         description: "Choose from the invocations below to customize your Warlock's magical abilities. You may select the indicated number of invocations at your current tier.",
-        count: 2,
-        scalesPerTier: true,
+        count: { 3: 3, 6: 5, 10: 7 },
         options: [
           {
             id: 'agonizing-blast',
