@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { defineComponent, nextTick } from 'vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
 
 const originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight')
@@ -154,5 +154,25 @@ describe('ExpandableText', () => {
     const p = wrapper.get('p')
     expect(p.classes()).toContain('custom-a')
     expect(p.classes()).toContain('custom-b')
+  })
+
+  it('does not propagate toggle clicks to parent click handlers', async () => {
+    let parentClicks = 0
+    const Parent = defineComponent({
+      components: { ExpandableText },
+      template: '<div @click="count"><ExpandableText :text="text" /></div>',
+      setup() {
+        return { text: LONG_TEXT, count: () => parentClicks++ }
+      },
+    })
+
+    const wrapper = mount(Parent)
+    await nextTick()
+    await nextTick()
+
+    await wrapper.get('button').trigger('click')
+
+    expect(wrapper.get('button').text()).toBe('Show less')
+    expect(parentClicks).toBe(0)
   })
 })

@@ -106,7 +106,7 @@ watch(
       :aria-expanded="isExpanded"
       :aria-controls="contentId"
       class="mt-1 mb-3 text-xs font-bold text-tertiary hover:text-tertiary-fixed hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
-      @click="toggle"
+      @click.stop="toggle"
     >
       {{ isExpanded ? 'Show less' : 'Show more' }}
     </button>

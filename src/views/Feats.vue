@@ -6,6 +6,7 @@ import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
+import ExpandableText from '@/components/ui/ExpandableText.vue'
 import type { CharacterFeature } from '@/types/character'
 import type { FeatureChoice } from '@/types/rules'
 import {
@@ -572,11 +573,11 @@ function setActiveCategory(cat: string) {
               >
                 Prerequisite: {{ feat.prerequisite }}
               </div>
-              <p
-                class="font-body-md text-body-md text-on-surface-variant leading-relaxed line-clamp-2 mb-3"
-              >
-                {{ feat.desc }}
-              </p>
+              <ExpandableText
+                :text="feat.desc"
+                :lines="2"
+                text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-3"
+              />
 
               <div class="flex justify-between items-end">
                 <div
@@ -673,12 +674,5 @@ function formatFeatDesc(desc: string): string {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-tertiary-fixed-dim);
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 </style>
