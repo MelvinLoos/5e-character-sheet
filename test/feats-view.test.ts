@@ -11,7 +11,8 @@
  * - Non-edit mode hides all add/remove buttons
  */
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { nextTick } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
 import 'fake-indexeddb/auto'
 import Feats from '../src/views/Feats.vue'
@@ -465,4 +466,115 @@ describe('Feats.vue (modal-based selection pattern)', () => {
       expect(wrapper.text()).not.toContain('Feat Archives')
     })
   })
+
+// ---------------------------------------------------------------------------
+// Expandable feat library descriptions (#214)
+// ---------------------------------------------------------------------------
+
+describe('Feats.vue expandable library descriptions (#214)', () => {
+  const LONG_DESC =
+    'You gain a +5 bonus to initiative. You can never be surprised while ' +
+    'conscious. Other creatures do not gain advantage on attack rolls ' +
+    'against you as a result of being unseen by you.'
+
+  const originalScrollHeight = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'scrollHeight',
+  )
+  const originalClientHeight = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'clientHeight',
+  )
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    // jsdom does not perform layout, so scrollHeight/clientHeight are always 0.
+    // Mock them so that "long" texts overflow the fixed 40px clientHeight.
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.textContent?.length ?? 0
+      },
+    })
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get() {
+        return 40
+      },
+    })
+  })
+
+  afterEach(() => {
+    if (originalScrollHeight) {
+      Object.defineProperty(HTMLElement.prototype, 'scrollHeight', originalScrollHeight)
+    } else {
+      delete (HTMLElement.prototype as unknown as Record<string, unknown>).scrollHeight
+    }
+
+    if (originalClientHeight) {
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', originalClientHeight)
+    } else {
+      delete (HTMLElement.prototype as unknown as Record<string, unknown>).clientHeight
+    }
+  })
+
+  /** Opens the "Feat Archives" modal and flushes ExpandableText measurements. */
+  async function openFeatLibrary(wrapper: ReturnType<typeof mount>) {
+    const addBtn = findAddFeatsButton(wrapper)
+    expect(addBtn).not.toBeNull()
+    await addBtn!.trigger('click')
+    await nextTick()
+    await nextTick()
+  }
+
+  it('shows a "Show more" toggle on long library feat descriptions', async () => {
+    const store = useCharacterStore()
+    const rulesStore = useRulesStore()
+    store.isEditing = true
+    store.currentCharacterData = makeMinimalCharacter([])
+    rulesStore.importData('feats', [
+      { title: 'Alert', desc: LONG_DESC },
+      { title: 'Lucky', desc: 'Short.' },
+    ])
+
+    const wrapper = mount(Feats)
+    await openFeatLibrary(wrapper)
+
+    const toggleButtons = wrapper.findAll('button').filter((b) => b.text() === 'Show more')
+    expect(toggleButtons).toHaveLength(1)
+
+    const longDesc = wrapper.findAll('p').find((p) => p.text() === LONG_DESC)
+    expect(longDesc?.attributes('style')).toContain('-webkit-line-clamp: 2')
+    const shortDesc = wrapper.findAll('p').find((p) => p.text() === 'Short.')
+    expect(shortDesc?.attributes('style')).toBeUndefined()
+  })
+
+  it('expands and collapses a long library feat description', async () => {
+    const store = useCharacterStore()
+    const rulesStore = useRulesStore()
+    store.isEditing = true
+    store.currentCharacterData = makeMinimalCharacter([])
+    rulesStore.importData('feats', [{ title: 'Alert', desc: LONG_DESC }])
+
+    const wrapper = mount(Feats)
+    await openFeatLibrary(wrapper)
+
+    const toggle = wrapper.findAll('button').find((b) => b.text() === 'Show more')
+    expect(toggle).toBeDefined()
+    await toggle!.trigger('click')
+
+    expect(toggle!.text()).toBe('Show less')
+    expect(toggle!.attributes('aria-expanded')).toBe('true')
+    expect(
+      wrapper.findAll('p').find((p) => p.text() === LONG_DESC)?.attributes('style') ?? '',
+    ).not.toContain('-webkit-line-clamp')
+
+    await toggle!.trigger('click')
+
+    expect(toggle!.text()).toBe('Show more')
+    expect(
+      wrapper.findAll('p').find((p) => p.text() === LONG_DESC)?.attributes('style'),
+    ).toContain('-webkit-line-clamp: 2')
+  })
+})
 })
