@@ -3,13 +3,24 @@ import { ref, computed, watch } from 'vue'
 import * as DND_RULES from '../data/rules'
 
 import {
-  getLibrary as getLocalLibrary,
-  saveLibrary as saveLocalLibrary,
   createBlankCharacter,
   getMod,
   pointBuyCosts,
 } from '@/domain'
 import type { CharacterData } from '@/domain'
+
+import {
+  loadLibrary,
+  saveLibrary as saveLocalLibrary,
+  saveDraft,
+  restoreDraft,
+  clearDraft,
+  setCurrentCharacterId,
+  clearCurrentCharacterId,
+  restoreLastCharacter,
+  fetchCharacterFromUrl,
+  shareCharacterToSupabase,
+} from '@/domain/characterRepository'
 
 import { logger } from '../utils/logger'
 import { capturePostHogEvent } from '../utils/posthog'
@@ -20,14 +31,10 @@ import {
   applyBackgroundBonuses,
   calculateDerivedStats,
   applyAllChanges,
-  applyStartingEquipment,
 } from '../utils/characterMutations'
-import type { StartingEquipmentState } from '@/types/equipment'
 
 import {
   initSupabase,
-  fetchCharacterFromUrl,
-  shareCharacterToSupabase,
   getSupabaseClient,
 } from '@/infra'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
@@ -35,37 +42,24 @@ import { loadSchema, getSchema, validateCharacterData } from '@/domain'
 import { calculateArmorClass } from '@/utils/acCalculator'
 import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { autoSeedAttacks } from '@/composables/useCombat'
-import { STORAGE_KEYS } from '../constants/storage-keys'
+import { useModals } from '@/composables/useModals'
+import { useEquipmentWizard } from '@/composables/useEquipmentWizard'
 
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
-  // Initialize with a blank character to avoid widespread null checks in templates/components
   const currentCharacterData = ref<CharacterData>(createBlankCharacter())
   const currentUserData = computed(() => currentCharacterData.value)
   const isEditing = ref(false)
-  const characterLibrary = ref<Record<string, CharacterData[]>>(getLocalLibrary())
+  const characterLibrary = ref<Record<string, CharacterData[]>>(loadLibrary())
   const sessionName = ref('Uncategorized')
   const schema = computed(() => getSchema())
   const geminiSchema = computed(() => getAiSchema())
-  // Reactive boolean so UI components can bind to it without seeing the
-  // actual Supabase client instance. The client itself is kept in a
-  // module-level singleton (sharingService.ts) outside Vue's reactivity system.
   const isSupabaseReady = ref(false)
-  const sourceCharacterId = ref<string | null>(null) // For shared characters
+  const sourceCharacterId = ref<string | null>(null)
 
-  // Modal states
-  const isLoading = ref(false)
-  const loadingText = ref('')
-  const errorModal = ref({ show: false, errors: [] as string[] })
-  const shareModal = ref({ show: false, url: '' })
-
-  // Starting equipment selection state (creation-time only, not persisted)
-  const startingEquipmentState = ref<StartingEquipmentState>({
-    classOption: null,
-    backgroundOption: null,
-    resolvedClassChoices: [],
-    selectedTrinket: null,
-  })
+  // --- COMPOSABLES (extracted state) ---
+  const modals = useModals()
+  const equipmentWizard = useEquipmentWizard()
 
   // --- GETTERS (Computed Properties) ---
   // These are INTERNAL-ONLY computed properties used by the store's own actions.
@@ -199,8 +193,15 @@ export const useCharacterStore = defineStore('character', () => {
     const urlParams = new URLSearchParams(window.location.search)
     if (!urlParams.get('id')) {
       // Try draft first (unsaved work-in-progress), then last saved character
-      if (!_restoreDraft()) {
-        _restoreLastCharacter()
+      const draft = restoreDraft()
+      if (draft) {
+        _setCharacter(draft)
+      } else {
+        const lastChar = restoreLastCharacter()
+        if (lastChar) {
+          _setCharacter(lastChar.data)
+          sessionName.value = lastChar.session
+        }
       }
     }
   }
@@ -209,93 +210,54 @@ export const useCharacterStore = defineStore('character', () => {
     return validateCharacterData(data)
   }
 
-  function _showLoading(text: string): void {
-    isLoading.value = true
-    loadingText.value = text
-  }
-  function _hideLoading(): void {
-    isLoading.value = false
+  // -----------------------------------------------------------------------
+  // Internal Helpers
+  // -----------------------------------------------------------------------
+
+  function _migrateLegacyCharacter(data: unknown): CharacterData {
+    return migrateCharacterData(data)
   }
 
-  // --- Draft Persistence Helpers ---
-
-  function _saveDraft(): void {
+  function _setupSpellcasting(): void {
     if (!currentCharacterData.value) return
-    try {
-      localStorage.setItem(
-        STORAGE_KEYS.CURRENT_DRAFT,
-        JSON.stringify(currentCharacterData.value),
-      )
-    } catch (e) {
-      logger.warn('Failed to save character draft to localStorage:', e)
-    }
-  }
 
-  function _restoreDraft(): boolean {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.CURRENT_DRAFT)
-      if (!raw) return false
-      const data = JSON.parse(raw)
-      if (data && typeof data === 'object') {
-        _setCharacter(data)
-        return true
+    const features = currentCharacterData.value.features || []
+    const hasSpellcasting = features.some(
+      (f) =>
+        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
+    )
+
+    if (hasSpellcasting) {
+      const ability = DND_RULES.getSpellcastingAbility(currentCharacterData.value.class)
+      currentCharacterData.value.spellcasting = {
+        ...(currentCharacterData.value.spellcasting ?? {}),
+        ability,
       }
-    } catch (e) {
-      logger.warn('Failed to restore character draft from localStorage:', e)
-    }
-    return false
-  }
-
-  function _clearDraft(): void {
-    try {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_DRAFT)
-    } catch (e) {
-      logger.warn('Failed to clear character draft from localStorage:', e)
+    } else {
+      currentCharacterData.value.spellcasting = null
     }
   }
 
-  function _setCurrentCharacterId(session: string, name: string): void {
-    try {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_CHARACTER_ID, `${session}|${name}`)
-    } catch (e) {
-      logger.warn('Failed to set current character ID:', e)
-    }
+  function _autoSeedAttacksIfNeeded(): void {
+    const char = currentCharacterData.value
+    if (!char) return
+
+    const attacks = char.attacks || []
+    if (attacks.length > 0) return
+
+    const equippedGear = char.equippedGear || []
+    const hasWeapons = equippedGear.some((g) => g.type === 'Weapon')
+    if (!hasWeapons) return
+
+    const mods = abilityMods.value
+    char.attacks = autoSeedAttacks(equippedGear, mods)
   }
 
-  function _clearCurrentCharacterId(): void {
-    try {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_CHARACTER_ID)
-    } catch (e) {
-      logger.warn('Failed to clear current character ID:', e)
-    }
-  }
-
-  function _restoreLastCharacter(): boolean {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.CURRENT_CHARACTER_ID)
-      if (!raw) return false
-      const [session, charName] = raw.split('|')
-      if (!session || !charName) return false
-      const library = getLocalLibrary()
-      const data = library[session]?.find((c: CharacterData) => c.name === charName)
-      if (data) {
-        _setCharacter(data)
-        sessionName.value = session
-        return true
-      }
-    } catch (e) {
-      logger.warn('Failed to restore last character:', e)
-    }
-    return false
-  }
-
-  function _showErrorModal(errors: string[]): void {
-    errorModal.value.errors = errors
-    errorModal.value.show = true
-  }
-
+  /**
+   * Core character loading pipeline: migrate, run full mutation pipeline,
+   * sync HP, and auto-seed attacks. Previously inline in _setCharacter.
+   */
   function _setCharacter(data: unknown): void {
-    // Migrate legacy character data to new format
     const migratedData = _migrateLegacyCharacter(data)
 
     // Assign after asserting it matches CharacterData shape (migration ensures required fields)
@@ -323,66 +285,21 @@ export const useCharacterStore = defineStore('character', () => {
     _autoSeedAttacksIfNeeded()
   }
 
-  /**
-   * Auto-populate attacks from equipped weapons when the attacks array is empty
-   * but the character has weapons equipped. Only runs once — preserves user edits.
-   */
-  function _autoSeedAttacksIfNeeded(): void {
-    const char = currentCharacterData.value
-    if (!char) return
-
-    const attacks = char.attacks || []
-    if (attacks.length > 0) return
-
-    const equippedGear = char.equippedGear || []
-    const hasWeapons = equippedGear.some((g) => g.type === 'Weapon')
-    if (!hasWeapons) return
-
-    const mods = abilityMods.value
-    char.attacks = autoSeedAttacks(equippedGear, mods)
-  }
-
-  function _migrateLegacyCharacter(data: unknown): CharacterData {
-    return migrateCharacterData(data)
-  }
-
-  function _setupSpellcasting(): void {
-    if (!currentCharacterData.value) return
-
-    const features = currentCharacterData.value.features || []
-    const hasSpellcasting = features.some(
-      (f) =>
-        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
-    )
-
-    if (hasSpellcasting) {
-      // Derive the casting ability from the character's class
-      const ability = DND_RULES.getSpellcastingAbility(currentCharacterData.value.class)
-      currentCharacterData.value.spellcasting = {
-        ...(currentCharacterData.value.spellcasting ?? {}),
-        ability,
-      }
-    } else if (!hasSpellcasting) {
-      // Remove spellcasting object if no spellcasting source exists
-      currentCharacterData.value.spellcasting = null
-    }
-  }
-
   async function loadCharacterFromUrl(): Promise<void> {
     const urlParams = new URLSearchParams(window.location.search)
     try {
       const result = await fetchCharacterFromUrl(getSupabaseClient(), urlParams)
       if (result) {
-        _showLoading('Fetching character from the archives...')
+        modals.showLoading('Fetching character from the archives...')
         _setCharacter(result.data)
         sourceCharacterId.value = result.id
       }
     } catch (error) {
       logger.error('Error loading character from URL:', error)
-      _showErrorModal([`Could not load character: ${(error as Error).message}`])
+      modals.showErrorModal([`Could not load character: ${(error as Error).message}`])
       history.replaceState({}, '', window.location.pathname)
     } finally {
-      _hideLoading()
+      modals.hideLoading()
     }
   }
 
@@ -395,8 +312,8 @@ export const useCharacterStore = defineStore('character', () => {
       _setCharacter(data)
       sessionName.value = session
       // Clear any stale draft and remember this as the last loaded character
-      _clearDraft()
-      _setCurrentCharacterId(session, charName)
+      clearDraft()
+      setCurrentCharacterId(session, charName)
     }
   }
 
@@ -413,13 +330,13 @@ export const useCharacterStore = defineStore('character', () => {
         const { valid, errors } = validateCharacter(data)
 
         if (!valid) {
-          _showErrorModal((errors as string[]) || [])
+          modals.showErrorModal((errors as string[]) || [])
           return
         }
         _setCharacter(data)
         saveToLibrary() // Auto-save imported char
       } catch (error) {
-        _showErrorModal([`Error loading file: ${(error as Error).message}`])
+        modals.showErrorModal([`Error loading file: ${(error as Error).message}`])
         logger.error('File load error:', error)
       }
     }
@@ -429,7 +346,7 @@ export const useCharacterStore = defineStore('character', () => {
   function saveToLibrary(): void {
     if (!currentCharacterData.value) return
     const session = sessionName.value.trim() || 'Uncategorized'
-    const library = getLocalLibrary() // Get fresh copy
+    const library = loadLibrary() // Get fresh copy
     if (!library[session]) library[session] = []
 
     const existingIndex = library[session].findIndex(
@@ -445,17 +362,17 @@ export const useCharacterStore = defineStore('character', () => {
     characterLibrary.value = library // Update reactive state
 
     // Clear draft since character is now safely in library
-    _clearDraft()
+    clearDraft()
     // Remember this as the last loaded/saved character
-    _setCurrentCharacterId(session, currentCharacterData.value.name)
+    setCurrentCharacterId(session, currentCharacterData.value.name)
     capturePostHogEvent('character_saved_to_library', {
       save_type: existingIndex > -1 ? 'update' : 'new',
     })
   }
 
   function handleNewCharacter(): void {
-    _clearDraft()
-    _clearCurrentCharacterId()
+    clearDraft()
+    clearCurrentCharacterId()
     _setCharacter(createBlankCharacter())
     isEditing.value = true
     capturePostHogEvent('character_created')
@@ -466,13 +383,13 @@ export const useCharacterStore = defineStore('character', () => {
   }
 
   async function generateCharacter(userPrompt: string): Promise<void> {
-    _showLoading('The mists of creation are swirling...')
+    modals.showLoading('The mists of creation are swirling...')
     try {
       const generatedData = await aiGenerate(userPrompt)
       const { valid, errors } = validateCharacter(generatedData.data)
       if (!valid) {
         logger.error('AI generated invalid data:', errors)
-        _showErrorModal(
+        modals.showErrorModal(
           ['The AI generated a character with some inconsistencies, but here it is:'].concat(
             (errors as string[]) || [],
           ),
@@ -504,22 +421,22 @@ export const useCharacterStore = defineStore('character', () => {
       capturePostHogEvent('character_generated')
     } catch (error) {
       logger.error('Error generating character:', error)
-      _showErrorModal([`Error generating character: ${(error as Error).message}`])
+      modals.showErrorModal([`Error generating character: ${(error as Error).message}`])
     } finally {
-      _hideLoading()
+      modals.hideLoading()
     }
   }
 
   async function shareCharacter(): Promise<void> {
     const client = getSupabaseClient()
     if (!client) {
-      _showErrorModal(['Online sharing is not configured.'])
+      modals.showErrorModal(['Online sharing is not configured.'])
       return
     }
     if (!currentCharacterData.value) return
 
     const isCopyOfSharedCharacter = Boolean(sourceCharacterId.value)
-    _showLoading('Saving character to the archives...')
+    modals.showLoading('Saving character to the archives...')
     try {
       const newId = await shareCharacterToSupabase(
         client,
@@ -529,8 +446,8 @@ export const useCharacterStore = defineStore('character', () => {
 
       const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`
 
-      shareModal.value.url = newUrl
-      shareModal.value.show = true
+      modals.shareModal.value.url = newUrl
+      modals.shareModal.value.show = true
 
       history.pushState({}, '', newUrl)
       sourceCharacterId.value = newId
@@ -539,9 +456,9 @@ export const useCharacterStore = defineStore('character', () => {
       })
     } catch (error) {
       logger.error('Error sharing character:', error)
-      _showErrorModal([`Could not share character: ${(error as Error).message}`])
+      modals.showErrorModal([`Could not share character: ${(error as Error).message}`])
     } finally {
-      _hideLoading()
+      modals.hideLoading()
     }
   }
 
@@ -799,67 +716,12 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
 
-  // --- Starting Equipment Actions ---
+  // --- Starting Equipment Actions (delegates to equipment wizard composable) ---
 
-  /** Set the class equipment option (A, B, or C). */
-  function selectClassEquipmentOption(option: 'A' | 'B' | 'C'): void {
-    startingEquipmentState.value.classOption = option
-  }
-
-  /** Set the background equipment option (A or B). */
-  function selectBackgroundEquipmentOption(option: 'A' | 'B'): void {
-    startingEquipmentState.value.backgroundOption = option
-  }
-
-  /** Resolve a class equipment choice (e.g. "pick Handaxe or Light Hammer"). */
-  function resolveEquipmentChoice(
-    choiceIndex: number,
-    itemId: string,
-    quantity: number,
-  ): void {
-    // Remove any previous resolution for this choice index
-    startingEquipmentState.value.resolvedClassChoices =
-      startingEquipmentState.value.resolvedClassChoices.filter(
-        (rc) => rc.choiceIndex !== choiceIndex,
-      )
-
-    startingEquipmentState.value.resolvedClassChoices.push({
-      choiceIndex,
-      selectedItemId: itemId,
-      selectedQuantity: quantity,
-    })
-  }
-
-  /** Set the selected trinket (by EquipmentItem.id). */
-  function selectTrinket(trinketId: string | null): void {
-    startingEquipmentState.value.selectedTrinket = trinketId
-  }
-
-  /**
-   * Finalize starting equipment: resolve all selections and apply them
-   * to the current character data. This adds gear, consumables, attack
-   * entries, gold, and spellcasting focus features.
-   */
+  /** Wraps equipmentWizard.finalizeEquipment to maintain backward-compatible API. */
   function confirmStartingEquipment(): void {
     if (!currentCharacterData.value) return
-
-    currentCharacterData.value = applyStartingEquipment(
-      currentCharacterData.value,
-      startingEquipmentState.value,
-    )
-
-    // Recalculate derived stats to account for new attacks, AC, etc.
-    currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
-  }
-
-  /** Reset the starting equipment state (e.g. when starting a new character). */
-  function resetStartingEquipment(): void {
-    startingEquipmentState.value = {
-      classOption: null,
-      backgroundOption: null,
-      resolvedClassChoices: [],
-      selectedTrinket: null,
-    }
+    currentCharacterData.value = equipmentWizard.finalizeEquipment(currentCharacterData.value)
   }
 
   // --- Reactive AC recalculation ---
@@ -885,7 +747,9 @@ export const useCharacterStore = defineStore('character', () => {
     () => {
       if (draftTimer) clearTimeout(draftTimer)
       draftTimer = setTimeout(() => {
-        _saveDraft()
+        if (currentCharacterData.value) {
+          saveDraft(currentCharacterData.value)
+        }
       }, 500)
     },
     { deep: true },
@@ -900,14 +764,13 @@ export const useCharacterStore = defineStore('character', () => {
     sessionName,
     schema,
     geminiSchema,
-    // Supabase readiness flag (reactive boolean; the actual client is kept
-    // in a module-level singleton outside Vue's reactivity system).
     isSupabaseReady,
     sourceCharacterId,
-    isLoading,
-    loadingText,
-    errorModal,
-    shareModal,
+    // Modal state (backward-compatible — new code should use useModals())
+    isLoading: modals.isLoading,
+    loadingText: modals.loadingText,
+    errorModal: modals.errorModal,
+    shareModal: modals.shareModal,
     // Getters (legacy compatibility — new code should use useProgressionStore / useSpellStore)
     abilityMods,
     profBonus,
@@ -945,13 +808,13 @@ export const useCharacterStore = defineStore('character', () => {
     recalculateAbilityScores,
     validateCharacter,
     // Starting equipment state & actions
-    startingEquipmentState,
-    selectClassEquipmentOption,
-    selectBackgroundEquipmentOption,
-    resolveEquipmentChoice,
-    selectTrinket,
+    startingEquipmentState: equipmentWizard.startingEquipmentState,
+    selectClassEquipmentOption: equipmentWizard.selectClassEquipmentOption,
+    selectBackgroundEquipmentOption: equipmentWizard.selectBackgroundEquipmentOption,
+    resolveEquipmentChoice: equipmentWizard.resolveEquipmentChoice,
+    selectTrinket: equipmentWizard.selectTrinket,
     confirmStartingEquipment,
-    resetStartingEquipment,
+    resetStartingEquipment: equipmentWizard.resetStartingEquipment,
     // New explicit actions
     applyBackgroundChange,
     applyClassChange,
@@ -963,7 +826,7 @@ export const useCharacterStore = defineStore('character', () => {
     // Getters
     displaySpeciesName,
     // Modals
-    closeErrorModal: () => (errorModal.value.show = false),
-    closeShareModal: () => (shareModal.value.show = false),
+    closeErrorModal: () => modals.clearErrorModal(),
+    closeShareModal: () => modals.clearShareModal(),
   }
 })
