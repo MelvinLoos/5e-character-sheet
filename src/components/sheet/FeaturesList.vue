@@ -5,6 +5,7 @@ import { watch, computed, ref } from 'vue'
 import draggable from 'vuedraggable'
 import type { CharacterFeature } from '@/types/character'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
+import ExpandableText from '@/components/ui/ExpandableText.vue'
 
 const store = useCharacterStore()
 const rulesStore = useRulesStore()
@@ -491,11 +492,11 @@ watch(
                       {{ feature.source }}
                     </span>
                   </div>
-                  <p
-                    class="font-body-md text-body-md text-on-surface-variant leading-relaxed line-clamp-2"
-                  >
-                    {{ feature.desc }}
-                  </p>
+                  <ExpandableText
+                    :text="feature.desc"
+                    :lines="2"
+                    text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed"
+                  />
                 </div>
                 <button
                   class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 ease-out shadow-sm opacity-0 group-hover:opacity-100 flex-shrink-0 select-none"

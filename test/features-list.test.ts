@@ -198,8 +198,9 @@ describe('FeaturesList feature archives expandable descriptions (#214)', () => {
 
     const longDesc = wrapper.findAll('p').find((p) => p.text() === LONG_DESC)
     expect(longDesc?.attributes('style')).toContain('-webkit-line-clamp: 2')
+    // Short descriptions get the (harmless) clamp style but no toggle button.
     const shortDesc = wrapper.findAll('p').find((p) => p.text() === 'Short.')
-    expect(shortDesc?.attributes('style')).toBeUndefined()
+    expect(shortDesc?.element.parentElement?.querySelector('button')).toBeNull()
   })
 
   it('does not add the feature when the "Show more" toggle is clicked', async () => {

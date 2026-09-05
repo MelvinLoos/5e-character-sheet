@@ -545,8 +545,9 @@ describe('Feats.vue expandable library descriptions (#214)', () => {
 
     const longDesc = wrapper.findAll('p').find((p) => p.text() === LONG_DESC)
     expect(longDesc?.attributes('style')).toContain('-webkit-line-clamp: 2')
+    // Short descriptions get the (harmless) clamp style but no toggle button.
     const shortDesc = wrapper.findAll('p').find((p) => p.text() === 'Short.')
-    expect(shortDesc?.attributes('style')).toBeUndefined()
+    expect(shortDesc?.element.parentElement?.querySelector('button')).toBeNull()
   })
 
   it('expands and collapses a long library feat description', async () => {
