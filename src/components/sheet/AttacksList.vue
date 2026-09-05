@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import { useCombat, MAX_ATTACKS } from '@/composables/useCombat'
 import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
 const { editableAttacks, addAttack, removeAttack } = useCombat()
 
 const attackCount = computed(() => store.currentCharacterData.attacks?.length || 0)
@@ -96,10 +98,10 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
                       </template>
                       <template v-else>
                         {{
-                          (store.abilityMods[attack.atkStat] ?? 0) + store.profBonus >= 0
+                          (progression.abilityMods[attack.atkStat] ?? 0) + progression.profBonus >= 0
                             ? '+'
                             : ''
-                        }}{{ (store.abilityMods[attack.atkStat] ?? 0) + store.profBonus }}
+                        }}{{ (progression.abilityMods[attack.atkStat] ?? 0) + progression.profBonus }}
                       </template>
                     </template>
                     <template v-else>0</template>
@@ -117,10 +119,10 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
                       </template>
                       <template v-else>
                         {{
-                          (store.abilityMods[attack.dmgStat] ?? 0) + (attack.dmgBonus || 0) >= 0
+                          (progression.abilityMods[attack.dmgStat] ?? 0) + (attack.dmgBonus || 0) >= 0
                             ? '+'
                             : ''
-                        }}{{ (store.abilityMods[attack.dmgStat] ?? 0) + (attack.dmgBonus || 0) }}
+                        }}{{ (progression.abilityMods[attack.dmgStat] ?? 0) + (attack.dmgBonus || 0) }}
                       </template>
                     </template>
                     <template v-else>

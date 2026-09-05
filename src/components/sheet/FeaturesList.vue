@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
+import { useSpellStore } from '@/stores/spellStore'
 import { useRulesStore } from '@/stores/rulesStore'
 import { watch, computed, ref } from 'vue'
 import draggable from 'vuedraggable'
@@ -9,6 +11,8 @@ import ExpandableText from '@/components/ui/ExpandableText.vue'
 import { renderMarkdown } from '@/utils/markdown'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
+const spellStore = useSpellStore()
 const rulesStore = useRulesStore()
 
 // Modal state
@@ -132,7 +136,7 @@ function addFeatureFromLibrary(feature: CharacterFeature): void {
   )
 
   // Trigger recalculation
-  store.recalculateAbilityScores()
+  progression.recalculateAbilityScores()
 
   // Close library
   showFeatureLibrary.value = false
@@ -191,7 +195,7 @@ function handleModalSave(featureData: CharacterFeature): void {
 
   isModalOpen.value = false
   editingFeatureRef.value = null
-  store.recalculateAbilityScores()
+  progression.recalculateAbilityScores()
 }
 function handleModalCancel() {
   isModalOpen.value = false
@@ -205,7 +209,7 @@ function handleModalDelete(): void {
     if (featureIndex !== -1) {
       allFeatures.splice(featureIndex, 1)
     }
-    store.recalculateAbilityScores()
+    progression.recalculateAbilityScores()
   }
   isModalOpen.value = false
   editingFeatureRef.value = null
@@ -231,7 +235,7 @@ function removeFeature(index: number) {
   }
 
   // Trigger spellcasting recalculation when features change
-  store.recalculateAbilityScores()
+  progression.recalculateAbilityScores()
 }
 
 // Watch for changes in features to trigger spellcasting updates
@@ -239,7 +243,7 @@ watch(
   () => store.currentCharacterData?.features,
   () => {
     if (store.currentCharacterData) {
-      store.recalculateAbilityScores()
+      progression.recalculateAbilityScores()
     }
   },
   { deep: true },
@@ -325,7 +329,7 @@ watch(
                     >
                       <div class="flex items-center gap-1" @click.stop>
                         <input
-                          v-for="n in store.getFeatureMaxUses(feature)"
+                          v-for="n in spellStore.getFeatureMaxUses(feature)"
                           :key="n"
                           type="checkbox"
                           class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"

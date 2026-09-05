@@ -65,7 +65,7 @@ watch(
         store.currentCharacterData.backgroundBonusSelections.plusOne = ''
       }
     }
-    store.recalculateAbilityScores()
+    progression.recalculateAbilityScores()
   },
 )
 
@@ -81,7 +81,7 @@ watch(
         store.currentCharacterData.backgroundBonusSelections.plusTwo = ''
       }
     }
-    store.recalculateAbilityScores()
+    progression.recalculateAbilityScores()
   },
 )
 </script>
@@ -105,11 +105,11 @@ watch(
         v-else-if="store.isEditing"
         class="font-label-md text-label-md text-tertiary bg-tertiary/10 px-3 py-1 rounded-full border border-tertiary/30 select-none"
         :class="{
-          'text-error border-error/30 bg-error/10': store.pointBuyPointsRemaining < 0,
-          'text-primary border-primary/30 bg-primary/10': store.pointBuyPointsRemaining === 0,
+          'text-error border-error/30 bg-error/10': progression.pointBuyPointsRemaining < 0,
+          'text-primary border-primary/30 bg-primary/10': progression.pointBuyPointsRemaining === 0,
         }"
       >
-        Point Buy: {{ 27 - store.pointBuyPointsRemaining }}/27
+        Point Buy: {{ 27 - progression.pointBuyPointsRemaining }}/27
       </span>
     </div>
 
@@ -156,22 +156,22 @@ watch(
         v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
         :key="key"
         class="stat-orb-gradient rounded-full p-2 border border-primary-container flex flex-col items-center relative aspect-[1] justify-center group hover:border-tertiary/50 transition-colors shadow-[0_8px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]"
-        :class="{ 'opacity-70': (store.abilityMods[key] ?? 0) < 0 }"
+        :class="{ 'opacity-70': (progression.abilityMods[key] ?? 0) < 0 }"
       >
         <div
           class="absolute inset-2 rounded-full border border-tertiary pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity"
-          :class="{ 'opacity-20': (store.abilityMods[key] ?? 0) < 0 }"
+          :class="{ 'opacity-20': (progression.abilityMods[key] ?? 0) < 0 }"
         ></div>
         <span
           class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-4 select-none"
-          :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
+          :class="{ 'text-on-surface-variant': (progression.abilityMods[key] ?? 0) < 0 }"
           >{{ key.toUpperCase() }}</span
         >
         <div
           class="font-display-lg text-[44px] leading-none text-on-surface font-bold my-1 select-none"
-          :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
+          :class="{ 'text-on-surface-variant': (progression.abilityMods[key] ?? 0) < 0 }"
         >
-          {{ formatMod(store.abilityMods[key] ?? 0) }}
+          {{ formatMod(progression.abilityMods[key] ?? 0) }}
         </div>
 
         <div
@@ -179,7 +179,7 @@ watch(
           class="flex items-center gap-2 bg-background/50 rounded-full px-2 py-1 mb-4 border border-outline-variant z-10 backdrop-blur-sm"
         >
           <button
-            @click="store.adjustPointBuyScore(key, -1)"
+            @click="progression.adjustPointBuyScore(key, -1)"
             :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8) <= 8"
             class="text-on-surface-variant hover:text-on-surface hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
           >
@@ -187,14 +187,14 @@ watch(
           </button>
           <span
             class="font-body-md text-body-md font-bold text-on-surface min-w-[2ch] text-center"
-            :class="{ 'text-on-surface-variant': (store.abilityMods[key] ?? 0) < 0 }"
+            :class="{ 'text-on-surface-variant': (progression.abilityMods[key] ?? 0) < 0 }"
             >{{ value }}</span
           >
           <button
-            @click="store.adjustPointBuyScore(key, 1)"
+            @click="progression.adjustPointBuyScore(key, 1)"
             :disabled="
               (store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 15) >= 15 ||
-              store.pointBuyPointsRemaining <= 0
+              progression.pointBuyPointsRemaining <= 0
             "
             class="text-on-surface-variant hover:text-on-surface hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
           >

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useSpellStore } from '@/stores/spellStore'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
@@ -8,6 +9,7 @@ import ExpandableText from '@/components/ui/ExpandableText.vue'
 import draggable from 'vuedraggable'
 
 const store = useCharacterStore()
+const spellStore = useSpellStore()
 const {
   showSpellLibrary,
   searchFilter,
@@ -64,14 +66,14 @@ const allowedLevels = computed(() => {
               <ElevatedCard :elevation="1" :hover="false">
                 <div class="px-3 py-1 rounded">
                   <span class="text-tertiary font-bold"
-                    >{{ store.spellAttack >= 0 ? '+' : '' }}{{ store.spellAttack }}</span
+                    >{{ spellStore.spellAttack >= 0 ? '+' : '' }}{{ spellStore.spellAttack }}</span
                   >
                   <span class="select-none"> ATK</span>
                 </div>
               </ElevatedCard>
               <ElevatedCard :elevation="1" :hover="false">
                 <div class="px-3 py-1 rounded">
-                  <span class="text-tertiary font-bold">{{ store.spellSaveDC }}</span>
+                  <span class="text-tertiary font-bold">{{ spellStore.spellSaveDC }}</span>
                   <span class="select-none"> DC</span>
                 </div>
               </ElevatedCard>

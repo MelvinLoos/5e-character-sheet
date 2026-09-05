@@ -167,8 +167,18 @@ export const useProgressionStore = defineStore('progression', () => {
       data.combat.hp_current = data.combat.hp_max
     }
 
-    // Setup spellcasting based on current features
-    characterStore.recalculateAbilityScores?.()
+    // Setup spellcasting based on current features (inlined to avoid circular deps)
+    const features = data.features || []
+    const hasSpellcasting = features.some(
+      (f) =>
+        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
+    )
+    if (hasSpellcasting) {
+      const ability = DND_RULES.getSpellcastingAbility(data.class)
+      data.spellcasting = { ...(data.spellcasting ?? {}), ability }
+    } else {
+      data.spellcasting = null
+    }
   }
 
   function applyTierChange(newTier: number): void {

@@ -56,13 +56,13 @@ describe('Tier Reactivity — Vue integration', () => {
 
   it('derivedLevel updates reactively when renownTier changes', () => {
     store.currentCharacterData = makeChar({ renownTier: 1 })
-    expect(store.derivedLevel).toBe(3)
+    expect(progressionStore.derivedLevel).toBe(3)
 
     store.currentCharacterData.renownTier = 2
-    expect(store.derivedLevel).toBe(6)
+    expect(progressionStore.derivedLevel).toBe(6)
 
     store.currentCharacterData.renownTier = 3
-    expect(store.derivedLevel).toBe(10)
+    expect(progressionStore.derivedLevel).toBe(10)
   })
 
   it('spellSlots updates reactively when renownTier changes (T1 → T2 → T3)', () => {
@@ -103,15 +103,15 @@ describe('Tier Reactivity — Vue integration', () => {
   it('derivedLevel and profBonus chain react together', async () => {
     // At Tier 1 (level 3), proficiency bonus is +2
     store.currentCharacterData = makeChar({ renownTier: 1 })
-    expect(store.derivedLevel).toBe(3)
-    expect(store.profBonus).toBe(2)
+    expect(progressionStore.derivedLevel).toBe(3)
+    expect(progressionStore.profBonus).toBe(2)
 
     // Advance to Tier 3 (level 10) — proficiency bonus still +2 (threshold is 9)
     // Actually at level 10, proficiency bonus is +4 (threshold 9)
     store.currentCharacterData.renownTier = 3
     await nextTick()
-    expect(store.derivedLevel).toBe(10)
-    expect(store.profBonus).toBe(4)
+    expect(progressionStore.derivedLevel).toBe(10)
+    expect(progressionStore.profBonus).toBe(4)
   })
 
   it('slotsSpent is clamped when tier decreases and max slots drop', () => {
@@ -159,12 +159,12 @@ describe('Tier Reactivity — Vue integration', () => {
     store.currentCharacterData = makeChar({ renownTier: 1 })
     // Hit dice is 6, average is 4, level 3
     // hp = 6 + 0 (=6) + (3 - 1) * max(1, 4 + 0) = 6 + 8 = 14
-    expect(store.maxHp).toBe(14)
+    expect(progressionStore.maxHp).toBe(14)
 
     // Tier 3 Wizard (level 10) with CON 10
     // hp = 6 + 0 + (10 - 1) * 4 = 6 + 36 = 42
     store.currentCharacterData.renownTier = 3
-    expect(store.maxHp).toBe(42)
+    expect(progressionStore.maxHp).toBe(42)
   })
 
   it('non-spellcasting class returns empty spellSlots regardless of tier', () => {
@@ -181,16 +181,16 @@ describe('Tier Reactivity — Vue integration', () => {
       ],
     })
     expect(progressionStore.spellSlots).toEqual({})
-    expect(store.derivedLevel).toBe(10) // derivedLevel works for other computed
+    expect(progressionStore.derivedLevel).toBe(10) // derivedLevel works for other computed
   })
 
   it('multiple tier changes maintain consistent state', () => {
     store.currentCharacterData = makeChar({ renownTier: 1 })
-    expect(store.derivedLevel).toBe(3)
+    expect(progressionStore.derivedLevel).toBe(3)
     expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
 
     store.currentCharacterData.renownTier = 3
-    expect(store.derivedLevel).toBe(10)
+    expect(progressionStore.derivedLevel).toBe(10)
     expect(progressionStore.spellSlots).toEqual({
       level1: 4,
       level2: 3,
@@ -200,11 +200,11 @@ describe('Tier Reactivity — Vue integration', () => {
     })
 
     store.currentCharacterData.renownTier = 2
-    expect(store.derivedLevel).toBe(6)
+    expect(progressionStore.derivedLevel).toBe(6)
     expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 3, level3: 3 })
 
     store.currentCharacterData.renownTier = 1
-    expect(store.derivedLevel).toBe(3)
+    expect(progressionStore.derivedLevel).toBe(3)
     expect(progressionStore.spellSlots).toEqual({ level1: 4, level2: 2 })
   })
 })

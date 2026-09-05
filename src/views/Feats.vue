@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
+import { useSpellStore } from '@/stores/spellStore'
 import { useRulesStore } from '@/stores/rulesStore'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
@@ -16,6 +18,8 @@ import {
 } from '@/utils/featureChoiceRules'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
+const spellStore = useSpellStore()
 const rulesStore = useRulesStore()
 const { badges } = useCharacterCompletion()
 
@@ -134,7 +138,7 @@ function addFeatFromLibrary(feat: LocalFeat) {
   store.currentCharacterData.features.push(
     newFeat as unknown as (typeof store.currentCharacterData.features)[number],
   )
-  store.recalculateAbilityScores()
+  progression.recalculateAbilityScores()
 }
 
 // --- Remove feat ---
@@ -144,7 +148,7 @@ function removeFeat(index: number) {
     store.currentCharacterData.features.length > index
   ) {
     store.currentCharacterData.features.splice(index, 1)
-    store.recalculateAbilityScores()
+    progression.recalculateAbilityScores()
   }
 }
 
@@ -205,7 +209,7 @@ function handleEditorSave(featureData: CharacterFeature) {
 
   isEditorOpen.value = false
   editingFeatureRef.value = null
-  store.recalculateAbilityScores()
+  progression.recalculateAbilityScores()
 }
 
 function handleEditorCancel() {
@@ -222,7 +226,7 @@ function handleEditorDelete() {
     if (featureIndex !== -1) {
       allFeatures.splice(featureIndex, 1)
     }
-    store.recalculateAbilityScores()
+    progression.recalculateAbilityScores()
   }
   isEditorOpen.value = false
   editingFeatureRef.value = null
@@ -353,12 +357,12 @@ function setActiveCategory(cat: string) {
 
             <!-- Resource usage display -->
             <div
-              v-if="feat.resource && (feat.used !== undefined ? feat.used : 0) < (store.getFeatureMaxUses(feat) || 0)"
+              v-if="feat.resource && (feat.used !== undefined ? feat.used : 0) < (spellStore.getFeatureMaxUses(feat) || 0)"
               class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
             >
               <div class="flex items-center gap-1">
                 <input
-                  v-for="n in store.getFeatureMaxUses(feat)"
+                  v-for="n in spellStore.getFeatureMaxUses(feat)"
                   :key="n"
                   type="checkbox"
                   :checked="n <= (feat.used || 0)"
