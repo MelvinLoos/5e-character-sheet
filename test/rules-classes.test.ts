@@ -229,12 +229,12 @@ describe('CLASSES dictionary', () => {
       expect(CLASSES.Warlock?.features).toHaveLength(3)
     })
 
-    it('has Contact Patron gated at minTier 2', () => {
+    it('has Contact Patron gated at minTier 3', () => {
       const contactPatron = CLASSES.Warlock?.features.find(
         (f) => f.title === 'Contact Patron',
       )
       expect(contactPatron).toBeDefined()
-      expect(contactPatron?.minTier).toBe(2)
+      expect(contactPatron?.minTier).toBe(3)
     })
 
     it('has Magical Cunning with 1 use per Long Rest', () => {
@@ -250,8 +250,7 @@ describe('CLASSES dictionary', () => {
       const invocations = choices?.find((c) => c.id === 'eldritch-invocations')
       expect(invocations).toBeDefined()
       expect(invocations?.label).toBe('Eldritch Invocations')
-      expect(invocations?.count).toBe(2)
-      expect(invocations?.scalesPerTier).toBe(true)
+      expect(invocations?.count).toEqual({ 3: 3, 6: 5, 10: 7 })
       expect(invocations?.options).toHaveLength(10)
     })
 

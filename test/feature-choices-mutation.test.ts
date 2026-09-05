@@ -296,19 +296,19 @@ describe('applyAllChanges — Warlock invocations', () => {
     expect(
       result.features.some((f) => f.title === 'Contact Patron'),
     ).toBe(true)
-    // But it carries minTier: 2 for the UI to filter
+    // But it carries minTier: 3 for the UI to filter
     const contactPatron = result.features.find(
       (f) => f.title === 'Contact Patron',
     )
-    expect(contactPatron?.minTier).toBe(2)
+    expect(contactPatron?.minTier).toBe(3)
   })
 
-  it('unlocks Contact Patron at Tier 2 via applyAllChanges', () => {
+  it('unlocks Contact Patron at Tier 3 via applyAllChanges', () => {
     const char = makeChar({
       class: 'Warlock',
       species: 'Human',
       background: 'Acolyte',
-      renownTier: 2,
+      renownTier: 3,
       features: [],
       proficiencies: { savingThrows: [], skills: [] },
       featureChoices: {
@@ -316,13 +316,13 @@ describe('applyAllChanges — Warlock invocations', () => {
       },
     })
     const result = applyAllChanges(char)
-    // Contact Patron should be present at Tier 2
+    // Contact Patron should be present at Tier 3
     expect(
       result.features.some((f) => f.title === 'Contact Patron'),
     ).toBe(true)
   })
 
-  it('allows 3 invocations at Tier 2 with scalesPerTier', () => {
+  it('allows 5 invocations at Tier 2 with level-keyed count', () => {
     const char = makeChar({
       class: 'Warlock',
       species: 'Human',
@@ -335,20 +335,22 @@ describe('applyAllChanges — Warlock invocations', () => {
           'armor-of-shadows',
           'devils-sight',
           'eldritch-mind',
+          'fiendish-vigor',
+          'eldritch-sight',
         ],
       },
     })
     const result = applyAllChanges(char)
     expect(
       result.features.filter((f) =>
-        ['Armor of Shadows', "Devil's Sight", 'Eldritch Mind'].includes(
+        ['Armor of Shadows', "Devil's Sight", 'Eldritch Mind', 'Fiendish Vigor', 'Eldritch Sight'].includes(
           f.title,
         ),
       ).length,
-    ).toBe(3)
+    ).toBe(5)
   })
 
-  it('allows 4 invocations at Tier 3 with scalesPerTier', () => {
+  it('allows 7 invocations at Tier 3 with level-keyed count', () => {
     const char = makeChar({
       class: 'Warlock',
       species: 'Human',
@@ -362,6 +364,9 @@ describe('applyAllChanges — Warlock invocations', () => {
           'devils-sight',
           'eldritch-mind',
           'fiendish-vigor',
+          'eldritch-sight',
+          'otherworldly-leap',
+          'mask-of-many-faces',
         ],
       },
     })
@@ -371,10 +376,13 @@ describe('applyAllChanges — Warlock invocations', () => {
       "Devil's Sight",
       'Eldritch Mind',
       'Fiendish Vigor',
+      'Eldritch Sight',
+      'Otherworldly Leap',
+      'Mask of Many Faces',
     ]
     expect(
       result.features.filter((f) => invocTitles.includes(f.title)).length,
-    ).toBe(4)
+    ).toBe(7)
   })
 
   it('cleans up invocation traits when switching from Warlock to Barbarian', () => {
