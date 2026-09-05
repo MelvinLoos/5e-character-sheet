@@ -22,25 +22,41 @@ function getMilestoneData(): MilestoneData {
   return renownMilestones.find((m) => m.tier === currentTier) || renownMilestones[0]!
 }
 
-function incrementMilestones() {
+function setMilestones(targetMilestone: number) {
   if (!store.isEditing || !store.currentCharacterData) return
 
   const currentData = getMilestoneData()
-  let milestones = store.currentCharacterData.renownMilestones || 0
   const tier = store.currentCharacterData.renownTier || 1
 
   if (tier >= 4) return
 
-  milestones++
+  // Clamp target to valid range for current tier
+  const target = Math.max(0, Math.min(targetMilestone, currentData.maxMilestones))
 
-  if (milestones >= currentData.maxMilestones) {
+  if (target >= currentData.maxMilestones) {
+    // Tier up
     if (tier < 4) {
       store.currentCharacterData.renownTier = tier + 1
       store.currentCharacterData.renownMilestones = 0
     }
   } else {
-    store.currentCharacterData.renownMilestones = milestones
+    store.currentCharacterData.renownMilestones = target
   }
+}
+
+function decrementTier() {
+  if (!store.isEditing || !store.currentCharacterData) return
+
+  const tier = store.currentCharacterData?.renownTier || 1
+  if (tier <= 1) return
+
+  const prevTierData = renownMilestones.find((m) => m.tier === tier - 1)
+  if (!prevTierData) return
+
+  // Downgrade to previous tier, one milestone short of max
+  // so the user doesn't immediately tier-up again
+  store.currentCharacterData.renownTier = tier - 1
+  store.currentCharacterData.renownMilestones = Math.max(0, prevTierData.maxMilestones - 1)
 }
 
 function getProgressText(data: MilestoneData, milestones: number) {
@@ -58,13 +74,24 @@ function getProgressText(data: MilestoneData, milestones: number) {
       <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
         <span class="material-symbols-outlined">military_tech</span> Progression<InfoButton topic="renown-system" />
       </h3>
-      <div class="flex flex-col items-end">
-        <span class="font-label-md text-label-md text-tertiary uppercase tracking-widest">
-          {{ getMilestoneData().title }}
-        </span>
-        <span class="text-[10px] font-body-md text-on-surface-variant italic">
-          {{ getMilestoneData().label }}
-        </span>
+      <div class="flex items-center gap-3">
+        <button
+          v-if="store.isEditing && (store.currentCharacterData?.renownTier || 1) > 1"
+          @click="decrementTier"
+          class="text-xs text-on-surface-variant hover:text-error transition-colors px-2 py-1 rounded hover:bg-error/10 flex items-center gap-1 border border-outline-variant"
+          title="Downgrade to previous tier"
+        >
+          <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+          Demote
+        </button>
+        <div class="flex flex-col items-end">
+          <span class="font-label-md text-label-md text-tertiary uppercase tracking-widest">
+            {{ getMilestoneData().title }}
+          </span>
+          <span class="text-[10px] font-body-md text-on-surface-variant italic">
+            {{ getMilestoneData().label }}
+          </span>
+        </div>
       </div>
     </div>
     <div class="max-w-2xl mx-auto w-full">
@@ -86,7 +113,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
         <div
           v-for="i in getMilestoneData().maxMilestones"
           :key="i"
-          @click="store.isEditing ? incrementMilestones() : null"
+          @click="store.isEditing ? setMilestones(i) : null"
           class="flex-1 h-4 rounded-full relative group transition-colors cursor-pointer"
           :class="[
             (store.currentCharacterData?.renownMilestones || 0) >= i
