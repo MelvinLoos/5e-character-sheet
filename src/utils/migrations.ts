@@ -1,3 +1,5 @@
+import { legacyHtmlToMarkdown } from './markdown'
+
 import { EQUIPMENT_CATALOG } from '@/data/equipment-items'
 
 // Migration helpers for character data
@@ -124,6 +126,44 @@ export function migrateEquippedGearCatalogIds(character: unknown) {
   })
 
   return ch
+}
+
+/**
+ * Normalizes legacy HTML (<ul>/<li>/<p>/<br>/<strong>/<em>) inside spell,
+ * feature, and gear descriptions to Markdown (#215).
+ *
+ * Idempotent: descriptions that are already Markdown are unchanged, so the
+ * migration is safe to re-run on already-migrated characters.
+ */
+export function migrateDescriptionHtmlToMarkdown(character: unknown): unknown {
+  if (!character || typeof character !== 'object') return character
+
+  const result: Record<string, unknown> = { ...(character as Record<string, unknown>) }
+
+  const normalizeDesc = (entry: unknown): unknown => {
+    if (!entry || typeof entry !== 'object') return entry
+    const obj = entry as Record<string, unknown>
+    if (typeof obj.desc !== 'string') return entry
+    return { ...obj, desc: legacyHtmlToMarkdown(obj.desc) }
+  }
+
+  const normalizeDescription = (entry: unknown): unknown => {
+    if (!entry || typeof entry !== 'object') return entry
+    const obj = entry as Record<string, unknown>
+    if (typeof obj.description !== 'string') return entry
+    return { ...obj, description: legacyHtmlToMarkdown(obj.description) }
+  }
+
+  if (Array.isArray(result.spells)) result.spells = result.spells.map(normalizeDesc)
+  if (Array.isArray(result.features)) result.features = result.features.map(normalizeDesc)
+  if (Array.isArray(result.equippedGear)) {
+    result.equippedGear = result.equippedGear.map(normalizeDescription)
+  }
+  if (Array.isArray(result.consumables)) {
+    result.consumables = result.consumables.map(normalizeDescription)
+  }
+
+  return result
 }
 
 export default migrateUsesToResource

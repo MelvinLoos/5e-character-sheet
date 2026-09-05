@@ -2,6 +2,7 @@
 import { useCharacterStore } from '@/stores/character'
 import { useInventory } from '@/composables/useInventory'
 import { gearTypeToIcon } from '@/utils/gearTypeToIcon'
+import { renderMarkdown } from '@/utils/markdown'
 import type { GearType } from '@/types/equipment'
 
 const store = useCharacterStore()
@@ -278,9 +279,10 @@ const gearTypeOptions: GearType[] = [
                 }}</span>
               </div>
             </div>
-            <p class="font-body-md text-body-md opacity-90">
-              {{ gear.description || 'No description' }}
-            </p>
+            <div
+              class="font-body-md text-body-md opacity-90 markdown-content"
+              v-html="renderMarkdown(gear.description || 'No description')"
+            ></div>
           </template>
         </div>
       </div>

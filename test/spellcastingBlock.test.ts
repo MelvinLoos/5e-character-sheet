@@ -111,8 +111,8 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     const toggleButtons = wrapper.findAll('button').filter((b) => b.text() === 'Show more')
 
     expect(toggleButtons).toHaveLength(1)
-    expect(findDescriptionClamp(wrapper, LONG_DESC)).toContain('max-height: calc(4 * 1lh)')
-    expect(findDescriptionClamp(wrapper, 'Short boom.')).toContain('max-height: calc(4 * 1lh)')
+    expect(findDescriptionClamp(wrapper, LONG_DESC)).toContain('max-height: 4lh')
+    expect(findDescriptionClamp(wrapper, 'Short boom.')).toContain('max-height: 4lh')
   })
 
   it('reveals the full description when "Show more" is clicked', async () => {
@@ -144,7 +144,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     await toggle.trigger('click')
     await toggle.trigger('click')
 
-    expect(findDescriptionClamp(wrapper, LONG_DESC)).toContain('max-height: calc(4 * 1lh)')
+    expect(findDescriptionClamp(wrapper, LONG_DESC)).toContain('max-height: 4lh')
     expect(toggle.text()).toBe('Show more')
   })
 
@@ -175,7 +175,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
       .findAll('p')
       .filter((p) => p.text() === LONG_DESC)
       .filter((p) =>
-        p.element.parentElement?.getAttribute('style')?.includes('max-height: calc(2 * 1lh)'),
+        p.element.parentElement?.getAttribute('style')?.includes('max-height: 2lh'),
       )
     expect(libraryDescriptions.length).toBeGreaterThanOrEqual(1)
   })

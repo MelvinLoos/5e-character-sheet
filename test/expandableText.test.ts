@@ -223,7 +223,7 @@ describe('ExpandableText markdown mode', () => {
     const wrapper = await mountComponent({ text: LONG_MARKDOWN, markdown: true })
 
     expect(wrapper.find('button').text()).toBe('Show more')
-    expect(wrapper.get('[id]').attributes('style')).toContain('max-height: calc(4 * 1lh)')
+    expect(wrapper.get('[id]').attributes('style')).toContain('max-height: 4lh')
 
     await wrapper.get('button').trigger('click')
     expect(wrapper.get('[id]').attributes('style') ?? '').not.toContain('max-height')
@@ -233,7 +233,7 @@ describe('ExpandableText markdown mode', () => {
   it('honours the lines prop in the markdown clamp', async () => {
     const wrapper = await mountComponent({ text: LONG_MARKDOWN, markdown: true, lines: 2 })
 
-    expect(wrapper.get('[id]').attributes('style')).toContain('max-height: calc(2 * 1lh)')
+    expect(wrapper.get('[id]').attributes('style')).toContain('max-height: 2lh')
   })
 
   it('applies the provided text classes in markdown mode', async () => {

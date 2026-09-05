@@ -94,4 +94,11 @@ describe('legacyHtmlToMarkdown', () => {
     expect(legacyHtmlToMarkdown(dirty)).toBe(dirty)
     expect(renderMarkdown(dirty)).not.toContain('<script>')
   })
+
+  it('does not mangle lookalike tags such as <pre> or <embed>', () => {
+    const dirty = '<pre>Keep me intact</pre> <embed src="x">'
+    expect(legacyHtmlToMarkdown(dirty)).toBe(dirty)
+    expect(renderMarkdown(dirty)).not.toContain('<pre>')
+    expect(renderMarkdown(dirty)).not.toContain('<embed')
+  })
 })

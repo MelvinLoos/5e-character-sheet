@@ -198,7 +198,7 @@ describe('FeaturesList feature archives expandable descriptions (#214)', () => {
 
     const longDesc = wrapper.findAll('p').find((p) => p.text() === LONG_DESC)
     expect(longDesc?.element.parentElement?.getAttribute('style')).toContain(
-      'max-height: calc(2 * 1lh)',
+      'max-height: 2lh',
     )
     // Short descriptions get the (harmless) clamp style but no toggle button.
     const shortDesc = wrapper.findAll('p').find((p) => p.text() === 'Short.')
