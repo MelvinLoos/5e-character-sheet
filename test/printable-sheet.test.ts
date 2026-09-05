@@ -108,6 +108,67 @@ describe('PrintableSheet (component integration)', () => {
     expect(pages.length).toBe(2)
   })
 
+  it('renders Markdown formatting in the spell appendix (#215)', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.spells = [
+      {
+        name: 'Fireball',
+        level: 3,
+        desc: '**Boom.** A *big* boom.\n\n- 8d6 fire damage',
+        school: 'Evocation',
+      },
+    ]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+
+    expect(wrapper.html()).toContain('<strong>Boom.</strong>')
+    expect(wrapper.html()).toContain('<em>big</em>')
+    expect(wrapper.html()).toContain('<li>8d6 fire damage</li>')
+    expect(wrapper.html()).not.toContain('**Boom.**')
+  })
+
+  it('renders Markdown formatting in the feat appendix (#215)', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = [
+      { title: 'Alert', desc: '**Alert.** You gain a +5 bonus to initiative.' },
+    ]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+
+    expect(wrapper.html()).toContain('<strong>Alert.</strong>')
+  })
+
+  it('escapes raw HTML in appendix descriptions (#215)', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.spells = [
+      { name: 'Evil', level: 1, desc: '<script>alert(1)</script>', school: 'Necromancy' },
+    ]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+
+    expect(wrapper.html()).not.toContain('<script>')
+  })
+
+  it('normalizes legacy HTML lists in appendix descriptions (#215)', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = [
+      { title: 'Alert', desc: '<ul><li>Never surprised</li><li>+5 initiative</li></ul>' },
+    ]
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+
+    expect(wrapper.html()).toContain('<li>Never surprised</li>')
+    expect(wrapper.html()).toContain('<li>+5 initiative</li>')
+  })
+
   it('fills skill proficiency checkbox when character is proficient', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()

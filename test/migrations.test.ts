@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { migrateUsesToResource, migrateEquippedGearCatalogIds } from '../src/utils/migrations'
+import {
+  migrateUsesToResource,
+  migrateEquippedGearCatalogIds,
+  migrateDescriptionHtmlToMarkdown,
+} from '../src/utils/migrations'
 import { createBlankCharacter, getLibrary, saveLibrary } from '@/domain'
 
 describe('migrateUsesToResource', () => {
@@ -136,5 +140,43 @@ describe('migrateEquippedGearCatalogIds', () => {
     }
     const migrated = migrateEquippedGearCatalogIds(char)
     expect(migrated.equippedGear[0].catalogId).toBe('shield')
+  })
+})
+
+describe('migrateDescriptionHtmlToMarkdown', () => {
+  it('converts legacy HTML lists in spell and feature descriptions to Markdown', () => {
+    const char = {
+      spells: [
+        {
+          name: 'Burning Hands',
+          level: 1,
+          desc: 'Damage:<ul><li>3d6 fire</li><li>ignites objects</li></ul>',
+        },
+      ],
+      features: [{ title: 'Alert', desc: '<p>You cannot be surprised.</p>' }],
+      equippedGear: [
+        { name: 'Torch', type: 'Gear', description: 'Burns <strong>brightly</strong>' },
+      ],
+    }
+
+    const migrated = migrateDescriptionHtmlToMarkdown(char) as typeof char
+
+    expect(migrated.spells[0].desc).toBe('Damage:\n- 3d6 fire\n- ignites objects\n')
+    expect(migrated.features[0].desc).toBe('You cannot be surprised.\n\n')
+    expect(migrated.equippedGear[0].description).toBe('Burns **brightly**')
+  })
+
+  it('leaves already-Markdown descriptions unchanged', () => {
+    const char = { spells: [{ name: 'Fireball', level: 3, desc: '**Boom** and *burn*' }] }
+
+    const migrated = migrateDescriptionHtmlToMarkdown(char) as typeof char
+
+    expect(migrated.spells[0].desc).toBe('**Boom** and *burn*')
+  })
+
+  it('handles characters without description arrays', () => {
+    const migrated = migrateDescriptionHtmlToMarkdown({ name: 'No arrays' })
+
+    expect(migrated).toEqual({ name: 'No arrays' })
   })
 })

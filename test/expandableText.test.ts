@@ -176,3 +176,75 @@ describe('ExpandableText', () => {
     expect(parentClicks).toBe(0)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Markdown mode (#215)
+// ---------------------------------------------------------------------------
+
+describe('ExpandableText markdown mode', () => {
+  const LONG_MARKDOWN =
+    '**Mage Armor.** You touch a willing creature who is not wearing armor.\n\n' +
+    '- The target base AC becomes 13 + its Dexterity modifier.\n' +
+    '- The spell ends if the target dons armor.'
+
+  it('renders Markdown formatting instead of raw markers', async () => {
+    const wrapper = await mountComponent({ text: '**Bold** and *italic*', markdown: true })
+
+    const content = wrapper.get('[id]')
+    expect(content.html()).toContain('<strong>Bold</strong>')
+    expect(content.html()).toContain('<em>italic</em>')
+    expect(wrapper.text()).not.toContain('**')
+  })
+
+  it('renders lists from Markdown', async () => {
+    const wrapper = await mountComponent({ text: '- One\n- Two', markdown: true })
+
+    const content = wrapper.get('[id]')
+    expect(content.html()).toContain('<li>One</li>')
+    expect(content.html()).toContain('<li>Two</li>')
+  })
+
+  it('escapes raw HTML instead of executing it', async () => {
+    const wrapper = await mountComponent({ text: '<script>alert(1)</script>', markdown: true })
+
+    expect(wrapper.html()).not.toContain('<script>')
+    expect(wrapper.text()).toContain('<script>alert(1)</script>')
+  })
+
+  it('normalizes legacy HTML lists before rendering', async () => {
+    const wrapper = await mountComponent({ text: '<ul><li>A</li><li>B</li></ul>', markdown: true })
+
+    const content = wrapper.get('[id]')
+    expect(content.html()).toContain('<li>A</li>')
+    expect(content.html()).toContain('<li>B</li>')
+  })
+
+  it('clamps overflowing markdown with a max-height and shows the toggle', async () => {
+    const wrapper = await mountComponent({ text: LONG_MARKDOWN, markdown: true })
+
+    expect(wrapper.find('button').text()).toBe('Show more')
+    expect(wrapper.get('[id]').attributes('style')).toContain('max-height: calc(4 * 1lh)')
+
+    await wrapper.get('button').trigger('click')
+    expect(wrapper.get('[id]').attributes('style') ?? '').not.toContain('max-height')
+    expect(wrapper.find('button').text()).toBe('Show less')
+  })
+
+  it('honours the lines prop in the markdown clamp', async () => {
+    const wrapper = await mountComponent({ text: LONG_MARKDOWN, markdown: true, lines: 2 })
+
+    expect(wrapper.get('[id]').attributes('style')).toContain('max-height: calc(2 * 1lh)')
+  })
+
+  it('applies the provided text classes in markdown mode', async () => {
+    const wrapper = await mountComponent({
+      text: LONG_MARKDOWN,
+      markdown: true,
+      textClass: ['custom-a', 'custom-b'],
+    })
+
+    const content = wrapper.get('[id]')
+    expect(content.classes()).toContain('custom-a')
+    expect(content.classes()).toContain('custom-b')
+  })
+})

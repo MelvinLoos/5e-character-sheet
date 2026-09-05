@@ -94,6 +94,11 @@ function findDescription(wrapper: VueWrapper, text: string) {
   return wrapper.findAll('p').find((p) => p.text() === text)
 }
 
+/** Finds the clamp wrapper element around the paragraph that renders the given text. */
+function findDescriptionClamp(wrapper: VueWrapper, text: string) {
+  return findDescription(wrapper, text)?.element.parentElement?.getAttribute('style') ?? ''
+}
+
 describe('SpellcastingBlock spell descriptions (#212)', () => {
   it('shows a "Show more" toggle on spells whose description overflows', async () => {
     const store = useCharacterStore()
@@ -106,12 +111,8 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     const toggleButtons = wrapper.findAll('button').filter((b) => b.text() === 'Show more')
 
     expect(toggleButtons).toHaveLength(1)
-    expect(findDescription(wrapper, LONG_DESC)?.attributes('style')).toContain(
-      '-webkit-line-clamp: 4',
-    )
-    expect(findDescription(wrapper, 'Short boom.')?.attributes('style')).toContain(
-      '-webkit-line-clamp: 4',
-    )
+    expect(findDescriptionClamp(wrapper, LONG_DESC)).toContain('max-height: calc(4 * 1lh)')
+    expect(findDescriptionClamp(wrapper, 'Short boom.')).toContain('max-height: calc(4 * 1lh)')
   })
 
   it('reveals the full description when "Show more" is clicked', async () => {
@@ -128,9 +129,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
 
     expect(toggle!.text()).toBe('Show less')
     expect(toggle!.attributes('aria-expanded')).toBe('true')
-    expect(findDescription(wrapper, LONG_DESC)?.attributes('style') ?? '').not.toContain(
-      '-webkit-line-clamp',
-    )
+    expect(findDescriptionClamp(wrapper, LONG_DESC)).not.toContain('max-height')
   })
 
   it('re-applies the clamp when "Show less" is clicked', async () => {
@@ -145,9 +144,7 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     await toggle.trigger('click')
     await toggle.trigger('click')
 
-    expect(findDescription(wrapper, LONG_DESC)?.attributes('style')).toContain(
-      '-webkit-line-clamp: 4',
-    )
+    expect(findDescriptionClamp(wrapper, LONG_DESC)).toContain('max-height: calc(4 * 1lh)')
     expect(toggle.text()).toBe('Show more')
   })
 
@@ -177,7 +174,46 @@ describe('SpellcastingBlock spell descriptions (#212)', () => {
     const libraryDescriptions = wrapper
       .findAll('p')
       .filter((p) => p.text() === LONG_DESC)
-      .filter((p) => p.attributes('style')?.includes('-webkit-line-clamp: 2'))
+      .filter((p) =>
+        p.element.parentElement?.getAttribute('style')?.includes('max-height: calc(2 * 1lh)'),
+      )
     expect(libraryDescriptions.length).toBeGreaterThanOrEqual(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Markdown rendering of spell descriptions (#215)
+// ---------------------------------------------------------------------------
+
+describe('SpellcastingBlock markdown descriptions (#215)', () => {
+  it('renders Markdown formatting in grimoire spell descriptions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createWizardCharacter([
+      {
+        id: 'md',
+        name: 'Fireball',
+        level: 3,
+        desc: '**Boom.** A *big* boom.\n\n- 8d6 fire damage\n- Ignites objects',
+        prepared: false,
+      },
+    ])
+
+    const wrapper = await mountBlock()
+
+    expect(wrapper.html()).toContain('<strong>Boom.</strong>')
+    expect(wrapper.html()).toContain('<em>big</em>')
+    expect(wrapper.html()).toContain('<li>8d6 fire damage</li>')
+    expect(wrapper.html()).not.toContain('**Boom.**')
+  })
+
+  it('escapes raw HTML in spell descriptions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createWizardCharacter([
+      { id: 'xss', name: 'Evil Spell', level: 1, desc: '<script>alert(1)</script>', prepared: false },
+    ])
+
+    const wrapper = await mountBlock()
+
+    expect(wrapper.html()).not.toContain('<script>')
   })
 })
