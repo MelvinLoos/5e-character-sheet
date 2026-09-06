@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import { createBlankCharacter, getMod } from '@/domain'
 import { normalizeSkillName, useSkills } from '@/composables/useSkills'
 import type { CharacterData } from '@/types/character'
@@ -56,10 +57,12 @@ describe('normalizeSkillName (pure utility)', () => {
 
 describe('useSkills', () => {
   let store: ReturnType<typeof useCharacterStore>
+  let progressionStore: ReturnType<typeof useProgressionStore>
 
   beforeEach(() => {
     setActivePinia(createPinia())
     store = useCharacterStore()
+    progressionStore = useProgressionStore()
     store.currentCharacterData = createTestCharacter()
     store.isEditing = true
   })
@@ -95,7 +98,7 @@ describe('useSkills', () => {
       store.currentCharacterData.proficiencies.skills = ['athletics']
       const { skillMod } = useSkills(store)
 
-      const expectedMod = getMod(16) + store.profBonus // 3 + 2 = 5
+      const expectedMod = getMod(16) + progressionStore.profBonus // 3 + 2 = 5
       expect(skillMod.value('Athletics', 'str')).toBe(expectedMod)
     })
 

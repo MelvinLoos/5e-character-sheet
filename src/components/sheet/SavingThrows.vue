@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
 import { formatMod } from '@/domain'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
 
 function isProficient(key: string) {
   return store.currentCharacterData.proficiencies.savingThrows.includes(key)
 }
 
 function getSaveMod(key: string) {
-  const baseMod = store.abilityMods[key] ?? 0
-  const profBonus = isProficient(key) ? store.profBonus : 0
+  const baseMod = progression.abilityMods[key] ?? 0
+  const profBonus = isProficient(key) ? progression.profBonus : 0
   return baseMod + profBonus
 }
 

@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
+import { useSpellStore } from '@/stores/spellStore'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 import { renderMarkdown } from '@/utils/markdown'
 import * as DND_RULES from '@/data/rules'
 
 const store = useCharacterStore()
+const progression = useProgressionStore()
+const spellStore = useSpellStore()
 const { sortedSpells, displaySpellSlots } = useSpellcasting()
 
 const char = computed(() => store.currentCharacterData)
@@ -14,7 +18,7 @@ const abilityEntries = computed(() => Object.entries(DND_RULES.ABILITIES))
 const skillEntries = computed(() => Object.entries(DND_RULES.SKILLS))
 
 function getAbilityMod(stat: string) {
-  const mod = store.abilityMods[stat] ?? 0
+  const mod = progression.abilityMods[stat] ?? 0
   return (mod >= 0 ? '+' : '') + mod
 }
 
@@ -24,8 +28,8 @@ function isSkillProficient(name: string) {
 }
 
 function getSkillMod(name: string, stat: string) {
-  const baseMod = store.abilityMods[stat] ?? 0
-  const profBonus = isSkillProficient(name) ? store.profBonus : 0
+  const baseMod = progression.abilityMods[stat] ?? 0
+  const profBonus = isSkillProficient(name) ? progression.profBonus : 0
   const total = baseMod + profBonus
   return (total >= 0 ? '+' : '') + total
 }
@@ -38,7 +42,7 @@ const attacks = computed(() => {
       if (atk.atkStat === 'custom') {
         atkBonus = atk.customAtkValue || 0
       } else {
-        atkBonus = (store.abilityMods[atk.atkStat] ?? 0) + store.profBonus
+        atkBonus = (progression.abilityMods[atk.atkStat] ?? 0) + progression.profBonus
       }
     }
 
@@ -48,7 +52,7 @@ const attacks = computed(() => {
       if (atk.dmgStat === 'custom') {
         dmgMod = (atk.customDmgValue || 0) + (atk.dmgBonus || 0)
       } else {
-        dmgMod = (store.abilityMods[atk.dmgStat] ?? 0) + (atk.dmgBonus || 0)
+        dmgMod = (progression.abilityMods[atk.dmgStat] ?? 0) + (atk.dmgBonus || 0)
       }
       dmgBonusStr = (dmgMod >= 0 ? '+' : '') + dmgMod
     } else if (atk.dmgBonus) {
@@ -106,7 +110,7 @@ function formatSpellLevel(level: number) {
           </h1>
           <p class="font-headline-md text-headline-md text-black">
             {{ store.displaySpeciesName || char.species || 'Species' }}
-            {{ char.class || 'Class' }}{{ char.class ? ` ${store.derivedLevel}` : '' }}
+            {{ char.class || 'Class' }}{{ char.class ? ` ${progression.derivedLevel}` : '' }}
           </p>
         </div>
         <div class="text-right uppercase font-bold space-y-1">
@@ -149,23 +153,23 @@ function formatSpellLevel(level: number) {
               <div class="border border-black p-1 bg-white">
                 <span class="text-[10px] font-bold block uppercase text-black">Initiative</span>
                 <span class="text-2xl font-headline-lg text-headline-lg text-black">
-                  {{ store.initiativeMod >= 0 ? '+' : '' }}{{ store.initiativeMod }}
+                  {{ progression.initiativeMod >= 0 ? '+' : '' }}{{ progression.initiativeMod }}
                 </span>
               </div>
               <div class="border border-black p-1 bg-white">
                 <span class="text-[10px] font-bold block uppercase text-black">Speed</span>
-                <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ store.walkingSpeed }}</span>
+                <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ progression.walkingSpeed }}</span>
               </div>
             </div>
 
             <div class="flex gap-2">
               <div class="flex-grow border border-black p-2 relative bg-white">
-                <span class="text-[10px] font-bold block uppercase text-black">Hit Points (Max: {{ store.maxHp }})</span>
+                <span class="text-[10px] font-bold block uppercase text-black">Hit Points (Max: {{ progression.maxHp }})</span>
                 <div class="hp-current-box h-12 border-2 border-dashed border-gray-300 mt-1"></div>
               </div>
               <div class="w-20 border border-black p-2 text-center bg-white">
                 <span class="text-[10px] font-bold block uppercase text-black">Proficiency</span>
-                <span class="text-2xl font-headline-lg text-headline-lg text-black">+{{ store.profBonus }}</span>
+                <span class="text-2xl font-headline-lg text-headline-lg text-black">+{{ progression.profBonus }}</span>
               </div>
             </div>
           </section>
@@ -224,13 +228,13 @@ function formatSpellLevel(level: number) {
           <div class="text-center">
             <span class="text-xs font-bold uppercase block text-black">Spell Attack</span>
             <span class="text-2xl font-headline-lg text-headline-lg text-black">
-              {{ store.spellAttack >= 0 ? '+' : '' }}{{ store.spellAttack }}
+              {{ spellStore.spellAttack >= 0 ? '+' : '' }}{{ spellStore.spellAttack }}
             </span>
           </div>
           <div class="w-px h-10 bg-black"></div>
           <div class="text-center">
             <span class="text-xs font-bold uppercase block text-black">Save DC</span>
-            <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ store.spellSaveDC }}</span>
+            <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ spellStore.spellSaveDC }}</span>
           </div>
         </div>
         <div class="border-2 border-black p-2 bg-white">

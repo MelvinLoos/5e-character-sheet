@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import { createBlankCharacter, getMod } from '@/domain'
 import { useCombat, generateId } from '@/composables/useCombat'
 import type { CharacterData } from '@/types/character'
@@ -56,10 +57,12 @@ describe('generateId (pure utility)', () => {
 
 describe('useCombat', () => {
   let store: ReturnType<typeof useCharacterStore>
+  let progressionStore: ReturnType<typeof useProgressionStore>
 
   beforeEach(() => {
     setActivePinia(createPinia())
     store = useCharacterStore()
+    progressionStore = useProgressionStore()
     store.currentCharacterData = createTestCharacter()
   })
 
@@ -89,7 +92,7 @@ describe('useCombat', () => {
       const { hitDiceDisplay } = useCombat(store)
 
       // The store's derivedLevel getter reads renownTier and returns 3 for tier 1
-      expect(store.derivedLevel).toBe(3)
+      expect(progressionStore.derivedLevel).toBe(3)
       expect(hitDiceDisplay.value).toBe('3d10')
     })
 
@@ -119,7 +122,7 @@ describe('useCombat', () => {
 
   describe('clampCurrentHp', () => {
     it('clamps hp_current to maxHp when it exceeds', () => {
-      // store.maxHp is a computed getter that recalculates from ability scores,
+      // progressionStore.maxHp is a computed getter that recalculates from ability scores,
       // derivedLevel, and class hitDice. For Fighter level 3 with CON 12 (+1):
       // hitDice(10) + conMod(1) + 2 * max(1, hitDiceAverage(6)+conMod(1)) = 10+1+2*7 = 25
       store.currentCharacterData.combat.hp_max = 30
@@ -129,7 +132,7 @@ describe('useCombat', () => {
       clampCurrentHp()
 
       // The computed maxHp recalculates to 25 for this character
-      expect(store.currentCharacterData.combat.hp_current).toBe(store.maxHp)
+      expect(store.currentCharacterData.combat.hp_current).toBe(progressionStore.maxHp)
       expect(store.currentCharacterData.combat.hp_current).toBe(25)
     })
 

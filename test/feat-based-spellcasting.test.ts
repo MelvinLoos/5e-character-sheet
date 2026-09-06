@@ -382,7 +382,7 @@ describe('feat-based spellcasting architecture', () => {
         grantedSpellLevels: [0, 1],
         key: false,
       })
-      characterStore.recalculateAbilityScores()
+      progressionStore.recalculateAbilityScores()
 
       const { hasSpellcasting, casterType, displaySpellSlots } = useSpellcasting(characterStore, rulesStore)
       expect(hasSpellcasting.value).toBe(true)

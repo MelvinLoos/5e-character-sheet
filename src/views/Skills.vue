@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useCharacterStore } from '@/stores/character'
+import { useProgressionStore } from '@/stores/progression'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
-const store = useCharacterStore()
+const progression = useProgressionStore()
 const { badges } = useCharacterCompletion()
 </script>
 
@@ -22,7 +22,7 @@ const { badges } = useCharacterCompletion()
             Proficiency
           </p>
             <p class="font-headline-md text-headline-md sm:font-headline-lg sm:text-headline-lg text-tertiary">
-            {{ store.profBonus >= 0 ? '+' : '' }}{{ store.profBonus }}
+            {{ progression.profBonus >= 0 ? '+' : '' }}{{ progression.profBonus }}
           </p>
         </div>
       </div>

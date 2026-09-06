@@ -5,7 +5,6 @@ import * as DND_RULES from '../data/rules'
 import {
   createBlankCharacter,
   getMod,
-  pointBuyCosts,
 } from '@/domain'
 import type { CharacterData } from '@/domain'
 
@@ -62,118 +61,24 @@ export const useCharacterStore = defineStore('character', () => {
   const equipmentWizard = useEquipmentWizard()
 
   // --- GETTERS (Computed Properties) ---
-  // These are INTERNAL-ONLY computed properties used by the store's own actions.
-  // External consumers must use useProgressionStore and useSpellStore instead.
-
-  const derivedLevel = computed(() => {
-    if (!currentCharacterData.value) return 3
-    const tier = currentCharacterData.value.renownTier || 1
-    return DND_RULES.getEffectiveLevel(tier)
-  })
-
-  const abilityMods = computed(() => {
-    if (!currentCharacterData.value) return {}
-    return Object.fromEntries(
-      Object.entries(currentCharacterData.value.abilityScores).map(([key, value]) => [
-        key,
-        getMod(value),
-      ]),
-    )
-  })
-
-  const profBonus = computed(() => {
-    if (!currentCharacterData.value) return 2
-    let prof = 2
-    for (const levelThreshold in DND_RULES.PROFICIENCY_BONUS_PROGRESSION) {
-      if (derivedLevel.value >= parseInt(levelThreshold)) {
-        prof = DND_RULES.PROFICIENCY_BONUS_PROGRESSION[parseInt(levelThreshold)] ?? prof
-      }
-    }
-    return prof
-  })
-
-  const maxHp = computed(() => {
-    if (!currentCharacterData.value) return 1
-    const { class: className } = currentCharacterData.value
-    const classData = className ? DND_RULES.CLASSES[className] : undefined
-    if (!classData) return 1
-    const conMod = abilityMods.value.con ?? 0
-    let hp = classData.hitDice + conMod
-    if (derivedLevel.value > 1) {
-      const hpGainPerLevel = classData.hitDiceAverage + conMod
-      hp += (derivedLevel.value - 1) * Math.max(1, hpGainPerLevel)
-    }
-    return hp
-  })
-
-  const keyFeatures = computed(() => currentCharacterData.value?.features.filter((f) => f.key) || [])
-  const otherFeatures = computed(() => currentCharacterData.value?.features.filter((f) => !f.key) || [])
-
-  const spellcastingAbility = computed(() => currentCharacterData.value?.spellcasting?.ability || 'int')
-  const spellMod = computed(() => abilityMods.value[spellcastingAbility.value] || 0)
-  const spellSaveDC = computed(() => 8 + profBonus.value + spellMod.value)
-  const spellAttack = computed(() => profBonus.value + spellMod.value)
-
-  const pointBuyPointsUsed = computed(() => {
-    if (!currentCharacterData.value) return 0
-    let total = 0
-    Object.values(currentCharacterData.value.pointBuyBaseScores).forEach((s) => (total += pointBuyCosts[s] ?? 0))
-    return total
-  })
-  const pointBuyPointsRemaining = computed(() => 27 - pointBuyPointsUsed.value)
-  const pointBuyCostForScore = computed(() => (score: number): number => pointBuyCosts[score] ?? 0)
-  const pointBuyMaxForScore = computed(() => (score: number): boolean => {
-    if (score < 8 || score >= 15) return false
-    const cur = pointBuyCosts[score] ?? 0
-    const nxt = pointBuyCosts[score + 1] ?? 0
-    return pointBuyPointsUsed.value - cur + nxt <= 27
-  })
-  const isValidBonusSelection = computed(() => (stat: string, bonusType: '+2' | '+1'): boolean => {
-    const s = currentCharacterData.value?.backgroundBonusSelections
-    if (!s) return true
-    return bonusType === '+2' ? s.plusOne !== stat : s.plusTwo !== stat
-  })
-
-  const initiativeMod = computed(() => abilityMods.value.dex ?? 0)
-  const walkingSpeed = computed(() => {
-    const spd = currentCharacterData.value?.combat.speed
-    if (spd) return spd
-    const sp = currentCharacterData.value?.species
-    return sp ? DND_RULES.SPECIES[sp]?.speed ?? '30ft' : '30ft'
-  })
+  // derivedLevel, abilityMods, profBonus, maxHp, initiativeMod, walkingSpeed,
+  // spellSlots, pointBuy* helpers — sole source of truth is useProgressionStore.
+  // keyFeatures, otherFeatures, spellcastingAbility, spellMod, spellSaveDC,
+  // spellAttack, getFeatureMaxUses — sole source of truth is useSpellStore.
+  // These stores read reactively from currentCharacterData; the character store
+  // only exposes raw state and orchestration actions.
 
   /**
    * Dynamically calculated Armor Class from equipped armor, shields, and DEX.
-   * If the user has enabled manual AC override, the stored manual value is used.
+   * If the user has enabled manual AC override, returns the stored AC value directly.
    */
   const computedArmorClass = computed(() => {
     const char = currentCharacterData.value
     if (!char) return 10
     if (char.combat.isAcOverride) return char.combat.ac
-    const dexMod = abilityMods.value.dex ?? 0
+    const dexMod = getMod(char.abilityScores.dex ?? 10)
     return calculateArmorClass(char.equippedGear ?? [], dexMod)
   })
-
-  function getFeatureMaxUses(feature: unknown): number | null {
-    if (!feature || typeof feature !== 'object' || feature === null) return null
-    const f = feature as {
-      uses?: { total?: number; per?: string } | null
-      resource?: { resourceType?: string; value?: number; scalingStat?: string | null } | null
-    }
-    if (f.uses && !f.resource) return f.uses.total || null
-    if (!f.resource || !f.resource.resourceType) return null
-    const { resourceType, value, scalingStat } = f.resource
-    try {
-      if (resourceType === 'static') return Math.max(0, value || 0)
-      if (resourceType === 'scaling') {
-        if (!scalingStat) return 1
-        if (scalingStat === 'pb') return profBonus.value || 2
-        const valid = ['str', 'dex', 'con', 'int', 'wis', 'cha']
-        if (valid.includes(scalingStat)) return Math.max(1, abilityMods.value[scalingStat] || 0)
-      }
-      return 1
-    } catch { return 1 }
-  }
 
   // --- ACTIONS (Methods) ---
 
@@ -249,7 +154,9 @@ export const useCharacterStore = defineStore('character', () => {
     const hasWeapons = equippedGear.some((g) => g.type === 'Weapon')
     if (!hasWeapons) return
 
-    const mods = abilityMods.value
+    const mods = Object.fromEntries(
+      Object.entries(char.abilityScores).map(([k, v]) => [k, getMod(v)]),
+    )
     char.attacks = autoSeedAttacks(equippedGear, mods)
   }
 
@@ -274,7 +181,7 @@ export const useCharacterStore = defineStore('character', () => {
     // Sync HP with calculated values
     // If hp_current matches the stored hp_max (or is new), update it to the calculated maxHp
     // This ensures new characters or those at full health get the correct calculated max HP
-    const calculatedMax = maxHp.value
+    const calculatedMax = currentCharacterData.value.combat.hp_max
     const combat = currentCharacterData.value.combat
     if (combat.hp_current === combat.hp_max || combat.hp_current === undefined) {
       combat.hp_current = calculatedMax
@@ -493,22 +400,6 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
-  function adjustPointBuyScore(key: string, delta: number): void {
-    if (!currentCharacterData.value) return
-    const currentScore = currentCharacterData.value.pointBuyBaseScores[key] || 8
-    const newScore = currentScore + delta
-    let totalCost = 0
-    Object.values(currentCharacterData.value.pointBuyBaseScores).forEach(
-      (s) => (totalCost += pointBuyCosts[s] ?? 0),
-    )
-    const futureCost =
-      totalCost - (pointBuyCosts[currentScore] ?? 0) + (pointBuyCosts[newScore] ?? 0)
-    if (newScore >= 8 && newScore <= 15 && futureCost <= 27) {
-      currentCharacterData.value.pointBuyBaseScores[key] = newScore
-      recalculateAbilityScores()
-    }
-  }
-
   function recalculateAbilityScores(): void {
     const data = currentCharacterData.value
     if (!data) return
@@ -531,7 +422,6 @@ export const useCharacterStore = defineStore('character', () => {
       data.features.forEach((feature) => {
         if (feature.abilityModifiers) {
           Object.entries(feature.abilityModifiers).forEach(([stat, bonus]) => {
-            // Normalize stat key to lowercase just in case
             const normalizedStat = stat.toLowerCase()
             if (finalScores[normalizedStat] !== undefined && typeof bonus === 'number') {
               finalScores[normalizedStat] += bonus
@@ -550,7 +440,18 @@ export const useCharacterStore = defineStore('character', () => {
       data.combat.hp_current === undefined ||
       data.combat.hp_current === 1
 
-    data.combat.hp_max = maxHp.value
+    // HP recalculation based on class hit dice and CON
+    const classData = data.class ? DND_RULES.CLASSES[data.class] : undefined
+    if (classData) {
+      const conMod = getMod(data.abilityScores.con ?? 10)
+      const level = DND_RULES.getEffectiveLevel(data.renownTier || 1)
+      let newHp = classData.hitDice + conMod
+      if (level > 1) {
+        const hpGainPerLevel = classData.hitDiceAverage + conMod
+        newHp += (level - 1) * Math.max(1, hpGainPerLevel)
+      }
+      data.combat.hp_max = newHp
+    }
 
     if (wasAtMax || (data.combat.hp_current ?? 0) > data.combat.hp_max) {
       data.combat.hp_current = data.combat.hp_max
@@ -771,25 +672,7 @@ export const useCharacterStore = defineStore('character', () => {
     loadingText: modals.loadingText,
     errorModal: modals.errorModal,
     shareModal: modals.shareModal,
-    // Getters (legacy compatibility — new code should use useProgressionStore / useSpellStore)
-    abilityMods,
-    profBonus,
-    maxHp,
-    derivedLevel,
-    keyFeatures,
-    otherFeatures,
-    spellcastingAbility,
-    spellMod,
-    spellSaveDC,
-    spellAttack,
-    pointBuyPointsUsed,
-    pointBuyPointsRemaining,
-    pointBuyCostForScore,
-    pointBuyMaxForScore,
-    isValidBonusSelection,
-    initiativeMod,
-    walkingSpeed,
-    getFeatureMaxUses,
+    // Computed (kept: specific to character store logic)
     computedArmorClass,
     // Actions
     initStore,
@@ -804,8 +687,6 @@ export const useCharacterStore = defineStore('character', () => {
     exportCharacter,
     updateCharacter,
     updateNested,
-    adjustPointBuyScore,
-    recalculateAbilityScores,
     validateCharacter,
     // Starting equipment state & actions
     startingEquipmentState: equipmentWizard.startingEquipmentState,
