@@ -28,15 +28,13 @@ const { badges } = useCharacterCompletion()
       </section>
 
       <!-- Row 2: Combat Vitals + Progression -->
-      <section class="lg:col-span-6 flex flex-col gap-4 w-full">
+      <section class="lg:col-span-5 flex flex-col gap-4 w-full">
         <CombatStats class="w-full" />
       </section>
 
-      <RenownProgression class="lg:col-span-6" />
-
       <!-- Row 3: Offense (full width) -->
       <section
-        class="lg:col-span-12 bg-surface-container-highest rounded-lg p-6 border border-outline-variant shadow-sm"
+        class="lg:col-span-7 bg-surface-container-highest rounded-lg p-6 border border-outline-variant shadow-sm"
       >
         <div class="flex items-center justify-between border-b border-primary-container pb-3 mb-4">
           <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
@@ -66,6 +64,8 @@ const { badges } = useCharacterCompletion()
 
         <AttacksList />
       </section>
+
+      <RenownProgression class="lg:col-span-12" />
     </div>
   </div>
 </template>
