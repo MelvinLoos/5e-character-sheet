@@ -12,6 +12,9 @@ const LoadingModal = defineAsyncComponent(() => import('./components/modals/Load
 const ErrorModal = defineAsyncComponent(() => import('./components/modals/ErrorModal.vue'))
 const ShareModal = defineAsyncComponent(() => import('./components/modals/ShareModal.vue'))
 const FeedbackModal = defineAsyncComponent(() => import('./components/modals/FeedbackModal.vue'))
+const DiscordUnlockReminderModal = defineAsyncComponent(
+  () => import('./components/modals/DiscordUnlockReminderModal.vue'),
+)
 const UpdateNotification = defineAsyncComponent(() => import('./components/UpdateNotification.vue'))
 
 const store = useCharacterStore()
@@ -72,6 +75,7 @@ onMounted(async () => {
       @close="showImportCharacterModal = false"
     />
     <FeedbackModal :is-open="showFeedbackModal" @close="showFeedbackModal = false" />
+    <DiscordUnlockReminderModal />
 
     <MobileTabBar
       v-if="store.currentCharacterData"

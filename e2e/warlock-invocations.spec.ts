@@ -13,6 +13,15 @@ import { test, expect } from '@playwright/test'
  */
 
 test.describe('Warlock Eldritch Invocations', () => {
+  // The Feats view shows a "Login with Discord unlocks spells and feats"
+  // reminder to logged-out players, which would obscure the invocation
+  // controls. Pre-dismiss it so these tests exercise the Feats view directly.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('dnd_discord_unlock_reminder_dismissed', 'true')
+    })
+  })
+
   test('selects invocations and verifies they appear on character features', async ({ page }) => {
     await page.goto('/identity')
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
