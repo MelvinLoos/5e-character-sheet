@@ -129,6 +129,50 @@ export function restoreLastCharacter(): {
 }
 
 // ---------------------------------------------------------------------------
+// Share Link Persistence (localStorage)
+// ---------------------------------------------------------------------------
+
+/**
+ * Read the map of character name → public share id.
+ * Returns an empty object when nothing is stored or the payload is corrupt.
+ */
+function loadShareLinks(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SHARE_LINKS)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, string>
+    }
+  } catch (e) {
+    logger.warn('Failed to read share links from localStorage:', e)
+  }
+  return {}
+}
+
+/**
+ * Remember the public share id for a character so its printed QR code survives
+ * a reload or a round-trip through the local library.
+ */
+export function saveShareLink(characterName: string, shareId: string): void {
+  if (!characterName || !shareId) return
+  try {
+    const links = loadShareLinks()
+    links[characterName] = shareId
+    localStorage.setItem(STORAGE_KEYS.SHARE_LINKS, JSON.stringify(links))
+  } catch (e) {
+    logger.warn('Failed to save share link to localStorage:', e)
+  }
+}
+
+/** Look up the previously persisted share id for a character, or null. */
+export function getShareLink(characterName: string): string | null {
+  if (!characterName) return null
+  const links = loadShareLinks()
+  return links[characterName] ?? null
+}
+
+// ---------------------------------------------------------------------------
 // Supabase Operations (delegates to infra/sharingService)
 // ---------------------------------------------------------------------------
 

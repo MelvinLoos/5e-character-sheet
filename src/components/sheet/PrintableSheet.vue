@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSpellStore } from '@/stores/spellStore'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 import { renderMarkdown } from '@/utils/markdown'
+import { generateQrSvg } from '@/utils/qrCode'
 import * as DND_RULES from '@/data/rules'
 
 const store = useCharacterStore()
@@ -13,6 +14,19 @@ const spellStore = useSpellStore()
 const { sortedSpells, displaySpellSlots } = useSpellcasting()
 
 const char = computed(() => store.currentCharacterData)
+
+// Inline SVG QR code pointing at the character's public share link. Empty for
+// characters that have never been shared, which hides the block (and the
+// surrounding footer) entirely.
+const qrSvg = ref('')
+
+watch(
+  () => store.shareUrl,
+  async (url) => {
+    qrSvg.value = await generateQrSvg(url)
+  },
+  { immediate: true },
+)
 
 const abilityEntries = computed(() => Object.entries(DND_RULES.ABILITIES))
 const skillEntries = computed(() => Object.entries(DND_RULES.SKILLS))
@@ -213,6 +227,23 @@ function formatSpellLevel(level: number) {
               </tbody>
             </table>
           </section>
+        </div>
+      </div>
+
+      <!-- Share QR: lets players jump from paper to the digital sheet -->
+      <div
+        v-if="qrSvg"
+        data-testid="sheet-share-qr"
+        class="mt-auto flex-shrink-0 flex items-center gap-3 border-t-2 border-black pt-3 break-inside-avoid"
+      >
+        <div
+          class="sheet-share-qr-svg w-[120px] h-[120px] shrink-0"
+          data-testid="sheet-share-qr-code"
+          v-html="qrSvg"
+        ></div>
+        <div class="text-black">
+          <p class="font-label-md text-label-md uppercase font-bold">Scan for the digital sheet</p>
+          <p class="text-[9px] break-all">{{ store.shareUrl }}</p>
         </div>
       </div>
     </main>
@@ -451,6 +482,15 @@ function formatSpellLevel(level: number) {
 
 .appendix-markdown :deep(ol) {
   list-style: decimal;
+}
+
+/* Share QR code. The qrcode library returns an <svg> string injected via
+   v-html, so :deep() is needed to size it to its container. SVG keeps the code
+   crisp at print resolution. */
+.sheet-share-qr-svg :deep(svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .font-display-lg {

@@ -13,6 +13,12 @@ export const STORAGE_KEYS = {
    * feats" reminder with the "Don't show this again" toggle enabled.
    */
   DISCORD_UNLOCK_REMINDER_DISMISSED: 'dnd_discord_unlock_reminder_dismissed',
+  /**
+   * Map of character name → public share id, so a character that has already
+   * been shared still knows its share link (and printed QR code) after a
+   * reload or when reopened from the local library.
+   */
+  SHARE_LINKS: 'dnd_share_links',
 } as const;
 
 /**
