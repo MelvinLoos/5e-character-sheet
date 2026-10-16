@@ -8,6 +8,11 @@ export const STORAGE_KEYS = {
   APP_THEME: 'dnd_app_theme',
   USER_SETTINGS: 'dnd_user_settings',
   ACTIVE_GUILD_ID: 'dnd_active_guild_id',
+  /**
+   * Set once the player dismisses the "Login with Discord unlocks spells and
+   * feats" reminder with the "Don't show this again" toggle enabled.
+   */
+  DISCORD_UNLOCK_REMINDER_DISMISSED: 'dnd_discord_unlock_reminder_dismissed',
 } as const;
 
 /**
