@@ -1,0 +1,303 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "llm-character-schema.json",
+  "title": "D&D 5.5e Character Authoring Schema",
+  "description": "A self-contained JSON Schema for authoring a complete Dungeons & Dragons 5.5e character sheet in the 'Heroes Guild' West Marches format. Feed this schema to an LLM together with a short prompt (e.g. 'create a level-3 elven wizard') and ask it for a single JSON object matching this schema. Every enum is exhaustive: only the listed values are valid. Derived values (abilityScores, profBonus, hp_max, spell save DC) are NOT authored — the application computes them from the inputs below.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The character's full name, e.g. 'Elara Vance'. REQUIRED."
+    },
+    "title": {
+      "type": "string",
+      "description": "An optional epithet or title, e.g. 'Seeker of the Arcane'. Use an empty string if none."
+    },
+    "jobInParty": {
+      "type": "string",
+      "description": "The character's informal party role, e.g. 'Tank', 'Healer', 'Face'. Use an empty string if none."
+    },
+    "class": {
+      "type": "string",
+      "description": "The character's class. REQUIRED. Must be exactly one of the enum values.",
+      "enum": [
+        "Barbarian",
+        "Bard",
+        "Cleric",
+        "Druid",
+        "Fighter",
+        "Monk",
+        "Paladin",
+        "Ranger",
+        "Rogue",
+        "Sorcerer",
+        "Warlock",
+        "Wizard"
+      ]
+    },
+    "renownTier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "default": 1,
+      "description": "West Marches Renown Tier (1=levels 1-4, 2=levels 5-8, 3=levels 9-12). Defaults to 1."
+    },
+    "species": {
+      "type": "string",
+      "description": "The character's species. REQUIRED. Must be exactly one of the enum values.",
+      "enum": [
+        "Human",
+        "Elf",
+        "Dwarf",
+        "Gnome",
+        "Halfling",
+        "Dragonborn",
+        "Goliath",
+        "Orc",
+        "Tiefling",
+        "Aasimar"
+      ]
+    },
+    "subChoice": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Optional sub-choice id for species with lineages/ancestries/legacies, e.g. 'high-elf', 'wood-elf', 'drow' (Elf); 'cloud-giant', 'fire-giant' (Goliath); 'infernal', 'abyssal' (Tiefling). Use null when the species has no sub-choices."
+    },
+    "background": {
+      "type": "string",
+      "description": "The character's background. REQUIRED. Must be exactly one of the enum values.",
+      "enum": [
+        "Acolyte",
+        "Artisan",
+        "Charlatan",
+        "Criminal",
+        "Entertainer",
+        "Farmer",
+        "Guard",
+        "Guide",
+        "Hermit",
+        "Merchant",
+        "Noble",
+        "Sage",
+        "Sailor",
+        "Scribe",
+        "Soldier",
+        "Urchin"
+      ]
+    },
+    "pointBuyBaseScores": {
+      "type": "object",
+      "description": "The six base ability scores purchased with the standard 27-point point-buy budget. Each is between 8 and 15. REQUIRED. A legal point-buy array costs exactly 27 points (costs: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9).",
+      "additionalProperties": false,
+      "properties": {
+        "str": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Strength." },
+        "dex": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Dexterity." },
+        "con": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Constitution." },
+        "int": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Intelligence." },
+        "wis": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Wisdom." },
+        "cha": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Charisma." }
+      },
+      "required": ["str", "dex", "con", "int", "wis", "cha"]
+    },
+    "backgroundBonusSelections": {
+      "type": "object",
+      "description": "Which ability scores receive the background's +2 and +1 bonuses. The two values MUST be different ability keys. REQUIRED.",
+      "additionalProperties": false,
+      "properties": {
+        "plusTwo": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"], "description": "Ability key receiving +2." },
+        "plusOne": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"], "description": "Ability key receiving +1 (must differ from plusTwo)." }
+      },
+      "required": ["plusTwo", "plusOne"]
+    },
+    "proficiencies": {
+      "type": "object",
+      "description": "Skill and saving-throw proficiencies. Optional: the app also derives fixed class/background proficiencies, but list the character's chosen ones here.",
+      "additionalProperties": false,
+      "properties": {
+        "skills": {
+          "type": "array",
+          "description": "Proficient skills, normalized to lowercase with no spaces.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "acrobatics",
+              "animalhandling",
+              "arcana",
+              "athletics",
+              "deception",
+              "history",
+              "insight",
+              "intimidation",
+              "investigation",
+              "medicine",
+              "nature",
+              "perception",
+              "performance",
+              "persuasion",
+              "religion",
+              "sleightofhand",
+              "stealth",
+              "survival"
+            ]
+          }
+        },
+        "savingThrows": {
+          "type": "array",
+          "description": "Proficient saving throws as ability keys.",
+          "items": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] }
+        }
+      },
+      "required": ["skills", "savingThrows"]
+    },
+    "attacks": {
+      "type": "array",
+      "description": "Weapon and spell attacks. Optional; the app auto-seeds weapon attacks from equipped gear when this is empty.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "Attack name, e.g. 'Quarterstaff' or 'Fire Bolt'." },
+          "atkStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"], "description": "Ability used for the attack roll." },
+          "dmgDie": { "type": "string", "pattern": "^\\d+d\\d+$", "description": "Damage die in XdY form, e.g. '1d6', '2d6'." },
+          "dmgStat": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"], "description": "Ability added to damage." },
+          "dmgBonus": { "type": "number", "default": 0, "description": "Flat bonus to damage." },
+          "type": { "type": "string", "description": "Damage type, e.g. 'bludgeoning', 'fire', 'slashing', 'piercing'." },
+          "notes": { "type": "string", "description": "Optional notes, e.g. 'Ranged Spell Attack, 120 ft.'" },
+          "weaponMastery": { "type": "string", "description": "Optional 2024 weapon mastery, e.g. 'Topple', 'Vex', 'Graze'." }
+        },
+        "required": ["name", "atkStat", "dmgDie", "dmgStat", "type"]
+      }
+    },
+    "features": {
+      "type": "array",
+      "description": "All character features and traits, including class features, species traits, background features, and feats. Optional; the app also auto-applies class/species/background features.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string", "description": "Feature name, e.g. 'Arcane Recovery'." },
+          "desc": { "type": "string", "description": "Full description of the feature. Plain text or Markdown." },
+          "key": { "type": "boolean", "default": false, "description": "Whether this appears in the prominent 'key features' list." },
+          "featureType": {
+            "type": "string",
+            "enum": ["Class Feature", "Species Trait", "Background Feature", "Origin Feat", "General Feat", "Fighting Style", "Epic Boon", "Other"],
+            "default": "Other",
+            "description": "Category of the feature."
+          },
+          "actionType": {
+            "type": "string",
+            "enum": ["Action", "Bonus Action", "Reaction", "Free Action", "Passive", "None"],
+            "default": "None",
+            "description": "Action economy used."
+          },
+          "resource": {
+            "type": ["object", "null"],
+            "description": "Limited-use tracking. Use null for always-on features.",
+            "additionalProperties": false,
+            "properties": {
+              "resourceType": { "type": "string", "enum": ["static", "scaling"], "description": "'static' = fixed count, 'scaling' = derived from a stat." },
+              "value": { "type": "integer", "minimum": 0, "description": "Fixed number of uses (only for resourceType 'static')." },
+              "scalingStat": { "type": "string", "enum": ["pb", "str", "dex", "con", "int", "wis", "cha"], "description": "Stat used when resourceType is 'scaling' (pb = proficiency bonus)." },
+              "reset": { "type": "string", "enum": ["Short Rest", "Long Rest", "Dawn", "Initiative", "Special", "None"], "description": "When the resource refills." }
+            },
+            "required": ["resourceType", "reset"]
+          },
+          "casterType": {
+            "type": ["string", "null"],
+            "enum": ["full", "half", "third", "pact", "none", null],
+            "description": "Spellcasting progression granted by this feature, or null."
+          }
+        },
+        "required": ["title", "desc"]
+      }
+    },
+    "personality": {
+      "type": "object",
+      "description": "Roleplay personality block. Recommended for well-rounded characters.",
+      "additionalProperties": false,
+      "properties": {
+        "traits": { "type": "string", "description": "One or two personality traits, e.g. 'I am never without my spellbook.'" },
+        "ideal": { "type": "string", "description": "A core belief, e.g. 'Knowledge. The path to power is through knowledge.'" },
+        "bond": { "type": "string", "description": "A connection to people, places or things." },
+        "flaw": { "type": "string", "description": "A weakness or vice." }
+      },
+      "required": ["traits", "ideal", "bond", "flaw"]
+    },
+    "equipment": {
+      "type": "string",
+      "description": "Free-text summary of carried equipment, e.g. 'A quarterstaff, a spellbook and a scholar's pack.'"
+    },
+    "spellcasting": {
+      "type": ["object", "null"],
+      "description": "Set only for characters whose class/features grant spellcasting; otherwise null.",
+      "additionalProperties": false,
+      "properties": {
+        "ability": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"], "description": "Spellcasting ability key." }
+      },
+      "required": ["ability"]
+    },
+    "spells": {
+      "type": "array",
+      "description": "Known and/or prepared spells. Optional for non-casters.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "Spell name, e.g. 'Fire Bolt'." },
+          "level": { "type": "integer", "minimum": 0, "maximum": 9, "description": "Spell level; 0 = cantrip." },
+          "desc": { "type": "string", "description": "Short description of the spell's effect." }
+        },
+        "required": ["name", "level", "desc"]
+      }
+    },
+    "gold": { "type": "number", "minimum": 0, "default": 0, "description": "Starting gold pieces." },
+    "supply": { "type": "number", "minimum": 0, "default": 0, "description": "Supply resource." },
+    "influence": { "type": "number", "minimum": 0, "default": 0, "description": "Influence resource." },
+    "equippedGear": {
+      "type": "array",
+      "description": "Structured equipped items. Optional; equipment text is usually enough for authoring.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "Stable unique id for the item instance." },
+          "catalogId": { "type": "string", "description": "Canonical catalog id, e.g. 'quarterstaff', 'scale-mail'." },
+          "name": { "type": "string", "description": "Display name." },
+          "type": { "type": "string", "description": "Gear category, e.g. 'Weapon', 'Armor', 'Shield'." },
+          "description": { "type": "string", "description": "Item description." },
+          "slotCost": { "type": "number", "default": 1, "description": "Inventory slots used." },
+          "rarity": { "type": "string", "description": "Optional rarity, e.g. 'common', 'rare'." },
+          "theme": { "type": "string", "description": "Optional thematic tag." }
+        },
+        "required": ["id", "name", "type", "description", "slotCost"]
+      }
+    },
+    "consumables": {
+      "type": "array",
+      "description": "Consumable items tracked with usage dice. Optional.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "Stable unique id." },
+          "name": { "type": "string", "description": "Display name." },
+          "type": { "type": "string", "description": "Gear category, e.g. 'Ammunition', 'Potion'." },
+          "slotCost": { "type": "number", "default": 1, "description": "Inventory slots used." },
+          "usageDie": { "type": "string", "pattern": "^d\\d+$", "description": "Usage die, e.g. 'd6', 'd8'." }
+        },
+        "required": ["id", "name", "type", "slotCost", "usageDie"]
+      }
+    }
+  },
+  "required": [
+    "name",
+    "class",
+    "species",
+    "background",
+    "pointBuyBaseScores",
+    "backgroundBonusSelections"
+  ]
+}
+

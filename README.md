@@ -168,8 +168,25 @@ npm run test:e2e
 
 - **Auto-Save**: Changes are automatically saved to browser storage
 - **Cloud Save**: Characters shared online are preserved in the database
-- **Export**: Download character as JSON file
-- **Import**: Upload previously exported character files
+- **Export**: Download character as JSON file (More menu → *Export JSON*)
+- **Import Character**: Upload a previously exported character file (More menu → *Import Character*).
+  The file is validated against `public/character-schema.json`, migrated, and saved to your library.
+- **Import Data**: Import 5e.tools spell/feat JSON into the rules compendium
+  (More menu → *Import Data*)
+
+### JSON Schemas & LLM Authoring
+
+The app ships three JSON Schemas in `public/`:
+
+| Schema | Purpose |
+| --- | --- |
+| `character-schema.json` | Full persisted `CharacterData` shape. Accepts `renownTier` and derived fields so exported characters round-trip losslessly. Used to validate imports. |
+| `llm-character-schema.json` | Self-contained authoring schema with rich descriptions and exhaustive enums. **Feed this to an LLM** to generate valid character JSON from a prompt. |
+| `schema.json` / `gemini-schema.json` | Sparse input schemas used by the built-in AI generator. |
+
+To have an LLM create a character, provide it with `public/llm-character-schema.json`
+and a short prompt, e.g. *"Create a level-3 elven wizard named Elara using this schema."*
+The returned JSON can be saved as a `.json` file and loaded via *Import Character*.
 
 ### Heroes Guild Integration
 

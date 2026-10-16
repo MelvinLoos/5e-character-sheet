@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   showImport: []
+  showCharacterImport: []
   showFeedback: []
 }>()
 
@@ -62,6 +63,11 @@ function close() {
 function openImport() {
   close()
   emit('showImport')
+}
+
+function openCharacterImport() {
+  close()
+  emit('showCharacterImport')
 }
 
 function openFeedback() {
@@ -259,6 +265,15 @@ watch(
                 >
                   <span class="material-symbols-outlined text-2xl">file_upload</span>
                   <span class="text-xs font-label-md">Import Data</span>
+                </button>
+
+                <button
+                  @click="openCharacterImport"
+                  class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Import Character"
+                >
+                  <span class="material-symbols-outlined text-2xl">person_add</span>
+                  <span class="text-xs font-label-md">Import Character</span>
                 </button>
 
                 <button
