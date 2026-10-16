@@ -19,6 +19,8 @@ import {
   restoreLastCharacter,
   fetchCharacterFromUrl,
   shareCharacterToSupabase,
+  saveShareLink,
+  getShareLink,
 } from '@/domain/characterRepository'
 
 import { logger } from '../utils/logger'
@@ -46,6 +48,7 @@ import {
 } from '@/domain'
 import { calculateArmorClass } from '@/utils/acCalculator'
 import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
+import { buildShareUrl } from '@/utils/shareUrl'
 import { autoSeedAttacks } from '@/composables/useCombat'
 import { useModals } from '@/composables/useModals'
 import { useEquipmentWizard } from '@/composables/useEquipmentWizard'
@@ -85,6 +88,13 @@ export const useCharacterStore = defineStore('character', () => {
     const dexMod = getMod(char.abilityScores.dex ?? 10)
     return calculateArmorClass(char.equippedGear ?? [], dexMod)
   })
+
+  /**
+   * Public share URL for the current character, or an empty string when the
+   * character has never been shared. Printed on the sheet as a QR code so
+   * players can jump from paper to the digital version.
+   */
+  const shareUrl = computed(() => buildShareUrl(sourceCharacterId.value))
 
   // --- ACTIONS (Methods) ---
 
@@ -177,7 +187,10 @@ export const useCharacterStore = defineStore('character', () => {
     // Assign after asserting it matches CharacterData shape (migration ensures required fields)
     currentCharacterData.value = migratedData as unknown as CharacterData
     isEditing.value = false
-    sourceCharacterId.value = null // Reset source unless it's set by sharing
+    // Restore a remembered share id so the printed QR code survives reloads and
+    // round-trips through the local library. loadCharacterFromUrl overrides this
+    // with the id from the URL when one is present.
+    sourceCharacterId.value = getShareLink(currentCharacterData.value.name)
 
     // Setup spellcasting object if character has valid casterType
     _setupSpellcasting()
@@ -207,6 +220,7 @@ export const useCharacterStore = defineStore('character', () => {
         modals.showLoading('Fetching character from the archives...')
         _setCharacter(result.data)
         sourceCharacterId.value = result.id
+        saveShareLink(result.data.name, result.id)
       }
     } catch (error) {
       logger.error('Error loading character from URL:', error)
@@ -378,13 +392,14 @@ export const useCharacterStore = defineStore('character', () => {
         sourceCharacterId.value,
       )
 
-      const newUrl = `${window.location.origin}${window.location.pathname}?id=${newId}`
+      const newUrl = buildShareUrl(newId)
 
       modals.shareModal.value.url = newUrl
       modals.shareModal.value.show = true
 
       history.pushState({}, '', newUrl)
       sourceCharacterId.value = newId
+      saveShareLink(currentCharacterData.value.name, newId)
       capturePostHogEvent('character_shared', {
         share_type: isCopyOfSharedCharacter ? 'copy' : 'new',
       })
@@ -701,6 +716,7 @@ export const useCharacterStore = defineStore('character', () => {
     shareModal: modals.shareModal,
     // Computed (kept: specific to character store logic)
     computedArmorClass,
+    shareUrl,
     // Actions
     initStore,
     loadCharacterFromUrl,
