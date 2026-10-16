@@ -37,7 +37,13 @@ import {
   getSupabaseClient,
 } from '@/infra'
 import { generateCharacter as aiGenerate, loadAiSchema, getAiSchema } from '@/infra'
-import { loadSchema, getSchema, validateCharacterData } from '@/domain'
+import {
+  loadSchema,
+  getSchema,
+  loadCharacterSchema,
+  validateCharacterData,
+  validateImportedCharacter,
+} from '@/domain'
 import { calculateArmorClass } from '@/utils/acCalculator'
 import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { autoSeedAttacks } from '@/composables/useCombat'
@@ -89,6 +95,7 @@ export const useCharacterStore = defineStore('character', () => {
     isSupabaseReady.value = true
 
     await loadSchema()
+    await loadCharacterSchema()
     await loadAiSchema()
 
     // Priority: shared URL → unsaved draft → last loaded/saved character → blank
@@ -224,27 +231,47 @@ export const useCharacterStore = defineStore('character', () => {
     }
   }
 
+  /**
+   * Imports a character from a parsed object or a raw JSON string (for example
+   * the contents of a file previously produced by `exportCharacter`).
+   *
+   * Validates against the full character schema, runs the standard migration /
+   * derivation pipeline via `_setCharacter`, then auto-saves to the library.
+   *
+   * Returns a result object so callers (UI or tests) can react to failures
+   * without the store needing to know about the DOM or modals.
+   */
+  function importCharacter(input: string | object): { valid: boolean; errors: string[] } {
+    let data: unknown
+    try {
+      data = typeof input === 'string' ? JSON.parse(input) : input
+    } catch (error) {
+      return { valid: false, errors: [`Invalid JSON: ${(error as Error).message}`] }
+    }
+
+    const { valid, errors } = validateImportedCharacter(data)
+    if (!valid) {
+      return { valid, errors: errors.length ? errors : ['The file is not a valid character.'] }
+    }
+
+    _setCharacter(data)
+    saveToLibrary() // Auto-save imported char
+    capturePostHogEvent('character_imported')
+    return { valid: true, errors: [] }
+  }
+
   function handleFileLoad(event: Event): void {
     const target = event.target as HTMLInputElement
     const file = target?.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = (e) => {
-      try {
-        const result = e.target?.result
-        if (typeof result !== 'string') return
-        const data = JSON.parse(result)
-        const { valid, errors } = validateCharacter(data)
-
-        if (!valid) {
-          modals.showErrorModal((errors as string[]) || [])
-          return
-        }
-        _setCharacter(data)
-        saveToLibrary() // Auto-save imported char
-      } catch (error) {
-        modals.showErrorModal([`Error loading file: ${(error as Error).message}`])
-        logger.error('File load error:', error)
+      const result = e.target?.result
+      if (typeof result !== 'string') return
+      const { valid, errors } = importCharacter(result)
+      if (!valid) {
+        modals.showErrorModal(errors)
+        logger.error('File load error:', errors)
       }
     }
     reader.readAsText(file)
@@ -679,6 +706,7 @@ export const useCharacterStore = defineStore('character', () => {
     loadCharacterFromUrl,
     loadCharacterFromLibrary,
     handleFileLoad,
+    importCharacter,
     saveToLibrary,
     handleNewCharacter,
     toggleEdit,

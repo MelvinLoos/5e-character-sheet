@@ -16,6 +16,7 @@ const UpdateNotification = defineAsyncComponent(() => import('./components/Updat
 
 const store = useCharacterStore()
 const showImportModal = ref(false)
+const showImportCharacterModal = ref(false)
 const showFeedbackModal = ref(false)
 const showMoreMenu = ref(false)
 
@@ -36,6 +37,7 @@ onMounted(async () => {
   >
     <ControlPanel
       @show-import="showImportModal = true"
+      @show-character-import="showImportCharacterModal = true"
       @show-feedback="showFeedbackModal = true"
     />
     <MobileHeader v-if="store.currentCharacterData" />
@@ -65,6 +67,10 @@ onMounted(async () => {
     <ErrorModal />
     <ShareModal />
     <ImportModal :show="showImportModal" @close="showImportModal = false" />
+    <ImportCharacterModal
+      :show="showImportCharacterModal"
+      @close="showImportCharacterModal = false"
+    />
     <FeedbackModal :is-open="showFeedbackModal" @close="showFeedbackModal = false" />
 
     <MobileTabBar
@@ -77,6 +83,7 @@ onMounted(async () => {
       v-model="showMoreMenu"
       class="print:hidden"
       @show-import="showImportModal = true"
+      @show-character-import="showImportCharacterModal = true"
       @show-feedback="showFeedbackModal = true"
     />
 

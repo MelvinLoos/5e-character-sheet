@@ -17,6 +17,7 @@ const route = useRoute()
 const { badges } = useCharacterCompletion()
 const emit = defineEmits<{
   showImport: []
+  showCharacterImport: []
   showFeedback: []
 }>()
 const geminiPrompt = ref('')
@@ -340,6 +341,16 @@ onUnmounted(() => {
               >
                 <span class="material-symbols-outlined text-[1.125rem]">file_upload</span>
                 Import Data
+              </button>
+
+              <button
+                @click="emit('showCharacterImport'); closeMorePopover()"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Import Character"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]">person_add</span>
+                Import Character
               </button>
 
               <button
