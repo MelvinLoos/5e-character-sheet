@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import PrintableSheet from '../src/components/sheet/PrintableSheet.vue'
@@ -312,5 +312,25 @@ describe('PrintableSheet (component integration)', () => {
     const pages = wrapper.findAll('.a4-page')
 
     expect(pages.length).toBe(3)
+  })
+
+  it('renders a share QR code on page 1 only when the character has a share link', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createBaseCharacter()
+
+    const withoutShare = mount(PrintableSheet)
+    await flushPromises()
+    expect(withoutShare.find('[data-testid="sheet-share-qr"]').exists()).toBe(false)
+
+    store.sourceCharacterId = 'share-123'
+
+    const withShare = mount(PrintableSheet)
+    await flushPromises()
+
+    const qrBlock = withShare.find('[data-testid="sheet-share-qr"]')
+    expect(qrBlock.exists()).toBe(true)
+    expect(qrBlock.text()).toContain('Scan for the digital sheet')
+    expect(qrBlock.text()).toContain('?id=share-123')
+    expect(withShare.find('[data-testid="sheet-share-qr-code"]').html()).toContain('<svg')
   })
 })
