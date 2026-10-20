@@ -121,5 +121,24 @@ export interface BackgroundData {
   equipment?: BackgroundEquipment
 }
 
+/** A single feature granted by an imported subclass at a specific level. */
+export interface SubclassFeature {
+  name: string
+  level: number
+  description: string
+}
+
+/** A subclass import definition — the authoring format used in JSON files. */
+export interface SubclassImport {
+  /** Display name of the subclass (e.g. "Champion", "Circle of the Moon"). */
+  name: string
+  /** The parent class this subclass belongs to (e.g. "Fighter", "Druid"). */
+  parentClass: string
+  /** Flavour text describing the subclass archetype. */
+  description?: string
+  /** Features granted by this subclass, each with a level gate. */
+  features: SubclassFeature[]
+}
+
 /** Alias for the nested spell slot records keyed by caster level. */
 export type SpellSlotsByLevel = Record<number, Record<string, number>>

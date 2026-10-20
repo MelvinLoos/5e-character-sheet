@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { useRulesStore } from '@/stores/rulesStore'
 import { capturePostHogEvent } from '@/utils/posthog'
 import { mapSpells, mapFeats, type AppSpell } from '@/utils/fiveToolsAdapter'
+import { parseSubclassImport } from '@/utils/subclassParser'
+import type { SubclassImport } from '@/types/rules'
 import feather from 'feather-icons'
 
 interface AppFeature {
@@ -25,7 +27,7 @@ const emit = defineEmits<{
 }>()
 
 const selectedFile = ref<File | null>(null)
-const selectedCategory = ref<'spells' | 'feats'>('spells')
+const selectedCategory = ref<'spells' | 'feats' | 'subclasses'>('spells')
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const status = ref<'idle' | 'processing' | 'success' | 'error'>('idle')
@@ -36,6 +38,7 @@ const confirmRequired = ref(true)
 const categoryOptions = [
   { value: 'spells', label: 'Spells' },
   { value: 'feats', label: 'Feats' },
+  { value: 'subclasses', label: 'Subclasses' },
 ]
 
 const canProcess = computed(() => {
@@ -134,6 +137,20 @@ async function processFile() {
       if (!confirmRequired.value) {
         importData(mappedFeats)
       }
+    } else if (selectedCategory.value === 'subclasses') {
+      // Validate and normalize the subclass data via the runtime parser
+      const mappedSubclasses = parseSubclassImport(data)
+
+      previewData.value = {
+        count: mappedSubclasses.length,
+        items: mappedSubclasses
+          .slice(0, 5)
+          .map((s: SubclassImport) => `${s.name} (${s.parentClass})`),
+      }
+
+      if (!confirmRequired.value) {
+        importData(mappedSubclasses)
+      }
     }
 
     if (confirmRequired.value) {
@@ -183,10 +200,13 @@ function confirmImport() {
         const spellArray = Array.isArray(data) ? data : data.spell || []
         const mappedSpells = mapSpells(spellArray)
         importData(mappedSpells)
-      } else {
+      } else if (selectedCategory.value === 'feats') {
         const featArray = Array.isArray(data) ? data : data.feat || []
         const mappedFeats = mapFeats(featArray)
         importData(mappedFeats)
+      } else if (selectedCategory.value === 'subclasses') {
+        const mappedSubclasses = parseSubclassImport(data)
+        importData(mappedSubclasses)
       }
     })
   })
