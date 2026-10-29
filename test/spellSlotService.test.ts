@@ -4,6 +4,11 @@ import {
   computeSpellSlots,
   computeClassSpellSlots,
   computeGrantedSpellSlots,
+  isSpellcastingFeature,
+  hasSpellcasting,
+  detectCasterType,
+  clampSpentCount,
+  clampSpentSlots,
 } from '@/domain/spellSlotService'
 import type { CharacterFeature } from '@/types/character'
 
@@ -122,5 +127,87 @@ describe('computeSpellSlots (additive merge)', () => {
 describe('SPELL_SLOT_PROGRESSION.half (2024 rules)', () => {
   it('has 2 first-level slots at level 1 (no empty 2014 progression)', () => {
     expect(SPELL_SLOT_PROGRESSION.half[1]).toEqual({ level1: 2 })
+  })
+})
+
+describe('isSpellcastingFeature / hasSpellcasting', () => {
+  const full = { title: 'Wizard Spellcasting', desc: '', casterType: 'full' } as CharacterFeature
+  const none = { title: 'Fighter', desc: '', casterType: 'none' } as CharacterFeature
+  const granted = { title: 'Magic Initiate', desc: '', grantsSpells: true } as CharacterFeature
+  const plain = { title: 'Second Wind', desc: '' } as CharacterFeature
+
+  it('accepts class casterTypes and granted-spell features', () => {
+    expect(isSpellcastingFeature(full)).toBe(true)
+    expect(isSpellcastingFeature(granted)).toBe(true)
+  })
+
+  it('rejects casterType "none" and plain features', () => {
+    expect(isSpellcastingFeature(none)).toBe(false)
+    expect(isSpellcastingFeature(plain)).toBe(false)
+  })
+
+  it('hasSpellcasting is true when any feature qualifies', () => {
+    expect(hasSpellcasting([plain, full])).toBe(true)
+    expect(hasSpellcasting([plain, none])).toBe(false)
+    expect(hasSpellcasting([])).toBe(false)
+  })
+})
+
+describe('detectCasterType', () => {
+  it('returns the first class casterType', () => {
+    const features = [
+      { title: 'A', desc: '' },
+      { title: 'B', desc: '', casterType: 'half' },
+    ] as CharacterFeature[]
+    expect(detectCasterType(features)).toBe('half')
+  })
+
+  it('returns "granted" when only grantsSpells features exist', () => {
+    const features = [{ title: 'MI', desc: '', grantsSpells: true }] as CharacterFeature[]
+    expect(detectCasterType(features)).toBe('granted')
+  })
+
+  it('prefers a class casterType over granted spells', () => {
+    const features = [
+      { title: 'MI', desc: '', grantsSpells: true },
+      { title: 'Pact', desc: '', casterType: 'pact' },
+    ] as CharacterFeature[]
+    expect(detectCasterType(features)).toBe('pact')
+  })
+
+  it('returns null for casterType "none" or no features', () => {
+    expect(detectCasterType([{ title: 'F', desc: '', casterType: 'none' }] as CharacterFeature[])).toBeNull()
+    expect(detectCasterType([])).toBeNull()
+  })
+})
+
+describe('clampSpentCount', () => {
+  it('clamps into [0, max]', () => {
+    expect(clampSpentCount(5, 3)).toBe(3)
+    expect(clampSpentCount(-1, 3)).toBe(0)
+    expect(clampSpentCount(2, 3)).toBe(2)
+    expect(clampSpentCount(2, 0)).toBe(0)
+  })
+})
+
+describe('clampSpentSlots', () => {
+  it('clamps spent slots that exceed the new maximum', () => {
+    expect(clampSpentSlots({ level1: 4, level2: 2 }, { level1: 2, level2: 2 })).toEqual({
+      level1: 2,
+      level2: 2,
+    })
+  })
+
+  it('leaves levels under the maximum and levels missing from maxSlots untouched', () => {
+    expect(clampSpentSlots({ level1: 1, level3: 2 }, { level1: 4 })).toEqual({
+      level1: 1,
+      level3: 2,
+    })
+  })
+
+  it('does not mutate its input', () => {
+    const spent = { level1: 4 }
+    clampSpentSlots(spent, { level1: 2 })
+    expect(spent).toEqual({ level1: 4 })
   })
 })

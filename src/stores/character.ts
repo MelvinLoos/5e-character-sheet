@@ -5,6 +5,7 @@ import * as DND_RULES from '../data/rules'
 import {
   createBlankCharacter,
   getMod,
+  hasSpellcasting,
 } from '@/domain'
 import type { CharacterData } from '@/domain'
 
@@ -145,12 +146,9 @@ export const useCharacterStore = defineStore('character', () => {
     if (!currentCharacterData.value) return
 
     const features = currentCharacterData.value.features || []
-    const hasSpellcasting = features.some(
-      (f) =>
-        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
-    )
+    const isCaster = hasSpellcasting(features)
 
-    if (hasSpellcasting) {
+    if (isCaster) {
       const ability = DND_RULES.getSpellcastingAbility(currentCharacterData.value.class)
       currentCharacterData.value.spellcasting = {
         ...(currentCharacterData.value.spellcasting ?? {}),
