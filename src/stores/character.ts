@@ -30,6 +30,7 @@ import {
   applySpeciesTraits,
   applyFeatureChoices,
   applyBackgroundBonuses,
+  removeStartingEquipment,
   calculateDerivedStats,
   applyAllChanges,
 } from '../utils/characterMutations'
@@ -512,6 +513,10 @@ export const useCharacterStore = defineStore('character', () => {
    */
   function applyBackgroundChange(newBackground: string): void {
     if (!currentCharacterData.value) return
+    if (currentCharacterData.value.background !== newBackground) {
+      currentCharacterData.value = removeStartingEquipment(currentCharacterData.value)
+      equipmentWizard.resetStartingEquipment()
+    }
     currentCharacterData.value.background = newBackground
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
@@ -523,6 +528,10 @@ export const useCharacterStore = defineStore('character', () => {
    */
   function applyClassChange(newClass: string): void {
     if (!currentCharacterData.value) return
+    if (currentCharacterData.value.class !== newClass) {
+      currentCharacterData.value = removeStartingEquipment(currentCharacterData.value)
+      equipmentWizard.resetStartingEquipment()
+    }
     currentCharacterData.value.class = newClass
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }

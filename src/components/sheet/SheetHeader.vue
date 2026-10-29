@@ -8,8 +8,26 @@ import InfoButton from '@/components/ui/InfoButton.vue'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import SubChoiceModal from '@/components/modals/SubChoiceModal.vue'
 import decorativeBackdrop from '@/assets/decorative-backdrop.png'
+import { hasStartingEquipment } from '@/utils/characterMutations'
 
 const store = useCharacterStore()
+
+/** Apply a class/background change, confirming first if starting gear would be removed. */
+function onSelectionChange(event: Event, field: 'class' | 'background'): void {
+  const select = event.target as HTMLSelectElement
+  const current = store.currentCharacterData[field]
+  if (select.value !== current && hasStartingEquipment(store.currentCharacterData)) {
+    const ok = confirm(
+      `Changing your ${field} will remove the starting equipment you selected. Continue?`,
+    )
+    if (!ok) {
+      select.value = current ?? ''
+      return
+    }
+  }
+  if (field === 'class') store.applyClassChange(select.value)
+  else store.applyBackgroundChange(select.value)
+}
 const { speciesInfo, classInfo, backgroundInfo } = useCharacterInfo()
 
 // SubChoice modal state
@@ -208,7 +226,7 @@ function incrementTier() {
             <select
               v-if="store.isEditing"
               :value="store.currentCharacterData.class"
-              @change="store.applyClassChange(($event.target as HTMLSelectElement).value)"
+              @change="onSelectionChange($event, 'class')"
               class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
             >
               <option v-for="(classData, key) in DND_RULES.CLASSES" :key="key" :value="key">
@@ -238,7 +256,7 @@ function incrementTier() {
             <select
               v-if="store.isEditing"
               :value="store.currentCharacterData.background"
-              @change="store.applyBackgroundChange(($event.target as HTMLSelectElement).value)"
+              @change="onSelectionChange($event, 'background')"
               class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md focus:border-tertiary focus:ring-1 focus:ring-tertiary"
             >
               <option v-for="(bgData, key) in DND_RULES.BACKGROUNDS" :key="key" :value="key">

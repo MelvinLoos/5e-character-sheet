@@ -277,6 +277,7 @@ export interface EquipmentResolutionResult {
     slotCost: number
     rarity?: string
     theme?: string
+    source?: 'starting-equipment'
   }>
   consumables: Array<{
     id: string
@@ -284,6 +285,7 @@ export interface EquipmentResolutionResult {
     type: string
     slotCost: number
     usageDie: string
+    source?: 'starting-equipment'
   }>
   attacks: Array<{
     name: string
@@ -294,6 +296,7 @@ export interface EquipmentResolutionResult {
     dmgStat?: AbilityKey | string | null
     dmgBonus: number
     notes?: string
+    source?: 'starting-equipment'
   }>
   gold: GoldBreakdown
   focusGrants: BundleGrant[]

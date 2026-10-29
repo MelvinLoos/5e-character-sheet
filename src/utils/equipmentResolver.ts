@@ -410,6 +410,7 @@ export function resolveStartingEquipment(
       description: entry.description,
       slotCost: entry.slotCost,
       theme: 'default',
+      source: 'starting-equipment',
     })
   }
 
@@ -422,6 +423,7 @@ export function resolveStartingEquipment(
       type: isSupply ? 'Supply' : 'Ammunition',
       slotCost: entry.slotCost,
       usageDie: isSupply ? getSupplyUsageDie(Math.round(entry.slotCost * 5)) : 'd8',
+      source: 'starting-equipment',
     })
   }
 
@@ -435,6 +437,7 @@ export function resolveStartingEquipment(
       dmgStat: atk.dmgStat,
       dmgBonus: atk.dmgBonus,
       notes: atk.notes,
+      source: 'starting-equipment',
     })
   }
 

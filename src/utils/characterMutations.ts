@@ -154,6 +154,12 @@ export function migrateCharacterData(data: unknown): CharacterData {
   }
   if (!migrated.equippedGear) migrated.equippedGear = []
   if (!migrated.consumables) migrated.consumables = []
+  if (migrated.startingEquipmentApplied === undefined) {
+    migrated.startingEquipmentApplied =
+      (migrated.equippedGear as unknown[]).length > 0 ||
+      (migrated.consumables as unknown[]).length > 0 ||
+      (migrated.gold as number) > 0
+  }
 
   return migrated as unknown as CharacterData
 }
@@ -680,6 +686,7 @@ export function applyStartingEquipment(
       dmgStat: attack.dmgStat,
       dmgBonus: attack.dmgBonus || 0,
       notes: attack.notes,
+      source: attack.source,
     })
   }
 
@@ -708,6 +715,38 @@ export function applyStartingEquipment(
     attacks: existingAttacks,
     features: existingFeatures,
     gold: (char.gold || 0) + resolution.gold.totalGold,
+    startingGold: (char.startingGold || 0) + resolution.gold.totalGold,
+    startingEquipmentApplied: true,
+  }
+}
+
+/** True if the character holds anything granted by the Starting Equipment wizard. */
+export function hasStartingEquipment(char: CharacterData): boolean {
+  const tagged = (item: { source?: string }) => item.source === 'starting-equipment'
+  return (
+    (char.startingGold ?? 0) > 0 ||
+    (char.equippedGear || []).some(tagged) ||
+    (char.consumables || []).some(tagged) ||
+    (char.attacks || []).some(tagged)
+  )
+}
+
+/**
+ * Remove everything the Starting Equipment wizard granted (tagged gear,
+ * consumables and attacks, the focus feature and starting gold). Items the
+ * player added by hand are kept.
+ */
+export function removeStartingEquipment(char: CharacterData): CharacterData {
+  const untagged = (item: { source?: string }) => item.source !== 'starting-equipment'
+  return {
+    ...char,
+    equippedGear: (char.equippedGear || []).filter(untagged),
+    consumables: (char.consumables || []).filter(untagged),
+    attacks: (char.attacks || []).filter(untagged),
+    features: (char.features || []).filter((f) => f.source !== 'Starting Equipment'),
+    gold: Math.max(0, (char.gold || 0) - (char.startingGold || 0)),
+    startingGold: 0,
+    startingEquipmentApplied: false,
   }
 }
 
