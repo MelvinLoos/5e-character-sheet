@@ -150,3 +150,45 @@ describe('character store class/background switch', () => {
     expect(store.currentCharacterData.startingEquipmentApplied).toBe(true)
   })
 })
+
+describe('SheetHeader class change confirmation', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  async function mountHeader() {
+    const { mount } = await import('@vue/test-utils')
+    const SheetHeader = (await import('@/components/sheet/SheetHeader.vue')).default
+    const store = useCharacterStore()
+    store.currentCharacterData.class = 'Fighter'
+    store.currentCharacterData.background = 'Soldier'
+    store.selectClassEquipmentOption('B')
+    store.selectBackgroundEquipmentOption('A')
+    store.confirmStartingEquipment()
+    store.isEditing = true
+    const wrapper = mount(SheetHeader)
+    return { store, wrapper }
+  }
+
+  it('keeps class and gear when the player cancels the confirm', async () => {
+    const { vi } = await import('vitest')
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    const { store, wrapper } = await mountHeader()
+    const select = wrapper.findAll('select')[1]!
+    await select.setValue('Wizard')
+    expect(confirmSpy).toHaveBeenCalled()
+    expect(store.currentCharacterData.class).toBe('Fighter')
+    expect(hasStartingEquipment(store.currentCharacterData)).toBe(true)
+    confirmSpy.mockRestore()
+  })
+
+  it('removes starting gear when the player accepts the confirm', async () => {
+    const { vi } = await import('vitest')
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const { store, wrapper } = await mountHeader()
+    await wrapper.findAll('select')[1]!.setValue('Wizard')
+    expect(store.currentCharacterData.class).toBe('Wizard')
+    expect(hasStartingEquipment(store.currentCharacterData)).toBe(false)
+    confirmSpy.mockRestore()
+  })
+})
