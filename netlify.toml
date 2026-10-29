@@ -3,6 +3,9 @@
   command = "npm run build"
   secrets_scan_omit_paths = ".env.example,netlify.toml"
 
+[build.environment]
+  NODE_VERSION = "26"
+
 [functions]
 directory = "netlify/functions/"
 node_bundler = "esbuild"
