@@ -95,3 +95,55 @@ export function computeSpellSlots(
 
   return merged
 }
+
+/**
+ * True when a feature contributes spellcasting: either a class progression
+ * (`casterType` other than 'none') or feat/trait-granted spells.
+ */
+export function isSpellcastingFeature(feature: CharacterFeature): boolean {
+  return (
+    (typeof feature.casterType === 'string' && feature.casterType !== 'none') ||
+    !!feature.grantsSpells
+  )
+}
+
+/** True when at least one feature contributes spellcasting. */
+export function hasSpellcasting(features: CharacterFeature[]): boolean {
+  return features.some(isSpellcastingFeature)
+}
+
+/**
+ * Caster progression type of the first class-spellcasting feature, or
+ * 'granted' when spells only come from feats/traits, else null.
+ */
+export function detectCasterType(
+  features: CharacterFeature[],
+): CasterType | 'granted' | null {
+  const spellcastingFeature = features.find(
+    (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
+  )
+  if (spellcastingFeature) {
+    return (spellcastingFeature.casterType || null) as CasterType | null
+  }
+  return features.some((f) => !!f.grantsSpells) ? 'granted' : null
+}
+
+/** Clamp a spent-slot count into [0, max]. */
+export function clampSpentCount(value: number, max: number): number {
+  return Math.min(max, Math.max(0, value))
+}
+
+/**
+ * Clamp spent slots to the current maximums (e.g. after a tier downgrade).
+ * Returns a new record; levels absent from `maxSlots` are left untouched.
+ */
+export function clampSpentSlots(
+  slotsSpent: Record<string, number>,
+  maxSlots: Record<string, number>,
+): Record<string, number> {
+  const result = { ...slotsSpent }
+  for (const [key, max] of Object.entries(maxSlots)) {
+    if ((result[key] || 0) > max) result[key] = max
+  }
+  return result
+}

@@ -14,7 +14,7 @@ import {
   migrateEquippedGearCatalogIds,
   migrateDescriptionHtmlToMarkdown,
 } from './migrations'
-import { getMod } from '@/domain'
+import { getMod, hasSpellcasting } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 import { resolveStartingEquipment } from './equipmentResolver'
 import { calculateArmorClass } from './acCalculator'
@@ -594,13 +594,9 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
   // Spellcasting setup: detect any feature that grants spellcasting,
   // either through a casterType (class-granted feat) or grantsSpells flag.
   const features = char.features || []
-  const hasSpellcasting = features.some(
-    (f) =>
-      (typeof f.casterType === 'string' && f.casterType !== 'none') ||
-      !!f.grantsSpells,
-  )
+  const isCaster = hasSpellcasting(features)
   let spellcasting = char.spellcasting
-  if (hasSpellcasting) {
+  if (isCaster) {
     // Derive the casting ability from the character's class (Bard/Cleric/etc.),
     // falling back to Intelligence for feat/trait-only casters without a class.
     const ability = DND_RULES.getSpellcastingAbility(char.class)

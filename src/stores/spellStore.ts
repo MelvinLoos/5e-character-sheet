@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useCharacterStore } from './character'
 import { useProgressionStore } from './progression'
 import { getSpellcastingAbility } from '@/data/rules'
+import { hasSpellcasting } from '@/domain'
 import type { CharacterFeature } from '@/types/character'
 
 /**
@@ -131,12 +132,9 @@ export const useSpellStore = defineStore('spellStore', () => {
     if (!data) return
 
     const features = data.features || []
-    const hasSpellcasting = features.some(
-      (f) =>
-        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
-    )
+    const isCaster = hasSpellcasting(features)
 
-    if (hasSpellcasting) {
+    if (isCaster) {
       // Derive the casting ability from the character's class
       const ability = getSpellcastingAbility(data.class)
       data.spellcasting = {

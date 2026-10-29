@@ -2,35 +2,23 @@ import { computed, ref, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useRulesStore } from '@/stores/rulesStore'
-import { computeGrantedSpellSlots } from '@/domain'
+import {
+  computeGrantedSpellSlots,
+  hasSpellcasting as featuresHaveSpellcasting,
+  detectCasterType,
+  clampSpentCount,
+  clampSpentSlots,
+  generateSpellId,
+  formatLevel,
+  createSpellFromLibrary,
+  createBlankSpell,
+  removeSpellById,
+} from '@/domain'
 import type { Ref, ComputedRef, WritableComputedRef } from 'vue'
 import type { CharacterFeature, CharacterSpell } from '@/types/character'
 import type { CasterType } from '@/types/enums'
 
-/**
- * Pure utility: generate short unique IDs for spells and other entities.
- */
-export function generateSpellId(): string {
-  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
-}
-
-/**
- * Pure utility: format a spell level into a human-readable ordinal label.
- *
- * @example
- * formatLevel(0) // 'Cantrip'
- * formatLevel(1) // '1st'
- * formatLevel(2) // '2nd'
- * formatLevel(3) // '3rd'
- * formatLevel(4) // '4th'
- */
-export function formatLevel(level: number): string {
-  if (level === 0) return 'Cantrip'
-  if (level === 1) return '1st'
-  if (level === 2) return '2nd'
-  if (level === 3) return '3rd'
-  return `${level}th`
-}
+export { generateSpellId, formatLevel }
 
 /**
  * Composable encapsulating all D&D 5.5e spellcasting logic from
@@ -110,31 +98,17 @@ export function useSpellcasting(
    * True when the character has a casterType on at least one feature,
    * OR any feature grants spells (e.g. Magic Initiate).
    */
-  const hasSpellcasting: ComputedRef<boolean> = computed(() => {
-    const features = (store.currentCharacterData?.features || [])
-    const hasFullCaster = features.some(
-      (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
-    )
-    const hasGranted = features.some((f) => !!f.grantsSpells)
-    return hasFullCaster || hasGranted
-  })
+  const hasSpellcasting: ComputedRef<boolean> = computed(() =>
+    featuresHaveSpellcasting(store.currentCharacterData?.features || []),
+  )
 
   /**
    * Returns the caster progression type of the first spellcasting feature,
    * or 'granted' if the character only gains spells via feats/traits.
    */
-  const casterType: ComputedRef<CasterType | 'granted' | null> = computed(() => {
-    const features = (store.currentCharacterData?.features || []) as CharacterFeature[]
-    const spellcastingFeature = features.find(
-      (f) => typeof f.casterType === 'string' && f.casterType !== 'none',
-    )
-    if (spellcastingFeature) {
-      return (spellcastingFeature.casterType || null) as CasterType | null
-    }
-
-    const hasGranted = features.some((f) => !!f.grantsSpells)
-    return hasGranted ? 'granted' : null
-  })
+  const casterType: ComputedRef<CasterType | 'granted' | null> = computed(() =>
+    detectCasterType((store.currentCharacterData?.features || []) as CharacterFeature[]),
+  )
 
   // ---------------------------------------------------------------------------
   // Slot Calculation
@@ -213,18 +187,17 @@ export function useSpellcasting(
       store.currentCharacterData.spellcasting.slotsSpent = {}
     }
     const max = displaySpellSlots.value[`level${level}`] || 0
-    const validated = Math.min(max, Math.max(0, val))
+    const validated = clampSpentCount(val, max)
     store.currentCharacterData.spellcasting.slotsSpent[`level${level}`] = validated
   }
 
   // Defensive clamp: when tier decreases, max slots shrink → clamp spent
   watch(displaySpellSlots, (newSlots) => {
-    if (!store.currentCharacterData.spellcasting?.slotsSpent) return
-    for (const [key, max] of Object.entries(newSlots)) {
-      const spent = store.currentCharacterData.spellcasting.slotsSpent[key] || 0
-      if (spent > max) {
-        store.currentCharacterData.spellcasting.slotsSpent[key] = max
-      }
+    const spent = store.currentCharacterData.spellcasting?.slotsSpent
+    if (!spent) return
+    const clamped = clampSpentSlots(spent, newSlots)
+    for (const [key, val] of Object.entries(clamped)) {
+      if (spent[key] !== val) spent[key] = val
     }
   })
 
@@ -334,25 +307,13 @@ export function useSpellcasting(
   }
 
   function addSpellFromLibrary(spell: CharacterSpell): void {
-    const newSpell: CharacterSpell = {
-      ...spell,
-      id: generateSpellId(),
-      prepared: false,
-    }
     store.currentCharacterData.spells = store.currentCharacterData.spells || []
-    store.currentCharacterData.spells.push(newSpell)
+    store.currentCharacterData.spells.push(createSpellFromLibrary(spell))
   }
 
   function addManualSpell(): void {
-    const newSpell: CharacterSpell = {
-      id: generateSpellId(),
-      name: 'New Spell',
-      level: 1,
-      desc: 'Enter spell description...',
-      prepared: false,
-    }
     store.currentCharacterData.spells = store.currentCharacterData.spells || []
-    store.currentCharacterData.spells.push(newSpell)
+    store.currentCharacterData.spells.push(createBlankSpell())
     showSpellLibrary.value = false
   }
 
@@ -367,10 +328,7 @@ export function useSpellcasting(
   }
 
   function removeSpell(id: string): void {
-    const idx = store.currentCharacterData.spells.findIndex((s) => s.id === id)
-    if (idx !== -1) {
-      store.currentCharacterData.spells.splice(idx, 1)
-    }
+    removeSpellById(store.currentCharacterData.spells, id)
   }
 
   function togglePrepared(spell: CharacterSpell): void {

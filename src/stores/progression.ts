@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useCharacterStore } from './character'
 import * as DND_RULES from '@/data/rules'
-import { getMod, pointBuyCosts, computeSpellSlots } from '@/domain'
+import { getMod, pointBuyCosts, computeSpellSlots, hasSpellcasting } from '@/domain'
 import { applyBackgroundBonuses } from '@/utils/characterMutations'
 import type { CharacterFeature } from '@/types/character'
 
@@ -167,13 +167,10 @@ export const useProgressionStore = defineStore('progression', () => {
       data.combat.hp_current = data.combat.hp_max
     }
 
-    // Setup spellcasting based on current features (inlined to avoid circular deps)
+    // Setup spellcasting based on current features
     const features = data.features || []
-    const hasSpellcasting = features.some(
-      (f) =>
-        (typeof f.casterType === 'string' && f.casterType !== 'none') || !!f.grantsSpells,
-    )
-    if (hasSpellcasting) {
+    const isCaster = hasSpellcasting(features)
+    if (isCaster) {
       const ability = DND_RULES.getSpellcastingAbility(data.class)
       data.spellcasting = { ...(data.spellcasting ?? {}), ability }
     } else {
