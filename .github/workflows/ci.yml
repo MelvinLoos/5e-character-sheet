@@ -136,7 +136,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.62.0-jammy
+      image: mcr.microsoft.com/playwright:v1.64.1-jammy
     env:
       HOME: /root
     steps:

@@ -47,9 +47,9 @@ export default defineConfig(({ mode }) => {
     'import.meta.env.VITE_POSTHOG_DISABLED': JSON.stringify(env.VITE_POSTHOG_DISABLED === 'true' ? 'true' : 'false')
   },
   build: {
-    // Encourage Rollup to split large vendor chunks into smaller pieces
+    // Encourage Rolldown to split large vendor chunks into smaller pieces
     chunkSizeWarningLimit: 800,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         manualChunks(id: string) {
           if (id.includes('node_modules')) {
