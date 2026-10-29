@@ -193,3 +193,27 @@ describe('StartingEquipmentWizard — dynamic step computation', () => {
     expect(wrapper.text()).not.toContain('Choose One Tiny Trinket')
   })
 })
+describe('StartingEquipmentWizard — visibility (#163)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('is visible when starting equipment is not applied, even with manual gear', () => {
+    setupWizardVisible('Fighter', 'Soldier')
+    const store = useCharacterStore()
+    store.currentCharacterData.startingEquipmentApplied = false
+    store.currentCharacterData.equippedGear = [
+      { id: 'm', name: 'Coin', type: 'Misc', description: '', slotCost: 1 },
+    ]
+    const wrapper = mount(StartingEquipmentWizard)
+    expect(wrapper.text()).toContain('Starting Equipment')
+  })
+
+  it('is hidden once starting equipment has been applied', () => {
+    setupWizardVisible('Fighter', 'Soldier')
+    const store = useCharacterStore()
+    store.currentCharacterData.startingEquipmentApplied = true
+    const wrapper = mount(StartingEquipmentWizard)
+    expect(wrapper.text()).not.toContain('Starting Equipment')
+  })
+})

@@ -114,6 +114,8 @@ export interface Attack {
   type: DamageType | string
   notes?: string
   weaponMastery?: string
+  /** Set when the item was granted by the Starting Equipment wizard. */
+  source?: 'starting-equipment'
 }
 
 /** Combat statistics block. */
@@ -140,6 +142,8 @@ export interface EquippedGear {
   slotCost: number
   rarity?: string
   theme?: string
+  /** Set when the item was granted by the Starting Equipment wizard. */
+  source?: 'starting-equipment'
 }
 
 /** A consumable item (ammunition, potions, etc.) using usage dice. */
@@ -149,6 +153,8 @@ export interface Consumable {
   type: GearType | string
   slotCost: number
   usageDie: string
+  /** Set when the item was granted by the Starting Equipment wizard. */
+  source?: 'starting-equipment'
 }
 
 // ---------------------------------------------------------------------------
@@ -220,4 +226,8 @@ export interface CharacterData {
   inventorySlots: number
   equippedGear: EquippedGear[]
   consumables: Consumable[]
+  /** Gold granted by the Starting Equipment wizard (removed again on class/background change). */
+  startingGold?: number
+  /** True once the Starting Equipment wizard has been applied to this character. */
+  startingEquipmentApplied?: boolean
 }

@@ -139,6 +139,8 @@ export const createBlankCharacter = (): CharacterData => {
     inventorySlots: Math.max(10, finalScores.str || 10), // Base slot calculation, can be updated later
     equippedGear: [],
     consumables: [],
+    startingGold: 0,
+    startingEquipmentApplied: false,
     personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
     spellcasting: null,
     spells: [],

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { capturePostHogEvent } from '@/utils/posthog'
 import { EQUIPMENT_CATALOG } from '@/data/equipment-items'
@@ -51,12 +51,13 @@ const noEquipmentYet = computed(() => {
 const showWizard = computed(() => {
   return (
     hasClassAndBg.value &&
-    store.currentCharacterData.equippedGear.length === 0 &&
-    store.currentCharacterData.consumables.length === 0 &&
-    store.currentCharacterData.gold === 0 &&
+    !store.currentCharacterData.startingEquipmentApplied &&
     !isComplete.value
   )
 })
+
+// A new class/background invalidates any selections made so far
+watch([className, backgroundName], () => resetWizard())
 
 // Class bundles for current class
 const classBundles = computed(() => {
