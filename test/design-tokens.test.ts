@@ -85,9 +85,15 @@ describe('error colour', () => {
     expect(token(darkBlock, 'error').toLowerCase()).not.toBe('#ffb4ab')
   })
 
-  it('meets AA for badge digits and for red text on the dark background', () => {
-    const error = token(darkBlock, 'error')
-    expect(contrast(token(darkBlock, 'on-error'), error)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(error, token(darkBlock, 'background'))).toBeGreaterThanOrEqual(4.5)
+  it('meets AA for red text on the dark background', () => {
+    expect(contrast(token(darkBlock, 'error'), token(darkBlock, 'background'))).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('has a solid red fill with light text that meets AA in both themes', () => {
+    const lightBlock = css.slice(css.indexOf('html.light {'))
+    for (const block of [darkBlock, lightBlock]) {
+      expect(contrast(token(block, 'on-error-solid'), token(block, 'error-solid'))).toBeGreaterThanOrEqual(4.5)
+    }
+    expect(token(darkBlock, 'on-error-solid').toLowerCase()).toBe('#ffffff')
   })
 })

@@ -64,7 +64,7 @@ describe('InfoButton', () => {
 describe('theme tokens in badges', () => {
   it('CompletionBadge uses the error tokens, not raw red', () => {
     const wrapper = mount(CompletionBadge, { props: { badge: { type: 'alert', label: 'x' } as never } })
-    expect(wrapper.classes()).toContain('bg-error')
+    expect(wrapper.classes()).toContain('bg-error-solid')
     expect(wrapper.classes().join(' ')).not.toMatch(/red-\d/)
   })
 

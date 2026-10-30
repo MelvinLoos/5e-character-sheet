@@ -158,7 +158,7 @@ const gearTypeOptions: GearType[] = [
       >
         <div
           class="h-full transition-all duration-300"
-          :class="usedSlots > maxSlots ? 'bg-error' : 'bg-tertiary'"
+          :class="usedSlots > maxSlots ? 'bg-error-solid' : 'bg-tertiary'"
           :style="{ width: `${slotPercentage}%` }"
           role="progressbar"
           aria-label="Inventory slots used"

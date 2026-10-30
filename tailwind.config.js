@@ -30,6 +30,8 @@ export default {
         "surface-container-low": "var(--color-surface-container-low)",
         "surface-container-high": "var(--color-surface-container-high)",
         "on-error": "var(--color-on-error)",
+        "error-solid": "var(--color-error-solid)",
+        "on-error-solid": "var(--color-on-error-solid)",
         "secondary-fixed": "var(--color-secondary-fixed)",
         "surface-container": "var(--color-surface-container)",
         "surface-tint": "var(--color-surface-tint)",
