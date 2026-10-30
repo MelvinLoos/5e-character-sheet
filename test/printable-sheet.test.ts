@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
@@ -50,7 +51,10 @@ describe('PrintableSheet (component integration)', () => {
 
   it('renders exactly two .a4-page elements when no feature or spell descriptions exist', () => {
     const store = useCharacterStore()
-    store.currentCharacterData = createBaseCharacter()
+    const character = createBaseCharacter()
+    // No personality text either, so nothing needs an appendix
+    character.personality = { traits: '', ideal: '', bond: '', flaw: '', notes: '' }
+    store.currentCharacterData = character
 
     const wrapper = mount(PrintableSheet)
     const pages = wrapper.findAll('.a4-page')
@@ -98,6 +102,8 @@ describe('PrintableSheet (component integration)', () => {
   it('does not render an appendix when feature and spell descriptions are empty', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()
+    // No personality text either, so nothing needs an appendix
+    character.personality = { traits: '', ideal: '', bond: '', flaw: '', notes: '' }
     character.features = [{ title: 'Alert', desc: '' }]
     character.spells = [{ name: 'Burning Hands', level: 1, desc: '', school: 'Evocation' }]
     store.currentCharacterData = character
@@ -353,5 +359,90 @@ describe('PrintableSheet (component integration)', () => {
     expect(qrBlock.text()).toContain('Scan for the digital sheet')
     expect(qrBlock.text()).toContain('?id=share-123')
     expect(withShare.find('[data-testid="sheet-share-qr-code"]').html()).toContain('<svg')
+  })
+})
+
+describe('PrintableSheet completeness (UI/UX audit phase 6)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  function baseCharacter() {
+    const store = useCharacterStore()
+    const character = {
+      ...store.currentCharacterData,
+      name: 'Throg',
+      class: 'Fighter',
+      proficiencies: { savingThrows: ['str', 'con'], skills: [] },
+      combat: { ac: 16, hp_current: 12, hp_max: 12, hp_temp: 5, speed: '30ft', isAcOverride: false },
+      personality: { traits: '', ideal: '', bond: '', flaw: '', notes: '' },
+      features: [],
+      spells: [],
+      attacks: [],
+      equippedGear: [],
+      consumables: [],
+    } as any
+    return { store, character }
+  }
+
+  it('prints saving throws, hit dice, temp HP and death save boxes on page 1', () => {
+    const { store, character } = baseCharacter()
+    store.currentCharacterData = character
+    const wrapper = mount(PrintableSheet)
+
+    const saves = wrapper.get('[data-testid="print-saving-throws"]')
+    expect(saves.findAll('li')).toHaveLength(6)
+    expect(saves.findAll('.skill-prof-filled')).toHaveLength(2)
+    expect(wrapper.get('[data-testid="print-temp-hp"]').text()).toContain('5')
+    expect(wrapper.get('[data-testid="print-hit-dice"]').text()).toMatch(/\d+d10/)
+    expect(wrapper.get('[data-testid="print-death-saves"]').findAll('.print-box')).toHaveLength(6)
+  })
+
+  it('prints personality and backstory in the appendix', () => {
+    const { store, character } = baseCharacter()
+    character.personality = { traits: 'Loud', ideal: '', bond: 'My axe', flaw: '', notes: 'Born in a cave.' }
+    store.currentCharacterData = character
+    const wrapper = mount(PrintableSheet)
+
+    const section = wrapper.get('[data-testid="appendix-personality"]')
+    expect(section.text()).toContain('Personality Traits')
+    expect(section.text()).toContain('Born in a cave.')
+    expect(section.text()).not.toContain('Ideals')
+    expect(wrapper.findAll('.a4-page')).toHaveLength(3)
+  })
+
+  it('lists everything page 2 cannot fit in the appendix instead of dropping it', () => {
+    const { store, character } = baseCharacter()
+    character.attacks = Array.from({ length: 8 }, (_, i) => ({ name: `Attack ${i + 1}`, atkStat: 'str', dmgDie: '1d6', type: 'slashing' }))
+    character.features = Array.from({ length: 10 }, (_, i) => ({ title: `Feature ${i + 1}`, desc: '' }))
+    character.consumables = Array.from({ length: 6 }, (_, i) => ({ id: `c${i}`, name: `Potion ${i + 1}`, usageDie: 'd6' }))
+    store.currentCharacterData = character
+    const wrapper = mount(PrintableSheet)
+
+    const overflow = wrapper.get('[data-testid="appendix-overflow"]')
+    expect(overflow.text()).toContain('Attack 7')
+    expect(overflow.text()).toContain('Attack 8')
+    expect(overflow.text()).toContain('Feature 9')
+    expect(overflow.text()).toContain('Potion 6')
+    expect(overflow.text()).not.toContain('Attack 1 ')
+    expect(wrapper.text()).toContain('more attacks — see Appendix')
+  })
+
+  it('prints tick boxes for limited-use features on page 2', () => {
+    const { store, character } = baseCharacter()
+    character.features = [{ title: 'Second Wind', desc: '', uses: { total: 2, per: 'short rest' } }]
+    store.currentCharacterData = character
+    const wrapper = mount(PrintableSheet)
+
+    const item = wrapper.findAll('[data-testid="page-two-index-item"]')[0]!
+    expect(item.findAll('.print-box')).toHaveLength(2)
+  })
+
+  it('keeps print text at 11px or larger and lets section headers print', () => {
+    const src = readFileSync('src/components/sheet/PrintableSheet.vue', 'utf8')
+    expect(src).not.toMatch(/text-\[(8|9|10)px\]/)
+    expect(src).not.toMatch(/@import url\(/)
+    expect(src).not.toMatch(/background-color: transparent !important/)
+    expect(src).toContain('print-color-adjust: exact')
   })
 })
