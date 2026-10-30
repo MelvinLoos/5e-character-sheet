@@ -7,6 +7,7 @@ import type { RollMode } from '@/domain'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import UsageTracker from '@/components/ui/UsageTracker.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
 import RestActions from '@/components/sheet/RestActions.vue'
 
 const store = useCharacterStore()
@@ -48,7 +49,7 @@ function onInitiativeInput(e: Event): void {
 const initiativeBreakdown = computed(() => {
   const r = store.lastInitiativeRoll
   if (!r) return ''
-  const dice = r.rolls.length > 1 ? `d20 (${r.rolls.join(', ')}) → ${r.kept}` : `d20 ${r.kept}`
+  const dice = r.rolls.length > 1 ? `d20 (${r.rolls.join(', ')}) → ${r.kept}` : `d20 (${r.kept})`
   const mod = r.mod === 0 ? '' : ` ${r.mod > 0 ? '+' : '−'} ${Math.abs(r.mod)}`
   return `${dice}${mod} = ${r.total}`
 })
@@ -230,47 +231,58 @@ watch(
         </div>
       </ElevatedCard>
 
-      <!-- Initiative -->
+      <!-- Initiative: modifier → roll → result -->
       <ElevatedCard :elevation="1" class="col-span-2">
-        <div class="rounded p-3 flex flex-col items-center gap-2">
-          <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
-            >Initiative</span
-          >
-          <div class="flex items-center gap-3">
+        <div class="rounded p-3 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase flex items-center gap-1 select-none"
+              ><span class="material-symbols-outlined text-sm" aria-hidden="true">bolt</span> Initiative</span
+            >
+            <span class="font-label-md text-label-md text-on-surface-variant select-none" data-testid="initiative-mod"
+              >DEX {{ initiativeMod >= 0 ? '+' : '' }}{{ initiativeMod }}</span
+            >
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex rounded border border-outline-variant overflow-hidden" role="radiogroup" aria-label="Initiative roll mode">
+              <button
+                v-for="m in rollModes"
+                :key="m.value"
+                type="button"
+                role="radio"
+                :aria-checked="rollMode === m.value"
+                :data-testid="`initiative-mode-${m.value}`"
+                class="min-h-11 px-3 font-label-md text-label-md select-none"
+                :class="rollMode === m.value ? 'bg-primary-container text-primary' : 'text-on-surface-variant'"
+                @click="rollMode = m.value"
+              >
+                {{ m.label }}
+              </button>
+            </div>
+            <PressableButton variant="secondary" class="flex-1 gap-2 whitespace-nowrap" data-testid="initiative-roll" @click="rollInitiative">
+              <span class="material-symbols-outlined" aria-hidden="true">casino</span>
+              Roll
+            </PressableButton>
+          </div>
+
+          <div class="flex items-center gap-3 border-t border-surface-variant pt-3">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase select-none">Result</span>
             <input
               :value="store.currentCharacterData.combat.initiative ?? ''"
               :class="{ 'rest-pulse': initiativePulsing }"
               type="number"
               inputmode="numeric"
               placeholder="—"
-              aria-label="Initiative"
+              aria-label="Initiative result (type to override)"
+              title="Type to set initiative manually"
               data-testid="initiative-value"
-              class="w-20 bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-headline-md text-on-surface p-0 pb-1"
+              class="w-16 bg-surface-container rounded border border-outline-variant text-center font-headline-md text-headline-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
               @change="onInitiativeInput"
             />
-            <span class="font-body-md text-body-md text-on-surface-variant select-none" data-testid="initiative-mod"
-              >{{ initiativeMod >= 0 ? '+' : '' }}{{ initiativeMod }} mod</span
-            >
-            <IconButton icon="casino" label="Roll initiative" data-testid="initiative-roll" @click="rollInitiative" />
+            <span class="font-body-sm text-body-sm text-on-surface-variant" aria-live="polite" data-testid="initiative-breakdown">
+              {{ initiativeBreakdown || (store.currentCharacterData.combat.initiative === undefined ? 'Not rolled yet' : 'Set manually') }}
+            </span>
           </div>
-          <div class="flex gap-1" role="radiogroup" aria-label="Initiative roll mode">
-            <button
-              v-for="m in rollModes"
-              :key="m.value"
-              type="button"
-              role="radio"
-              :aria-checked="rollMode === m.value"
-              :data-testid="`initiative-mode-${m.value}`"
-              class="min-h-9 px-3 rounded border font-label-md text-label-md select-none"
-              :class="rollMode === m.value ? 'bg-primary-container text-primary border-primary' : 'border-outline-variant text-on-surface-variant'"
-              @click="rollMode = m.value"
-            >
-              {{ m.label }}
-            </button>
-          </div>
-          <p class="font-body-sm text-body-sm text-on-surface-variant min-h-5" aria-live="polite" data-testid="initiative-breakdown">
-            {{ initiativeBreakdown }}
-          </p>
         </div>
       </ElevatedCard>
     </div>

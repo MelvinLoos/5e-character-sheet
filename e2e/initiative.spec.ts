@@ -31,7 +31,7 @@ test.describe('Initiative tracker', () => {
 
     await value.fill('22')
     await value.blur()
-    await expect(page.getByTestId('initiative-breakdown')).toHaveText('')
+    await expect(page.getByTestId('initiative-breakdown')).toHaveText('Set manually')
 
     // Drafts are saved on a debounce; wait until the value reaches storage.
     await page.waitForFunction(() =>
