@@ -116,7 +116,7 @@ describe('FeedbackModal', () => {
     it('emits close when the backdrop is clicked', async () => {
       const wrapper = mountOpen()
 
-      const backdrop = document.body.querySelector('.modal-backdrop')
+      const backdrop = document.body.querySelector('[data-testid="modal-backdrop"]')
       expect(backdrop).not.toBeNull()
       ;(backdrop as HTMLElement).click()
       await nextTick()

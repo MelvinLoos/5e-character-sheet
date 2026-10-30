@@ -31,7 +31,7 @@ onUnmounted(() => {
 
 <template>
   <Transition name="slide-up">
-    <div v-if="updateAvailable" class="update-notification" role="alert">
+    <div v-if="updateAvailable" class="update-notification" role="status">
       <div class="update-notification__content">
         <svg
           class="update-notification__icon"
@@ -43,6 +43,7 @@ onUnmounted(() => {
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
+          aria-hidden="true"
         >
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
@@ -60,17 +61,17 @@ onUnmounted(() => {
 <style scoped>
 .update-notification {
   position: fixed;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 60; /* toast layer (see tailwind zIndex scale) */
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 12px 20px;
-  background-color: var(--color-surface-elevated, #1e2d2f);
-  color: var(--color-text-primary, #e8e6e3);
-  border: 1px solid var(--color-border, #3a4a4c);
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline-variant);
   border-radius: 12px;
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.4),
@@ -90,7 +91,7 @@ onUnmounted(() => {
 
 .update-notification__icon {
   flex-shrink: 0;
-  color: var(--color-accent, #73b58c);
+  color: var(--color-tertiary);
 }
 
 .update-notification__button {
@@ -98,8 +99,9 @@ onUnmounted(() => {
   padding: 6px 14px;
   border: none;
   border-radius: 8px;
-  background-color: var(--color-accent, #73b58c);
-  color: var(--color-surface, #121b1d);
+  min-height: 44px;
+  background-color: var(--color-tertiary);
+  color: var(--color-on-tertiary);
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -109,6 +111,13 @@ onUnmounted(() => {
 
 .update-notification__button:hover {
   opacity: 0.9;
+}
+
+/* Sit above the mobile tab bar (64px + safe area) */
+@media (max-width: 767px) {
+  .update-notification {
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Slide-up transition */

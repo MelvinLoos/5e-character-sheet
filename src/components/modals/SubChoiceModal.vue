@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import feather from 'feather-icons'
+import BaseModal from '@/components/ui/BaseModal.vue'
 import * as DND_RULES from '@/data/rules'
 import type { SubChoice } from '@/types/rules'
 
@@ -35,86 +35,62 @@ function handleSelect(subChoiceId: string) {
   emit('select', subChoiceId)
 }
 
-function handleBackdropClick(event: MouseEvent) {
-  if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
-    emit('close')
-  }
-}
-
 function handleClose() {
   emit('close')
 }
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="isOpen && subChoices.length > 0"
-      class="modal-backdrop"
-      @click="handleBackdropClick"
-    >
-      <div class="modal-content max-w-2xl w-full mx-4">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-fell text-tertiary">
-          Choose Your {{ speciesLabel }} Lineage
-        </h2>
-        <button
-          data-test="modal-close-btn"
-          @click="handleClose"
-          class="info-button"
-          title="Close"
-        >
-          <span v-html="feather.icons?.x?.toSvg({ width: 20, height: 20 })"></span>
-        </button>
-      </div>
-
-      <!-- Sub-Choice Options -->
-      <div class="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-        <div
-          v-for="option in subChoices"
-          :key="option.id"
-          :data-test="'subchoice-option'"
-          :data-id="option.id"
-          :class="[
-            'p-4 rounded-lg border-2 cursor-pointer transition-all duration-200',
-            currentSubChoice === option.id
-              ? 'border-tertiary bg-tertiary-container/20 selected'
-              : 'border-sheet-border hover:border-tertiary/50 hover:bg-surface-container-high',
-          ]"
-          @click="handleSelect(option.id)"
-        >
-          <div class="flex items-center justify-between mb-1">
-            <h3 class="text-lg font-bold text-on-surface">{{ option.label }}</h3>
-            <span
-              v-if="currentSubChoice === option.id"
-              class="text-xs font-bold text-on-tertiary bg-tertiary px-2 py-0.5 rounded-full"
-            >
-              Selected
-            </span>
-          </div>
-          <p
-            v-if="option.description"
-            class="text-sm text-on-surface-variant mb-2"
+  <BaseModal
+    :open="isOpen && subChoices.length > 0"
+    :title="`Choose Your ${speciesLabel} Lineage`"
+    size="lg"
+    @close="handleClose"
+  >
+    <!-- Sub-Choice Options -->
+    <div class="space-y-3" role="radiogroup" :aria-label="`${speciesLabel} lineage`">
+      <div
+        v-for="option in subChoices"
+        :key="option.id"
+        :data-test="'subchoice-option'"
+        :data-id="option.id"
+        role="radio"
+        tabindex="0"
+        :aria-checked="currentSubChoice === option.id"
+        :class="[
+          'p-4 rounded-lg border-2 cursor-pointer transition-all duration-200',
+          currentSubChoice === option.id
+            ? 'border-tertiary bg-tertiary-container/20 selected'
+            : 'border-sheet-border hover:border-tertiary/50 hover:bg-surface-container-high',
+        ]"
+        @click="handleSelect(option.id)"
+        @keydown.enter.prevent="handleSelect(option.id)"
+        @keydown.space.prevent="handleSelect(option.id)"
+      >
+        <div class="mb-1 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-on-surface">{{ option.label }}</h3>
+          <span
+            v-if="currentSubChoice === option.id"
+            class="rounded-full bg-tertiary px-2 py-0.5 text-xs font-bold text-on-tertiary"
           >
-            {{ option.description }}
+            Selected
+          </span>
+        </div>
+        <p v-if="option.description" class="mb-2 text-sm text-on-surface-variant">
+          {{ option.description }}
+        </p>
+        <div v-if="option.traits.length > 0" class="mt-2 space-y-1">
+          <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+            Grants
           </p>
-          <div v-if="option.traits.length > 0" class="mt-2 space-y-1">
-            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wide">
-              Grants
-            </p>
-            <ul class="list-disc list-inside text-sm text-on-surface space-y-0.5">
-              <li v-for="trait in option.traits" :key="trait.title">
-                <span class="font-medium">{{ trait.title }}</span>
-                <span v-if="trait.desc" class="text-on-surface-variant">
-                  — {{ trait.desc }}
-                </span>
-              </li>
-            </ul>
-          </div>
+          <ul class="list-inside list-disc space-y-0.5 text-sm text-on-surface">
+            <li v-for="trait in option.traits" :key="trait.title">
+              <span class="font-medium">{{ trait.title }}</span>
+              <span v-if="trait.desc" class="text-on-surface-variant"> — {{ trait.desc }} </span>
+            </li>
+          </ul>
         </div>
       </div>
-      </div>
     </div>
-  </Teleport>
+  </BaseModal>
 </template>

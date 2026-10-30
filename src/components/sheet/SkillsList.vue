@@ -49,13 +49,13 @@ function isLocked(skillName: string): boolean {
   <section class="flex flex-col gap-4">
     <div
       class="flex items-center justify-between border-b pb-2"
-      :class="badges.skills ? 'border-red-600/50' : 'border-primary-container'"
+      :class="badges.skills ? 'border-error/50' : 'border-primary-container'"
     >
       <h3 class="font-headline-md text-headline-md text-primary select-none">Skills</h3>
       <span
         v-if="badges.skills || store.isEditing"
         class="text-sm font-label-md select-none"
-        :class="badges.skills ? 'text-red-600 font-semibold' : remainingChoices > 0 ? 'text-tertiary' : 'text-on-surface-variant'"
+        :class="badges.skills ? 'text-error font-semibold' : remainingChoices > 0 ? 'text-tertiary' : 'text-on-surface-variant'"
       >
         {{ choiceHeader }}
       </span>

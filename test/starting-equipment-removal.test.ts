@@ -171,24 +171,28 @@ describe('SheetHeader class change confirmation', () => {
   }
 
   it('keeps class and gear when the player cancels the confirm', async () => {
-    const { vi } = await import('vitest')
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    const { flushPromises } = await import('@vue/test-utils')
+    const { useConfirm } = await import('@/composables/useConfirm')
     const { store, wrapper } = await mountHeader()
     const select = wrapper.findAll('select')[1]!
     await select.setValue('Wizard')
-    expect(confirmSpy).toHaveBeenCalled()
+    const { state, settle } = useConfirm()
+    expect(state.open).toBe(true)
+    settle(false)
+    await flushPromises()
     expect(store.currentCharacterData.class).toBe('Fighter')
+    expect((select.element as HTMLSelectElement).value).toBe('Fighter')
     expect(hasStartingEquipment(store.currentCharacterData)).toBe(true)
-    confirmSpy.mockRestore()
   })
 
   it('removes starting gear when the player accepts the confirm', async () => {
-    const { vi } = await import('vitest')
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const { flushPromises } = await import('@vue/test-utils')
+    const { useConfirm } = await import('@/composables/useConfirm')
     const { store, wrapper } = await mountHeader()
     await wrapper.findAll('select')[1]!.setValue('Wizard')
+    useConfirm().settle(true)
+    await flushPromises()
     expect(store.currentCharacterData.class).toBe('Wizard')
     expect(hasStartingEquipment(store.currentCharacterData)).toBe(false)
-    confirmSpy.mockRestore()
   })
 })

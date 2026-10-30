@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { config, mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { nextTick } from 'vue'
 import 'fake-indexeddb/auto'
@@ -6,6 +6,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import FeaturesList from '../src/components/sheet/FeaturesList.vue'
 import { useCharacterStore } from '../src/stores/character'
 import { useRulesStore } from '../src/stores/rulesStore'
+
+// BaseModal teleports to <body>; render it in place so wrapper queries find it.
+config.global.stubs = { ...config.global.stubs, teleport: true }
 
 describe('FeaturesList (component integration)', () => {
   beforeEach(() => {

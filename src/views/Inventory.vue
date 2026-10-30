@@ -8,22 +8,14 @@ const { badges } = useCharacterCompletion()
 <template>
   <div class="flex flex-col gap-8">
     <!-- Header -->
-    <header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
-      <div>
-        <h2 class="font-display-lg text-display-lg text-tertiary">Inventory</h2>
-        <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">
-          Keep a list of what you carry with you.
-        </p>
-      </div>
-    </header>
+    <PageHeader
+      title="Inventory"
+      subtitle="Keep a list of what you carry with you."
+    />
 
-    <div
-      v-if="badges.inventory"
-      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
-    >
-      <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
-      <p class="font-label-md text-red-600">{{ badges.inventory.label }}</p>
-    </div>
+    <StatusBanner v-if="badges.inventory" tone="error" class="md:hidden">
+      {{ badges.inventory.label }}
+    </StatusBanner>
 
     <StartingEquipmentWizard />
     <EquipmentBlock />

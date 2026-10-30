@@ -99,7 +99,7 @@ describe('FeatureChoiceModal.vue', () => {
 
   it('emits close on backdrop click', () => {
     const w = mountOpen({ isOpen: true, choice: warlockInvocations, currentSelections: [] })
-    ;(qs('.modal-backdrop') as HTMLElement).click()
+    ;(qs('[data-testid="modal-backdrop"]') as HTMLElement).click()
     expect(w.emitted().close).toBeTruthy()
   })
 

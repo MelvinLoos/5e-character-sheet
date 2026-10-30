@@ -8,6 +8,9 @@ import draggable from 'vuedraggable'
 import type { CharacterFeature } from '@/types/character'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
+import IconButton from '@/components/ui/IconButton.vue'
+import LibraryModal from '@/components/ui/LibraryModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
@@ -415,115 +418,66 @@ watch(
     />
 
     <!-- Feature Library Modal -->
-    <div
-      v-if="showFeatureLibrary"
-      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    <LibraryModal
+      :open="showFeatureLibrary"
+      v-model:search="searchFilter"
+      title="Feature Archives"
+      search-label="Search features"
+      search-placeholder="Search the archives..."
+      :count-label="`${libraryFeatures.length} entries available`"
+      @close="showFeatureLibrary = false"
     >
       <div
-        class="bg-surface-container rounded-lg shadow-elevation-4 border border-outline-variant/30 w-full max-w-2xl max-h-[80vh] flex flex-col"
+        v-if="libraryFeatures.length === 0"
+        class="text-center py-8 font-body-md text-on-surface-variant"
       >
-        <div
-          class="p-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low rounded-t-lg"
-        >
-          <h3
-            class="font-headline-md text-headline-md text-tertiary flex items-center gap-2 m-0 bg-transparent select-none"
-          >
-            <span class="material-symbols-outlined" aria-hidden="true">library_books</span>
-            Feature Archives
-          </h3>
-          <button aria-label="Close feature library"
-            @click="showFeatureLibrary = false"
-            class="text-outline hover:text-on-surface hover:-translate-y-0.5 hover:bg-surface-variant/50 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out flex items-center justify-center p-1 rounded select-none"
-          >
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-        </div>
+        <p>No archives match your inquiry.</p>
+        <PressableButton variant="ghost" class="mt-4 text-tertiary underline underline-offset-4" @click="addManualFeature">
+          Transcribe a Custom Entry
+        </PressableButton>
+      </div>
 
-        <div class="p-4 border-b border-outline-variant/30 bg-surface-container-low">
-          <div class="relative">
-            <span
-              class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-               aria-hidden="true">search</span
-            >
-            <input
-              v-model="searchFilter"
-              type="text"
-              placeholder="Search the archives..."
-              class="w-full bg-surface-container border border-outline-variant rounded py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
-              autofocus
+      <div v-else class="space-y-4">
+        <ElevatedCard
+          v-for="(feature, index) in libraryFeatures"
+          :key="index"
+          :elevation="1"
+          class="border border-primary-container p-4 rounded-lg flex flex-col gap-2 hover:border-tertiary/50 transition-colors bg-surface-container-low"
+        >
+          <div class="flex justify-between items-start gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="font-headline-md text-tertiary m-0">{{ feature.title }}</h3>
+                <span
+                  v-if="feature.source"
+                  class="text-label-sm bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md select-none"
+                >
+                  {{ feature.source }}
+                </span>
+              </div>
+              <ExpandableText
+                :text="feature.desc"
+                :lines="2"
+                markdown
+                text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed"
+              />
+            </div>
+            <IconButton
+              icon="add"
+              :label="`Add ${feature.title}`"
+              class="flex-shrink-0 border border-primary/50 bg-primary-container text-primary hover:bg-primary hover:text-on-primary"
+              @click="addFeatureFromLibrary(feature)"
             />
           </div>
-        </div>
-
-        <div class="overflow-y-auto flex-grow p-4 bg-surface-container">
-          <div
-            v-if="libraryFeatures.length === 0"
-            class="text-center py-8 font-body-md text-on-surface-variant select-none"
-          >
-            <p>No archives match your inquiry.</p>
-            <button
-              @click="addManualFeature"
-              class="mt-4 text-tertiary hover:text-tertiary-fixed hover:-translate-y-0.5 active:translate-y-0 active:scale-95 underline underline-offset-4 transition-all duration-200 ease-out select-none"
-            >
-              Transcribe a Custom Entry
-            </button>
-          </div>
-
-          <div v-else class="space-y-4">
-            <ElevatedCard
-              v-for="(feature, index) in libraryFeatures"
-              :key="index"
-              :elevation="1"
-              :class="[
-                'border border-primary-container p-4 rounded-lg flex flex-col gap-2 hover:border-tertiary/50 transition-colors group relative cursor-pointer',
-                'bg-surface-container-low',
-              ]"
-              @click="addFeatureFromLibrary(feature)"
-            >
-              <div class="flex justify-between items-start gap-4">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-1">
-                    <h4 class="font-headline-md text-tertiary m-0">{{ feature.title }}</h4>
-                    <span
-                      v-if="feature.source"
-                      class="text-[12px] bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md select-none"
-                    >
-                      {{ feature.source }}
-                    </span>
-                  </div>
-                  <ExpandableText
-                    :text="feature.desc"
-                    :lines="2"
-                    markdown
-                    text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed"
-                  />
-                </div>
-                <button aria-label="Transcribe Feat"
-                  class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 ease-out shadow-sm opacity-0 group-hover:opacity-100 flex-shrink-0 select-none"
-                  title="Transcribe Feat"
-                >
-                  <span class="material-symbols-outlined" aria-hidden="true">add</span>
-                </button>
-              </div>
-            </ElevatedCard>
-          </div>
-        </div>
-
-        <div
-          class="p-4 border-t border-outline-variant/30 bg-surface-container-low flex justify-between items-center rounded-b-lg"
-        >
-          <span class="font-label-md text-on-surface-variant select-none"
-            >{{ libraryFeatures.length }} entries available</span
-          >
-          <button
-            @click="addManualFeature"
-            class="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-bright hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 border border-outline-variant/50 hover:border-outline font-label-md rounded transition-all duration-200 ease-out shadow-sm select-none"
-          >
-            Create Custom Entry
-          </button>
-        </div>
+        </ElevatedCard>
       </div>
-    </div>
+
+      <template #actions>
+        <PressableButton variant="secondary" @click="addManualFeature">
+          Create Custom Entry
+        </PressableButton>
+      </template>
+    </LibraryModal>
   </section>
 </template>
 

@@ -1,21 +1,20 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
-import feather from 'feather-icons'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
 
 const store = useCharacterStore()
 </script>
 
 <template>
-  <div v-if="store.errorModal.show" class="modal-backdrop backdrop-blur-sm bg-black/40">
-    <div class="modal-content rounded-xl">
-      <h2 class="text-xl font-bold text-sheet-red mb-4">Error</h2>
-      <ul class="text-left list-disc list-inside space-y-1 mb-6">
-        <li v-for="error in store.errorModal.errors" :key="error">{{ error }}</li>
-      </ul>
-      <button @click="store.closeErrorModal" class="icon-button">
-        <span v-html="feather.icons.x.toSvg()"></span>
+  <BaseModal :open="store.errorModal.show" title="Error" size="md" @close="store.closeErrorModal">
+    <ul class="list-inside list-disc space-y-1 text-left">
+      <li v-for="error in store.errorModal.errors" :key="error">{{ error }}</li>
+    </ul>
+    <template #footer>
+      <PressableButton variant="secondary" data-autofocus @click="store.closeErrorModal">
         Close
-      </button>
-    </div>
-  </div>
+      </PressableButton>
+    </template>
+  </BaseModal>
 </template>

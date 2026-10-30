@@ -29,6 +29,8 @@ const props = withDefaults(
     closeOnBackdrop?: boolean
     closeOnEscape?: boolean
     hideClose?: boolean
+    /** data-test hook for the header close button. */
+    closeTestId?: string
   }>(),
   {
     size: 'md',
@@ -36,6 +38,7 @@ const props = withDefaults(
     closeOnBackdrop: true,
     closeOnEscape: true,
     hideClose: false,
+    closeTestId: 'modal-close-btn',
   },
 )
 
@@ -55,8 +58,13 @@ const sizeClass = computed(
   () => ({ sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' })[props.size],
 )
 
-function onBackdropMouseDown(): void {
-  if (props.closeOnBackdrop) emit('close')
+/** True while a press that started inside the panel is still in flight (drag-select that ends on the backdrop). */
+let pressStartedInPanel = false
+
+function onBackdropClick(): void {
+  const startedInPanel = pressStartedInPanel
+  pressStartedInPanel = false
+  if (props.closeOnBackdrop && !startedInPanel) emit('close')
 }
 </script>
 
@@ -68,7 +76,7 @@ function onBackdropMouseDown(): void {
         class="fixed inset-0 z-modal flex justify-center bg-black/60 backdrop-blur-sm p-0 print:hidden"
         :class="variant === 'sheet' ? 'items-end md:items-center md:p-4' : 'items-center p-4'"
         data-testid="modal-backdrop"
-        @mousedown.self="onBackdropMouseDown"
+        @click.self="onBackdropClick"
       >
         <div
           ref="panel"
@@ -77,6 +85,7 @@ function onBackdropMouseDown(): void {
           tabindex="-1"
           :aria-labelledby="title ? titleId : undefined"
           :aria-label="title ? undefined : ariaLabel"
+          @mousedown="pressStartedInPanel = true"
           class="flex w-full flex-col overflow-hidden border border-outline-variant bg-surface-container text-on-surface shadow-elevation-4 max-h-[85dvh] focus:outline-none"
           :class="[
             sizeClass,
@@ -98,6 +107,7 @@ function onBackdropMouseDown(): void {
               label="Close dialog"
               size="sm"
               data-modal-close
+              :data-test="closeTestId"
               class="-mr-2 -mt-1 shrink-0"
               @click="emit('close')"
             />

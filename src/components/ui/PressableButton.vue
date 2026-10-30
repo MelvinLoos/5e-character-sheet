@@ -39,7 +39,7 @@ const variantClass = computed(
       secondary:
         'bg-surface-variant text-on-surface-variant border border-outline-variant hover:bg-surface-container-highest',
       ghost: 'bg-transparent text-on-surface hover:bg-surface-variant',
-      danger: 'bg-error text-on-error hover:bg-error/90',
+      danger: 'bg-error-solid text-on-error-solid hover:bg-error-solid/90',
       plain: '',
     })[props.variant],
 )

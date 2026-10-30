@@ -5,6 +5,7 @@ import FeatureEditorModal from '../src/components/modals/FeatureEditorModal.vue'
 describe('FeatureEditorModal (component)', () => {
   it('emits normalized feature on save when resource and grantsSpells are set', async () => {
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: {
         isOpen: true,
         feature: {},

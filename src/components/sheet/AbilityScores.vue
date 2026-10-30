@@ -90,14 +90,14 @@ watch(
   <section class="flex flex-col gap-6">
     <div
       class="flex justify-between items-end border-b pb-2"
-      :class="badges.identity ? 'border-red-600/50' : 'border-primary-container'"
+      :class="badges.identity ? 'border-error/50' : 'border-primary-container'"
     >
       <h3 class="font-headline-md text-headline-md text-primary select-none">
         Ability Scores<InfoButton topic="point-buy" />
       </h3>
       <span
         v-if="badges.identity"
-        class="font-label-md text-label-md text-red-600 bg-red-600/10 px-3 py-1 rounded-full border border-red-600/30 select-none animate-pulse"
+        class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none animate-pulse"
       >
         {{ badges.identity.label }}
       </span>

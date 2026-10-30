@@ -52,7 +52,7 @@ describe('DiscordUnlockReminderModal', () => {
   }
 
   function backdrop(): HTMLElement | null {
-    return document.body.querySelector('.modal-backdrop')
+    return document.body.querySelector('[data-testid="modal-backdrop"]')
   }
 
   function byTest(test: string): HTMLElement | null {

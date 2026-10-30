@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <span
-    class="inline-flex items-center justify-center rounded-full bg-red-600 text-white font-bold leading-none select-none"
+    class="inline-flex items-center justify-center rounded-full bg-error-solid text-on-error-solid font-bold leading-none select-none"
     :class="
       badge.type === 'count'
         ? 'min-w-[18px] h-[18px] px-1 text-[10px]'

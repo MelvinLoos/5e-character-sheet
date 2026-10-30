@@ -10,6 +10,9 @@ import {
   FeedbackServiceError,
   type FeedbackType,
 } from '@/infra/feedbackService'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
+import StatusBanner from '@/components/ui/StatusBanner.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -39,18 +42,6 @@ const canSubmit = computed(
 
 function close() {
   emit('close')
-}
-
-function handleBackdropClick(event: MouseEvent) {
-  if (event.target === event.currentTarget) {
-    close()
-  }
-}
-
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    close()
-  }
 }
 
 async function handleSubmit() {
@@ -104,118 +95,76 @@ watch(
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="props.isOpen"
-        class="modal-backdrop backdrop-blur-sm bg-black/40"
-        @click="handleBackdropClick"
-        @keydown="handleKeydown"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Give Feedback"
-      >
-        <div class="modal-content rounded-xl">
-          <!-- Success state -->
-          <template v-if="submitState === 'success'">
-            <h2 class="text-xl font-bold text-tertiary mb-4">Thanks for your feedback!</h2>
-            <p class="mb-6">Your feedback has been delivered to the Guild.</p>
-            <button @click="close" class="icon-button">
-              <span class="material-symbols-outlined text-base" aria-hidden="true">check</span>
-              Close
-            </button>
-          </template>
+  <BaseModal
+    :open="props.isOpen"
+    :title="submitState === 'success' ? 'Thanks for your feedback!' : 'Give Feedback'"
+    size="md"
+    @close="close"
+  >
+    <!-- Success state -->
+    <p v-if="submitState === 'success'" role="status">
+      Your feedback has been delivered to the Guild.
+    </p>
 
-          <!-- Form / loading / error state -->
-          <template v-else>
-            <h2 class="text-xl font-bold text-tertiary mb-4">Give Feedback</h2>
-            <p class="mb-4 text-sm">
-              Help us improve the app. Your feedback goes straight to the Guild's private
-              Discord channel.
-            </p>
+    <!-- Form / loading / error state -->
+    <template v-else>
+      <p class="mb-4 text-sm">
+        Help us improve the app. Your feedback goes straight to the Guild's private Discord
+        channel.
+      </p>
 
-            <!-- Type selector -->
-            <div class="flex gap-2 justify-center mb-4" role="group" aria-label="Feedback type">
-              <button
-                v-for="option in typeOptions"
-                :key="option.value"
-                @click="feedbackType = option.value"
-                class="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-sm border transition-all duration-150 ease-out select-none"
-                :class="
-                  feedbackType === option.value
-                    ? 'bg-tertiary text-on-tertiary border-tertiary'
-                    : 'bg-surface-variant text-on-surface-variant border-outline-variant hover:bg-surface-bright'
-                "
-              >
-                <span class="material-symbols-outlined text-base" aria-hidden="true">{{ option.icon }}</span>
-                {{ option.label }}
-              </button>
-            </div>
-
-            <textarea
-              v-model="feedbackText"
-              rows="5"
-              maxlength="4000"
-              aria-label="Feedback message"
-              placeholder="Tell us what's on your mind..."
-              class="w-full bg-surface-variant border border-outline-variant rounded-xl p-3 font-body-md text-sm text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary resize-y mb-4"
-            ></textarea>
-
-            <p v-if="submitState === 'error'" class="text-red-600 text-sm mb-4">
-              We couldn't send your feedback. Please try again.
-            </p>
-
-            <div class="flex gap-2 justify-center">
-              <button
-                @click="close"
-                class="px-4 py-2 rounded-lg text-on-surface-variant font-label-md text-sm hover:bg-surface-variant active:scale-95 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                @click="handleSubmit"
-                :disabled="!canSubmit"
-                class="icon-button font-label-md text-sm"
-              >
-                <span
-                  v-if="submitState === 'sending'"
-                  class="material-symbols-outlined animate-spin text-base"
-                   aria-hidden="true">progress_activity</span
-                >
-                {{ submitState === 'sending' ? 'Sending' : 'Submit Feedback' }}
-              </button>
-            </div>
-          </template>
-        </div>
+      <!-- Type selector -->
+      <div class="mb-4 flex justify-center gap-2" role="group" aria-label="Feedback type">
+        <button
+          v-for="option in typeOptions"
+          :key="option.value"
+          type="button"
+          :aria-pressed="feedbackType === option.value"
+          class="flex min-h-11 select-none items-center gap-2 rounded-lg border px-3 py-2 font-label-md text-sm transition-all duration-150 ease-out"
+          :class="
+            feedbackType === option.value
+              ? 'border-tertiary bg-tertiary text-on-tertiary'
+              : 'border-outline-variant bg-surface-variant text-on-surface-variant hover:bg-surface-bright'
+          "
+          @click="feedbackType = option.value"
+        >
+          <span class="material-symbols-outlined text-base" aria-hidden="true">{{
+            option.icon
+          }}</span>
+          {{ option.label }}
+        </button>
       </div>
-    </Transition>
-  </Teleport>
+
+      <textarea
+        v-model="feedbackText"
+        data-autofocus
+        rows="5"
+        maxlength="4000"
+        aria-label="Feedback message"
+        placeholder="Tell us what's on your mind..."
+        class="mb-4 w-full resize-y rounded-xl border border-outline-variant bg-surface-variant p-3 font-body-md text-sm text-on-surface placeholder:text-outline focus:border-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-tertiary"
+      ></textarea>
+
+      <StatusBanner v-if="submitState === 'error'" tone="error">
+        We couldn't send your feedback. Please try again.
+      </StatusBanner>
+    </template>
+
+    <template #footer>
+      <template v-if="submitState === 'success'">
+        <PressableButton variant="primary" @click="close">Close</PressableButton>
+      </template>
+      <template v-else>
+        <PressableButton variant="ghost" @click="close">Cancel</PressableButton>
+        <PressableButton
+          variant="primary"
+          :loading="submitState === 'sending'"
+          :disabled="!canSubmit"
+          @click="handleSubmit"
+        >
+          {{ submitState === 'sending' ? 'Sending' : 'Submit Feedback' }}
+        </PressableButton>
+      </template>
+    </template>
+  </BaseModal>
 </template>
-
-<style scoped>
-.modal-enter-active {
-  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.modal-leave-active {
-  transition: all 150ms ease-in;
-}
-
-.modal-enter-from {
-  opacity: 0;
-}
-
-.modal-enter-from > div:last-child {
-  opacity: 0;
-  transform: scale(0.95) translateY(12px);
-}
-
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-leave-to > div:last-child {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

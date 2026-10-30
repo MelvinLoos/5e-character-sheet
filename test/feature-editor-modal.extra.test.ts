@@ -11,6 +11,7 @@ describe('FeatureEditorModal (extra edge cases)', () => {
     }
 
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: {
         isOpen: true,
         feature: legacyFeature,
@@ -42,6 +43,7 @@ describe('FeatureEditorModal (extra edge cases)', () => {
     }
 
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: {
         isOpen: true,
         feature: legacyFeature,
@@ -82,6 +84,7 @@ describe('FeatureEditorModal (extra edge cases)', () => {
     }
 
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: {
         isOpen: true,
         feature: baseFeature,
