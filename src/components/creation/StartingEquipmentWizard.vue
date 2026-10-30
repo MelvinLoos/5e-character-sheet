@@ -257,7 +257,7 @@ const masteryDescriptions: Record<string, string> = {
               : 'bg-surface-container text-on-surface-variant border-outline-variant',
           ]"
         >
-          {{ index < currentStepIndex ? '✓' : index + 1 }}
+          <span v-if="index < currentStepIndex" class="material-symbols-outlined text-base" aria-hidden="true">check</span><template v-else>{{ index + 1 }}</template>
         </div>
         <div v-if="index < availableSteps.length - 1" class="w-6 h-px" :class="index < currentStepIndex ? 'bg-tertiary' : 'bg-outline-variant'"></div>
       </div>
@@ -270,11 +270,16 @@ const masteryDescriptions: Record<string, string> = {
         <span class="font-body-md text-body-md text-on-surface-variant ml-2">— {{ className }} Options</span>
       </h3>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Class equipment option">
         <!-- Option A -->
         <div
           v-if="bundleA"
           @click="selectClassOption('A')"
+          @keydown.enter.prevent="selectClassOption('A')"
+          @keydown.space.prevent="selectClassOption('A')"
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedClassOption === 'A'"
           :class="[
             'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedClassOption === 'A'
@@ -297,13 +302,18 @@ const masteryDescriptions: Record<string, string> = {
               </span>
             </li>
           </ul>
-          <p class="mt-3 font-label-sm text-label-sm text-on-surface-variant">⚡ +0 GP from class</p>
+          <p class="mt-3 font-label-sm text-label-sm text-on-surface-variant"><span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +0 GP from class</p>
         </div>
 
         <!-- Option B -->
         <div
           v-if="bundleB"
           @click="selectClassOption('B')"
+          @keydown.enter.prevent="selectClassOption('B')"
+          @keydown.space.prevent="selectClassOption('B')"
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedClassOption === 'B'"
           :class="[
             'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedClassOption === 'B'
@@ -326,13 +336,18 @@ const masteryDescriptions: Record<string, string> = {
               </span>
             </li>
           </ul>
-          <p class="mt-3 font-label-sm text-label-sm text-on-surface-variant">⚡ +0 GP from class</p>
+          <p class="mt-3 font-label-sm text-label-sm text-on-surface-variant"><span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +0 GP from class</p>
         </div>
 
         <!-- Option C -->
         <div
           v-if="bundleC"
           @click="selectClassOption('C')"
+          @keydown.enter.prevent="selectClassOption('C')"
+          @keydown.space.prevent="selectClassOption('C')"
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedClassOption === 'C'"
           :class="[
             'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedClassOption === 'C'
@@ -352,7 +367,7 @@ const masteryDescriptions: Record<string, string> = {
             <span class="font-headline-md text-headline-md text-on-surface-variant ml-2">GP</span>
           </div>
           <p class="font-label-sm text-label-sm text-on-surface">Purchase your own weapons, armor, and gear</p>
-          <p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">⚡ +{{ bundleC.goldBuyout?.flatAmount }} GP from class</p>
+          <p class="mt-2 font-label-sm text-label-sm text-on-surface-variant"><span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +{{ bundleC.goldBuyout?.flatAmount }} GP from class</p>
         </div>
       </div>
 
@@ -362,7 +377,7 @@ const masteryDescriptions: Record<string, string> = {
           :disabled="!selectedClassOption"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
-          Continue →
+          Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
       </div>
     </section>
@@ -419,13 +434,13 @@ const masteryDescriptions: Record<string, string> = {
           @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          ← Back
+          <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_back</span> Back
         </button>
         <button
           @click="goToNextStep"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          Continue →
+          Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
       </div>
     </section>
@@ -437,10 +452,15 @@ const masteryDescriptions: Record<string, string> = {
         <span class="font-body-md text-body-md text-on-surface-variant ml-2">— {{ backgroundName }} Options</span>
       </h3>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" role="radiogroup" aria-label="Background equipment option">
         <!-- Background Option A -->
         <div
           @click="selectBackgroundOption('A')"
+          @keydown.enter.prevent="selectBackgroundOption('A')"
+          @keydown.space.prevent="selectBackgroundOption('A')"
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedBackgroundOption === 'A'"
           :class="[
             'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedBackgroundOption === 'A'
@@ -460,15 +480,20 @@ const masteryDescriptions: Record<string, string> = {
             </li>
           </ul>
           <p class="mt-3 font-label-sm text-label-sm text-on-surface-variant">
-            ⚡ +{{ bgEquipment.optionA.currency.gp }} GP from background
+            <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +{{ bgEquipment.optionA.currency.gp }} GP from background
             <template v-if="bgEquipment.optionA.currency.sp"> (+{{ bgEquipment.optionA.currency.sp }} SP)</template>
           </p>
-          <p v-if="bgEquipment.trinket" class="mt-1 font-label-sm text-label-sm text-tertiary">🎲 Grants a trinket selection</p>
+          <p v-if="bgEquipment.trinket" class="mt-1 font-label-sm text-label-sm text-tertiary"><span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">casino</span> Grants a trinket selection</p>
         </div>
 
         <!-- Background Option B -->
         <div
           @click="selectBackgroundOption('B')"
+          @keydown.enter.prevent="selectBackgroundOption('B')"
+          @keydown.space.prevent="selectBackgroundOption('B')"
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedBackgroundOption === 'B'"
           :class="[
             'cursor-pointer rounded-lg border-2 p-5 transition-all duration-200 ease-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] select-none',
             selectedBackgroundOption === 'B'
@@ -486,7 +511,7 @@ const masteryDescriptions: Record<string, string> = {
             <span class="font-headline-md text-headline-md text-on-surface-variant ml-2">GP</span>
           </div>
           <p class="font-label-sm text-label-sm text-on-surface">Purchase your own gear</p>
-          <p class="mt-2 font-label-sm text-label-sm text-on-surface-variant">⚡ +50 GP from background</p>
+          <p class="mt-2 font-label-sm text-label-sm text-on-surface-variant"><span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +50 GP from background</p>
         </div>
       </div>
 
@@ -495,14 +520,14 @@ const masteryDescriptions: Record<string, string> = {
           @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          ← Back
+          <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_back</span> Back
         </button>
         <button
           @click="goToNextStep"
           :disabled="!selectedBackgroundOption"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
-          Continue →
+          Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
       </div>
     </section>
@@ -516,11 +541,16 @@ const masteryDescriptions: Record<string, string> = {
         Your background grants you one free trinket. Choose from the list below:
       </p>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto p-2">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto p-2" role="radiogroup" aria-label="Trinket">
         <div
           v-for="trinket in trinketList"
           :key="trinket.id"
           @click="selectTrinket(trinket.id)"
+          @keydown.enter.prevent="selectTrinket(trinket.id)"
+          @keydown.space.prevent="selectTrinket(trinket.id)"
+          role="radio"
+          tabindex="0"
+          :aria-checked="selectedTrinketId === trinket.id"
           :class="[
             'cursor-pointer rounded-lg border p-3 transition-all duration-200 ease-out hover:shadow hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] text-sm select-none',
             selectedTrinketId === trinket.id
@@ -541,14 +571,14 @@ const masteryDescriptions: Record<string, string> = {
           @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          ← Back
+          <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_back</span> Back
         </button>
         <button
           @click="goToNextStep"
           :disabled="!selectedTrinketId"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
-          Continue →
+          Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
       </div>
     </section>
@@ -566,7 +596,7 @@ const masteryDescriptions: Record<string, string> = {
             CLASS ({{ className }}) —
             <span v-if="selectedClassOption !== 'C'">Option {{ selectedClassOption }} — Items</span>
             <span v-else>Option C — Gold Buyout</span>
-            <span class="text-on-surface-variant ml-2">⚡ +{{ selectedClassOption === 'C' ? (bundleC?.goldBuyout?.flatAmount ?? 0) : 0 }} GP</span>
+            <span class="text-on-surface-variant ml-2"><span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +{{ selectedClassOption === 'C' ? (bundleC?.goldBuyout?.flatAmount ?? 0) : 0 }} GP</span>
           </h4>
           <template v-if="selectedClassOption !== 'C' && selectedBundle?.items">
             <ul class="space-y-0.5 text-sm text-on-surface ml-4">
@@ -602,7 +632,7 @@ const masteryDescriptions: Record<string, string> = {
             <span v-if="selectedBackgroundOption === 'A'">Option A — Thematic Gear</span>
             <span v-else>Option B — Gold Stipend</span>
             <span class="text-on-surface-variant ml-2">
-              ⚡ +{{ selectedBackgroundOption === 'A' ? (bgEquipment?.optionA.currency.gp ?? 0) : 50 }} GP
+              <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">bolt</span> +{{ selectedBackgroundOption === 'A' ? (bgEquipment?.optionA.currency.gp ?? 0) : 50 }} GP
             </span>
           </h4>
           <template v-if="selectedBackgroundOption === 'A' && bgEquipment">
@@ -637,7 +667,7 @@ const masteryDescriptions: Record<string, string> = {
         <!-- Focus Info -->
         <div v-if="focusType" class="bg-tertiary/5 rounded p-3 border border-tertiary/20">
           <p class="font-label-md text-label-md text-tertiary">
-            🔮 Spellcasting Focus: {{ focusType.charAt(0).toUpperCase() + focusType.slice(1) }}
+            <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">auto_awesome</span> Spellcasting Focus: {{ focusType.charAt(0).toUpperCase() + focusType.slice(1) }}
             <span class="text-on-surface-variant font-body-sm">— Required for Magic Actions with material components.</span>
           </p>
         </div>
@@ -667,13 +697,13 @@ const masteryDescriptions: Record<string, string> = {
           @click="goToPrevStep"
           class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          ← Back
+          <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_back</span> Back
         </button>
         <button
           @click="confirmEquipment"
           class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          ✓ Confirm & Apply Equipment
+          <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">check</span> Confirm &amp; Apply Equipment
         </button>
       </div>
     </section>
@@ -688,7 +718,7 @@ const masteryDescriptions: Record<string, string> = {
       @click="resetWizard"
       class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out text-sm select-none"
     >
-      🔄 Reconfigure Starting Equipment
+      <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">refresh</span> Reconfigure Starting Equipment
     </button>
   </div>
 </template>
