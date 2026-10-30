@@ -123,6 +123,14 @@
         "hp_max": { "type": "number" },
         "hp_current": { "type": "number" },
         "hp_temp": { "type": "number", "default": 0 },
+        "hit_dice_used": { "type": "number", "default": 0 },
+        "death_saves": {
+          "type": "object",
+          "properties": {
+            "successes": { "type": "number", "default": 0 },
+            "failures": { "type": "number", "default": 0 }
+          }
+        },
         "speed": { "type": "string", "default": "30ft" }
       },
       "required": ["ac", "speed"]

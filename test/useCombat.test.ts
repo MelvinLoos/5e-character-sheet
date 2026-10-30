@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { createBlankCharacter, getMod } from '@/domain'
-import { useCombat, generateId } from '@/composables/useCombat'
+import { useCombat, generateId, applyDamage, applyHealing } from '@/composables/useCombat'
 import type { CharacterData } from '@/types/character'
 import type { Attack } from '@/types/character'
 
@@ -279,5 +279,24 @@ describe('useCombat', () => {
 
       expect(store.currentCharacterData.attacks).toEqual(newAttacks)
     })
+  })
+})
+
+describe('applyDamage / applyHealing', () => {
+  it('consumes temp HP before current HP', () => {
+    expect(applyDamage({ current: 20, temp: 5 }, 8)).toEqual({ current: 17, temp: 0 })
+  })
+  it('stays within temp HP when the hit is small', () => {
+    expect(applyDamage({ current: 20, temp: 5 }, 3)).toEqual({ current: 20, temp: 2 })
+  })
+  it('floors current HP at 0', () => {
+    expect(applyDamage({ current: 4, temp: 0 }, 50)).toEqual({ current: 0, temp: 0 })
+  })
+  it('clamps healing to max', () => {
+    expect(applyHealing(18, 10, 20)).toBe(20)
+  })
+  it('ignores negative amounts', () => {
+    expect(applyHealing(10, -5, 20)).toBe(10)
+    expect(applyDamage({ current: 10, temp: 0 }, -5)).toEqual({ current: 10, temp: 0 })
   })
 })

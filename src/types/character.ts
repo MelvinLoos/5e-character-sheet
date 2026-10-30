@@ -126,6 +126,10 @@ export interface CombatStats {
   hp_current?: number
   /** Temporary hit points; absorbed before hp_current. */
   hp_temp?: number
+  /** Hit Dice spent from the pool of `derivedLevel`; regained on a long rest. */
+  hit_dice_used?: number
+  /** Death saving throw tallies (0-3 each); reset by healing and long rests. */
+  death_saves?: { successes: number; failures: number }
   speed: string
 }
 

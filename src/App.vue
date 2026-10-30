@@ -7,6 +7,7 @@ import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
 import { useFeedbackStore } from './stores/feedbackStore'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
+import UndoToast from './components/ui/UndoToast.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -72,6 +73,7 @@ onMounted(async () => {
 
     <PrintableSheet v-if="store.currentCharacterData" />
 
+    <UndoToast />
     <LoadingModal />
     <ErrorModal />
     <ShareModal />

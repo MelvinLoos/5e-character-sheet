@@ -125,6 +125,8 @@ export const createBlankCharacter = (): CharacterData => {
       hp_max: 1,
       hp_current: 1,
       hp_temp: 0,
+      hit_dice_used: 0,
+      death_saves: { successes: 0, failures: 0 },
       speed: defaultSpeciesData?.speed || '30ft',
     },
     attacks: [],
