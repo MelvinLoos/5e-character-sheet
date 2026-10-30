@@ -4,7 +4,7 @@ import { useProgressionStore } from '@/stores/progression'
 import { ref, watch } from 'vue'
 import { useCombat } from '@/composables/useCombat'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
-import PressableButton from '@/components/ui/PressableButton.vue'
+import IconButton from '@/components/ui/IconButton.vue'
 import UsageTracker from '@/components/ui/UsageTracker.vue'
 import RestActions from '@/components/sheet/RestActions.vue'
 
@@ -122,24 +122,20 @@ watch(
               aria-label="Temporary hit points"
             />
           </div>
-          <div class="mt-3 flex items-center gap-2">
+          <div class="mt-3 flex items-center gap-1">
             <input
               v-model.number="amount"
               type="number"
               inputmode="numeric"
               min="1"
-              placeholder="Amount"
+              placeholder="0"
               aria-label="Damage or healing amount"
               data-testid="hp-amount"
-              class="min-h-11 w-20 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary"
+              class="min-h-11 w-0 min-w-0 flex-1 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary"
               @keydown.enter="applyAmount('damage')"
             />
-            <PressableButton variant="danger" size="sm" class="min-h-11" data-testid="hp-damage" @click="applyAmount('damage')">
-              Damage
-            </PressableButton>
-            <PressableButton variant="secondary" size="sm" class="min-h-11" data-testid="hp-heal" @click="applyAmount('heal')">
-              Heal
-            </PressableButton>
+            <IconButton icon="heart_minus" label="Damage" variant="danger" data-testid="hp-damage" @click="applyAmount('damage')" />
+            <IconButton icon="heart_plus" label="Heal" data-testid="hp-heal" @click="applyAmount('heal')" />
           </div>
           <div
             v-if="isDowned && store.currentCharacterData.combat.death_saves"
