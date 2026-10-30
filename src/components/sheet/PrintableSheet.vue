@@ -41,6 +41,20 @@ function isSkillProficient(name: string) {
   return char.value.proficiencies.skills.includes(normName)
 }
 
+function isSaveProficient(key: string) {
+  return (char.value.proficiencies.savingThrows || []).includes(key)
+}
+
+function getSaveMod(key: string) {
+  const total = (progression.abilityMods[key] ?? 0) + (isSaveProficient(key) ? progression.profBonus : 0)
+  return (total >= 0 ? '+' : '') + total
+}
+
+const hitDiceLabel = computed(() => {
+  const die = char.value?.class ? DND_RULES.CLASSES[char.value.class]?.hitDice || 8 : 8
+  return `${progression.derivedLevel}d${die}`
+})
+
 function getSkillMod(name: string, stat: string) {
   const baseMod = progression.abilityMods[stat] ?? 0
   const profBonus = isSkillProficient(name) ? progression.profBonus : 0
@@ -89,6 +103,8 @@ const MAX_PAGE_TWO_SPELLS = 8
 const MAX_ATTACKS = 6
 const MAX_EQUIPPED_GEAR = 6
 const MAX_CONSUMABLES = 4
+/** Pen-and-paper tick boxes per limited-use feature on page 2. */
+const MAX_USAGE_BOXES = 10
 
 const feats = computed(() => char.value?.features || [])
 const pageTwoFeats = computed(() => feats.value.slice(0, MAX_PAGE_TWO_FEATURES))
@@ -98,7 +114,52 @@ const cappedEquippedGear = computed(() => (char.value?.equippedGear || []).slice
 const cappedConsumables = computed(() => (char.value?.consumables || []).slice(0, MAX_CONSUMABLES))
 const appendixFeatures = computed(() => feats.value.filter((f) => !!f.desc?.trim()))
 const appendixSpells = computed(() => sortedSpells.value.filter((s) => !!s.desc?.trim()))
-const hasAppendix = computed(() => appendixFeatures.value.length > 0 || appendixSpells.value.length > 0)
+
+// Anything page 2 cannot fit is listed in the appendix instead of being dropped.
+const overflowAttacks = computed(() => attacks.value.slice(MAX_ATTACKS))
+const overflowGear = computed(() => (char.value?.equippedGear || []).slice(MAX_EQUIPPED_GEAR))
+const overflowConsumables = computed(() => (char.value?.consumables || []).slice(MAX_CONSUMABLES))
+// Features / spells with descriptions already appear in full below; only list the bare names here.
+const overflowFeatureNames = computed(() =>
+  feats.value.slice(MAX_PAGE_TWO_FEATURES).filter((f) => !f.desc?.trim()).map((f) => f.title),
+)
+const overflowSpellNames = computed(() =>
+  sortedSpells.value.slice(MAX_PAGE_TWO_SPELLS).filter((s) => !s.desc?.trim()).map((s) => s.name),
+)
+const hasOverflow = computed(
+  () =>
+    overflowAttacks.value.length > 0 ||
+    overflowGear.value.length > 0 ||
+    overflowConsumables.value.length > 0 ||
+    overflowFeatureNames.value.length > 0 ||
+    overflowSpellNames.value.length > 0,
+)
+
+const personalityEntries = computed(() => {
+  const p = char.value?.personality
+  return (
+    [
+      ['Personality Traits', p?.traits],
+      ['Ideals', p?.ideal],
+      ['Bonds', p?.bond],
+      ['Flaws', p?.flaw],
+      ['Backstory', p?.notes],
+    ] as const
+  ).filter(([, text]) => !!text?.trim()) as ReadonlyArray<readonly [string, string]>
+})
+
+const hasAppendix = computed(
+  () =>
+    appendixFeatures.value.length > 0 ||
+    appendixSpells.value.length > 0 ||
+    personalityEntries.value.length > 0 ||
+    hasOverflow.value,
+)
+
+function usageBoxCount(feat: (typeof feats.value)[number]): number {
+  const max = spellStore.getFeatureMaxUses(feat) || feat.uses?.total || 0
+  return Math.min(MAX_USAGE_BOXES, max)
+}
 
 function formatSpellLevel(level: number) {
   if (level === 0) return 'Cantrip'
@@ -161,43 +222,82 @@ function formatSpellLevel(level: number) {
           <section class="border-4 border-black p-4 space-y-4 bg-white">
             <div class="grid grid-cols-3 gap-2 text-center">
               <div class="border border-black p-1 bg-white">
-                <span class="text-[10px] font-bold block uppercase text-black">Armor Class</span>
+                <span class="text-[11px] font-bold block uppercase text-black">Armor Class</span>
                 <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ store.computedArmorClass }}</span>
               </div>
               <div class="border border-black p-1 bg-white">
-                <span class="text-[10px] font-bold block uppercase text-black">Initiative</span>
+                <span class="text-[11px] font-bold block uppercase text-black">Initiative</span>
                 <span class="text-2xl font-headline-lg text-headline-lg text-black">
                   {{ progression.initiativeMod >= 0 ? '+' : '' }}{{ progression.initiativeMod }}
                 </span>
               </div>
               <div class="border border-black p-1 bg-white">
-                <span class="text-[10px] font-bold block uppercase text-black">Speed</span>
+                <span class="text-[11px] font-bold block uppercase text-black">Speed</span>
                 <span class="text-2xl font-headline-lg text-headline-lg text-black">{{ progression.walkingSpeed }}</span>
               </div>
             </div>
 
             <div class="flex gap-2">
               <div class="flex-grow border border-black p-2 relative bg-white">
-                <span class="text-[10px] font-bold block uppercase text-black">Hit Points (Max: {{ progression.maxHp }})</span>
+                <span class="text-[11px] font-bold block uppercase text-black">Hit Points (Max: {{ progression.maxHp }})</span>
                 <div class="hp-current-box h-12 border-2 border-dashed border-gray-300 mt-1"></div>
               </div>
               <div class="w-20 border border-black p-2 text-center bg-white">
-                <span class="text-[10px] font-bold block uppercase text-black">Proficiency</span>
+                <span class="text-[11px] font-bold block uppercase text-black">Proficiency</span>
                 <span class="text-2xl font-headline-lg text-headline-lg text-black">+{{ progression.profBonus }}</span>
               </div>
             </div>
+
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="border border-black p-1 bg-white" data-testid="print-temp-hp">
+                <span class="text-[11px] font-bold block uppercase text-black">Temp HP</span>
+                <span class="text-xl font-headline-md text-black">{{ char.combat.hp_temp || '' }}&nbsp;</span>
+              </div>
+              <div class="border border-black p-1 bg-white" data-testid="print-hit-dice">
+                <span class="text-[11px] font-bold block uppercase text-black">Hit Dice</span>
+                <span class="text-xl font-headline-md text-black">{{ hitDiceLabel }}</span>
+              </div>
+              <div class="border border-black p-1 bg-white" data-testid="print-death-saves">
+                <span class="text-[11px] font-bold block uppercase text-black">Death Saves</span>
+                <div class="flex items-center justify-center gap-1 text-[11px] text-black">
+                  <span class="w-3">S</span>
+                  <span v-for="n in 3" :key="'s' + n" class="print-box w-3 h-3 border border-black"></span>
+                </div>
+                <div class="flex items-center justify-center gap-1 text-[11px] text-black mt-0.5">
+                  <span class="w-3">F</span>
+                  <span v-for="n in 3" :key="'f' + n" class="print-box w-3 h-3 border border-black"></span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Saving Throws -->
+          <section class="border-2 border-black bg-white" data-testid="print-saving-throws">
+            <h3 class="print-inverse print-section-title bg-black text-white px-2 py-1">
+              Saving Throws
+            </h3>
+            <!-- pr-4 on items: main.css forces print grid gaps to 0.1rem -->
+            <ul class="grid grid-cols-2 px-2 py-1 text-xs">
+              <li v-for="[key, label] in abilityEntries" :key="key" class="flex items-center gap-2 py-0.5 pr-4 text-black">
+                <span
+                  :class="['skill-prof w-3 h-3 border border-black shrink-0', isSaveProficient(key) ? 'skill-prof-filled' : '']"
+                ></span>
+                <span class="flex-1">{{ label }}</span>
+                <span class="font-bold">{{ getSaveMod(key) }}</span>
+              </li>
+            </ul>
           </section>
         </div>
 
         <!-- Right Column: Skills -->
         <div class="col-span-7">
           <section class="border-2 border-black bg-white">
-            <h3 class="bg-black text-white px-2 py-1 text-sm font-headline-md text-headline-md uppercase tracking-widest">
+            <h3 class="print-inverse print-section-title bg-black text-white px-2 py-1">
               Skills
             </h3>
             <table class="w-full text-xs text-left border-collapse">
               <thead>
-                <tr class="border-b-2 border-black bg-gray-50 uppercase text-[10px]">
+                <tr class="border-b-2 border-black bg-gray-50 uppercase text-[11px]">
                   <th class="px-2 py-1 w-8 text-black">Prof</th>
                   <th class="px-2 py-1 text-black">Skill (Ability)</th>
                   <th class="px-2 py-1 text-right text-black">Bonus</th>
@@ -218,7 +318,7 @@ function formatSpellLevel(level: number) {
                     ></div>
                   </td>
                   <td class="px-2 py-1 text-black">
-                    {{ name }} <span class="text-[10px] text-gray-500 uppercase">({{ stat.toUpperCase() }})</span>
+                    {{ name }} <span class="text-[11px] text-gray-500 uppercase">({{ stat.toUpperCase() }})</span>
                   </td>
                   <td class="px-2 py-1 text-right font-headline-md text-headline-md text-black">
                     {{ getSkillMod(name, stat) }}
@@ -243,7 +343,7 @@ function formatSpellLevel(level: number) {
         ></div>
         <div class="text-black">
           <p class="font-label-md text-label-md uppercase font-bold">Scan for the digital sheet</p>
-          <p class="text-[9px] break-all">{{ store.shareUrl }}</p>
+          <p class="text-[11px] break-all">{{ store.shareUrl }}</p>
         </div>
       </div>
     </main>
@@ -272,7 +372,7 @@ function formatSpellLevel(level: number) {
           <span class="text-xs font-bold uppercase block mb-1 text-black">Spell Slots</span>
           <div class="flex justify-between gap-1">
             <div v-for="level in [1, 2, 3, 4, 5]" :key="level" class="flex flex-col items-center">
-              <span class="text-[10px] font-bold text-black">L{{ level }}</span>
+              <span class="text-[11px] font-bold text-black">L{{ level }}</span>
               <div class="flex gap-0.5">
                 <div
                   v-for="slotIndex in displaySpellSlots[`level${level}`] || 0"
@@ -288,12 +388,12 @@ function formatSpellLevel(level: number) {
 
       <!-- Attacks Table -->
       <section class="border-2 border-black mb-4 bg-white">
-        <h3 class="bg-black text-white px-2 py-1 text-sm font-headline-md text-headline-md uppercase tracking-widest">
+        <h3 class="print-inverse print-section-title bg-black text-white px-2 py-1">
           Attacks
         </h3>
         <table class="w-full text-xs text-left border-collapse">
           <thead>
-            <tr class="border-b border-black bg-gray-50 uppercase text-[10px]">
+            <tr class="border-b border-black bg-gray-50 uppercase text-[11px]">
               <th class="px-2 py-1 text-black">Name</th>
               <th class="px-2 py-1 text-black">Bonus</th>
               <th class="px-2 py-1 text-black">Damage/Type</th>
@@ -307,14 +407,14 @@ function formatSpellLevel(level: number) {
                 {{ atk.bonus >= 0 ? '+' : '' }}{{ atk.bonus }}
               </td>
               <td class="px-2 py-2 text-black">{{ atk.damage }}</td>
-              <td class="px-2 py-2 text-[10px] text-black">{{ atk.notes }}</td>
+              <td class="px-2 py-2 text-[11px] text-black">{{ atk.notes }}</td>
             </tr>
             <tr v-if="cappedAttacks.length === 0">
               <td colspan="4" class="px-2 py-4 text-center text-black italic">No attacks recorded.</td>
             </tr>
             <tr v-if="(char.attacks || []).length > cappedAttacks.length">
-              <td colspan="4" class="px-2 py-1 text-center text-[10px] italic text-gray-500 text-black">
-                +{{ (char.attacks || []).length - cappedAttacks.length }} more attacks
+              <td colspan="4" class="px-2 py-1 text-center text-[11px] italic text-gray-500 text-black">
+                +{{ (char.attacks || []).length - cappedAttacks.length }} more attacks — see Appendix
               </td>
             </tr>
           </tbody>
@@ -324,12 +424,12 @@ function formatSpellLevel(level: number) {
       <!-- Inventory Summary & Gear -->
       <section class="grid grid-cols-2 gap-4 mb-4">
         <div class="border-2 border-black bg-white">
-          <div class="bg-black text-white px-2 py-1 text-[10px] font-headline-md text-headline-md uppercase flex justify-between">
+          <div class="print-inverse print-section-title bg-black text-white px-2 py-1 flex justify-between">
             <span>Inventory & Gear</span>
             <span>Gold: {{ char.gold ?? 0 }}gp</span>
           </div>
           <div class="p-2 space-y-2">
-            <div class="flex justify-between text-[10px] font-bold border-b border-black pb-1 text-black">
+            <div class="flex justify-between text-[11px] font-bold border-b border-black pb-1 text-black">
               <span>Supply: {{ char.supply ?? 0 }}</span>
               <span>Influence: {{ char.influence ?? 0 }}</span>
             </div>
@@ -340,13 +440,16 @@ function formatSpellLevel(level: number) {
                 class="flex justify-between items-center border-b border-gray-100 last:border-0"
               >
                 <span class="text-black">{{ item.name }}</span>
-                <span class="text-[9px] text-gray-500 uppercase">{{ item.slotCost }} slot</span>
+                <span class="text-[11px] text-gray-500 uppercase">{{ item.slotCost }} slot</span>
               </li>
             </ul>
+            <div v-if="overflowGear.length" class="text-[11px] italic text-black text-center pt-1">
+              +{{ overflowGear.length }} more items — see Appendix
+            </div>
           </div>
         </div>
         <div class="border-2 border-black bg-white">
-          <div class="bg-black text-white px-2 py-1 text-[10px] font-headline-md text-headline-md uppercase">Consumables</div>
+          <div class="print-inverse print-section-title bg-black text-white px-2 py-1">Consumables</div>
           <div class="p-2">
             <ul class="text-[11px] space-y-1">
               <li
@@ -361,8 +464,8 @@ function formatSpellLevel(level: number) {
             <div v-if="!cappedConsumables.length" class="text-black italic text-center py-2 text-[11px]">
               No consumables.
             </div>
-            <div v-if="(char.consumables || []).length > cappedConsumables.length" class="text-[10px] italic text-gray-500 text-black text-center pt-1">
-              +{{ (char.consumables || []).length - cappedConsumables.length }} more consumables
+            <div v-if="(char.consumables || []).length > cappedConsumables.length" class="text-[11px] italic text-gray-500 text-black text-center pt-1">
+              +{{ (char.consumables || []).length - cappedConsumables.length }} more consumables — see Appendix
             </div>
           </div>
         </div>
@@ -372,24 +475,27 @@ function formatSpellLevel(level: number) {
       <section class="flex-grow grid grid-cols-2 gap-4 min-h-0 overflow-hidden">
         <div class="space-y-2">
           <h3 class="text-xs font-bold uppercase border-b border-black text-black">Class Features Index</h3>
-          <ul class="text-[10px] space-y-1">
+          <ul class="text-[11px] space-y-1">
             <li
               v-for="feat in pageTwoFeats"
               :key="feat.title"
               data-testid="page-two-index-item"
-              class="flex justify-between text-black"
+              class="flex items-center gap-2 text-black"
             >
               <span class="font-bold">{{ feat.title }}</span>
+              <span v-if="usageBoxCount(feat)" class="flex gap-0.5" :aria-label="`${usageBoxCount(feat)} uses`">
+                <span v-for="n in usageBoxCount(feat)" :key="n" class="print-box w-3 h-3 border border-black"></span>
+              </span>
             </li>
-            <li v-if="feats.length > pageTwoFeats.length" class="text-[10px] italic text-gray-500 text-black">
+            <li v-if="feats.length > pageTwoFeats.length" class="text-[11px] italic text-gray-500 text-black">
               +{{ feats.length - pageTwoFeats.length }} more<span v-if="hasAppendix"> — see Appendix</span>
             </li>
           </ul>
-          <div v-if="!feats.length" class="text-black italic text-[10px]">No features recorded.</div>
+          <div v-if="!feats.length" class="text-black italic text-[11px]">No features recorded.</div>
         </div>
         <div class="space-y-2">
           <h3 class="text-xs font-bold uppercase border-b border-black text-black">Spells Index</h3>
-          <ul class="text-[10px] space-y-1">
+          <ul class="text-[11px] space-y-1">
             <li
               v-for="spell in pageTwoSpells"
               :key="spell.id || spell.name"
@@ -399,18 +505,18 @@ function formatSpellLevel(level: number) {
               <span class="font-bold">{{ spell.name }}</span>
               <span class="italic text-gray-500">{{ formatSpellLevel(spell.level) }} {{ spell.school || '' }}</span>
             </li>
-            <li v-if="sortedSpells.length > pageTwoSpells.length" class="text-[10px] italic text-gray-500 text-black">
+            <li v-if="sortedSpells.length > pageTwoSpells.length" class="text-[11px] italic text-gray-500 text-black">
               +{{ sortedSpells.length - pageTwoSpells.length }} more<span v-if="hasAppendix"> — see Appendix</span>
             </li>
           </ul>
-          <div v-if="!sortedSpells.length" class="text-black italic text-[10px]">No spells recorded.</div>
+          <div v-if="!sortedSpells.length" class="text-black italic text-[11px]">No spells recorded.</div>
         </div>
       </section>
 
       <div
         v-if="hasAppendix"
         data-testid="appendix-footer"
-        class="mt-auto flex-shrink-0 text-center text-[10px] font-bold uppercase py-2 border-t-2 border-black text-black"
+        class="mt-auto flex-shrink-0 text-center text-[11px] font-bold uppercase py-2 border-t-2 border-black text-black"
       >
         Continues in Appendix
       </div>
@@ -424,10 +530,64 @@ function formatSpellLevel(level: number) {
     >
       <header class="border-b-4 border-black pb-4 mb-4">
         <h2 class="font-headline-lg text-headline-lg text-black uppercase tracking-tight">Appendix & Detailed Reference</h2>
-        <p class="text-xs italic text-gray-500">Full descriptions for all feats, features, and spells.</p>
+        <p class="text-xs italic text-gray-500">
+          Personality, everything page 2 could not fit, and full feature and spell descriptions.
+        </p>
       </header>
 
       <div class="space-y-4">
+        <!-- Personality & Backstory -->
+        <section v-if="personalityEntries.length" data-testid="appendix-personality" class="border border-black p-3 break-inside-avoid">
+          <h3 class="font-bold uppercase text-sm border-b border-black mb-2 pb-1 text-black">Personality &amp; Backstory</h3>
+          <dl class="space-y-2 text-xs text-black">
+            <div v-for="[label, text] in personalityEntries" :key="label" class="break-inside-avoid">
+              <dt class="font-bold uppercase text-[11px]">{{ label }}</dt>
+              <dd class="whitespace-pre-wrap leading-relaxed">{{ text }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <!-- Overflow from page 2 -->
+        <section v-if="hasOverflow" data-testid="appendix-overflow" class="border border-black p-3 break-inside-avoid">
+          <h3 class="font-bold uppercase text-sm border-b border-black mb-2 pb-1 text-black">Continued from Page 2</h3>
+          <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-xs text-black">
+            <div v-if="overflowAttacks.length">
+              <h4 class="font-bold uppercase text-[11px] mb-1">Attacks</h4>
+              <ul class="space-y-0.5">
+                <li v-for="atk in overflowAttacks" :key="atk.name">
+                  <span class="font-bold">{{ atk.name }}</span>
+                  {{ atk.bonus >= 0 ? '+' : '' }}{{ atk.bonus }} · {{ atk.damage }}
+                  <span v-if="atk.notes" class="italic">· {{ atk.notes }}</span>
+                </li>
+              </ul>
+            </div>
+            <div v-if="overflowGear.length">
+              <h4 class="font-bold uppercase text-[11px] mb-1">Gear</h4>
+              <ul class="space-y-0.5">
+                <li v-for="item in overflowGear" :key="item.id">{{ item.name }} ({{ item.slotCost }} slot)</li>
+              </ul>
+            </div>
+            <div v-if="overflowConsumables.length">
+              <h4 class="font-bold uppercase text-[11px] mb-1">Consumables</h4>
+              <ul class="space-y-0.5">
+                <li v-for="item in overflowConsumables" :key="item.id">{{ item.name }} — {{ item.usageDie }}</li>
+              </ul>
+            </div>
+            <div v-if="overflowFeatureNames.length">
+              <h4 class="font-bold uppercase text-[11px] mb-1">Features</h4>
+              <ul class="space-y-0.5">
+                <li v-for="title in overflowFeatureNames" :key="title">{{ title }}</li>
+              </ul>
+            </div>
+            <div v-if="overflowSpellNames.length">
+              <h4 class="font-bold uppercase text-[11px] mb-1">Spells</h4>
+              <ul class="space-y-0.5">
+                <li v-for="name in overflowSpellNames" :key="name">{{ name }}</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
         <article
           v-for="feat in appendixFeatures"
           :key="'appendix-feat-' + feat.title"
@@ -452,7 +612,7 @@ function formatSpellLevel(level: number) {
         >
           <header class="flex justify-between items-baseline border-b border-black mb-2 pb-1">
             <h4 class="font-headline-md text-headline-md uppercase text-sm italic text-black">{{ spell.name }}</h4>
-            <span class="text-[10px] uppercase font-bold text-black">
+            <span class="text-[11px] uppercase font-bold text-black">
               {{ formatSpellLevel(spell.level) }}<span v-if="spell.school"> • {{ spell.school }}</span>
             </span>
           </header>
@@ -470,7 +630,7 @@ function formatSpellLevel(level: number) {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+/* EB Garamond and Manrope are loaded once in index.html; no second @import here. */
 
 /* Markdown-rendered appendix content (#215), rendered by ExpandableText
    (#224). Use plain print bullets instead of the on-screen .markdown-content
@@ -506,6 +666,16 @@ function formatSpellLevel(level: number) {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* One style for every black section header (Skills, Saving Throws, Attacks, Inventory, Consumables). */
+.print-section-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .font-display-lg {
@@ -558,6 +728,9 @@ function formatSpellLevel(level: number) {
   .printable-sheet-container {
     display: block !important;
     background: white !important;
+    /* Print the black section headers and light row striping as designed. */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .a4-page--fixed {
     border: none !important;
@@ -589,9 +762,17 @@ function formatSpellLevel(level: number) {
   * {
     color: black !important;
     border-color: black !important;
-    background-color: transparent !important;
     text-shadow: none !important;
     box-shadow: none !important;
+  }
+  /* Black section headers keep white text despite the blanket black-text rule. */
+  .print-inverse,
+  .print-inverse * {
+    color: white !important;
+    background-color: black !important;
+  }
+  .print-box {
+    background-color: white !important;
   }
   .skill-prof-filled {
     background-color: black !important;
