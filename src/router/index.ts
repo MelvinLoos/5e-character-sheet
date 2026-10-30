@@ -61,11 +61,13 @@ const router = createRouter({
     {
       path: '/terms',
       name: 'terms',
+      meta: { standalone: true },
       component: () => import('../views/TermsOfService.vue'),
     },
     {
       path: '/privacy',
       name: 'privacy',
+      meta: { standalone: true },
       component: () => import('../views/PrivacyPolicy.vue'),
     },
   ],

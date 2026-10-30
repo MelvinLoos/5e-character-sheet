@@ -4,6 +4,7 @@ import { useCharacterStore } from '@/stores/character'
 import { useAuthStore } from '@/stores/authStore'
 import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
+import { useCharacterActions } from '@/composables/useCharacterActions'
 import AuthButton from './AuthButton.vue'
 import GuildSelector from './GuildSelector.vue'
 import GuildManagementModal from './modals/GuildManagementModal.vue'
@@ -23,32 +24,13 @@ const store = useCharacterStore()
 useAuthStore()
 const guildStore = useGuildStore()
 
-interface Character {
-  name: string
-  [key: string]: unknown
-}
-
-const characterSelectOptions = computed(() => {
-  return Object.entries(store.characterLibrary).map(([session, chars]) => ({
-    label: session,
-    options: (chars as unknown as Character[]).map((char: Character) => ({
-      text: char.name,
-      value: `${session}|${char.name}`,
-    })),
-  }))
-})
+const { characterSelectOptions, currentCharacterValue, selectCharacter, printSheet } =
+  useCharacterActions()
 
 const selectedCharacter = computed({
-  get: () =>
-    store.currentCharacterData ? `${store.sessionName}|${store.currentCharacterData.name}` : '',
-  set: (value) => {
-    if (value === 'new') {
-      store.handleNewCharacter()
-      close()
-    } else if (value) {
-      store.loadCharacterFromLibrary(value)
-      close()
-    }
+  get: () => currentCharacterValue.value,
+  set: (value: string) => {
+    if (selectCharacter(value)) close()
   },
 })
 const feedbackStore = useFeedbackStore()
@@ -91,21 +73,7 @@ function exportCharacter() {
 }
 
 function handlePrint() {
-  const wasEditing = store.isEditing
-  if (wasEditing) {
-    store.toggleEdit()
-  }
-
-  setTimeout(() => {
-    window.onafterprint = () => {
-      if (wasEditing) {
-        store.toggleEdit()
-      }
-      window.onafterprint = null
-    }
-    window.print()
-  }, 100)
-
+  printSheet()
   close()
 }
 
@@ -220,9 +188,9 @@ watch(
               </div>
 
               <div class="grid grid-cols-2 gap-3">
+                <template v-if="store.currentCharacterData">
                 <button
-                  ref="firstItemRef"
-                  @click="saveToLibrary"
+                                    @click="saveToLibrary"
                   class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
                 >
@@ -258,7 +226,10 @@ watch(
                   <span class="text-xs font-label-md text-center">Print Sheet</span>
                 </button>
 
+                </template>
+
                 <button
+                  ref="firstItemRef"
                   @click="openImport"
                   class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   title="Import Data"
@@ -322,14 +293,14 @@ watch(
                 <router-link
                   :to="{ name: 'terms' }"
                   @click="close"
-                  class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+                  class="inline-flex min-h-11 items-center px-3 text-sm text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
                 >
                   Terms
                 </router-link>
                 <router-link
                   :to="{ name: 'privacy' }"
                   @click="close"
-                  class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+                  class="inline-flex min-h-11 items-center px-3 text-sm text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
                 >
                   Privacy
                 </router-link>

@@ -133,10 +133,10 @@ describe('PrivacyPolicy.vue', () => {
   })
 
   describe('accessibility', () => {
-    it('has main landmark', () => {
+    it('renders as an article inside the app main landmark', () => {
       const router = createTestRouter()
       const wrapper = mount(PrivacyPolicy, { global: { plugins: [router] } })
-      const main = wrapper.find('main')
+      const main = wrapper.find('article')
       expect(main.exists()).toBe(true)
     })
 

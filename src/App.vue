@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, defineAsyncComponent } from 'vue'
+import { computed, onMounted, ref, defineAsyncComponent } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
@@ -18,6 +19,9 @@ const DiscordUnlockReminderModal = defineAsyncComponent(
 const UpdateNotification = defineAsyncComponent(() => import('./components/UpdateNotification.vue'))
 
 const store = useCharacterStore()
+const route = useRoute()
+/** Pages such as Terms / Privacy that render without a loaded character. */
+const isStandalonePage = computed(() => route.meta.standalone === true)
 const showImportModal = ref(false)
 const showImportCharacterModal = ref(false)
 const showFeedbackModal = ref(false)
@@ -43,25 +47,27 @@ onMounted(async () => {
       @show-character-import="showImportCharacterModal = true"
       @show-feedback="showFeedbackModal = true"
     />
-    <MobileHeader v-if="store.currentCharacterData" />
+    <MobileHeader @show-more="showMoreMenu = true" />
 
     <main
-      class="flex-1 min-h-0 ml-0 md:ml-64 pt-20 md:pt-0 pb-mobile-safe md:pb-0 flex flex-col gap-8 max-w-7xl mx-auto w-full px-gutter print:hidden"
+      class="flex-1 min-h-0 w-full md:pl-64 pt-[calc(4.5rem+env(safe-area-inset-top,0px))] md:pt-0 pb-mobile-safe md:pb-0 print:hidden"
     >
-      <div
-        v-if="!store.currentCharacterData"
-        class="text-center p-10 max-w-4xl mx-auto bg-surface-container rounded-xl shadow-sm border border-primary-container"
-      >
-        <h2 class="font-headline-lg text-headline-lg text-tertiary">Welcome, Gamemaster!</h2>
-        <p class="mt-4 text-on-surface-variant font-body-md">
-          Start by creating a
-          <button @click="store.handleNewCharacter" class="text-primary font-bold hover:underline">
-            new character</button
-          >, loading one from your library, or using the AI generator.
-        </p>
-      </div>
+      <div class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-gutter">
+        <div
+          v-if="!store.currentCharacterData && !isStandalonePage"
+          class="text-center p-10 max-w-4xl mx-auto bg-surface-container rounded-xl shadow-sm border border-primary-container"
+        >
+          <h1 class="font-headline-lg text-headline-lg text-tertiary">Welcome, Gamemaster!</h1>
+          <p class="mt-4 text-on-surface-variant font-body-md">
+            Start by creating a
+            <button @click="store.handleNewCharacter" class="text-primary font-bold hover:underline">
+              new character</button
+            >, or open the menu to load one from your library or import a character file.
+          </p>
+        </div>
 
-      <CharacterSheet v-if="store.currentCharacterData" />
+        <CharacterSheet v-if="store.currentCharacterData || isStandalonePage" />
+      </div>
     </main>
 
     <PrintableSheet v-if="store.currentCharacterData" />
@@ -92,7 +98,6 @@ onMounted(async () => {
       @show-feedback="showFeedbackModal = true"
     />
 
-    <ThemeToggle class="print:hidden" />
     <UpdateNotification class="print:hidden" />
 
     <!-- Viewport grain overlay — non-interactive -->
