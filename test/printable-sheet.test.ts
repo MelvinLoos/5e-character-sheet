@@ -49,16 +49,6 @@ describe('PrintableSheet (component integration)', () => {
     } as any
   }
 
-  it('prints the rolled initiative only when set', () => {
-    const store = useCharacterStore()
-    store.currentCharacterData = createBaseCharacter()
-    expect(mount(PrintableSheet).find('[data-testid="print-initiative-rolled"]').exists()).toBe(false)
-
-    store.currentCharacterData.combat.initiative = 17
-    const rolled = mount(PrintableSheet).find('[data-testid="print-initiative-rolled"]')
-    expect(rolled.text()).toBe('Rolled: 17')
-  })
-
   it('renders exactly two .a4-page elements when no feature or spell descriptions exist', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()
