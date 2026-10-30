@@ -52,7 +52,7 @@ const queryParams = computed(() => {
         :title="entry.badge?.label"
       >
         <span class="relative">
-          <span class="material-symbols-outlined text-[1.35rem]">{{ entry.icon }}</span>
+          <span class="material-symbols-outlined text-[1.35rem]" aria-hidden="true">{{ entry.icon }}</span>
           <CompletionBadge
             v-if="entry.badge"
             :badge="entry.badge"
@@ -68,7 +68,7 @@ const queryParams = computed(() => {
         title="More Actions"
         aria-label="More Actions"
       >
-        <span class="material-symbols-outlined text-[1.6rem]">more_horiz</span>
+        <span class="material-symbols-outlined text-[1.6rem]" aria-hidden="true">more_horiz</span>
       </button>
 
       <router-link
@@ -85,7 +85,7 @@ const queryParams = computed(() => {
         :title="entry.badge?.label"
       >
         <span class="relative">
-          <span class="material-symbols-outlined text-[1.35rem]">{{ entry.icon }}</span>
+          <span class="material-symbols-outlined text-[1.35rem]" aria-hidden="true">{{ entry.icon }}</span>
           <CompletionBadge
             v-if="entry.badge"
             :badge="entry.badge"

@@ -27,7 +27,7 @@ const { clampCurrentHp } = useCombat()
           <span
             class="material-symbols-outlined text-4xl text-tertiary mb-2 relative z-10"
             style="font-variation-settings: 'FILL' 1"
-            >shield</span
+             aria-hidden="true">shield</span
           >
           <span
             class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider relative z-10 select-none"
@@ -65,7 +65,7 @@ const { clampCurrentHp } = useCombat()
           <div class="flex justify-between items-center mb-2">
             <span
               class="font-label-md text-label-md text-on-surface-variant uppercase flex items-center gap-1 select-none"
-              ><span class="material-symbols-outlined text-sm">favorite</span> HP</span
+              ><span class="material-symbols-outlined text-sm" aria-hidden="true">favorite</span> HP</span
             >
           </div>
           <div class="flex items-end gap-2 border-b border-surface-variant pb-2 mb-2">
@@ -101,7 +101,7 @@ const { clampCurrentHp } = useCombat()
         >
           <span
             class="font-label-md text-label-md text-on-surface-variant uppercase mb-2 flex items-center gap-1 select-none"
-            ><span class="material-symbols-outlined text-sm">casino</span> Hit Dice</span
+            ><span class="material-symbols-outlined text-sm" aria-hidden="true">casino</span> Hit Dice</span
           >
           <div class="flex items-center gap-3">
             <div class="font-headline-md text-headline-md text-on-surface">

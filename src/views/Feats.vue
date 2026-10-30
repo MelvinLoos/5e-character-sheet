@@ -272,7 +272,7 @@ function setActiveCategory(cat: string) {
       v-if="badges.feats"
       class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
     >
-      <span class="material-symbols-outlined text-red-600">warning</span>
+      <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
       <p class="font-label-md text-red-600">{{ badges.feats.label }}</p>
     </div>
 
@@ -282,7 +282,7 @@ function setActiveCategory(cat: string) {
     >
       <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
         <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
-          <span class="material-symbols-outlined text-3xl">auto_awesome</span>
+          <span class="material-symbols-outlined text-3xl" aria-hidden="true">auto_awesome</span>
           Transcribed Feats
         </h3>
       </div>
@@ -292,11 +292,11 @@ function setActiveCategory(cat: string) {
         <div class="relative flex-1 w-full">
           <span
             class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-            >search</span
+             aria-hidden="true">search</span
           >
           <input
             v-model="mySearchFilter"
-            class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
+            class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
             placeholder="Search my feats..."
             type="text"
           />
@@ -306,7 +306,7 @@ function setActiveCategory(cat: string) {
           @click="openFeatLibrary"
           class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant transition-colors whitespace-nowrap shadow-sm"
         >
-          <span class="material-symbols-outlined">add_circle</span> Add Feats
+          <span class="material-symbols-outlined" aria-hidden="true">add_circle</span> Add Feats
         </button>
       </div>
 
@@ -329,7 +329,7 @@ function setActiveCategory(cat: string) {
               <span
                 class="material-symbols-outlined text-outline text-[20px] transition-transform"
                 :class="{ 'rotate-90': expandedFeatures.has(feat.title) }"
-                >chevron_right</span
+                 aria-hidden="true">chevron_right</span
               >
               <h4
                 class="font-headline-md text-headline-md text-tertiary m-0 group-hover:text-tertiary-fixed transition-colors"
@@ -337,13 +337,13 @@ function setActiveCategory(cat: string) {
                 {{ feat.title }}
               </h4>
             </div>
-            <button
+            <button aria-label="Remove Feat"
               v-if="store.isEditing"
               @click.stop="removeFeat(index)"
-              class="text-outline-variant hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10 opacity-0 group-hover:opacity-100 focus:opacity-100"
+              class="text-outline hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10 opacity-0 group-hover:opacity-100 focus:opacity-100"
               title="Remove Feat"
             >
-              <span class="material-symbols-outlined text-[18px]">close</span>
+              <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
             </button>
           </div>
 
@@ -415,13 +415,13 @@ function setActiveCategory(cat: string) {
           </div>
 
           <!-- Edit button -->
-          <button
+          <button aria-label="Edit Feat"
             v-if="store.isEditing"
             @click.stop="editFeature(feat)"
-            class="absolute top-4 right-12 text-outline-variant hover:text-primary transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            class="absolute top-4 right-12 text-outline hover:text-primary transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50 opacity-0 group-hover:opacity-100 focus:opacity-100"
             title="Edit Feat"
           >
-            <span class="material-symbols-outlined text-[16px]">edit</span>
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">edit</span>
           </button>
         </div>
       </div>
@@ -449,7 +449,7 @@ function setActiveCategory(cat: string) {
         :class="badges.feats ? 'border-red-600/30' : 'border-surface-variant'"
       >
         <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
-          <span class="material-symbols-outlined text-3xl">fact_check</span>
+          <span class="material-symbols-outlined text-3xl" aria-hidden="true">fact_check</span>
           Class Features &amp; Choices
         </h3>
         <span
@@ -489,7 +489,7 @@ function setActiveCategory(cat: string) {
             @click="openFeatureChoiceModal(fc)"
             class="bg-primary-container text-primary border border-primary/30 px-3 py-1.5 rounded-lg font-label-md flex items-center gap-1.5 hover:bg-surface-variant transition-colors whitespace-nowrap shadow-sm text-sm"
           >
-            <span class="material-symbols-outlined text-base">edit</span>
+            <span class="material-symbols-outlined text-base" aria-hidden="true">edit</span>
             Manage
           </button>
         </div>
@@ -512,14 +512,14 @@ function setActiveCategory(cat: string) {
           <h3
             class="text-2xl font-headline-lg text-tertiary flex items-center gap-2 m-0 bg-transparent"
           >
-            <span class="material-symbols-outlined">library_books</span>
+            <span class="material-symbols-outlined" aria-hidden="true">library_books</span>
             Feat Archives
           </h3>
-          <button
+          <button aria-label="Close feat library"
             @click="showFeatLibrary = false"
             class="p-2 hover:bg-surface-variant rounded-full transition-colors text-on-surface-variant"
           >
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -529,13 +529,13 @@ function setActiveCategory(cat: string) {
             <div class="relative">
               <span
                 class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-                >search</span
+                 aria-hidden="true">search</span
               >
               <input
                 v-model="searchFilter"
                 type="text"
                 placeholder="Filter by name or description..."
-                class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
+                class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
                 autofocus
               />
             </div>
@@ -630,7 +630,7 @@ function setActiveCategory(cat: string) {
             @click="addManualFeat"
             class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 px-4 py-2 rounded-lg transition-colors cursor-pointer"
           >
-            <span class="material-symbols-outlined text-base">edit_note</span>
+            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
             Custom Entry
           </button>
         </div>

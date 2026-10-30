@@ -226,7 +226,7 @@ watch(
                   class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
                 >
-                  <span class="material-symbols-outlined text-2xl">{{ store.sourceCharacterId ? 'content_copy' : 'save' }}</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">{{ store.sourceCharacterId ? 'content_copy' : 'save' }}</span>
                   <span class="text-xs font-label-md text-center">{{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}</span>
                 </button>
 
@@ -236,7 +236,7 @@ watch(
                   class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 select-none"
                   title="Share Online"
                 >
-                  <span class="material-symbols-outlined text-2xl">share</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">share</span>
                   <span class="text-xs font-label-md text-center">Share Online</span>
                 </button>
 
@@ -245,7 +245,7 @@ watch(
                   class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   title="Export JSON"
                 >
-                  <span class="material-symbols-outlined text-2xl">download</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">download</span>
                   <span class="text-xs font-label-md text-center">Export JSON</span>
                 </button>
 
@@ -254,7 +254,7 @@ watch(
                   class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-tertiary text-on-tertiary hover:bg-tertiary-fixed active:scale-95 transition-all duration-200 ease-out select-none"
                   title="Print Sheet"
                 >
-                  <span class="material-symbols-outlined text-2xl">print</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">print</span>
                   <span class="text-xs font-label-md text-center">Print Sheet</span>
                 </button>
 
@@ -263,7 +263,7 @@ watch(
                   class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   title="Import Data"
                 >
-                  <span class="material-symbols-outlined text-2xl">file_upload</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">file_upload</span>
                   <span class="text-xs font-label-md">Import Data</span>
                 </button>
 
@@ -272,7 +272,7 @@ watch(
                   class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   title="Import Character"
                 >
-                  <span class="material-symbols-outlined text-2xl">person_add</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">person_add</span>
                   <span class="text-xs font-label-md">Import Character</span>
                 </button>
 
@@ -282,7 +282,7 @@ watch(
                   class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
                   title="Give Feedback"
                 >
-                  <span class="material-symbols-outlined text-2xl">feedback</span>
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">feedback</span>
                   <span class="text-xs font-label-md">Give Feedback</span>
                 </button>
               </div>
@@ -300,7 +300,7 @@ watch(
                   class="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/10 active:scale-[0.98] transition-all duration-150 ease-out select-none min-h-[44px]"
                   title="Manage Server Homebrew"
                 >
-                  <span class="material-symbols-outlined text-[1.125rem]">shield</span>
+                  <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">shield</span>
                   Manage Server Homebrew
                 </button>
               </div>

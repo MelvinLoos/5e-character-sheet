@@ -62,7 +62,7 @@ const gearTypeOptions: GearType[] = [
             <span
               class="material-symbols-outlined text-2xl"
               style="font-variation-settings: 'FILL' 1"
-              >monetization_on</span
+               aria-hidden="true">monetization_on</span
             >
           </div>
           <div>
@@ -90,7 +90,7 @@ const gearTypeOptions: GearType[] = [
             <span
               class="material-symbols-outlined text-2xl"
               style="font-variation-settings: 'FILL' 1"
-              >inventory_2</span
+               aria-hidden="true">inventory_2</span
             >
           </div>
           <div>
@@ -112,7 +112,7 @@ const gearTypeOptions: GearType[] = [
           :disabled="store.currentCharacterData.gold < 1"
           class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded font-label-md text-label-md hover:bg-secondary hover:text-on-secondary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out border border-outline-variant flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
-          <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Buy (-1 GP)
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">add_shopping_cart</span> Buy (-1 GP)
         </button>
       </div>
       <!-- Influence -->
@@ -126,7 +126,7 @@ const gearTypeOptions: GearType[] = [
             <span
               class="material-symbols-outlined text-2xl"
               style="font-variation-settings: 'FILL' 1"
-              >stars</span
+               aria-hidden="true">stars</span
             >
           </div>
           <div>
@@ -183,7 +183,7 @@ const gearTypeOptions: GearType[] = [
           @click="addGear"
           class="bg-surface-variant text-on-surface px-3 py-1 rounded flex items-center gap-1 hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          <span class="material-symbols-outlined text-sm">add</span> Add Gear
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span> Add Gear
         </button>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-card-gap">
@@ -202,11 +202,11 @@ const gearTypeOptions: GearType[] = [
                 placeholder="Name"
                 class="flex-1 bg-black/20 border border-black/30 rounded p-1 text-inherit"
               />
-              <button
+              <button aria-label="Remove item"
                 @click="removeGear(index)"
                 class="text-error bg-black/20 p-1 rounded hover:bg-error/20 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out select-none"
               >
-                <span class="material-symbols-outlined text-sm">delete</span>
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
               </button>
             </div>
             <div class="flex gap-2 text-sm">
@@ -272,7 +272,7 @@ const gearTypeOptions: GearType[] = [
                       : 'bg-surface-variant text-on-surface',
                 ]"
               >
-                <span class="material-symbols-outlined">{{ gearTypeToIcon(gear.type, gear.catalogId) }}</span>
+                <span class="material-symbols-outlined" aria-hidden="true">{{ gearTypeToIcon(gear.type, gear.catalogId) }}</span>
               </div>
               <div>
                 <h4 class="font-headline-md text-headline-md leading-tight">
@@ -304,14 +304,14 @@ const gearTypeOptions: GearType[] = [
     <section>
       <div class="flex justify-between items-center mb-4 border-b border-[#1A3C40] pb-2">
         <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-          <span class="material-symbols-outlined">casino</span> Consumables<InfoButton topic="usage-dice" />
+          <span class="material-symbols-outlined" aria-hidden="true">casino</span> Consumables<InfoButton topic="usage-dice" />
         </h3>
-        <button
+        <button aria-label="Add consumable"
           v-if="store.isEditing"
           @click="addConsumable"
           class="bg-surface-variant px-3 py-1 rounded flex gap-1 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
-          <span class="material-symbols-outlined text-sm">add</span>
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
         </button>
       </div>
 
@@ -333,7 +333,7 @@ const gearTypeOptions: GearType[] = [
             <span
               v-if="!store.isEditing"
               class="material-symbols-outlined text-on-surface-variant hidden sm:block"
-              >{{ gearTypeToIcon(consumable.type) }}</span
+               aria-hidden="true">{{ gearTypeToIcon(consumable.type) }}</span
             >
             <div class="w-full">
               <template v-if="store.isEditing">
@@ -391,12 +391,12 @@ const gearTypeOptions: GearType[] = [
               <option value="d4" class="text-[#15130b]">Ud4</option>
               <option value="depleted" class="text-[#15130b]">Depleted</option>
             </select>
-            <button
+            <button aria-label="Remove consumable"
               v-if="store.isEditing"
               @click="removeConsumable(index)"
               class="text-error p-1 rounded hover:bg-error/10 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out select-none"
             >
-              <span class="material-symbols-outlined">delete</span>
+              <span class="material-symbols-outlined" aria-hidden="true">delete</span>
             </button>
           </div>
         </div>

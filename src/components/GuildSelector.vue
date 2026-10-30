@@ -22,7 +22,7 @@ onMounted(() => {
   <div v-if="authStore.isAuthenticated" class="guild-selector px-6 py-3 border-t border-outline-variant/30">
     <!-- Loading -->
     <div v-if="guildStore.isLoading" class="flex items-center justify-center gap-2 py-2">
-      <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+      <span class="material-symbols-outlined animate-spin text-sm" aria-hidden="true">progress_activity</span>
       <span class="text-on-surface-variant font-label-sm text-label-sm">Loading guilds…</span>
     </div>
 

@@ -146,8 +146,8 @@ async function confirmImport() {
       <div class="modal-content max-w-2xl rounded-xl">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold text-tertiary">Import Character</h2>
-          <button @click="close" class="icon-button" title="Close">
-            <span class="material-symbols-outlined">close</span>
+          <button aria-label="Close" @click="close" class="icon-button" title="Close">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -171,7 +171,7 @@ async function confirmImport() {
             ]"
           >
             <div v-if="!selectedFile" class="space-y-3">
-              <span class="material-symbols-outlined text-4xl text-tertiary">upload_file</span>
+              <span class="material-symbols-outlined text-4xl text-tertiary" aria-hidden="true">upload_file</span>
               <p class="text-on-surface-variant font-body-sm">
                 Drag &amp; drop a character .json file here, or click to browse
               </p>
@@ -193,7 +193,7 @@ async function confirmImport() {
 
             <div v-else class="flex items-center justify-between gap-4 text-left">
               <div class="flex items-center gap-3 min-w-0">
-                <span class="material-symbols-outlined text-tertiary">description</span>
+                <span class="material-symbols-outlined text-tertiary" aria-hidden="true">description</span>
                 <span class="text-sm text-on-surface truncate">{{ selectedFile.name }}</span>
               </div>
               <button

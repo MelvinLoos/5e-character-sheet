@@ -11,7 +11,7 @@ const authStore = useAuthStore()
       data-testid="auth-loading"
       class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-surface-variant text-on-surface"
     >
-      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      <span class="material-symbols-outlined animate-spin" aria-hidden="true">progress_activity</span>
       <span class="font-label-md">Connecting…</span>
     </div>
 
@@ -27,9 +27,9 @@ const authStore = useAuthStore()
         alt=""
         class="w-8 h-8 rounded-full"
       />
-      <span v-else class="material-symbols-outlined">account_circle</span>
+      <span v-else class="material-symbols-outlined" aria-hidden="true">account_circle</span>
       <span class="font-label-md truncate">{{ authStore.discordUsername ?? 'Discord User' }}</span>
-      <span class="material-symbols-outlined ml-auto">logout</span>
+      <span class="material-symbols-outlined ml-auto" aria-hidden="true">logout</span>
     </button>
 
     <button

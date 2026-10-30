@@ -121,7 +121,7 @@ watch(
             <h2 class="text-xl font-bold text-tertiary mb-4">Thanks for your feedback!</h2>
             <p class="mb-6">Your feedback has been delivered to the Guild.</p>
             <button @click="close" class="icon-button">
-              <span class="material-symbols-outlined text-base">check</span>
+              <span class="material-symbols-outlined text-base" aria-hidden="true">check</span>
               Close
             </button>
           </template>
@@ -147,7 +147,7 @@ watch(
                     : 'bg-surface-variant text-on-surface-variant border-outline-variant hover:bg-surface-bright'
                 "
               >
-                <span class="material-symbols-outlined text-base">{{ option.icon }}</span>
+                <span class="material-symbols-outlined text-base" aria-hidden="true">{{ option.icon }}</span>
                 {{ option.label }}
               </button>
             </div>
@@ -180,7 +180,7 @@ watch(
                 <span
                   v-if="submitState === 'sending'"
                   class="material-symbols-outlined animate-spin text-base"
-                  >progress_activity</span
+                   aria-hidden="true">progress_activity</span
                 >
                 {{ submitState === 'sending' ? 'Sending' : 'Submit Feedback' }}
               </button>

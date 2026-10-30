@@ -56,7 +56,7 @@ const allowedLevels = computed(() => {
       >
         <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
           <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 select-none">
-            <span class="material-symbols-outlined text-3xl">menu_book</span> Spell Grimoire
+            <span class="material-symbols-outlined text-3xl" aria-hidden="true">menu_book</span> Spell Grimoire
           </h3>
           <div class="text-right">
             <span
@@ -86,7 +86,7 @@ const allowedLevels = computed(() => {
           <div class="relative flex-1 w-full">
             <span
               class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-              >search</span
+               aria-hidden="true">search</span
             >
             <input
               v-model="searchFilter"
@@ -100,7 +100,7 @@ const allowedLevels = computed(() => {
             @click="addSpell"
             class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out whitespace-nowrap select-none"
           >
-            <span class="material-symbols-outlined">add_circle</span> Add Spell
+            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span> Add Spell
           </button>
         </div>
 
@@ -132,7 +132,7 @@ const allowedLevels = computed(() => {
                 >
                   {{ max - getSpent(parseInt(levelKey.replace('level', ''))) }}
                 </button>
-                <span class="text-outline-variant select-none">/</span>
+                <span class="text-outline select-none">/</span>
                 <div
                   class="w-8 h-8 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant select-none"
                 >
@@ -210,7 +210,7 @@ const allowedLevels = computed(() => {
                   <!-- Drag handle -->
                   <span
                     class="spell-drag-handle material-symbols-outlined text-sm cursor-move opacity-0 group-hover:opacity-50 mr-1 text-inherit"
-                    >drag_indicator</span
+                     aria-hidden="true">drag_indicator</span
                   >
 
                   <button
@@ -226,7 +226,7 @@ const allowedLevels = computed(() => {
                     <span
                       class="material-symbols-outlined"
                       :style="spell.prepared ? 'font-variation-settings: \'FILL\' 1' : ''"
-                    >
+                     aria-hidden="true">
                       {{ spell.prepared ? 'check_circle' : 'radio_button_unchecked' }}
                     </span>
                   </button>
@@ -283,13 +283,13 @@ const allowedLevels = computed(() => {
               />
 
                 <!-- Delete button -->
-                <button
+                <button aria-label="Remove Spell"
                   v-if="store.isEditing"
                   @click="removeSpell(spell.id!)"
                   class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
                   title="Remove Spell"
                 >
-                  <span class="material-symbols-outlined text-sm">delete</span>
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
                 </button>
             </ElevatedCard>
           </template>
@@ -330,7 +330,7 @@ const allowedLevels = computed(() => {
                   <span
                     class="material-symbols-outlined"
                     :style="spell.prepared ? 'font-variation-settings: \'FILL\' 1' : ''"
-                  >
+                   aria-hidden="true">
                     {{ spell.prepared ? 'check_circle' : 'radio_button_unchecked' }}
                   </span>
                 </button>
@@ -387,13 +387,13 @@ const allowedLevels = computed(() => {
             />
 
                 <!-- Delete button -->
-                <button
+                <button aria-label="Remove Spell"
                   v-if="store.isEditing"
                   @click="removeSpell(spell.id!)"
                   class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
                   title="Remove Spell"
                 >
-                  <span class="material-symbols-outlined text-sm">delete</span>
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
                 </button>
           </ElevatedCard>
         </div>
@@ -419,11 +419,11 @@ const allowedLevels = computed(() => {
         >
           <div class="flex justify-between items-center mb-6">
           <h3 class="text-2xl font-headline-lg text-tertiary select-none">Spell Library</h3>
-          <button
+          <button aria-label="Close spell library"
             @click="toggleSpellLibrary"
             class="p-2 hover:bg-surface-variant active:bg-surface-variant/70 active:scale-95 rounded-full transition-all duration-200 ease-out select-none"
           >
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -442,7 +442,7 @@ const allowedLevels = computed(() => {
           <div class="relative">
             <span
               class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-              >search</span
+               aria-hidden="true">search</span
             >
             <input
               v-model="librarySearchFilter"
@@ -535,7 +535,7 @@ const allowedLevels = computed(() => {
             @click="addManualSpell"
             class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 px-4 py-2 rounded-lg transition-all duration-200 ease-out cursor-pointer select-none"
           >
-            <span class="material-symbols-outlined text-base">edit_note</span>
+            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
             Custom Spell
           </button>
           </div>
@@ -550,7 +550,7 @@ const allowedLevels = computed(() => {
       <span
         class="material-symbols-outlined text-tertiary text-3xl shrink-0 mt-1"
         style="font-variation-settings: 'FILL' 1"
-        >info</span
+         aria-hidden="true">info</span
       >
       <div>
         <h4 class="font-headline-md text-headline-md text-on-surface mb-1 select-none">

@@ -12,7 +12,7 @@ const store = useCharacterStore()
       class="bg-surface-container-high rounded-lg border border-outline-variant p-6 shadow-sm"
     >
       <div class="flex items-center gap-3 mb-4 border-b border-outline-variant/50 pb-3">
-        <span class="material-symbols-outlined text-tertiary">group_work</span>
+        <span class="material-symbols-outlined text-tertiary" aria-hidden="true">group_work</span>
         <h3 class="font-headline-md text-headline-md text-on-background">Job In The Party</h3>
       </div>
 
@@ -44,7 +44,7 @@ const store = useCharacterStore()
         <span
           class="material-symbols-outlined text-on-tertiary-fixed-variant dark:text-tertiary text-3xl"
           style="font-variation-settings: 'FILL' 1"
-          >menu_book</span
+           aria-hidden="true">menu_book</span
         >
         <h3
           class="font-display-lg text-headline-lg text-on-tertiary-fixed dark:text-on-background border-b-2 border-tertiary-container pb-1 inline-block"
@@ -76,7 +76,7 @@ const store = useCharacterStore()
       class="bg-surface-container-high rounded-lg border border-outline-variant p-6 shadow-sm h-full flex flex-col"
     >
       <div class="flex items-center gap-3 mb-6 border-b border-tertiary/30 pb-3">
-        <span class="material-symbols-outlined text-tertiary">psychology</span>
+        <span class="material-symbols-outlined text-tertiary" aria-hidden="true">psychology</span>
         <h3 class="font-headline-md text-headline-md text-tertiary">Lore &amp; Identity</h3>
       </div>
 
@@ -87,7 +87,7 @@ const store = useCharacterStore()
             class="font-label-md text-label-md text-on-surface-variant mb-2 block uppercase tracking-wider group-focus-within:text-primary transition-colors flex items-center justify-between"
           >
             Personality Traits
-            <span class="material-symbols-outlined text-xs opacity-50">edit_note</span>
+            <span class="material-symbols-outlined text-xs opacity-50" aria-hidden="true">edit_note</span>
           </label>
           <textarea
             v-if="store.isEditing"
@@ -109,7 +109,7 @@ const store = useCharacterStore()
             class="font-label-md text-label-md text-on-surface-variant mb-2 block uppercase tracking-wider group-focus-within:text-tertiary transition-colors flex items-center justify-between"
           >
             Ideals
-            <span class="material-symbols-outlined text-xs opacity-50">star</span>
+            <span class="material-symbols-outlined text-xs opacity-50" aria-hidden="true">star</span>
           </label>
           <textarea
             v-if="store.isEditing"
@@ -131,7 +131,7 @@ const store = useCharacterStore()
             class="font-label-md text-label-md text-on-surface-variant mb-2 block uppercase tracking-wider group-focus-within:text-primary-fixed-dim transition-colors flex items-center justify-between"
           >
             Bonds
-            <span class="material-symbols-outlined text-xs opacity-50">link</span>
+            <span class="material-symbols-outlined text-xs opacity-50" aria-hidden="true">link</span>
           </label>
           <textarea
             v-if="store.isEditing"
@@ -153,7 +153,7 @@ const store = useCharacterStore()
             class="font-label-md text-label-md text-on-surface-variant mb-2 block uppercase tracking-wider group-focus-within:text-error transition-colors flex items-center justify-between"
           >
             Flaws
-            <span class="material-symbols-outlined text-xs opacity-50">broken_image</span>
+            <span class="material-symbols-outlined text-xs opacity-50" aria-hidden="true">broken_image</span>
           </label>
           <textarea
             v-if="store.isEditing"

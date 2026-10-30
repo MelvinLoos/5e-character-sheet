@@ -81,7 +81,7 @@
           :to="{ name: 'identity' }"
           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tertiary text-on-tertiary hover:bg-tertiary-fixed hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out font-label-md text-label-md select-none"
         >
-          <span class="material-symbols-outlined text-[1.125rem]">arrow_back</span>
+          <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">arrow_back</span>
           Back to App
         </router-link>
       </footer>
