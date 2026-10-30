@@ -116,7 +116,7 @@ function handleClose() {
         <!-- Selection Counter -->
         <div
           class="mb-4 flex items-center gap-2 text-sm font-semibold"
-          :class="remainingCount === 0 ? 'text-green-400' : 'text-on-surface-variant'"
+          :class="remainingCount === 0 ? 'text-primary' : 'text-on-surface-variant'"
         >
           <span
             v-if="remainingCount === 0"

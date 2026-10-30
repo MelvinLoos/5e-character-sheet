@@ -32,32 +32,32 @@ const iconConfig: Record<
 > = {
   Action: {
     icon: 'star',
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    color: 'text-error',
+    bgColor: 'bg-error/15',
     label: 'Action',
   },
   'Bonus Action': {
     icon: 'zap',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: 'text-tertiary',
+    bgColor: 'bg-tertiary/15',
     label: 'Bonus Action',
   },
   Reaction: {
     icon: 'refresh-ccw',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-primary',
+    bgColor: 'bg-primary/15',
     label: 'Reaction',
   },
   'Free Action': {
     icon: 'feather',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
+    color: 'text-on-surface-variant',
+    bgColor: 'bg-surface-variant',
     label: 'Free Action',
   },
   Passive: {
     icon: 'circle',
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100',
+    color: 'text-on-surface-variant',
+    bgColor: 'bg-surface-variant',
     label: 'Passive',
   },
   None: {

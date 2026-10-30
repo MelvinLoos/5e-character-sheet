@@ -253,28 +253,22 @@ function setActiveCategory(cat: string) {
 
 <template>
   <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
-    <header class="mb-8 flex justify-between items-end border-b border-surface-variant pb-4">
-      <div>
-        <h2 class="font-display-lg text-display-lg text-tertiary mb-2">Feats & Talents</h2>
-        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-          Select exceptional abilities that define your character
-        </p>
-      </div>
-      <div
-        v-if="selectedFeats.length > 0"
-        class="font-label-md text-label-md bg-tertiary/10 text-tertiary px-3 py-1 rounded-full border border-tertiary/20"
-      >
-        {{ selectedFeats.length }} Active
-      </div>
-    </header>
-
-    <div
-      v-if="badges.feats"
-      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
+    <PageHeader
+      title="Feats & Talents"
+      subtitle="Select exceptional abilities that define your character"
     >
-      <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
-      <p class="font-label-md text-red-600">{{ badges.feats.label }}</p>
-    </div>
+      <template v-if="selectedFeats.length > 0" #actions>
+        <div
+          class="font-label-md text-label-md bg-tertiary/10 text-tertiary px-3 py-1 rounded-full border border-tertiary/20"
+        >
+          {{ selectedFeats.length }} Active
+        </div>
+      </template>
+    </PageHeader>
+
+    <StatusBanner v-if="badges.feats" tone="error" class="md:hidden">
+      {{ badges.feats.label }}
+    </StatusBanner>
 
     <!-- Selected Feats Section -->
     <section
@@ -442,11 +436,11 @@ function setActiveCategory(cat: string) {
     <section
       v-if="eligibleFeatureChoices.length > 0"
       class="bg-surface-container rounded-lg p-6 border shadow-sm flex-1"
-      :class="badges.feats ? 'border-red-600/50' : 'border-outline-variant'"
+      :class="badges.feats ? 'border-error/50' : 'border-outline-variant'"
     >
       <div
         class="flex justify-between items-end border-b pb-4 mb-6"
-        :class="badges.feats ? 'border-red-600/30' : 'border-surface-variant'"
+        :class="badges.feats ? 'border-error/30' : 'border-surface-variant'"
       >
         <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
           <span class="material-symbols-outlined text-3xl" aria-hidden="true">fact_check</span>
@@ -454,7 +448,7 @@ function setActiveCategory(cat: string) {
         </h3>
         <span
           v-if="badges.feats"
-          class="font-label-md text-label-md text-red-600 bg-red-600/10 px-3 py-1 rounded-full border border-red-600/30 select-none animate-pulse"
+          class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none animate-pulse"
         >
           {{ badges.feats.label }}
         </span>

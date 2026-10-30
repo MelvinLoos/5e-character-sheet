@@ -13,13 +13,9 @@ const { badges } = useCharacterCompletion()
   <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
     <SheetHeader />
 
-    <div
-      v-if="badges.identity"
-      class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
-    >
-      <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
-      <p class="font-label-md text-red-600">{{ badges.identity.label }}</p>
-    </div>
+    <StatusBanner v-if="badges.identity" tone="error" class="md:hidden">
+      {{ badges.identity.label }}
+    </StatusBanner>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Row 1: Ability Scores (full width) -->
