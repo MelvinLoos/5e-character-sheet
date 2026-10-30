@@ -14,7 +14,7 @@ import {
   migrateEquippedGearCatalogIds,
   migrateDescriptionHtmlToMarkdown,
 } from './migrations'
-import { getMod, hasSpellcasting } from '@/domain'
+import { getMod, hasSpellcasting, getEffectiveLevel, getSpellcastingAbility } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 import { resolveStartingEquipment } from './equipmentResolver'
 import { calculateArmorClass } from './acCalculator'
@@ -552,7 +552,7 @@ export function applyBackgroundBonuses(char: CharacterData): CharacterData {
  * spellcasting state.
  */
 export function calculateDerivedStats(char: CharacterData): CharacterData {
-  const level = DND_RULES.getEffectiveLevel(char.renownTier || 1)
+  const level = getEffectiveLevel(char.renownTier || 1)
 
   // Proficiency bonus
   let prof = 2
@@ -599,7 +599,7 @@ export function calculateDerivedStats(char: CharacterData): CharacterData {
   if (isCaster) {
     // Derive the casting ability from the character's class (Bard/Cleric/etc.),
     // falling back to Intelligence for feat/trait-only casters without a class.
-    const ability = DND_RULES.getSpellcastingAbility(char.class)
+    const ability = getSpellcastingAbility(char.class)
     spellcasting = { ...(spellcasting ?? {}), ability }
   } else {
     spellcasting = null

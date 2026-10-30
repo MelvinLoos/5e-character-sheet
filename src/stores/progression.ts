@@ -2,7 +2,14 @@ import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useCharacterStore } from './character'
 import * as DND_RULES from '@/data/rules'
-import { getMod, pointBuyCosts, computeSpellSlots, hasSpellcasting } from '@/domain'
+import {
+  getMod,
+  pointBuyCosts,
+  computeSpellSlots,
+  hasSpellcasting,
+  getEffectiveLevel,
+  getSpellcastingAbility,
+} from '@/domain'
 import { applyBackgroundBonuses } from '@/utils/characterMutations'
 import type { CharacterFeature } from '@/types/character'
 
@@ -25,7 +32,7 @@ export const useProgressionStore = defineStore('progression', () => {
   const derivedLevel = computed(() => {
     if (!characterStore.currentCharacterData) return 3
     const tier = characterStore.currentCharacterData.renownTier || 1
-    return DND_RULES.getEffectiveLevel(tier)
+    return getEffectiveLevel(tier)
   })
 
   const profBonus = computed(() => {
@@ -171,7 +178,7 @@ export const useProgressionStore = defineStore('progression', () => {
     const features = data.features || []
     const isCaster = hasSpellcasting(features)
     if (isCaster) {
-      const ability = DND_RULES.getSpellcastingAbility(data.class)
+      const ability = getSpellcastingAbility(data.class)
       data.spellcasting = { ...(data.spellcasting ?? {}), ability }
     } else {
       data.spellcasting = null

@@ -6,6 +6,8 @@ import {
   createBlankCharacter,
   getMod,
   hasSpellcasting,
+  getEffectiveLevel,
+  getSpellcastingAbility,
 } from '@/domain'
 import type { CharacterData } from '@/domain'
 
@@ -149,7 +151,7 @@ export const useCharacterStore = defineStore('character', () => {
     const isCaster = hasSpellcasting(features)
 
     if (isCaster) {
-      const ability = DND_RULES.getSpellcastingAbility(currentCharacterData.value.class)
+      const ability = getSpellcastingAbility(currentCharacterData.value.class)
       currentCharacterData.value.spellcasting = {
         ...(currentCharacterData.value.spellcasting ?? {}),
         ability,
@@ -485,7 +487,7 @@ export const useCharacterStore = defineStore('character', () => {
     const classData = data.class ? DND_RULES.CLASSES[data.class] : undefined
     if (classData) {
       const conMod = getMod(data.abilityScores.con ?? 10)
-      const level = DND_RULES.getEffectiveLevel(data.renownTier || 1)
+      const level = getEffectiveLevel(data.renownTier || 1)
       let newHp = classData.hitDice + conMod
       if (level > 1) {
         const hpGainPerLevel = classData.hitDiceAverage + conMod
@@ -605,7 +607,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Resolve max count via the shared feature-choice rules helper.
     const tier = char.renownTier || 1
-    const level = DND_RULES.getEffectiveLevel(tier)
+    const level = getEffectiveLevel(tier)
     const maxCount = effectiveMaxCountForChoice(choice, tier)
 
     if (optionIds.length > maxCount) {
