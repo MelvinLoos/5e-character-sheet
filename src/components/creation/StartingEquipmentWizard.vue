@@ -291,7 +291,7 @@ const masteryDescriptions: Record<string, string> = {
             <li v-for="item in bundleA.items" :key="item.itemId" class="flex items-start gap-1">
               <span class="text-tertiary mt-0.5">•</span>
               <span>
-              <span class="material-symbols-outlined text-sm mr-1">{{ gearTypeToIcon('', item.itemId) }}</span>
+              <span class="material-symbols-outlined text-sm mr-1" aria-hidden="true">{{ gearTypeToIcon('', item.itemId) }}</span>
                 {{ getItemDetail(item.itemId).name }}<template v-if="item.quantity > 1"> (×{{ item.quantity }})</template>
                 <span v-if="getItemDetail(item.itemId).mastery" class="text-tertiary font-bold ml-1">[{{ getItemDetail(item.itemId).mastery }}]</span>
               </span>
@@ -320,7 +320,7 @@ const masteryDescriptions: Record<string, string> = {
             <li v-for="item in bundleB.items" :key="item.itemId" class="flex items-start gap-1">
               <span class="text-tertiary mt-0.5">•</span>
               <span>
-              <span class="material-symbols-outlined text-sm mr-1">{{ gearTypeToIcon('', item.itemId) }}</span>
+              <span class="material-symbols-outlined text-sm mr-1" aria-hidden="true">{{ gearTypeToIcon('', item.itemId) }}</span>
                 {{ getItemDetail(item.itemId).name }}<template v-if="item.quantity > 1"> (×{{ item.quantity }})</template>
                 <span v-if="getItemDetail(item.itemId).mastery" class="text-tertiary font-bold ml-1">[{{ getItemDetail(item.itemId).mastery }}]</span>
               </span>
@@ -629,7 +629,7 @@ const masteryDescriptions: Record<string, string> = {
         <!-- Gold Total -->
         <div class="flex justify-between items-center">
           <span class="font-headline-md text-headline-md text-on-surface">TOTAL GOLD</span>
-          <span class="font-display-md text-display-md text-tertiary">
+          <span class="font-headline-lg text-headline-lg text-tertiary">
             {{ goldPreview?.totalGold ?? 0 }} GP
           </span>
         </div>

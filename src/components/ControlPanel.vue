@@ -152,7 +152,7 @@ onUnmounted(() => {
         class="relative w-24 h-24 rounded-full border-2 border-tertiary overflow-hidden flex-shrink-0 bg-surface-variant flex items-center justify-center"
       >
         <span class="material-symbols-outlined text-5xl text-on-surface-variant"
-          >account_circle</span
+           aria-hidden="true">account_circle</span
         >
       </div>
       <div class="text-center w-full px-2">
@@ -242,7 +242,7 @@ onUnmounted(() => {
         :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
         :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
       >
-        <span class="material-symbols-outlined text-[1.125rem]">visibility</span>
+        <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">visibility</span>
         <span>Viewing</span>
       </button>
       <button
@@ -252,7 +252,7 @@ onUnmounted(() => {
         :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
         :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
       >
-        <span class="material-symbols-outlined text-[1.125rem]">edit</span>
+        <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">edit</span>
         <span>Edit</span>
       </button>
     </div>
@@ -271,7 +271,7 @@ onUnmounted(() => {
           :aria-label="entry.badge ? `${entry.label} — ${entry.badge.label}` : undefined"
           :title="entry.badge?.label"
         >
-          <span class="material-symbols-outlined text-[1.25rem]">{{ entry.icon }}</span>
+          <span class="material-symbols-outlined text-[1.25rem]" aria-hidden="true">{{ entry.icon }}</span>
           <span class="flex-1">{{ entry.label }}</span>
           <CompletionBadge v-if="entry.badge" :badge="entry.badge" />
         </router-link>
@@ -287,7 +287,7 @@ onUnmounted(() => {
           :aria-expanded="showMorePopover"
           aria-haspopup="true"
         >
-          <span class="material-symbols-outlined text-[1.25rem]">more_horiz</span>
+          <span class="material-symbols-outlined text-[1.25rem]" aria-hidden="true">more_horiz</span>
           More
         </button>
 
@@ -317,7 +317,7 @@ onUnmounted(() => {
                   title="Manage Server Homebrew"
                   role="menuitem"
                 >
-                  <span class="material-symbols-outlined text-[1.125rem]">shield</span>
+                  <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">shield</span>
                   Manage Server Homebrew
                 </button>
               </div>
@@ -329,7 +329,7 @@ onUnmounted(() => {
                 title="Give Feedback"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">feedback</span>
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">feedback</span>
                 Give Feedback
               </button>
 
@@ -339,7 +339,7 @@ onUnmounted(() => {
                 title="Import JSON"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">file_upload</span>
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">file_upload</span>
                 Import Data
               </button>
 
@@ -349,7 +349,7 @@ onUnmounted(() => {
                 title="Import Character"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">person_add</span>
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">person_add</span>
                 Import Character
               </button>
 
@@ -359,7 +359,7 @@ onUnmounted(() => {
                 :title="store.sourceCharacterId ? 'Save a Local Copy' : 'Save to Browser Library'"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">{{
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">{{
                   store.sourceCharacterId ? 'content_copy' : 'save'
                 }}</span>
                 {{ store.sourceCharacterId ? 'Save Local Copy' : 'Save to Library' }}
@@ -372,7 +372,7 @@ onUnmounted(() => {
                 title="Share Online"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">share</span>
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">share</span>
                 Share Online
               </button>
 
@@ -382,7 +382,7 @@ onUnmounted(() => {
                 title="Export JSON"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">download</span>
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">download</span>
                 Export JSON
               </button>
 
@@ -394,7 +394,7 @@ onUnmounted(() => {
                 title="Print Sheet"
                 role="menuitem"
               >
-                <span class="material-symbols-outlined text-[1.125rem]">print</span>
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">print</span>
                 Print Sheet
               </button>
             </div>

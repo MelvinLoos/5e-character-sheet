@@ -32,7 +32,7 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
           class="bg-primary-container text-primary border border-primary/30 px-3 py-1 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out text-sm select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
           title="Add Attack"
         >
-          <span class="material-symbols-outlined text-[18px]">add_circle</span> Add Attack
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">add_circle</span> Add Attack
         </button>
       </div>
     </div>
@@ -65,7 +65,7 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
             class="attack-drag-handle absolute left-2 top-4 cursor-move opacity-40 hover:opacity-100 z-10 text-on-surface-variant"
             title="Drag to reorder"
           >
-            <span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">drag_indicator</span>
           </div>
 
           <div class="flex justify-between items-start" :class="{ 'ml-6': store.isEditing }">
@@ -86,7 +86,7 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
                 >
                   <span class="flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px] text-tertiary"
-                      >sports_martial_arts</span
+                       aria-hidden="true">sports_martial_arts</span
                     >
                     <template v-if="attack.atkStat">
                       <template v-if="attack.atkStat === 'custom'">
@@ -110,7 +110,7 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
                   <span class="w-px h-3 bg-outline-variant mx-1"></span>
 
                   <span class="flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px] text-error">water_drop</span>
+                    <span class="material-symbols-outlined text-[14px] text-error" aria-hidden="true">water_drop</span>
                     <span v-if="attack.dmgDie">{{ attack.dmgDie }}</span>
                     <template v-if="attack.dmgStat">
                       <template v-if="attack.dmgStat === 'custom'">
@@ -266,13 +266,13 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
                 {{ attack.notes || '' }}
               </p>
             </div>
-            <button
+            <button aria-label="Remove Attack"
               v-if="store.isEditing"
               @click="removeAttack(index)"
               class="ml-2 w-6 h-6 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-on-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out flex items-center justify-center shrink-0 select-none"
               title="Remove Attack"
             >
-              <span class="material-symbols-outlined text-[14px]">close</span>
+              <span class="material-symbols-outlined text-[14px]" aria-hidden="true">close</span>
             </button>
           </div>
         </div>

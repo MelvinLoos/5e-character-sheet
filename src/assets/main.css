@@ -127,7 +127,7 @@ html.light {
   --color-surface-tint: #8c1d1d;
 
   /* Outline */
-  --color-outline: #8b9293;
+  --color-outline: #6f6556;
   --color-outline-variant: #c9b7a2;
 
   /* Error */
@@ -159,6 +159,13 @@ html.light {
   body,
   #app {
     overscroll-behavior: none;
+  }
+
+  /* Controls should not start a text selection on tap/drag; content stays selectable. */
+  button,
+  [role='button'],
+  nav,
+  summary {
     -webkit-user-select: none;
     user-select: none;
   }
@@ -214,7 +221,6 @@ html.light {
 
   .sheet-container {
     @apply border-2 border-sheet-border shadow-xl flex-col rounded-lg;
-    background-image: url('https://www.transparenttextures.com/patterns/clean-gray-paper.png');
     background-color: var(--color-sheet-bg);
     box-shadow:
       0 8px 32px rgba(139, 69, 19, 0.15),
@@ -282,27 +288,19 @@ html.light {
     @apply w-4 h-4 rounded-full border border-sheet-text bg-black/5;
   }
 
-  .control-panel button,
-  .icon-button,
-  .editor-button {
+  .icon-button {
     @apply bg-tertiary text-on-tertiary border border-sheet-border p-2 rounded-sm cursor-pointer transition-all duration-200 ease-out flex items-center justify-center select-none;
   }
-  .control-panel button:not(:disabled):hover,
-  .icon-button:not(:disabled):hover,
-  .editor-button:not(:disabled):hover {
+  .icon-button:not(:disabled):hover {
     @apply bg-tertiary-fixed-dim;
     transform: scale(1.05);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   }
-  .control-panel button:not(:disabled):active,
-  .icon-button:not(:disabled):active,
-  .editor-button:not(:disabled):active {
+  .icon-button:not(:disabled):active {
     transform: scale(0.95);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
-  .control-panel button:disabled,
-  .icon-button:disabled,
-  .editor-button:disabled {
+  .icon-button:disabled {
     @apply bg-gray-400 cursor-not-allowed opacity-50;
     transform: none;
     box-shadow: none;
@@ -346,11 +344,6 @@ html.light {
       box-shadow: 0 0 20px rgba(234, 194, 73, 0.7), 0 0 36px rgba(234, 194, 73, 0.4);
     }
   }
-  .control-panel select,
-  .control-panel input[type='text'] {
-    @apply bg-sheet-input-bg border border-sheet-border p-2 rounded-sm;
-  }
-
   .usage-box,
   .spell-slot-box,
   .edit-skill-checkbox {
@@ -382,13 +375,6 @@ html.light {
     @apply bg-sheet-border;
   }
 
-  .gemini-button {
-    @apply bg-purple-800 text-purple-100 border-purple-950 text-sm py-1 px-2;
-  }
-  .gemini-button:hover {
-    @apply bg-purple-950;
-  }
-
   .edit-mode-input,
   .edit-mode-select {
     @apply w-full bg-sheet-bg border border-dashed border-sheet-accent p-0.5 px-1;
@@ -399,17 +385,13 @@ html.light {
   .edit-stat {
     @apply w-12 text-center bg-sheet-bg border border-sheet-accent;
   }
-  .edit-mode-small-btn {
-    @apply text-xs px-2 py-1 ml-2 rounded-full bg-tertiary text-on-tertiary border-none cursor-pointer;
-  }
 
   .info-button {
     @apply p-1 rounded-full transition-all duration-200 ease-out cursor-pointer border-none bg-transparent select-none;
   }
 
   .info-button:hover {
-    background-color: var(--color-sheet-accent);
-    opacity: 0.2;
+    background-color: color-mix(in srgb, var(--color-tertiary) 20%, transparent);
     transform: scale(1.1);
   }
 
@@ -772,21 +754,10 @@ html.light {
   }
 }
 
-/* Better responsive grid spacing */
-@media (min-width: 1024px) {
-  .grid {
-    gap: 2rem;
-  }
-}
-
 @media (max-width: 768px) {
   .sheet-container {
     margin: 0.5rem;
     padding: 1rem !important;
-  }
-
-  .grid {
-    gap: 1rem;
   }
 
   .textarea-styled {
@@ -808,70 +779,6 @@ html.light {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Ability Score Button Improvements */
-.ability-score-btn {
-  @apply text-sheet-text border border-sheet-border rounded-full font-bold transition-all duration-150 ease-in-out flex items-center justify-center select-none;
-  background-color: var(--color-sheet-accent);
-
-  /* Mobile-first sizing - larger touch targets */
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: 1.125rem;
-  line-height: 1;
-
-  /* Better visual feedback */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.ability-score-btn:hover {
-  background-color: var(--color-sheet-accent);
-  filter: brightness(0.9);
-}
-
-.ability-score-btn:active {
-  background-color: var(--color-sheet-accent);
-  filter: brightness(0.75);
-}
-
-.ability-score-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.ability-score-btn:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.ability-score-btn:disabled {
-  @apply bg-gray-300 text-gray-500 cursor-not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.ability-score-btn:disabled:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-/* Distinct styling for increase vs decrease */
-.ability-score-btn-increase {
-  @apply bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white border-emerald-700;
-}
-
-.ability-score-btn-decrease {
-  @apply bg-red-600 hover:bg-red-700 active:bg-red-800 text-white border-red-700;
-}
-
-/* Desktop refinements */
-@media (min-width: 768px) {
-  .ability-score-btn {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
-  }
-}
-
 /* Point Buy Counter Animations */
 @keyframes pointsChanged {
   0% {
@@ -885,22 +792,8 @@ html.light {
   }
 }
 
-@keyframes pulseGlow {
-  0%,
-  100% {
-    box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
-  }
-}
-
 .points-highlight {
   animation: pointsChanged 0.4s ease-out;
-}
-
-.points-positive {
-  animation: pulseGlow 2s ease-in-out infinite;
 }
 
 /* Subtle viewport grain overlay */
@@ -949,4 +842,39 @@ html.light {
   height: 0.375rem;
   border-radius: 9999px;
   background-color: var(--color-tertiary);
+}
+
+/* ---------------------------------------------------------------------------
+ * Accessibility foundations
+ * ------------------------------------------------------------------------- */
+
+/* Visible keyboard focus for every interactive control (WCAG 2.4.7 / 2.4.11). */
+:where(a, button, input, select, textarea, summary, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid var(--color-tertiary);
+  outline-offset: 2px;
+}
+
+/* Keep focused controls clear of the fixed mobile header / tab bar. */
+html {
+  scroll-padding-top: 5rem;
+  scroll-padding-bottom: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .edit-toggle-btn--active {
+    animation: none;
+  }
+
+  .hover\:-translate-y-0\.5:hover {
+    transform: none !important;
+  }
 }

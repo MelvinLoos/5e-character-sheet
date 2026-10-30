@@ -21,7 +21,7 @@ const { badges } = useCharacterCompletion()
       v-if="badges.inventory"
       class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
     >
-      <span class="material-symbols-outlined text-red-600">warning</span>
+      <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
       <p class="font-label-md text-red-600">{{ badges.inventory.label }}</p>
     </div>
 

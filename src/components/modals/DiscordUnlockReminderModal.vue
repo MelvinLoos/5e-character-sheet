@@ -115,7 +115,7 @@ onUnmounted(() => {
             title="Close"
             aria-label="Close"
           >
-            <span class="material-symbols-outlined text-base">close</span>
+            <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
           </button>
         </div>
 

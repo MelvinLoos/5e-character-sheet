@@ -255,18 +255,18 @@ watch(
       <h2
         class="font-headline-md text-headline-md text-primary flex items-center gap-2 m-0 bg-transparent select-none"
       >
-        <span class="material-symbols-outlined">{{
+        <span class="material-symbols-outlined" aria-hidden="true">{{
           props.title === 'Key Features' ? 'star' : 'library_books'
         }}</span>
         {{ props.title }}
       </h2>
-      <button
+      <button aria-label="Add Feature"
         v-if="store.isEditing && props.editable"
         @click="addFeature"
         class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 ease-out shadow-sm select-none"
         title="Add Feature"
       >
-        <span class="material-symbols-outlined text-[18px]">add</span>
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
       </button>
     </div>
 
@@ -289,10 +289,10 @@ watch(
             <!-- Drag handle - only show in edit mode -->
             <div
               v-if="store.isEditing"
-              class="drag-handle absolute -left-2 top-4 lg:-left-4 lg:hidden group-hover:flex cursor-move text-outline-variant hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
+              class="drag-handle absolute -left-2 top-4 lg:-left-4 lg:hidden group-hover:flex cursor-move text-outline hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
               title="Drag to reorder"
             >
-              <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+              <span class="material-symbols-outlined text-[20px]" aria-hidden="true">drag_indicator</span>
             </div>
 
             <div class="flex flex-col gap-2 relative z-0">
@@ -305,7 +305,7 @@ watch(
                     <span
                       class="material-symbols-outlined text-outline text-[20px] transition-transform"
                       :class="{ 'rotate-90': expandedFeatures.has(feature.title) }"
-                      >chevron_right</span
+                       aria-hidden="true">chevron_right</span
                     >
                     <h3 class="font-headline-md text-headline-md text-tertiary m-0">
                       {{ feature.title }}
@@ -367,19 +367,19 @@ watch(
                   v-if="store.isEditing && props.editable"
                   class="flex flex-col sm:flex-row items-center gap-2 ml-4"
                 >
-                  <button
+                  <button aria-label="Edit Feature"
                     @click.stop="editFeature(feature)"
                     class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
                     title="Edit Feature"
                   >
-                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span class="material-symbols-outlined text-[16px]" aria-hidden="true">edit</span>
                   </button>
-                  <button
+                  <button aria-label="Remove Feature"
                     @click.stop="removeFeature(index)"
                     class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-error/20 hover:text-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-95 transition-all duration-200 ease-out select-none"
                     title="Remove Feature"
                   >
-                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                    <span class="material-symbols-outlined text-[16px]" aria-hidden="true">delete</span>
                   </button>
                 </div>
               </div>
@@ -428,14 +428,14 @@ watch(
           <h3
             class="font-headline-md text-headline-md text-tertiary flex items-center gap-2 m-0 bg-transparent select-none"
           >
-            <span class="material-symbols-outlined">library_books</span>
+            <span class="material-symbols-outlined" aria-hidden="true">library_books</span>
             Feature Archives
           </h3>
-          <button
+          <button aria-label="Close feature library"
             @click="showFeatureLibrary = false"
-            class="text-outline-variant hover:text-on-surface hover:-translate-y-0.5 hover:bg-surface-variant/50 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out flex items-center justify-center p-1 rounded select-none"
+            class="text-outline hover:text-on-surface hover:-translate-y-0.5 hover:bg-surface-variant/50 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out flex items-center justify-center p-1 rounded select-none"
           >
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -443,13 +443,13 @@ watch(
           <div class="relative">
             <span
               class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-              >search</span
+               aria-hidden="true">search</span
             >
             <input
               v-model="searchFilter"
               type="text"
               placeholder="Search the archives..."
-              class="w-full bg-surface-container border border-outline-variant rounded py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
+              class="w-full bg-surface-container border border-outline-variant rounded py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
               autofocus
             />
           </div>
@@ -498,11 +498,11 @@ watch(
                     text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed"
                   />
                 </div>
-                <button
+                <button aria-label="Transcribe Feat"
                   class="w-8 h-8 rounded-full bg-primary-container border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 ease-out shadow-sm opacity-0 group-hover:opacity-100 flex-shrink-0 select-none"
                   title="Transcribe Feat"
                 >
-                  <span class="material-symbols-outlined">add</span>
+                  <span class="material-symbols-outlined" aria-hidden="true">add</span>
                 </button>
               </div>
             </ElevatedCard>

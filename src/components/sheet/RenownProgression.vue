@@ -72,7 +72,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
   >
     <div class="flex justify-between items-center border-b border-primary-container pb-3 mb-6">
       <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
-        <span class="material-symbols-outlined">military_tech</span> Progression<InfoButton topic="renown-system" />
+        <span class="material-symbols-outlined" aria-hidden="true">military_tech</span> Progression<InfoButton topic="renown-system" />
       </h3>
       <div class="flex items-center gap-3">
         <button
@@ -81,7 +81,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
           class="text-xs text-on-surface-variant hover:text-error transition-colors px-2 py-1 rounded hover:bg-error/10 flex items-center gap-1 border border-outline-variant"
           title="Downgrade to previous tier"
         >
-          <span class="material-symbols-outlined text-base">keyboard_arrow_down</span>
+          <span class="material-symbols-outlined text-base" aria-hidden="true">keyboard_arrow_down</span>
           Demote
         </button>
         <div class="flex flex-col items-end">

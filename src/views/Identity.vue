@@ -17,7 +17,7 @@ const { badges } = useCharacterCompletion()
       v-if="badges.identity"
       class="md:hidden bg-red-600/10 border border-red-600/30 rounded-lg p-3 flex items-center gap-2"
     >
-      <span class="material-symbols-outlined text-red-600">warning</span>
+      <span class="material-symbols-outlined text-red-600" aria-hidden="true">warning</span>
       <p class="font-label-md text-red-600">{{ badges.identity.label }}</p>
     </div>
 
@@ -38,7 +38,7 @@ const { badges } = useCharacterCompletion()
       >
         <div class="flex items-center justify-between border-b border-primary-container pb-3 mb-4">
           <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
-            <span class="material-symbols-outlined">swords</span> Offense
+            <span class="material-symbols-outlined" aria-hidden="true">swords</span> Offense
           </h3>
         </div>
 
@@ -48,7 +48,7 @@ const { badges } = useCharacterCompletion()
           class="flex flex-wrap items-center gap-3 mb-4 p-3 bg-surface-container rounded-lg border border-outline-variant"
         >
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-tertiary text-lg">auto_fix_high</span>
+            <span class="material-symbols-outlined text-tertiary text-lg" aria-hidden="true">auto_fix_high</span>
             <span class="font-label-sm text-label-sm text-on-surface-variant">Spell ATK</span>
             <span class="font-headline-sm text-headline-sm text-tertiary">
               {{ spellStore.spellAttack >= 0 ? '+' : '' }}{{ spellStore.spellAttack }}
@@ -56,7 +56,7 @@ const { badges } = useCharacterCompletion()
           </div>
           <span class="w-px h-6 bg-outline-variant hidden sm:block"></span>
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-lg">shield_with_heart</span>
+            <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">shield_with_heart</span>
             <span class="font-label-sm text-label-sm text-on-surface-variant">Save DC</span>
             <span class="font-headline-sm text-headline-sm text-primary">{{ spellStore.spellSaveDC }}</span>
           </div>

@@ -4,14 +4,16 @@ import { STORAGE_KEYS } from '../constants/storage-keys'
 
 const isDark = ref(true)
 
-function loadTheme(): string {
+const THEME_COLORS = { dark: '#1a3c40', light: '#fdf6e3' } as const
+
+function loadTheme(): string | null {
   const legacyTheme = localStorage.getItem('heroes-guild-theme')
   if (legacyTheme) {
     localStorage.setItem(STORAGE_KEYS.APP_THEME, legacyTheme)
     localStorage.removeItem('heroes-guild-theme')
     return legacyTheme
   }
-  return localStorage.getItem(STORAGE_KEYS.APP_THEME) || 'dark'
+  return localStorage.getItem(STORAGE_KEYS.APP_THEME)
 }
 
 function applyTheme(dark: boolean) {
@@ -23,6 +25,9 @@ function applyTheme(dark: boolean) {
     html.classList.add('light')
     html.classList.remove('dark')
   }
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', dark ? THEME_COLORS.dark : THEME_COLORS.light)
 }
 
 function toggleTheme() {
@@ -57,7 +62,7 @@ onMounted(() => {
   <button
     type="button"
     :aria-label="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
-    class="fixed top-16 right-4 z-20 md:top-4 md:right-4 md:z-50 p-3 rounded-full border border-outline-variant bg-surface-container-high text-on-surface shadow-sm hover:bg-surface-container-highest hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 focus:outline-none focus:ring-2 focus:ring-tertiary focus:ring-offset-2 focus:ring-offset-background transition-all duration-200 ease-out print:hidden flex items-center justify-center select-none"
+    class="fixed top-16 right-4 z-20 md:top-4 md:right-4 md:z-50 p-3 rounded-full border border-outline-variant bg-surface-container-high text-on-surface shadow-sm hover:bg-surface-container-highest hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 focus-visible:ring-2 focus-visible:ring-tertiary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200 ease-out print:hidden flex items-center justify-center select-none"
     @click="toggleTheme"
   >
     <svg

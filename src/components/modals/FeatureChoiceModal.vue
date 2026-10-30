@@ -121,8 +121,8 @@ function handleClose() {
           <span
             v-if="remainingCount === 0"
             class="material-symbols-outlined text-base"
-          >check_circle</span>
-          <span v-else class="material-symbols-outlined text-base">info</span>
+           aria-hidden="true">check_circle</span>
+          <span v-else class="material-symbols-outlined text-base" aria-hidden="true">info</span>
           <span data-test="remaining-count">
             {{ selectedIds.length }} / {{ maxCount }} selected
             <template v-if="remainingCount > 0">

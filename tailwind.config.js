@@ -79,6 +79,10 @@ export default {
       fontFamily: {
         "headline-lg": ["EB Garamond", "serif"],
         "display-lg": ["EB Garamond", "serif"],
+        "headline-sm": ["EB Garamond", "serif"],
+        "label-lg": ["Manrope", "sans-serif"],
+        "label-sm": ["Manrope", "sans-serif"],
+        "body-sm": ["Manrope", "sans-serif"],
         "label-md": ["Manrope", "sans-serif"],
         "body-md": ["Manrope", "sans-serif"],
         "headline-md": ["EB Garamond", "serif"],
@@ -88,11 +92,24 @@ export default {
       },
       fontSize: {
         "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+        "label-lg": ["16px", {"lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
         "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
         "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
         "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
         "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
         "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+      },
+      zIndex: {
+        /* Layer scale: content < sticky chrome < navigation < overlays < toasts */
+        "raised": "10",
+        "sticky": "20",
+        "nav": "30",
+        "overlay": "40",
+        "modal": "50",
+        "toast": "60",
       },
       boxShadow: {
         "elevation-1": "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)",

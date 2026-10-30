@@ -499,14 +499,14 @@ watch(
               class="p-2 rounded-full hover:bg-surface-variant active:scale-95 transition-all"
               aria-label="Close"
             >
-              <span class="material-symbols-outlined text-on-surface-variant">close</span>
+              <span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">close</span>
             </button>
           </div>
 
           <div class="p-6">
             <!-- Guild Registration Section -->
             <div v-if="!isRegistered" class="text-center py-8">
-              <span class="material-symbols-outlined text-5xl text-tertiary mb-4">shield</span>
+              <span class="material-symbols-outlined text-5xl text-tertiary mb-4" aria-hidden="true">shield</span>
               <p class="font-body-lg text-on-surface mb-2">
                 This server hasn't been enabled for homebrew content yet.
               </p>
@@ -518,7 +518,7 @@ watch(
                 :disabled="isRegistering"
                 class="px-6 py-3 bg-tertiary text-on-tertiary rounded-xl font-label-lg hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <span v-if="isRegistering" class="material-symbols-outlined animate-spin mr-2 text-sm">progress_activity</span>
+                <span v-if="isRegistering" class="material-symbols-outlined animate-spin mr-2 text-sm" aria-hidden="true">progress_activity</span>
                 {{ isRegistering ? 'Registering...' : 'Enable Homebrew for this Server' }}
               </button>
               <p v-if="registerError" class="text-error font-body-sm mt-3">{{ registerError }}</p>
@@ -535,7 +535,7 @@ watch(
                     ? 'bg-tertiary text-on-tertiary shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-bright'"
                 >
-                  <span class="material-symbols-outlined text-[1.125rem] align-middle mr-1">auto_stories</span>
+                  <span class="material-symbols-outlined text-[1.125rem] align-middle mr-1" aria-hidden="true">auto_stories</span>
                   Spells
                 </button>
                 <button
@@ -545,7 +545,7 @@ watch(
                     ? 'bg-tertiary text-on-tertiary shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-bright'"
                 >
-                  <span class="material-symbols-outlined text-[1.125rem] align-middle mr-1">military_tech</span>
+                  <span class="material-symbols-outlined text-[1.125rem] align-middle mr-1" aria-hidden="true">military_tech</span>
                   Feats
                 </button>
               </div>
@@ -580,7 +580,7 @@ watch(
                           title="Edit"
                           aria-label="Edit spell"
                         >
-                          <span class="material-symbols-outlined text-sm">edit</span>
+                          <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
                         </button>
                         <button
                           @click="handleDeleteSpell((spell as any)._id)"
@@ -588,7 +588,7 @@ watch(
                           title="Delete"
                           aria-label="Delete spell"
                         >
-                          <span class="material-symbols-outlined text-sm">delete</span>
+                          <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
                         </button>
                       </div>
                     </li>
@@ -597,14 +597,14 @@ watch(
                     @click="openAddSpell"
                     class="w-full py-2.5 border-2 border-dashed border-outline-variant/50 rounded-xl text-on-surface-variant font-label-md text-sm hover:border-tertiary hover:text-tertiary active:scale-[0.99] transition-all"
                   >
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">add</span>
+                    <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">add</span>
                     Add Custom Spell
                   </button>
                   <button
                     @click="openBulkImport()"
                     class="w-full mt-2 py-2.5 border-2 border-dashed border-tertiary/30 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/5 active:scale-[0.99] transition-all"
                   >
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                    <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">upload</span>
                     Bulk Import Spells
                   </button>
                 </div>
@@ -635,7 +635,7 @@ watch(
                       :disabled="isSubmitting"
                       class="px-6 py-2 bg-tertiary text-on-tertiary rounded-lg font-label-md text-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <span v-if="isSubmitting" class="material-symbols-outlined animate-spin mr-1 text-sm">progress_activity</span>
+                      <span v-if="isSubmitting" class="material-symbols-outlined animate-spin mr-1 text-sm" aria-hidden="true">progress_activity</span>
                       {{ isSubmitting ? 'Saving...' : 'Save Spell' }}
                     </button>
                   </div>
@@ -667,7 +667,7 @@ watch(
                           title="Edit"
                           aria-label="Edit feat"
                         >
-                          <span class="material-symbols-outlined text-sm">edit</span>
+                          <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
                         </button>
                         <button
                           @click="handleDeleteFeat((feat as any)._id)"
@@ -675,7 +675,7 @@ watch(
                           title="Delete"
                           aria-label="Delete feat"
                         >
-                          <span class="material-symbols-outlined text-sm">delete</span>
+                          <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
                         </button>
                       </div>
                     </li>
@@ -684,14 +684,14 @@ watch(
                     @click="openAddFeat"
                     class="w-full py-2.5 border-2 border-dashed border-outline-variant/50 rounded-xl text-on-surface-variant font-label-md text-sm hover:border-tertiary hover:text-tertiary active:scale-[0.99] transition-all"
                   >
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">add</span>
+                    <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">add</span>
                     Add Custom Feat
                   </button>
                   <button
                     @click="openBulkImport()"
                     class="w-full mt-2 py-2.5 border-2 border-dashed border-tertiary/30 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/5 active:scale-[0.99] transition-all"
                   >
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                    <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">upload</span>
                     Bulk Import Feats
                   </button>
                 </div>
@@ -722,7 +722,7 @@ watch(
                       :disabled="isSubmitting"
                       class="px-6 py-2 bg-tertiary text-on-tertiary rounded-lg font-label-md text-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <span v-if="isSubmitting" class="material-symbols-outlined animate-spin mr-1 text-sm">progress_activity</span>
+                      <span v-if="isSubmitting" class="material-symbols-outlined animate-spin mr-1 text-sm" aria-hidden="true">progress_activity</span>
                       {{ isSubmitting ? 'Saving...' : 'Save Feat' }}
                     </button>
                   </div>
@@ -742,7 +742,7 @@ watch(
                     class="p-1 rounded-full hover:bg-surface-bright text-on-surface-variant transition-colors"
                     aria-label="Close bulk import"
                   >
-                    <span class="material-symbols-outlined text-sm">close</span>
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">close</span>
                   </button>
                 </div>
 
@@ -763,14 +763,14 @@ watch(
                     @click="fileInputRef?.click()"
                     class="w-full py-2.5 border-2 border-dashed border-tertiary/40 rounded-xl text-tertiary font-label-md text-sm hover:bg-tertiary/5 hover:border-tertiary active:scale-[0.99] transition-all"
                   >
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload_file</span>
+                    <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">upload_file</span>
                     Upload JSON File
                   </button>
 
                   <!-- File selected indicator -->
                   <div v-if="bulkImportFile" class="mt-2 p-3 bg-tertiary/5 border border-tertiary/20 rounded-lg flex items-center justify-between">
                     <div class="flex items-center gap-2 min-w-0">
-                      <span class="material-symbols-outlined text-tertiary shrink-0">description</span>
+                      <span class="material-symbols-outlined text-tertiary shrink-0" aria-hidden="true">description</span>
                       <div class="min-w-0">
                         <p class="font-body-sm text-on-surface truncate">{{ bulkImportFile.name }}</p>
                         <p class="font-body-xs text-on-surface-variant">{{ (bulkImportFile.size / 1024).toFixed(1) }} KB</p>
@@ -782,7 +782,7 @@ watch(
                       aria-label="Remove file"
                       title="Remove file"
                     >
-                      <span class="material-symbols-outlined text-sm">close</span>
+                      <span class="material-symbols-outlined text-sm" aria-hidden="true">close</span>
                     </button>
                   </div>
 
@@ -812,7 +812,7 @@ watch(
                     bulkImportStatus === 'parsing' ? 'bg-tertiary/10 border border-tertiary/30 text-tertiary' : '',
                   ]"
                 >
-                  <span v-if="bulkImportStatus === 'importing'" class="material-symbols-outlined animate-spin mr-1 text-sm align-middle">progress_activity</span>
+                  <span v-if="bulkImportStatus === 'importing'" class="material-symbols-outlined animate-spin mr-1 text-sm align-middle" aria-hidden="true">progress_activity</span>
                   {{ bulkImportMessage }}
                 </div>
 
@@ -856,7 +856,7 @@ watch(
                     @click="executeBulkImport"
                     class="px-6 py-2 bg-success text-on-success rounded-lg font-label-md text-sm hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-95 transition-all"
                   >
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">upload</span>
+                    <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">upload</span>
                     Import {{ bulkImportPreview?.valid }} {{ activeTab }}
                   </button>
                   <button
