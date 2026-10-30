@@ -24,6 +24,7 @@ const { badges } = useCharacterCompletion()
 
 // --- State ---
 const searchFilter = ref('')
+const mySearchFilter = ref('')
 const activeCategory = ref('All Forms')
 const showFeatLibrary = ref(false)
 const expandedFeatures = ref<Set<string>>(new Set())
@@ -90,6 +91,19 @@ const availableFeats = computed<LocalFeat[]>(() => {
 // --- Selected feats from character ---
 const selectedFeats = computed<CharacterFeature[]>(() => {
   return store.currentCharacterData?.features || []
+})
+
+// --- Selected feats (filtered by "my feats" search, original index kept for removal) ---
+const visibleSelectedFeats = computed(() => {
+  const query = mySearchFilter.value.trim().toLowerCase()
+  return selectedFeats.value
+    .map((feat, index) => ({ feat, index }))
+    .filter(
+      ({ feat }) =>
+        !query ||
+        feat.title.toLowerCase().includes(query) ||
+        (feat.desc && feat.desc.toLowerCase().includes(query)),
+    )
 })
 
 // --- Library feats (filtered) ---
@@ -281,7 +295,7 @@ function setActiveCategory(cat: string) {
             >search</span
           >
           <input
-            v-model="searchFilter"
+            v-model="mySearchFilter"
             class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary outline-none font-body-md text-body-md placeholder:text-outline-variant transition-colors shadow-sm"
             placeholder="Search my feats..."
             type="text"
@@ -302,7 +316,7 @@ function setActiveCategory(cat: string) {
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <div
-          v-for="(feat, index) in selectedFeats"
+          v-for="{ feat, index } in visibleSelectedFeats"
           :key="index"
           class="bg-surface-container-high border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors group relative shadow-sm"
         >

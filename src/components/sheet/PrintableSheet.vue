@@ -419,8 +419,8 @@ function formatSpellLevel(level: number) {
     <!-- PAGE 3+: The Appendix -->
     <main
       v-if="hasAppendix"
-      class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black overflow-hidden"
-      style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto"
+      class="a4-page a4-page--flow p-6 border-black font-body-md text-body-md bg-white text-black"
+      style="width: 210mm; min-height: 296.5mm; margin: 0 auto"
     >
       <header class="border-b-4 border-black pb-4 mb-4">
         <h2 class="font-headline-lg text-headline-lg text-black uppercase tracking-tight">Appendix & Detailed Reference</h2>
@@ -572,6 +572,16 @@ function formatSpellLevel(level: number) {
     color: black !important;
     overflow: hidden !important;
   }
+  .a4-page--flow {
+    border: none !important;
+    margin: 0 auto !important;
+    padding: 0.5cm !important;
+    width: 100% !important;
+    min-height: 296.5mm !important;
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+  }
   .a4-page:not(:last-child) {
     break-after: page;
     page-break-after: always;
@@ -586,6 +596,15 @@ function formatSpellLevel(level: number) {
   .skill-prof-filled {
     background-color: black !important;
   }
+}
+
+/* Appendix: grows with its content and paginates instead of clipping. */
+.a4-page--flow {
+  box-sizing: border-box;
+  width: 210mm;
+  min-height: 296.5mm;
+  background: white !important;
+  color: black !important;
 }
 
 .a4-page--fixed {

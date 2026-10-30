@@ -677,25 +677,6 @@ const masteryDescriptions: Record<string, string> = {
         </button>
       </div>
     </section>
-
-    <!-- Post-completion message -->
-    <div
-      v-if="isComplete && !showWizard"
-      class="bg-tertiary-container/20 border border-tertiary rounded-lg p-6 text-center"
-    >
-      <span class="material-symbols-outlined text-4xl text-tertiary mb-2 block">check_circle</span>
-      <h3 class="font-headline-md text-headline-md text-on-surface mb-2">Equipment Configured!</h3>
-      <p class="font-body-md text-body-md text-on-surface-variant mb-4">
-        Your starting equipment has been added to your inventory and attacks.
-        You can view and edit it below.
-      </p>
-      <button
-        @click="resetWizard"
-        class="px-4 py-2 rounded font-label-md text-label-md bg-surface-variant text-on-surface-variant hover:bg-surface-container-high hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
-      >
-        Reconfigure Equipment
-      </button>
-    </div>
   </div>
 
   <!-- Reconfigure button when wizard is not shown but equipment exists -->

@@ -129,6 +129,11 @@
         "speed": {
           "type": "string",
           "description": "Movement speed (e.g., '30ft')."
+        },
+        "hp_temp": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Temporary hit points."
         }
       },
       "required": ["ac", "speed"]

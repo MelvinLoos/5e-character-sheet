@@ -82,18 +82,22 @@ const { clampCurrentHp } = useCombat()
           <div class="flex justify-between items-center">
             <span class="font-label-md text-label-md text-on-surface-variant select-none">Temp</span>
             <input
+              v-model.number="store.currentCharacterData.combat.hp_temp"
               class="w-12 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="0"
               type="number"
+              inputmode="numeric"
+              min="0"
+              aria-label="Temporary hit points"
             />
           </div>
         </div>
       </ElevatedCard>
 
       <!-- Hit Dice -->
-      <ElevatedCard :elevation="1">
+      <ElevatedCard :elevation="1" class="col-span-2 sm:col-span-1">
         <div
-          class="rounded-lg p-4 flex flex-col items-center justify-center col-span-2 sm:col-span-1"
+          class="rounded-lg p-4 flex flex-col items-center justify-center"
         >
           <span
             class="font-label-md text-label-md text-on-surface-variant uppercase mb-2 flex items-center gap-1 select-none"
@@ -141,16 +145,15 @@ const { clampCurrentHp } = useCombat()
               v-model="store.currentCharacterData.combat.speed"
               class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-on-surface p-0 pb-1"
             />
-            <span
-              v-else
-              class="font-headline-md text-headline-md text-on-surface"
-              v-html="
-                store.currentCharacterData.combat.speed.replace(
-                  'ft',
-                  '<span class=\'text-base\'>ft</span>',
-                )
-              "
-            ></span>
+            <span v-else class="font-headline-md text-headline-md text-on-surface">
+              <template
+                v-for="(part, i) in store.currentCharacterData.combat.speed.split(/(ft)/)"
+                :key="i"
+              >
+                <span v-if="part === 'ft'" class="text-base">ft</span>
+                <template v-else>{{ part }}</template>
+              </template>
+            </span>
           </div>
         </ElevatedCard>
       </div>

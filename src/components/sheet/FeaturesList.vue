@@ -331,6 +331,9 @@ watch(
                           v-for="n in spellStore.getFeatureMaxUses(feature)"
                           :key="n"
                           type="checkbox"
+                          :checked="n <= (feature.used || 0)"
+                          :aria-label="`Use ${n} of ${spellStore.getFeatureMaxUses(feature)}`"
+                          @change="feature.used = feature.used === n ? n - 1 : n"
                           class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
                         />
                       </div>
@@ -348,6 +351,9 @@ watch(
                           v-for="n in feature.uses.total"
                           :key="n"
                           type="checkbox"
+                          :checked="n <= (feature.used || 0)"
+                          :aria-label="`Use ${n} of ${feature.uses?.total}`"
+                          @change="feature.used = feature.used === n ? n - 1 : n"
                           class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
                         />
                       </div>

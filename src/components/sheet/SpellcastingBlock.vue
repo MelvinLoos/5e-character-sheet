@@ -13,6 +13,7 @@ const spellStore = useSpellStore()
 const {
   showSpellLibrary,
   searchFilter,
+  librarySearchFilter,
   filterByLevel,
   spellSortMode,
   hasSpellcasting,
@@ -444,7 +445,7 @@ const allowedLevels = computed(() => {
               >search</span
             >
             <input
-              v-model="searchFilter"
+              v-model="librarySearchFilter"
               type="text"
               placeholder="Filter by name, description, or school..."
               class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary"
@@ -466,7 +467,7 @@ const allowedLevels = computed(() => {
               {{ level === 0 ? 'C' : level }}
             </button>
             <button
-              v-if="searchFilter || filterByLevel !== null"
+              v-if="librarySearchFilter || filterByLevel !== null"
               @click="clearFilters"
               class="ml-2 text-xs text-primary hover:underline hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
             >

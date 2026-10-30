@@ -124,7 +124,7 @@ export function migrateCharacterData(data: unknown): CharacterData {
 
   // Ensure combat
   if (!migrated.combat) {
-    migrated.combat = { ac: 10, isAcOverride: false, hp_max: 1, hp_current: 1, speed: '30ft' }
+    migrated.combat = { ac: 10, isAcOverride: false, hp_max: 1, hp_current: 1, hp_temp: 0, speed: '30ft' }
   } else {
     const combat = migrated.combat as Record<string, unknown>
     if (combat.isAcOverride === undefined) {
@@ -132,6 +132,9 @@ export function migrateCharacterData(data: unknown): CharacterData {
     }
     if (combat.hp_current === undefined) {
       combat.hp_current = combat.hp_max || 1
+    }
+    if (combat.hp_temp === undefined) {
+      combat.hp_temp = 0
     }
   }
 
