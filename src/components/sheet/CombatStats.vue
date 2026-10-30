@@ -239,7 +239,7 @@ watch(
               ><span class="material-symbols-outlined text-sm" aria-hidden="true">bolt</span> Initiative</span
             >
             <span class="font-label-md text-label-md text-on-surface-variant select-none" data-testid="initiative-mod"
-              >DEX {{ initiativeMod >= 0 ? '+' : '' }}{{ initiativeMod }}</span
+              >(DEX) {{ initiativeMod >= 0 ? '+' : '' }}{{ initiativeMod }}</span
             >
           </div>
 
