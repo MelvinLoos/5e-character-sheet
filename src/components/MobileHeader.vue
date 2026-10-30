@@ -12,7 +12,11 @@ defineEmits<{ showMore: [] }>()
   <header
     class="md:hidden fixed inset-x-0 top-0 z-nav flex items-center justify-between gap-2 bg-primary-container px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-sm print:hidden"
   >
-    <span class="font-headline-md text-tertiary">Heroes Guild</span>
+    <!-- Organisation over app name: "Heroes Guild" / "Character Sheet" -->
+    <span class="flex flex-col leading-tight">
+      <span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Heroes Guild</span>
+      <span class="font-headline-md text-headline-md text-tertiary">Character Sheet</span>
+    </span>
     <div class="flex items-center gap-1">
       <ThemeToggle />
       <button
