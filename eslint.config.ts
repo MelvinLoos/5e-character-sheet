@@ -60,6 +60,13 @@ export default defineConfigWithVueTs(
   {
     ...pluginPlaywright.configs['flat/recommended'],
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    rules: {
+      ...pluginPlaywright.configs['flat/recommended'].rules,
+      // Some assertions are only meaningful where the browser has a GPU —
+      // e.g. the 3D dice engine needs WebGL, which CI only guarantees for
+      // the Chromium project. Conditional skips carry a reason string.
+      'playwright/no-skipped-test': ['error', { allowConditional: true }],
+    },
   },
   skipFormatting,
 )

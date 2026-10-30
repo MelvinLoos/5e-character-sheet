@@ -58,6 +58,9 @@ export default defineConfig(({ mode }) => {
             if (id.includes('node_modules/@supabase') || id.includes('@supabase')) return 'vendor_supabase'
             if (id.includes('node_modules/feather-icons')) return 'vendor_icons'
             if (id.includes('node_modules/vuedraggable')) return 'vendor_draggable'
+            // The 3D dice engine (three.js + cannon-es) ships pre-bundled in its
+            // own dist; keep it in a predictable, lazily-loaded chunk.
+            if (id.includes('node_modules/@3d-dice')) return 'vendor_dice'
             // Removing manual ajv chunk to avoid breaking CommonJS wrapper boundary
           }
         },
