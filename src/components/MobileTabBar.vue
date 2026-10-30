@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import CompletionBadge from './ui/CompletionBadge.vue'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
+import { NAV_LINKS } from '@/constants/navigation'
 
 const route = useRoute()
 
@@ -12,17 +13,8 @@ defineEmits<{
 
 const { badges } = useCharacterCompletion()
 
-const navLinks = [
-  { name: 'identity', label: 'Identity', icon: 'person' },
-  { name: 'skills', label: 'Skills', icon: 'school' },
-  { name: 'feats', label: 'Feats', icon: 'military_tech' },
-  { name: 'spells', label: 'Spells', icon: 'auto_stories' },
-  { name: 'inventory', label: 'Inventory', icon: 'backpack' },
-  { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
-]
-
 const navEntries = computed(() =>
-  navLinks.map((link) => ({
+  NAV_LINKS.map((link) => ({
     ...link,
     badge: badges.value[link.name],
   })),
@@ -35,7 +27,7 @@ const queryParams = computed(() => {
 
 <template>
   <nav
-    class="fixed bottom-0 left-0 right-0 h-16 bg-surface-container/95 backdrop-blur-md border-t border-outline-variant shadow-[0_-4px_20px_rgba(0,0,0,0.25)] z-50 md:hidden"
+    class="fixed bottom-0 left-0 right-0 h-16 box-content pb-[env(safe-area-inset-bottom)] bg-surface-container/95 backdrop-blur-md border-t border-outline-variant shadow-[0_-4px_20px_rgba(0,0,0,0.25)] z-50 md:hidden"
   >
     <div class="flex items-center justify-around h-full max-w-lg mx-auto">
       <router-link

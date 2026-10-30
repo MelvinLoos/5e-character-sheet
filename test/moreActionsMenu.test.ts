@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent } from 'vue'
+import { useCharacterStore } from '../src/stores/character'
 import MoreActionsMenu from '../src/components/MoreActionsMenu.vue'
 import { useAuthStore } from '../src/stores/authStore'
 import { useGuildStore } from '../src/stores/guildStore'
@@ -186,5 +187,26 @@ describe('MoreActionsMenu', () => {
       mountOpen()
       expect(bodyText()).not.toContain('Manage Server Homebrew')
     })
+  })
+})
+describe('MoreActionsMenu without a character', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    document.body.innerHTML = ''
+  })
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('offers import and new-character but hides save/share/export/print', () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = null as never
+    mount(MoreActionsMenu, { props: { modelValue: true }, attachTo: document.body })
+    const text = document.body.textContent ?? ''
+    expect(text).toContain('Import Data')
+    expect(text).toContain('+ New Character')
+    for (const hidden of ['Save to Library', 'Share Online', 'Export JSON', 'Print Sheet']) {
+      expect(text).not.toContain(hidden)
+    }
   })
 })

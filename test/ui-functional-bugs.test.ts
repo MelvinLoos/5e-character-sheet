@@ -87,15 +87,15 @@ describe('FeaturesList usage boxes', () => {
     const wrapper = mount(FeaturesList, {
       props: { features: store.currentCharacterData.features, editable: false },
     })
-    const boxes = wrapper.findAll('input.usage-box')
+    const boxes = wrapper.findAll('[role="group"] input[type="checkbox"]')
     expect(boxes).toHaveLength(2)
 
     await boxes[1]!.setValue(true)
     expect(store.currentCharacterData.features[0]!.used).toBe(2)
     await nextTick()
-    expect((wrapper.findAll('input.usage-box')[0]!.element as HTMLInputElement).checked).toBe(true)
+    expect((wrapper.findAll('[role="group"] input[type="checkbox"]')[0]!.element as HTMLInputElement).checked).toBe(true)
 
-    await wrapper.findAll('input.usage-box')[1]!.setValue(false)
+    await wrapper.findAll('[role="group"] input[type="checkbox"]')[1]!.setValue(false)
     expect(store.currentCharacterData.features[0]!.used).toBe(1)
   })
 })

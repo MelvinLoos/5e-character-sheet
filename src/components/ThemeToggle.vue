@@ -51,7 +51,7 @@ onMounted(() => {
   if (preferred) {
     isDark.value = preferred !== 'light'
   } else {
-    isDark.value = !window.matchMedia('(prefers-color-scheme: light)').matches
+    isDark.value = !(window.matchMedia?.('(prefers-color-scheme: light)').matches ?? false)
   }
 
   applyTheme(isDark.value)
@@ -62,7 +62,8 @@ onMounted(() => {
   <button
     type="button"
     :aria-label="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
-    class="fixed top-16 right-4 z-20 md:top-4 md:right-4 md:z-50 p-3 rounded-full border border-outline-variant bg-surface-container-high text-on-surface shadow-sm hover:bg-surface-container-highest hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 focus-visible:ring-2 focus-visible:ring-tertiary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200 ease-out print:hidden flex items-center justify-center select-none"
+    :title="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
+    class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-on-surface-variant transition-colors duration-150 hover:bg-surface-variant hover:text-on-surface active:scale-95 print:hidden select-none"
     @click="toggleTheme"
   >
     <svg

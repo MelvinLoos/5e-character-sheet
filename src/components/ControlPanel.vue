@@ -9,6 +9,9 @@ import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
 import CompletionBadge from './ui/CompletionBadge.vue'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
+import { useCharacterActions } from '@/composables/useCharacterActions'
+import { NAV_LINKS } from '@/constants/navigation'
+import ThemeToggle from './ThemeToggle.vue'
 
 const store = useCharacterStore()
 const guildStore = useGuildStore()
@@ -25,30 +28,13 @@ const geminiPrompt = ref('')
 // Guild Management Modal state
 const showGuildManagement = ref(false)
 
-interface Character {
-  name: string
-  [key: string]: unknown
-}
-
-const characterSelectOptions = computed(() => {
-  return Object.entries(store.characterLibrary).map(([session, chars]) => ({
-    label: session,
-    options: (chars as unknown as Character[]).map((char: Character) => ({
-      text: char.name,
-      value: `${session}|${char.name}`,
-    })),
-  }))
-})
+const { characterSelectOptions, currentCharacterValue, selectCharacter, printSheet } =
+  useCharacterActions()
 
 const selectedCharacter = computed({
-  get: () =>
-    store.currentCharacterData ? `${store.sessionName}|${store.currentCharacterData.name}` : '',
-  set: (value) => {
-    if (value === 'new') {
-      store.handleNewCharacter()
-    } else if (value) {
-      store.loadCharacterFromLibrary(value)
-    }
+  get: () => currentCharacterValue.value,
+  set: (value: string) => {
+    selectCharacter(value)
   },
 })
 
@@ -57,41 +43,12 @@ function generate() {
   geminiPrompt.value = ''
 }
 
-function handlePrint() {
-  const wasEditing = store.isEditing
-  if (wasEditing) {
-    store.toggleEdit()
-  }
-
-  setTimeout(() => {
-    window.onbeforeprint = () => {
-      // This logic is tricky. We'll set it back after print.
-    }
-    window.onafterprint = () => {
-      if (wasEditing) {
-        store.toggleEdit()
-      }
-      window.onafterprint = null
-    }
-    window.print()
-  }, 100)
-}
-
-const navLinks = [
-  { name: 'identity', label: 'Identity', icon: 'person' },
-  { name: 'skills', label: 'Skills', icon: 'school' },
-  { name: 'feats', label: 'Feats', icon: 'military_tech' },
-  { name: 'spells', label: 'Spells', icon: 'auto_stories' },
-  { name: 'inventory', label: 'Inventory', icon: 'backpack' },
-  { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
-]
-
 const queryParams = computed(() => {
   return route.query.id ? { query: { id: route.query.id } } : {}
 })
 
 const navEntries = computed(() =>
-  navLinks.map((link) => ({
+  NAV_LINKS.map((link) => ({
     ...link,
     badge: badges.value[link.name],
   })),
@@ -258,7 +215,8 @@ onUnmounted(() => {
     </div>
 
     <!-- Navigation Links -->
-    <ul v-if="store.currentCharacterData" class="flex flex-col gap-1 px-4 mb-6">
+    <ul class="flex flex-col gap-1 px-4 mb-6">
+      <template v-if="store.currentCharacterData">
       <li v-for="entry in navEntries" :key="entry.name">
         <router-link
           :to="{ name: entry.name, ...queryParams }"
@@ -276,8 +234,9 @@ onUnmounted(() => {
           <CompletionBadge v-if="entry.badge" :badge="entry.badge" />
         </router-link>
       </li>
+      </template>
 
-      <!-- More Nav Item -->
+      <!-- More Nav Item (also available before a character is loaded) -->
       <li class="relative">
         <button
           ref="moreButtonRef"
@@ -353,6 +312,7 @@ onUnmounted(() => {
                 Import Character
               </button>
 
+              <template v-if="store.currentCharacterData">
               <button
                 @click="handleMoreAction(() => store.saveToLibrary())"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
@@ -389,7 +349,7 @@ onUnmounted(() => {
               <div class="h-px bg-outline-variant/30 my-1"></div>
 
               <button
-                @click="handleMoreAction(handlePrint)"
+                @click="handleMoreAction(printSheet)"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-tertiary font-label-md text-sm hover:bg-tertiary/10 active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
                 title="Print Sheet"
                 role="menuitem"
@@ -397,6 +357,7 @@ onUnmounted(() => {
                 <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">print</span>
                 Print Sheet
               </button>
+              </template>
             </div>
           </div>
         </Transition>
@@ -407,8 +368,12 @@ onUnmounted(() => {
       <!-- AI Generator -->
       <li class="mb-4" v-if="store.geminiSchema">
         <div class="px-4 py-3 bg-surface-variant/30 rounded-lg border border-tertiary/30">
-          <label class="block font-label-md text-label-md text-tertiary mb-2">✨ AI Generate</label>
+          <label for="ai-generate-prompt" class="flex items-center gap-1 font-label-md text-label-md text-tertiary mb-2">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">auto_awesome</span>
+            AI Generate
+          </label>
           <input
+            id="ai-generate-prompt"
             type="text"
             v-model="geminiPrompt"
             @keyup.enter="generate"
@@ -426,8 +391,9 @@ onUnmounted(() => {
 
     </ul>
 
-    <!-- Legal Links (visible regardless of character load state) -->
-    <div class="mt-auto px-4 pb-4 flex gap-4 justify-center">
+    <!-- Theme + legal links (visible regardless of character load state) -->
+    <div class="mt-auto px-4 pb-4 flex items-center gap-2 justify-center">
+      <ThemeToggle />
       <router-link
         :to="{ name: 'terms' }"
         class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"

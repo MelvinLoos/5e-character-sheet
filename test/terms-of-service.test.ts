@@ -125,11 +125,11 @@ describe('TermsOfService.vue', () => {
   })
 
   describe('accessibility', () => {
-    it('has main landmark', () => {
+    it('renders as an article inside the app main landmark', () => {
       const router = createTestRouter()
       const wrapper = mount(TermsOfService, { global: { plugins: [router] } })
       // Should have a main or role-based container
-      const main = wrapper.find('main')
+      const main = wrapper.find('article')
       expect(main.exists()).toBe(true)
     })
 

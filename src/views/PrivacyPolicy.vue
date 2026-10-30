@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <main class="flex flex-col items-center py-container-padding px-gutter print:py-0 print:px-0 min-h-screen bg-background print:bg-white print:min-h-0">
+  <article class="flex flex-col items-center py-container-padding px-gutter print:py-0 print:px-0 min-h-screen bg-background print:bg-white print:min-h-0">
     <article class="w-full max-w-3xl bg-surface-container rounded-xl shadow-sm p-8 md:p-12 print:bg-white print:shadow-none print:rounded-none print:p-0 print:max-w-none">
       <!-- Header -->
       <header class="mb-8 pb-6 border-b border-outline-variant print:border-b print:border-black/20">
@@ -86,5 +86,5 @@
         </router-link>
       </footer>
     </article>
-  </main>
+  </article>
 </template>
