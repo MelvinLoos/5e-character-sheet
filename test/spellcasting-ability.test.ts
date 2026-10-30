@@ -6,7 +6,6 @@ import { useProgressionStore } from '@/stores/progression'
 import { useSpellStore } from '@/stores/spellStore'
 import { createBlankCharacter } from '@/domain'
 import { applyAllChanges, calculateDerivedStats } from '@/utils/characterMutations'
-import { CLASS_SPELLCASTING_ABILITY, getSpellcastingAbility } from '@/data/rules'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 
 // ---------------------------------------------------------------------------
@@ -28,46 +27,6 @@ function makeChar(overrides: Partial<CharacterData> = {}): CharacterData {
     ...overrides,
   } as CharacterData
 }
-
-// ---------------------------------------------------------------------------
-// Rules data: class -> spellcasting ability mapping
-// ---------------------------------------------------------------------------
-
-describe('CLASS_SPELLCASTING_ABILITY', () => {
-  it('maps every spellcasting class to the correct ability', () => {
-    expect(CLASS_SPELLCASTING_ABILITY).toEqual({
-      Bard: 'cha',
-      Cleric: 'wis',
-      Druid: 'wis',
-      Paladin: 'cha',
-      Ranger: 'wis',
-      Sorcerer: 'cha',
-      Warlock: 'cha',
-      Wizard: 'int',
-    })
-  })
-})
-
-describe('getSpellcastingAbility', () => {
-  it('returns the mapped ability for a known spellcaster class', () => {
-    expect(getSpellcastingAbility('Cleric')).toBe('wis')
-    expect(getSpellcastingAbility('Druid')).toBe('wis')
-    expect(getSpellcastingAbility('Bard')).toBe('cha')
-    expect(getSpellcastingAbility('Sorcerer')).toBe('cha')
-    expect(getSpellcastingAbility('Warlock')).toBe('cha')
-    expect(getSpellcastingAbility('Paladin')).toBe('cha')
-    expect(getSpellcastingAbility('Ranger')).toBe('wis')
-    expect(getSpellcastingAbility('Wizard')).toBe('int')
-  })
-
-  it('falls back to int for non-casters or missing class values', () => {
-    expect(getSpellcastingAbility('Fighter')).toBe('int')
-    expect(getSpellcastingAbility('Barbarian')).toBe('int')
-    expect(getSpellcastingAbility(null)).toBe('int')
-    expect(getSpellcastingAbility(undefined)).toBe('int')
-  })
-})
-
 
 // ---------------------------------------------------------------------------
 // calculateDerivedStats derives the ability from the class

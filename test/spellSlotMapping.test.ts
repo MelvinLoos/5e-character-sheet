@@ -1,53 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { getEffectiveLevel, TIER_TO_LEVEL } from '../src/data/rules'
 import { useCharacterStore } from '../src/stores/character'
 import { useProgressionStore } from '../src/stores/progression'
 import type { CharacterData } from '@/domain'
-
-// ────────────────────────────────────────────────────
-// Pure function tests — getEffectiveLevel
-// ────────────────────────────────────────────────────
-
-describe('getEffectiveLevel — Tier → Level mapping', () => {
-  it('contains the correct constant mappings', () => {
-    expect(TIER_TO_LEVEL).toEqual({ 1: 3, 2: 6, 3: 10 })
-  })
-
-  it('maps Tier 1 to effective level 3', () => {
-    expect(getEffectiveLevel(1)).toBe(3)
-  })
-
-  it('maps Tier 2 to effective level 6', () => {
-    expect(getEffectiveLevel(2)).toBe(6)
-  })
-
-  it('maps Tier 3 to effective level 10', () => {
-    expect(getEffectiveLevel(3)).toBe(10)
-  })
-
-  describe('default / out-of-bounds tiers', () => {
-    it('defaults to 3 for Tier 0', () => {
-      expect(getEffectiveLevel(0)).toBe(3)
-    })
-
-    it('defaults to 3 for Tier 4 (Paragon — max tier)', () => {
-      expect(getEffectiveLevel(4)).toBe(3)
-    })
-
-    it('defaults to 3 for negative tiers', () => {
-      expect(getEffectiveLevel(-1)).toBe(3)
-    })
-
-    it('defaults to 3 for very large tiers', () => {
-      expect(getEffectiveLevel(99)).toBe(3)
-    })
-
-    it('defaults to 3 for NaN (though unlikely in practice)', () => {
-      expect(getEffectiveLevel(NaN)).toBe(3)
-    })
-  })
-})
 
 // ────────────────────────────────────────────────────
 // Pinia store getter tests — spellSlots

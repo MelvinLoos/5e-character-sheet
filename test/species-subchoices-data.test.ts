@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SPECIES } from '../src/data/rules'
+import { SPECIES } from '../src/data/species'
 import type { SubChoice, RulesFeature } from '@/types/rules'
 
 describe('SPECIES sub-choices', () => {

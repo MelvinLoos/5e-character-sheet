@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { CLASSES, CLASS_SPELLCASTING_FEATS } from '../src/data/rules'
+import { CLASSES } from '../src/data/classes'
+import { CLASS_SPELLCASTING_FEATS } from '../src/data/classSpellcasting'
 
 describe('CLASSES dictionary', () => {
   describe('Fighter', () => {
