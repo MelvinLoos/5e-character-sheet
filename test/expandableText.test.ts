@@ -248,3 +248,101 @@ describe('ExpandableText markdown mode', () => {
     expect(content.classes()).toContain('custom-b')
   })
 })
+
+// ---------------------------------------------------------------------------
+// Non-collapsible mode (#224)
+// ---------------------------------------------------------------------------
+
+describe('ExpandableText non-collapsible mode', () => {
+  it('shows the full text without a clamp or toggle', async () => {
+    const wrapper = await mountComponent({ text: LONG_TEXT, collapsible: false })
+
+    expect(wrapper.get('p').attributes('style') ?? '').not.toContain('-webkit-line-clamp')
+    expect(wrapper.find('button').exists()).toBe(false)
+  })
+
+  it('still renders safe Markdown without a clamp', async () => {
+    const wrapper = await mountComponent({
+      text: '**Bold**\n\n<script>alert(1)</script>',
+      markdown: true,
+      collapsible: false,
+    })
+
+    const content = wrapper.get('[id]')
+    expect(content.classes()).toContain('markdown-content')
+    expect(content.html()).toContain('<strong>Bold</strong>')
+    expect(wrapper.html()).not.toContain('<script>')
+    expect(content.attributes('style') ?? '').not.toContain('max-height')
+    expect(wrapper.find('button').exists()).toBe(false)
+  })
+
+  it('clamps and measures again when collapsible is switched on', async () => {
+    const wrapper = await mountComponent({ text: LONG_TEXT, collapsible: false })
+
+    await wrapper.setProps({ collapsible: true })
+    await nextTick()
+    await nextTick()
+
+    expect(wrapper.get('p').attributes('style')).toContain('-webkit-line-clamp: 4')
+    expect(wrapper.get('button').text()).toBe('Show more')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// ResizeObserver-based overflow detection (#224)
+// ---------------------------------------------------------------------------
+
+describe('ExpandableText resize handling', () => {
+  const originalResizeObserver = globalThis.ResizeObserver
+  let observers: { callback: ResizeObserverCallback; targets: Element[]; disconnected: boolean }[]
+
+  beforeEach(() => {
+    observers = []
+    globalThis.ResizeObserver = class {
+      private entry: (typeof observers)[number]
+      constructor(callback: ResizeObserverCallback) {
+        this.entry = { callback, targets: [], disconnected: false }
+        observers.push(this.entry)
+      }
+      observe(target: Element) {
+        this.entry.targets.push(target)
+      }
+      unobserve(target: Element) {
+        this.entry.targets = this.entry.targets.filter((t) => t !== target)
+      }
+      disconnect() {
+        this.entry.disconnected = true
+      }
+    } as unknown as typeof ResizeObserver
+  })
+
+  afterEach(() => {
+    globalThis.ResizeObserver = originalResizeObserver
+  })
+
+  it('observes the content element and re-measures when it resizes', async () => {
+    let clientHeight = 500
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get: () => clientHeight,
+    })
+
+    const wrapper = await mountComponent({ text: LONG_TEXT })
+    expect(wrapper.find('button').exists()).toBe(false)
+    expect(observers).toHaveLength(1)
+    expect(observers[0]!.targets).toEqual([wrapper.get('p').element])
+
+    clientHeight = 10
+    observers[0]!.callback([], {} as ResizeObserver)
+    await nextTick()
+
+    expect(wrapper.get('button').text()).toBe('Show more')
+  })
+
+  it('disconnects the observer on unmount', async () => {
+    const wrapper = await mountComponent({ text: LONG_TEXT })
+    wrapper.unmount()
+
+    expect(observers[0]!.disconnected).toBe(true)
+  })
+})

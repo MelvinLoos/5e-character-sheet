@@ -9,7 +9,6 @@ import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
-import { renderMarkdown } from '@/utils/markdown'
 import type { CharacterFeature } from '@/types/character'
 import type { FeatureChoice } from '@/types/rules'
 import {
@@ -398,7 +397,7 @@ function setActiveCategory(cat: string) {
             v-show="expandedFeatures.has(feat.title)"
             class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
           >
-            <div class="markdown-content" v-html="renderMarkdown(feat.desc)"></div>
+            <ExpandableText :text="feat.desc" markdown :collapsible="false" />
           </div>
 
           <!-- Edit button -->
