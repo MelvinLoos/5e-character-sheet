@@ -23,11 +23,11 @@ function mockSubChoices(): SubChoice[] {
  * so we must search document.body directly.
  */
 function backdrop() {
-  return document.body.querySelector('.modal-backdrop') as HTMLElement | null
+  return document.body.querySelector('[data-testid="modal-backdrop"]') as HTMLElement | null
 }
 
 function content() {
-  return document.body.querySelector('.modal-content') as HTMLElement | null
+  return document.body.querySelector('[role="dialog"]') as HTMLElement | null
 }
 
 function options() {

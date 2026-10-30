@@ -70,9 +70,14 @@ describe('BaseModal', () => {
 
   it('closes on backdrop press but not on panel press', () => {
     const wrapper = mountAttached(BaseModal, { props: { open: true, title: 'T' }, slots: { default: body } })
-    q('[role="dialog"]')!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    q('[role="dialog"]')!.click()
     expect(wrapper.emitted('close')).toBeUndefined()
-    q('[data-testid="modal-backdrop"]')!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    q('[data-testid="modal-backdrop"]')!.click()
+    expect(wrapper.emitted('close')).toHaveLength(1)
+
+    // a press that starts in the panel and ends on the backdrop (text selection drag) must not close
+    q('[role="dialog"]')!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    q('[data-testid="modal-backdrop"]')!.click()
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
@@ -81,7 +86,7 @@ describe('BaseModal', () => {
       props: { open: true, title: 'T', closeOnBackdrop: false },
       slots: { default: body },
     })
-    q('[data-testid="modal-backdrop"]')!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    q('[data-testid="modal-backdrop"]')!.click()
     expect(wrapper.emitted('close')).toBeUndefined()
   })
 

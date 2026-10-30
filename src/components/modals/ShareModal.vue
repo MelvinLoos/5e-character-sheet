@@ -1,41 +1,57 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
-import feather from 'feather-icons'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import IconButton from '@/components/ui/IconButton.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
+import TextField from '@/components/ui/TextField.vue'
 
 const store = useCharacterStore()
+const copyState = ref<'idle' | 'copied' | 'failed'>('idle')
+
+watch(
+  () => store.shareModal.show,
+  (show) => {
+    if (show) copyState.value = 'idle'
+  },
+)
 
 function copyToClipboard() {
   navigator.clipboard
     .writeText(store.shareModal.url)
     .then(() => {
-      alert('Link copied to clipboard!')
+      copyState.value = 'copied'
     })
     .catch(() => {
-      alert('Failed to copy link.')
+      copyState.value = 'failed'
     })
 }
 </script>
 
 <template>
-  <div v-if="store.shareModal.show" class="modal-backdrop backdrop-blur-sm bg-black/40">
-    <div class="modal-content rounded-xl">
-      <h2 class="text-xl font-bold text-tertiary mb-4">Character Shared!</h2>
-      <p class="mb-4">Your character has been saved to the archives. Share this link:</p>
-      <div class="flex items-center gap-2 mb-6">
-        <input
-          type="text"
-          readonly
-          :value="store.shareModal.url"
-          class="flex-grow p-2 border border-sheet-border bg-sheet-input-bg text-sm select-text"
-        />
-        <button @click="copyToClipboard" class="icon-button" title="Copy to clipboard">
-          <span v-html="feather.icons.copy.toSvg()"></span>
-        </button>
-      </div>
-      <button @click="store.closeShareModal" class="icon-button">
-        <span v-html="feather.icons.x.toSvg()"></span>
-        Close
-      </button>
+  <BaseModal
+    :open="store.shareModal.show"
+    title="Character Shared!"
+    size="md"
+    @close="store.closeShareModal"
+  >
+    <p class="mb-4">Your character has been saved to the archives. Share this link:</p>
+    <div class="flex items-end gap-2">
+      <TextField
+        class="flex-grow"
+        label="Share link"
+        :model-value="store.shareModal.url"
+        readonly
+        data-autofocus
+        @focus="($event.target as HTMLInputElement).select()"
+      />
+      <IconButton icon="content_copy" label="Copy link to clipboard" @click="copyToClipboard" />
     </div>
-  </div>
+    <p v-if="copyState !== 'idle'" role="status" class="mt-2 text-sm" :class="copyState === 'failed' ? 'text-error' : 'text-primary'">
+      {{ copyState === 'copied' ? 'Link copied to clipboard.' : 'Failed to copy link. Select it and copy manually.' }}
+    </p>
+    <template #footer>
+      <PressableButton variant="secondary" @click="store.closeShareModal">Close</PressableButton>
+    </template>
+  </BaseModal>
 </template>
