@@ -1,294 +1,170 @@
-# ⚔️ Heroes Guild Character Sheet
+# Heroes Guild Character Sheet
 
-A modern, responsive digital character sheet designed specifically for the **Heroes Guild Westmarches** community at [westmarches.games](https://www.westmarches.games/communities/heroes-guild). Built with Vue.js 3 and optimized for both screen and print use.
+A responsive D&D 5e character sheet for the [Heroes Guild Westmarches](https://www.westmarches.games/communities/heroes-guild) community. Built with Vue 3 and optimized for both screen and print.
 
-[![Vue.js](https://img.shields.io/badge/Vue.js-3.5.22-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b8a04a80-1349-4a79-a3ce-c1d997e3bc9d/deploy-status)](https://app.netlify.com/projects/5e-character-sheet/deploys)
 [![CI](https://github.com/MelvinLoos/5e-character-sheet/actions/workflows/ci.yml/badge.svg)](https://github.com/MelvinLoos/5e-character-sheet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Heroes Guild](https://img.shields.io/badge/Heroes_Guild-Westmarches-8B4513?logo=castle&logoColor=white)](https://www.westmarches.games/communities/heroes-guild)
 
-## 🏰 Heroes Guild Westmarches
+## Features
 
-This character sheet is tailored for the Heroes Guild community, providing:
+### Character management
 
-- **Westmarches-Optimized**: Character management perfect for episodic adventures
-- **Community Features**: Designed for the Heroes Guild player experience
-- **Session Ready**: Quick character access for drop-in gameplay
+- Point-buy ability score allocation
+- Automatic proficiency bonus and hit point calculation
+- Class, background, and species support with automatic skill proficiencies
+- Spellcasting with automatic spell slot calculation
+- Death save tracking
 
-Visit the [Heroes Guild Westmarches](https://www.westmarches.games/communities/heroes-guild) to join our community!
+### AI generation
 
-## ✨ Features
+- Generate a full character from a natural-language prompt using Google Gemini
+- Characters are generated against the bundled 5e (2024) rules catalogs
 
-### 📱 **Responsive Design**
+### Sharing and data
 
-- **Mobile-Optimized**: Touch-friendly interface with larger buttons and improved layouts
-- **Desktop-Enhanced**: Clean, professional layout for larger screens
-- **Print-Ready**: Optimized CSS for clean, professional printing
+- Share characters online through Supabase-backed links
+- JSON import and export, validated against a published schema
+- Auto-save to browser storage
+- A4 print layout
 
-### ⚔️ **Complete Character Management**
+### Platform
 
-- **Point Buy System**: Interactive ability score allocation with visual feedback
-- **Background Integration**: Automatic skill proficiency assignment from available backgrounds
-- **Class Features**: Support for character classes with spellcasting integration
-- **Level Progression**: Automatic proficiency bonus and HP calculation
+- Touch-optimized layouts for mobile
+- Light and dark themes
+- Drag-and-drop reordering of features, spells, and attacks
 
-### 🤖 **AI-Powered Generation**
+## Tech stack
 
-- **Prompt-to-Character**: Generate full character sheets from natural language descriptions using Google Gemini
-- **Intelligent Creation**: Automatically selects appropriate class, race, background, and features
-- **Rules Compliant**: Generates characters adhering to 5e rules (2024 handbook compatible)
+| Area | Technology |
+| --- | --- |
+| Frontend | Vue 3 (Composition API), Vite, TypeScript |
+| State | Pinia |
+| Styling | Tailwind CSS with a custom theme in `src/assets/main.css` |
+| Backend | Supabase (sharing), Netlify Functions |
+| AI | Google Gemini via a Netlify serverless function |
+| Drag and drop | vuedraggable 4 |
+| Icons | Feather Icons |
+| Testing | Vitest (unit), Playwright (E2E) |
 
-### ☁️ **Online Sharing**
-
-- **Shareable Links**: Generate unique URLs to share your characters with other players
-- **Cloud Snapshots**: Character state is saved to Supabase for easy sharing via link
-
-### 🎛️ **Advanced Features**
-
-- **Drag-and-Drop Reordering**: Organize features, spells, and attacks by dragging
-- **Auto-Save**: Character data persists locally in browser storage
-- **Import/Export**: Share characters via JSON import/export
-- **Real-time Calculations**: Automatic modifier and bonus calculations
-
-### 🎯 **Interactive Elements**
-
-- **Smart Point Buy**: Visual points remaining counter with animations
-- **Mobile-Friendly Buttons**: Large, color-coded increase/decrease buttons
-- **Spell Slot Management**: Automatic spell slot calculation by caster type
-- **Death Save Tracking**: Quick checkbox interface for death saves
-
-## 🚀 Quick Start
+## Getting started
 
 ### Prerequisites
 
-- Node.js `^20.19.0 || >=22.12.0` (see `engines` in `package.json`)
-- npm (this repo uses `package-lock.json`; npm is the supported package manager)
+- Node.js `>= 26.0.0` (see `engines` in `package.json`)
+- npm (this repository uses `package-lock.json`)
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/MelvinLoos/5e-character-sheet.git
 cd 5e-character-sheet
-
-# Install dependencies
 npm install
-
-# Configure Environment Variables
-# Copy the example file and fill in your own values, or configure them in Netlify.
-cp .env.example .env
-
-# Start development server
+cp .env.example .env   # fill in values, or set them in Netlify instead
 npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
 ```
 
-### Environment Variables
+### Environment variables
 
-Copy `.env.example` to `.env` and provide values for the following variables. A `.env` file is git-ignored, so secrets are never committed.
+Copy `.env.example` to `.env` and fill in the values. `.env` is git-ignored; secrets must never be committed.
 
-| Variable                 | Scope             | Description                                                                                                       |
-| ------------------------ | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `VITE_SUPABASE_URL`      | Client (Vite)     | Supabase project URL used for online character sharing. Exposed to the browser via `import.meta.env`.             |
-| `VITE_SUPABASE_ANON_KEY` | Client (Vite)     | Supabase anonymous (public) client key. Public, but kept in config rather than hard-coded.                        |
-| `GEMINI_API_KEY`         | Server (Netlify)  | Google Gemini API key used by the Netlify serverless function for AI generation. A secret, never sent to the browser. |
-| `DISCORD_BOT_TOKEN`      | Server (Netlify)  | Discord Bot token used to post in-app feedback threads to a community Forum channel. A secret, never sent to the browser. |
-| `DISCORD_FEEDBACK_CHANNEL_ID` | Server (Netlify) | ID of the Discord **Forum** channel that receives in-app feedback.                                                 |
+| Variable | Scope | Description |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | Client | Supabase project URL used for online character sharing. |
+| `VITE_SUPABASE_ANON_KEY` | Client | Supabase anonymous (public) client key. |
+| `VITE_SUPABASE_REDIRECT_URL` | Client | OAuth redirect URL for the Discord sign-in flow. |
+| `VITE_POSTHOG_PROJECT_TOKEN` | Client | PostHog project token for product analytics. |
+| `VITE_POSTHOG_HOST` | Client | PostHog instance URL (defaults to `https://eu.i.posthog.com`). |
+| `VITE_POSTHOG_DISABLED` | Client | Set to `true` to disable analytics, e.g. in tests. |
+| `GEMINI_API_KEY` | Server (Netlify) | Gemini API key for AI character generation. Never sent to the browser. |
+| `DISCORD_BOT_TOKEN` | Server (Netlify) | Bot token used to post in-app feedback threads to a Discord forum channel. |
+| `DISCORD_FEEDBACK_CHANNEL_ID` | Server (Netlify) | ID of the Discord forum channel that receives feedback threads. |
 
-> **Note:** When the Supabase variables are not set, the app still runs — online sharing is gracefully disabled and a warning is logged to the console.
+When the Supabase variables are unset the app still runs; online sharing is disabled and a warning is logged to the console.
 
-## 🚀 Deployment
+## Scripts
 
-### Discord Bot Integration (In-App Feedback)
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview the production build |
+| `npm run type-check` | Run TypeScript type checking (`vue-tsc`) |
+| `npm run lint` | Run ESLint with autofix |
+| `npm run test:unit` | Run Vitest unit tests |
+| `npm run test:e2e` | Run Playwright end-to-end tests |
 
-The in-app "Give Feedback" widget posts each feedback as a new post thread in a community
-Discord **Forum** channel via the
-[Discord Bot REST API](https://discord.com/developers/docs/resources/channel#start-thread-in-forum-or-media-channel)
-(route `POST /channels/{channel.id}/threads`). Each thread is titled
-`[Bug|Feature|General] Feedback [from <username>]` and contains an embed with the feedback
-details (type, reporter, message, and environment context). To enable it:
+## Usage
 
-1. **Create a Bot** on the existing Discord Application in the
-   [Discord Developer Portal](https://discord.com/developers/applications): open your application,
-   go to the **Bot** tab, and use "Reset Token" to obtain the bot token.
-2. **Invite the Bot** to the community server with **Send Messages** permissions. Use an invite URL
-   with the `bot` scope and `permissions=2048`:
-   `https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=2048&scope=bot`
-3. **Create the Forum channel**: in your community server, create a channel with the type
-   **Forum** (e.g. `#feedback-forum`) where feedback threads will be posted.
-4. **Get the channel ID** of that **Forum** channel (Discord → Settings → Advanced →
-   Developer Mode, then right-click the Forum channel → **Copy Channel ID**).
-5. **Configure Netlify** (Site settings → Environment variables) with:
-   - `DISCORD_BOT_TOKEN` — the bot token from step 1.
-   - `DISCORD_FEEDBACK_CHANNEL_ID` — the Forum channel ID from step 4.
+### Creating a character
 
-> **Graceful degradation:** When either variable is unset, the app's availability probe
-> (a `GET` request to the same Netlify function) detects the misconfiguration and the
-> **"Give Feedback" entry points are hidden entirely** (desktop "More" menu and mobile
-> "More Actions" sheet). A descriptive error is also written to the browser console
-> (development builds) so developers can see that the feedback form is disabled and why.
-> If the configuration disappears mid-session, the modal closes itself after the next
-> submission attempt and the entry points disappear.
+1. Use **AI Generate** to create a character from a description, or build one manually.
+2. To build manually: allocate ability scores with point buy, choose a background to assign skill proficiencies automatically, then add class features, feats, and spells.
 
-## 🧪 Testing
+### Managing data
 
-```bash
-# Run Unit Tests
-npm run test:unit
+- **Share** publishes the character through a Supabase-backed link.
+- **Export JSON** and **Import Character** round-trip characters through schema validation; imports are migrated and saved to the library.
+- **Import Data** adds 5e.tools spell and feat JSON to the rules compendium.
+- Changes are auto-saved to browser storage.
 
-# Run End-to-End Tests
-npm run test:e2e
-```
+### JSON schemas and LLM authoring
 
-## 🎮 Usage
-
-### Creating a Character
-
-1. **AI Generation**: Use the "AI Generate" button to create a character from a description (e.g., "A sneaky goblin rogue who loves shiny things")
-2. **Edit Mode**: Click the edit button to manually modify character details
-3. **Point Buy**: Allocate ability scores using the intuitive point buy system
-4. **Background**: Select a background to automatically assign skill proficiencies
-5. **Features**: Add class features, feats, and special abilities
-6. **Spells**: Add spells with automatic spell slot calculation
-
-### Managing Content
-
-- **Share Online**: Click "Share" to generate a unique URL for your character via Supabase
-- **Drag to Reorder**: In edit mode, drag handles appear on features, spells, and attacks
-- **Auto-Calculations**: Modifiers, proficiency bonuses, and spell save DCs update automatically
-- **Print Layout**: Use your browser's print function for clean character sheets
-
-### Data Management
-
-- **Auto-Save**: Changes are automatically saved to browser storage
-- **Cloud Save**: Characters shared online are preserved in the database
-- **Export**: Download character as JSON file (More menu → *Export JSON*)
-- **Import Character**: Upload a previously exported character file (More menu → *Import Character*).
-  The file is validated against `public/character-schema.json`, migrated, and saved to your library.
-- **Import Data**: Import 5e.tools spell/feat JSON into the rules compendium
-  (More menu → *Import Data*)
-
-### JSON Schemas & LLM Authoring
-
-The app ships three JSON Schemas in `public/`:
+The app ships these schemas in `public/`:
 
 | Schema | Purpose |
 | --- | --- |
-| `character-schema.json` | Full persisted `CharacterData` shape. Accepts `renownTier` and derived fields so exported characters round-trip losslessly. Used to validate imports. |
-| `llm-character-schema.json` | Self-contained authoring schema with rich descriptions and exhaustive enums. **Feed this to an LLM** to generate valid character JSON from a prompt. |
-| `schema.json` / `gemini-schema.json` | Sparse input schemas used by the built-in AI generator. |
+| `character-schema.json` | Full persisted character shape. Accepts derived fields so exported characters round-trip losslessly. Used to validate imports. |
+| `llm-character-schema.json` | Self-contained authoring schema with exhaustive enums. Provide it to an LLM to generate valid character JSON. |
+| `schema.json`, `gemini-schema.json` | Sparse input schemas used by the built-in AI generator. |
 
-To have an LLM create a character, provide it with `public/llm-character-schema.json`
-and a short prompt, e.g. *"Create a level-3 elven wizard named Elara using this schema."*
-The returned JSON can be saved as a `.json` file and loaded via *Import Character*.
+To author a character with an LLM, provide it with `public/llm-character-schema.json` and a prompt such as *"Create a level-3 elven wizard named Elara using this schema."* Save the returned JSON and load it via **Import Character**.
 
-### Heroes Guild Integration
+## Deployment
 
-- **Westmarches Ready**: Perfect for episodic adventure sessions
-- **Community Optimized**: Designed for Heroes Guild gameplay style
-- **Session Management**: Quick character access for drop-in games
+The site is deployed to Netlify from `main`.
 
-## 🛠️ Technical Stack
+### In-app feedback (Discord)
 
-- **Frontend**: Vue.js 3 with Composition API
-- **State Management**: Pinia
-- **Styling**: Tailwind CSS with custom D&D theming
-- **Backend & Auth**: Supabase
-- **AI Integration**: Google Gemini via Netlify Functions
-- **Drag & Drop**: Vue.draggable.next
-- **Icons**: Feather Icons
-- **Build Tool**: Vite
-- **Testing**: Playwright (E2E), Vitest (Unit)
-- **Type Safety**: TypeScript & JSDoc
+The **Give Feedback** widget posts each submission as a new thread in a Discord forum channel through the bot REST API (`POST /channels/{channel.id}/threads`). To enable it:
 
-## 📋 Game System Integration
+1. Create a bot in the [Discord Developer Portal](https://discord.com/developers/applications) and reset its token.
+2. Invite the bot with **Send Messages** permissions:
+   `https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=2048&scope=bot`
+3. Create a forum channel on the server.
+4. Copy the channel ID (enable Developer Mode, right-click the channel, **Copy Channel ID**).
+5. Set `DISCORD_BOT_TOKEN` and `DISCORD_FEEDBACK_CHANNEL_ID` in the Netlify environment.
 
-This character sheet implements common tabletop RPG mechanics including:
+When either variable is unset, the feedback entry points are hidden and an explanation is logged to the browser console in development builds.
 
-- Standard ability score systems
-- Background-based skill assignments
-- Class feature organization
-- Spell slot management
-- Proficiency bonus scaling
+## Theming
 
-## 🎨 Customization
+Theme colors are defined as CSS custom properties (`--color-*`) in `src/assets/main.css` and mapped to Tailwind utilities (e.g. `bg-sheet-bg`, `text-sheet-red`) in `tailwind.config.js`. Override the custom properties to retheme the sheet.
 
-The character sheet is themed through custom Tailwind CSS colors defined in `tailwind.config.js`:
+## Contributing
 
-```js
-// tailwind.config.js
-colors: {
-  'sheet-bg': '#fdf6e3',
-  'sheet-text': '#3a2d21',
-  'sheet-red': '#8c1d1d',
-  'sheet-red-dark': '#6a1616',
-  'sheet-border': '#5c4d3d',
-  'sheet-accent': '#c9b7a2',
-  'sheet-input-bg': '#eaddc7',
-}
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture conventions and the mandatory quality gate pipeline.
 
-These tokens are consumed via Tailwind utility classes (e.g. `bg-sheet-bg`, `text-sheet-red`) in the
-component styles under `src/assets/main.css`. Adjust the values here to retheme the sheet.
+## License
 
-## 📱 Mobile Features
+This project is licensed under the [MIT License](LICENSE).
 
-- **Larger Touch Targets**: 40px minimum for comfortable mobile interaction
-- **Responsive Layouts**: Stacked layouts on mobile, side-by-side on desktop
-- **Stepper Controls**: Mobile-specific +/- buttons for level adjustment
-- **Optimized Spacing**: Increased padding and margins for touch interfaces
+## Attribution
 
-## 🖨️ Print Optimization
+- RPG icons by [mj on Flaticon](https://www.flaticon.com/free-icons/rpg)
+- Fonts: EB Garamond, IM Fell English SC, and Manrope
 
-- **Clean Layout**: Removes UI chrome and navigation for printing
-- **Optimized Typography**: Print-friendly fonts and sizing
-- **Page Breaks**: Intelligent page breaks between sections
-- **Ink Efficient**: Optimized colors and backgrounds for printing
+## Roadmap
 
-## 🤝 Contributing
+- [x] AI character generation
+- [x] Multiple character library
+- [x] Online character sharing
+- [x] Dark and light themes
+- [x] A4 print layout
+- [ ] Heroes Guild visual redesign (in progress)
+- [ ] Accessibility pass (WCAG 2.1 AA)
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+## Known limitations
 
-### Development Guidelines
-
-- Follow Vue.js 3 Composition API patterns
-- Use Tailwind CSS for styling
-- Ensure mobile responsiveness
-- Test print layouts
-- Maintain Heroes Guild compatibility
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Attribution
-
-- **Icons**: <a href="https://www.flaticon.com/free-icons/rpg" title="rpg icons">RPG icons created by mj - Flaticon</a>
-- **Fonts**: EB Garamond and Fell English fonts
-- **Community**: Built for [Heroes Guild Westmarches](https://www.westmarches.games/communities/heroes-guild)
-
-## 🐛 Known Issues
-
-- Some browsers may require HTTPS for local storage persistence
-- Print layouts optimized for standard letter-size paper
-- Very long character names may wrap in mobile layouts
-
-## 🔮 Roadmap
-
-- [x] AI Character Generation
-- [x] Multiple character management
-- [x] Community character sharing (Online via Supabase)
-- [x] PDF export functionality
-- [x] Dark / light theme toggle
-- [ ] Heroes Guild visual redesign (components in progress)
-- [ ] Accessibility compliance pass (WCAG 2.1 AA)
-
----
-
-**Built with ❤️ for the Heroes Guild Westmarches community**
+- Print layout targets A4 paper
+- Very long character names can wrap awkwardly on small screens
