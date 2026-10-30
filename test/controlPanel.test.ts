@@ -155,3 +155,32 @@ describe('ControlPanel feedback entry point', () => {
     expect(bodyText()).not.toContain('Give Feedback')
   })
 })
+
+describe('ControlPanel without a character', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    document.body.innerHTML = ''
+  })
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('still offers the More menu with import actions but hides character-only actions', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = null as never
+    mount(ControlPanel, { attachTo: document.body })
+
+    const more = Array.from(document.body.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('More'),
+    )
+    expect(more).toBeDefined()
+    more!.click()
+    await nextTick()
+
+    const text = document.body.textContent ?? ''
+    expect(text).toContain('Import Data')
+    expect(text).toContain('Import Character')
+    expect(text).not.toContain('Export JSON')
+    expect(text).not.toContain('Print Sheet')
+  })
+})

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IconButton from '@/components/ui/IconButton.vue'
 import { computed, watch, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
@@ -178,28 +179,25 @@ watch(
           v-if="store.isEditing"
           class="flex items-center gap-2 bg-background/50 rounded-full px-2 py-1 mb-4 border border-outline-variant z-10 backdrop-blur-sm"
         >
-          <button :aria-label="`Decrease ${key.toUpperCase()} score`"
-            @click="progression.adjustPointBuyScore(key, -1)"
+          <IconButton
+            icon="remove"
+            size="sm"
+            :label="`Decrease ${key.toUpperCase()} score`"
             :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 8) <= 8"
-            class="text-on-surface-variant hover:text-on-surface hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
-          >
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">remove</span>
-          </button>
+            @click="progression.adjustPointBuyScore(key, -1)"
+          />
           <span
             class="font-body-md text-body-md font-bold text-on-surface min-w-[2ch] text-center"
             :class="{ 'text-on-surface-variant': (progression.abilityMods[key] ?? 0) < 0 }"
             >{{ value }}</span
           >
-          <button :aria-label="`Increase ${key.toUpperCase()} score`"
+          <IconButton
+            icon="add"
+            size="sm"
+            :label="`Increase ${key.toUpperCase()} score`"
+            :disabled="(store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 15) >= 15 || progression.pointBuyPointsRemaining <= 0"
             @click="progression.adjustPointBuyScore(key, 1)"
-            :disabled="
-              (store.currentCharacterData?.pointBuyBaseScores?.[key] ?? 15) >= 15 ||
-              progression.pointBuyPointsRemaining <= 0
-            "
-            class="text-on-surface-variant hover:text-on-surface hover:-translate-y-0.5 hover:shadow-sm hover:bg-surface-variant active:translate-y-0 active:scale-90 transition-all duration-200 ease-out w-6 h-6 flex items-center justify-center rounded-full disabled:opacity-50 disabled:scale-100 disabled:shadow-none select-none"
-          >
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-          </button>
+          />
         </div>
         <div
           v-else

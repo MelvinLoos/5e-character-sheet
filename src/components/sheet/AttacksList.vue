@@ -4,10 +4,17 @@ import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useCombat, MAX_ATTACKS } from '@/composables/useCombat'
 import draggable from 'vuedraggable'
+import ReorderControls from '@/components/ui/ReorderControls.vue'
+import { moveItem } from '@/utils/listMove'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
 const { editableAttacks, addAttack, removeAttack } = useCombat()
+
+/** Keyboard / single-pointer alternative to dragging an attack. */
+function moveAttack(index: number, delta: -1 | 1): void {
+  editableAttacks.value = moveItem(editableAttacks.value, index, index + delta)
+}
 
 const attackCount = computed(() => store.currentCharacterData.attacks?.length || 0)
 const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
@@ -266,10 +273,18 @@ const atMaxAttacks = computed(() => attackCount.value >= MAX_ATTACKS)
                 {{ attack.notes || '' }}
               </p>
             </div>
+            <ReorderControls
+              v-if="store.isEditing"
+              class="ml-2 shrink-0"
+              :index="index"
+              :count="editableAttacks.length"
+              :label="attack.name || 'attack'"
+              @move="(delta) => moveAttack(index, delta)"
+            />
             <button aria-label="Remove Attack"
               v-if="store.isEditing"
               @click="removeAttack(index)"
-              class="ml-2 w-6 h-6 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-on-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out flex items-center justify-center shrink-0 select-none"
+              class="ml-2 h-9 w-9 rounded border border-error/50 bg-error/10 text-error hover:bg-error hover:text-on-error hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:bg-error/30 active:scale-90 transition-all duration-200 ease-out flex items-center justify-center shrink-0 select-none"
               title="Remove Attack"
             >
               <span class="material-symbols-outlined text-[14px]" aria-hidden="true">close</span>

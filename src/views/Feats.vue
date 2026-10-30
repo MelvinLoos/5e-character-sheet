@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import UsageTracker from '@/components/ui/UsageTracker.vue'
 import { ref, computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
@@ -336,7 +337,7 @@ function setActiveCategory(cat: string) {
             <button aria-label="Remove Feat"
               v-if="store.isEditing"
               @click.stop="removeFeat(index)"
-              class="text-outline hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10 opacity-0 group-hover:opacity-100 focus:opacity-100"
+              class="text-outline hover:text-error transition-colors flex items-center justify-center p-1 rounded hover:bg-error/10 reveal-on-hover min-h-9 min-w-9"
               title="Remove Feat"
             >
               <span class="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
@@ -366,18 +367,11 @@ function setActiveCategory(cat: string) {
 
             <!-- Resource usage display -->
             <div
-              v-if="feat.resource && (feat.used !== undefined ? feat.used : 0) < (spellStore.getFeatureMaxUses(feat) || 0)"
+              v-if="feat.resource && (spellStore.getFeatureMaxUses(feat) || 0) > 0"
               class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
             >
               <div class="flex items-center gap-1">
-                <input
-                  v-for="n in spellStore.getFeatureMaxUses(feat)"
-                  :key="n"
-                  type="checkbox"
-                  :checked="n <= (feat.used || 0)"
-                  @change="feat.used = feat.used === n ? n - 1 : n"
-                  class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container-high"
-                />
+                <UsageTracker v-model="feat.used" :total="spellStore.getFeatureMaxUses(feat) ?? 0" :label="feat.title" />
               </div>
               <span v-if="feat.resource.reset" class="opacity-80"
                 >/ {{ feat.resource.reset }}</span
@@ -389,14 +383,7 @@ function setActiveCategory(cat: string) {
               class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
             >
               <div class="flex items-center gap-1">
-                <input
-                  v-for="n in feat.uses.total"
-                  :key="n"
-                  type="checkbox"
-                  :checked="n <= (feat.used || 0)"
-                  @change="feat.used = feat.used === n ? n - 1 : n"
-                  class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container-high"
-                />
+                <UsageTracker v-model="feat.used" :total="feat.uses.total" :label="feat.title" />
               </div>
               <span v-if="feat.uses.per" class="opacity-80">/ {{ feat.uses.per }}</span>
             </div>
@@ -414,7 +401,7 @@ function setActiveCategory(cat: string) {
           <button aria-label="Edit Feat"
             v-if="store.isEditing"
             @click.stop="editFeature(feat)"
-            class="absolute top-4 right-12 text-outline hover:text-primary transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50 opacity-0 group-hover:opacity-100 focus:opacity-100"
+            class="absolute top-4 right-12 text-outline hover:text-primary transition-colors flex items-center justify-center p-1 rounded hover:bg-surface-variant/50 reveal-on-hover min-h-9 min-w-9"
             title="Edit Feat"
           >
             <span class="material-symbols-outlined text-[16px]" aria-hidden="true">edit</span>

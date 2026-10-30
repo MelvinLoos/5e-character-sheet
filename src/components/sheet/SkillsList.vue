@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProficiencyToggle from '@/components/ui/ProficiencyToggle.vue'
 import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { formatMod } from '@/domain'
@@ -87,57 +88,24 @@ function isLocked(skillName: string): boolean {
               {{ skill.name }}
               <span
                 v-if="isLocked(skill.name)"
-                class="ml-1 text-[10px] uppercase tracking-wider text-tertiary"
+                class="ml-1 text-label-sm uppercase tracking-wider text-tertiary"
               >
                 (Granted)
               </span>
             </h3>
-            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant select-none">{{
+            <span class="text-label-sm uppercase tracking-wider text-on-surface-variant select-none">{{
               skill.stat.toUpperCase()
             }}</span>
           </div>
         </div>
         <div class="flex items-center gap-3">
-          <!-- Proficiency toggle -->
-          <label
-            class="relative flex items-center justify-center"
-            :class="store.isEditing && !isSkillDisabled(skill.name) ? 'cursor-pointer' : 'cursor-default'"
+          <ProficiencyToggle
+            :model-value="skill.proficient"
+            :label="`${skill.name} proficiency`"
             :title="isLocked(skill.name) ? 'Granted by class/background' : 'Proficiency'"
-          >
-            <input
-              type="checkbox"
-              class="sr-only skill-checkbox"
-              :checked="skill.proficient"
-              @change="toggleProficiency(skill.name)"
-              :disabled="!store.isEditing || isSkillDisabled(skill.name)"
-            />
-            <div
-              class="w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center"
-              :class="[
-                skill.proficient
-                  ? 'border-tertiary bg-tertiary'
-                  : 'border-outline-variant bg-surface',
-                store.isEditing && !skill.proficient && !isSkillDisabled(skill.name)
-                  ? 'group-hover:border-tertiary/50'
-                  : '',
-              ]"
-            >
-              <svg
-                v-if="skill.proficient"
-                class="w-3 h-3 text-on-tertiary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  d="M5 13l4 4L19 7"
-                ></path>
-              </svg>
-            </div>
-          </label>
+            :disabled="!store.isEditing || isSkillDisabled(skill.name)"
+            @update:model-value="toggleProficiency(skill.name)"
+          />
         </div>
       </ElevatedCard>
     </div>

@@ -9,6 +9,8 @@ import LibraryModal from '@/components/ui/LibraryModal.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
 
 import draggable from 'vuedraggable'
+import ReorderControls from '@/components/ui/ReorderControls.vue'
+import { moveItem } from '@/utils/listMove'
 
 const store = useCharacterStore()
 const spellStore = useSpellStore()
@@ -36,6 +38,11 @@ const {
   clearFilters,
   formatLevel,
 } = useSpellcasting()
+
+/** Keyboard / single-pointer alternative to dragging a spell (manual sort only). */
+function moveSpell(index: number, delta: -1 | 1): void {
+  editableSpells.value = moveItem(editableSpells.value, index, index + delta)
+}
 
 /** Controls whether drag-and-drop reordering is active (manual sort mode, editing, no search filter). */
 const isDraggable = computed(() => {
@@ -148,7 +155,7 @@ const allowedLevels = computed(() => {
                       getSpent(parseInt(levelKey.replace('level', ''))) + 1,
                     )
                   "
-                  class="mt-2 text-[10px] uppercase font-bold text-tertiary/60 hover:text-tertiary hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
+                  class="mt-2 text-label-sm uppercase font-bold text-tertiary/60 hover:text-tertiary hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
                 >
                   Spend Slot
                 </button>
@@ -193,7 +200,7 @@ const allowedLevels = computed(() => {
           handle=".spell-drag-handle"
           ghost-class="opacity-50"
         >
-          <template #item="{ element: spell }">
+          <template #item="{ element: spell, index }">
             <ElevatedCard
               :elevation="spell.prepared ? 3 : 1"
               :class="[
@@ -211,7 +218,7 @@ const allowedLevels = computed(() => {
                 <div class="flex items-center">
                   <!-- Drag handle -->
                   <span
-                    class="spell-drag-handle material-symbols-outlined text-sm cursor-move opacity-0 group-hover:opacity-50 mr-1 text-inherit"
+                    class="spell-drag-handle material-symbols-outlined text-sm cursor-move reveal-on-hover mr-1 text-inherit"
                      aria-hidden="true">drag_indicator</span
                   >
 
@@ -284,11 +291,21 @@ const allowedLevels = computed(() => {
                 ]"
               />
 
+                <!-- Keyboard / single-pointer alternative to dragging -->
+                <div class="mt-2 -mb-1 relative z-10">
+                  <ReorderControls
+                    :index="index"
+                    :count="editableSpells.length"
+                    :label="spell.name"
+                    @move="(delta) => moveSpell(index, delta)"
+                  />
+                </div>
+
                 <!-- Delete button -->
                 <button aria-label="Remove Spell"
                   v-if="store.isEditing"
                   @click="removeSpell(spell.id!)"
-                  class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
+                  class="absolute bottom-2 right-2 text-error reveal-on-hover flex min-h-9 min-w-9 items-center justify-center p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
                   title="Remove Spell"
                 >
                   <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
@@ -392,7 +409,7 @@ const allowedLevels = computed(() => {
                 <button aria-label="Remove Spell"
                   v-if="store.isEditing"
                   @click="removeSpell(spell.id!)"
-                  class="absolute bottom-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-all duration-200 ease-out p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
+                  class="absolute bottom-2 right-2 text-error reveal-on-hover flex min-h-9 min-w-9 items-center justify-center p-1 hover:bg-error/10 active:bg-error/20 active:scale-90 rounded select-none"
                   title="Remove Spell"
                 >
                   <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>

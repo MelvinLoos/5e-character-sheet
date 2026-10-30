@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import UsageTracker from '@/components/ui/UsageTracker.vue'
+import ReorderControls from '@/components/ui/ReorderControls.vue'
+import { moveItem } from '@/utils/listMove'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSpellStore } from '@/stores/spellStore'
@@ -50,6 +53,11 @@ const props = defineProps({
     default: true,
   },
 })
+
+/** Keyboard / single-pointer alternative to dragging a feature. */
+function moveFeature(index: number, delta: -1 | 1): void {
+  editableFeatures.value = moveItem(editableFeatures.value, index, index + delta)
+}
 
 // Create a computed property for draggable features
 const editableFeatures = computed<CharacterFeature[]>({
@@ -292,7 +300,7 @@ watch(
             <!-- Drag handle - only show in edit mode -->
             <div
               v-if="store.isEditing"
-              class="drag-handle absolute -left-2 top-4 lg:-left-4 lg:hidden group-hover:flex cursor-move text-outline hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
+              class="drag-handle absolute -left-2 top-4 lg:-left-4 flex reveal-on-hover cursor-move text-outline hover:text-primary z-10 bg-surface-container rounded-full shadow-sm"
               title="Drag to reorder"
             >
               <span class="material-symbols-outlined text-[20px]" aria-hidden="true">drag_indicator</span>
@@ -330,15 +338,7 @@ watch(
                       class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
                     >
                       <div class="flex items-center gap-1" @click.stop>
-                        <input
-                          v-for="n in spellStore.getFeatureMaxUses(feature)"
-                          :key="n"
-                          type="checkbox"
-                          :checked="n <= (feature.used || 0)"
-                          :aria-label="`Use ${n} of ${spellStore.getFeatureMaxUses(feature)}`"
-                          @change="feature.used = feature.used === n ? n - 1 : n"
-                          class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
-                        />
+                        <UsageTracker v-model="feature.used" :total="spellStore.getFeatureMaxUses(feature) ?? 0" :label="feature.title" />
                       </div>
                       <span v-if="feature.resource.reset" class="opacity-80"
                         >/ {{ feature.resource.reset }}</span
@@ -350,15 +350,7 @@ watch(
                       class="inline-flex items-center gap-1.5 bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[12px]"
                     >
                       <div class="flex items-center gap-1" @click.stop>
-                        <input
-                          v-for="n in feature.uses.total"
-                          :key="n"
-                          type="checkbox"
-                          :checked="n <= (feature.used || 0)"
-                          :aria-label="`Use ${n} of ${feature.uses?.total}`"
-                          @change="feature.used = feature.used === n ? n - 1 : n"
-                          class="usage-box w-3 h-3 appearance-none border border-secondary-fixed-dim/50 rounded-sm checked:bg-tertiary checked:border-tertiary focus:ring-1 focus:ring-tertiary focus:ring-offset-1 focus:ring-offset-surface-container"
-                        />
+                        <UsageTracker v-model="feature.used" :total="feature.uses.total" :label="feature.title" />
                       </div>
                       <span v-if="feature.uses.per" class="opacity-80">/ {{ feature.uses.per }}</span>
                     </div>
@@ -370,6 +362,12 @@ watch(
                   v-if="store.isEditing && props.editable"
                   class="flex flex-col sm:flex-row items-center gap-2 ml-4"
                 >
+                  <ReorderControls
+                    :index="index"
+                    :count="editableFeatures.length"
+                    :label="feature.title"
+                    @move="(delta) => moveFeature(index, delta)"
+                  />
                   <button aria-label="Edit Feature"
                     @click.stop="editFeature(feature)"
                     class="w-8 h-8 rounded-full bg-surface-variant/50 border border-outline-variant/30 text-on-surface-variant flex items-center justify-center hover:bg-surface-variant hover:text-primary hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"

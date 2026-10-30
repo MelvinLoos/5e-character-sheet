@@ -48,7 +48,7 @@ describe('FeaturesList (component integration)', () => {
       props: { features: store.currentCharacterData.features, editable: false },
     })
 
-    const boxes = wrapper.findAll('input.usage-box')
+    const boxes = wrapper.findAll('[role="group"] input[type="checkbox"]')
     expect(boxes.length).toBe(3)
   })
 
@@ -84,7 +84,7 @@ describe('FeaturesList (component integration)', () => {
       props: { features: store.currentCharacterData.features, editable: false },
     })
 
-    const boxes = wrapper.findAll('input.usage-box')
+    const boxes = wrapper.findAll('[role="group"] input[type="checkbox"]')
     expect(boxes.length).toBe(2)
   })
 })

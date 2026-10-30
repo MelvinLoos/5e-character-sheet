@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProficiencyToggle from '@/components/ui/ProficiencyToggle.vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
@@ -60,50 +61,19 @@ function toggleProficiency(key: string) {
             <h3 class="font-label-md text-label-md text-on-background leading-normal">
               {{ name }}
             </h3>
-            <span class="text-[11px] uppercase tracking-wider text-on-surface-variant">{{
+            <span class="text-label-sm uppercase tracking-wider text-on-surface-variant">{{
               key.toUpperCase()
             }}</span>
           </div>
         </div>
         <div class="flex items-center gap-3">
-          <!-- Proficiency toggle -->
-          <label
-            class="relative flex items-center justify-center"
-            :class="store.isEditing ? 'cursor-pointer' : 'cursor-default'"
+          <ProficiencyToggle
+            :model-value="isProficient(key)"
+            :label="`${name} saving throw proficiency`"
             title="Proficiency"
-          >
-            <input
-              type="checkbox"
-              class="sr-only skill-checkbox"
-              :checked="isProficient(key)"
-              @change="toggleProficiency(key)"
-              :disabled="!store.isEditing"
-            />
-            <div
-              class="w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center"
-              :class="[
-                isProficient(key)
-                  ? 'border-tertiary bg-tertiary'
-                  : 'border-outline-variant bg-surface',
-                store.isEditing && !isProficient(key) ? 'group-hover:border-tertiary/50' : '',
-              ]"
-            >
-              <svg
-                v-if="isProficient(key)"
-                class="w-3 h-3 text-on-tertiary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="3"
-                  d="M5 13l4 4L19 7"
-                ></path>
-              </svg>
-            </div>
-          </label>
+            :disabled="!store.isEditing"
+            @update:model-value="toggleProficiency(key)"
+          />
         </div>
       </div>
     </div>

@@ -88,7 +88,7 @@ function getProgressText(data: MilestoneData, milestones: number) {
           <span class="font-label-md text-label-md text-tertiary uppercase tracking-widest">
             {{ getMilestoneData().title }}
           </span>
-          <span class="text-[10px] font-body-md text-on-surface-variant italic">
+          <span class="text-label-sm font-body-md text-on-surface-variant italic">
             {{ getMilestoneData().label }}
           </span>
         </div>
@@ -110,32 +110,23 @@ function getProgressText(data: MilestoneData, milestones: number) {
       </div>
 
       <div v-if="getMilestoneData().tier < 4" class="flex gap-4 mb-4">
-        <div
+        <button
           v-for="i in getMilestoneData().maxMilestones"
           :key="i"
+          type="button"
+          :disabled="!store.isEditing"
+          :aria-label="`Milestone ${i}`"
+          :aria-pressed="(store.currentCharacterData?.renownMilestones || 0) >= i"
+          :title="`Milestone ${i}`"
           @click="store.isEditing ? setMilestones(i) : null"
-          class="flex-1 h-4 rounded-full relative group transition-colors cursor-pointer"
+          class="flex-1 h-4 rounded-full relative transition-colors before:absolute before:inset-x-0 before:-inset-y-3.5 before:content-[''] disabled:cursor-default"
           :class="[
             (store.currentCharacterData?.renownMilestones || 0) >= i
               ? 'bg-tertiary border border-tertiary shadow-[0_0_10px_rgba(234,194,73,0.3)]'
-              : 'bg-surface-container border border-outline-variant hover:border-tertiary/50',
+              : 'bg-surface-container border border-outline-variant',
+            store.isEditing ? 'cursor-pointer hover:border-tertiary/50' : '',
           ]"
-        >
-          <div
-            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <span
-              class="text-[8px] uppercase font-bold"
-              :class="
-                (store.currentCharacterData?.renownMilestones || 0) >= i
-                  ? 'text-on-tertiary'
-                  : 'text-on-surface-variant'
-              "
-            >
-              Milestone {{ i }}
-            </span>
-          </div>
-        </div>
+        ></button>
       </div>
 
       <p class="text-center text-sm font-body-md text-on-surface-variant italic">
