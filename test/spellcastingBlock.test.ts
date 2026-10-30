@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { config, mount } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import 'fake-indexeddb/auto'
@@ -9,6 +9,9 @@ import { useCharacterStore } from '@/stores/character'
 import { useRulesStore } from '@/stores/rulesStore'
 import { createBlankCharacter } from '@/domain'
 import type { CharacterData, CharacterSpell } from '@/types/character'
+
+// BaseModal teleports to <body>; render it in place so wrapper queries find it.
+config.global.stubs = { ...config.global.stubs, teleport: true }
 
 const originalScrollHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight')
 const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')

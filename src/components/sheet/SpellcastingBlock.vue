@@ -5,6 +5,8 @@ import { useSpellStore } from '@/stores/spellStore'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
+import LibraryModal from '@/components/ui/LibraryModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
 
 import draggable from 'vuedraggable'
 
@@ -408,140 +410,100 @@ const allowedLevels = computed(() => {
     </ElevatedCard>
 
     <!-- Spell Library Modal -->
-    <Transition name="sheet-up">
-      <div
-        v-if="showSpellLibrary && store.isEditing"
-        class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
-        @click.self="toggleSpellLibrary"
-      >
-        <div
-          class="bg-surface-container rounded-t-lg md:rounded-lg p-6 max-w-4xl max-h-[85vh] overflow-hidden flex flex-col w-full border-t md:border border-outline-variant shadow-elevation-4"
-        >
-          <div class="flex justify-between items-center mb-6">
-          <h3 class="text-2xl font-headline-lg text-tertiary select-none">Spell Library</h3>
-          <button aria-label="Close spell library"
-            @click="toggleSpellLibrary"
-            class="p-2 hover:bg-surface-variant active:bg-surface-variant/70 active:scale-95 rounded-full transition-all duration-200 ease-out select-none"
-          >
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-        </div>
-
-        <div
-          v-if="characterClass"
-          class="bg-primary-container/30 border border-primary/20 rounded-lg p-3 mb-6"
-        >
+    <LibraryModal
+      :open="showSpellLibrary && store.isEditing"
+      v-model:search="librarySearchFilter"
+      title="Spell Library"
+      search-label="Search spells"
+      search-placeholder="Filter by name, description, or school..."
+      :count-label="`Found ${librarySpells.length} potential spells`"
+      @close="toggleSpellLibrary"
+    >
+      <template v-if="characterClass" #notice>
+        <div class="bg-primary-container/30 border border-primary/20 rounded-lg p-3">
           <p class="text-sm text-primary">
             Showing spells available to the
             <strong class="uppercase tracking-wider">{{ characterClass }}</strong> class.
           </p>
         </div>
+      </template>
 
-        <!-- Library Controls -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="relative">
-            <span
-              class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-               aria-hidden="true">search</span
-            >
-            <input
-              v-model="librarySearchFilter"
-              type="text"
-              placeholder="Filter by name, description, or school..."
-              class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary"
-            />
-          </div>
+      <template #filters>
+        <button
+          v-for="level in allowedLevels"
+          :key="level"
+          type="button"
+          :aria-pressed="filterByLevel === level"
+          :aria-label="level === 0 ? 'Cantrips' : `Level ${level} spells`"
+          :class="[
+            'min-h-9 min-w-9 px-3 py-1 text-xs rounded border transition-all duration-200 ease-out font-bold select-none active:scale-95',
+            filterByLevel === level
+              ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
+              : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
+          ]"
+          @click="filterByLevel = filterByLevel === level ? null : level"
+        >
+          {{ level === 0 ? 'C' : level }}
+        </button>
+        <PressableButton
+          v-if="librarySearchFilter || filterByLevel !== null"
+          variant="ghost"
+          size="sm"
+          class="ml-2 text-primary"
+          @click="clearFilters"
+        >
+          Clear
+        </PressableButton>
+      </template>
 
-          <div class="flex gap-1 flex-wrap items-center">
-            <button
-              v-for="level in allowedLevels"
-              :key="level"
-              @click="filterByLevel = filterByLevel === level ? null : level"
-              :class="[
-                'px-3 py-1 text-xs rounded border transition-all duration-200 ease-out font-bold select-none active:scale-95',
-                filterByLevel === level
-                  ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
-                  : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50 hover:-translate-y-0.5 hover:shadow-sm',
-              ]"
-            >
-              {{ level === 0 ? 'C' : level }}
-            </button>
-            <button
-              v-if="librarySearchFilter || filterByLevel !== null"
-              @click="clearFilters"
-              class="ml-2 text-xs text-primary hover:underline hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-
-        <!-- Library Scroll Area -->
-        <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar">
-          <div
-            v-if="librarySpells.length === 0"
-            class="text-center text-on-surface-variant py-12 italic border border-dashed border-outline-variant rounded-xl select-none"
-          >
-            No spells found matching your criteria.
-          </div>
-
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ElevatedCard
-              v-for="spell in librarySpells"
-              :key="spell.name"
-              :elevation="1"
-              :class="[
-                'rounded-lg p-4 hover:border-tertiary/50 transition-colors group relative',
-                'bg-surface-container-high border-outline-variant',
-              ]"
-            >
-              <div class="flex justify-between items-start mb-1">
-                <h5 class="font-bold text-on-surface group-hover:text-tertiary transition-colors">{{ spell.name }}</h5>
-                <span class="text-xs font-bold text-tertiary select-none">{{
-                  spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`
-                }}</span>
-              </div>
-              <ExpandableText
-                :text="spell.desc"
-                :lines="2"
-                markdown
-                text-class="text-xs text-on-surface-variant mb-3"
-              />
-
-              <div class="flex justify-between items-end">
-                <div
-                  class="flex gap-2 text-[10px] text-primary/70 uppercase font-bold tracking-tighter"
-                >
-                  <span v-if="spell.school">{{ spell.school }}</span>
-                  <span v-if="spell.castingTime">{{ spell.castingTime }}</span>
-                </div>
-                <button
-                  @click="addSpellFromLibrary(spell)"
-                  class="bg-tertiary text-on-tertiary text-xs px-3 py-1 rounded font-bold hover:bg-tertiary-fixed hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out shadow-sm select-none"
-                >
-                  Learn
-                </button>
-              </div>
-            </ElevatedCard>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="mt-6 pt-4 border-t border-outline-variant flex justify-between items-center">
-          <div class="text-xs text-on-surface-variant font-medium select-none">
-            Found {{ librarySpells.length }} potential spells
-          </div>
-          <button
-            @click="addManualSpell"
-            class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-95 px-4 py-2 rounded-lg transition-all duration-200 ease-out cursor-pointer select-none"
-          >
-            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
-            Custom Spell
-          </button>
-          </div>
-        </div>
+      <div
+        v-if="librarySpells.length === 0"
+        class="text-center text-on-surface-variant py-12 italic border border-dashed border-outline-variant rounded-xl select-none"
+      >
+        No spells found matching your criteria.
       </div>
-    </Transition>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ElevatedCard
+          v-for="spell in librarySpells"
+          :key="spell.name"
+          :elevation="1"
+          class="rounded-lg p-4 hover:border-tertiary/50 transition-colors group relative bg-surface-container-high border-outline-variant"
+        >
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-bold text-on-surface group-hover:text-tertiary transition-colors">
+              {{ spell.name }}
+            </h3>
+            <span class="text-xs font-bold text-tertiary select-none">{{
+              spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`
+            }}</span>
+          </div>
+          <ExpandableText
+            :text="spell.desc"
+            :lines="2"
+            markdown
+            text-class="text-xs text-on-surface-variant mb-3"
+          />
+
+          <div class="flex justify-between items-end">
+            <div class="flex gap-2 text-label-sm text-primary uppercase font-bold tracking-tighter">
+              <span v-if="spell.school">{{ spell.school }}</span>
+              <span v-if="spell.castingTime">{{ spell.castingTime }}</span>
+            </div>
+            <PressableButton variant="primary" size="sm" @click="addSpellFromLibrary(spell)">
+              Learn
+            </PressableButton>
+          </div>
+        </ElevatedCard>
+      </div>
+
+      <template #actions>
+        <PressableButton variant="ghost" class="text-primary" @click="addManualSpell">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
+          Custom Spell
+        </PressableButton>
+      </template>
+    </LibraryModal>
   </div>
   <div v-else>
     <div

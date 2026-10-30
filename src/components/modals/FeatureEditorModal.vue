@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onMounted, onBeforeUnmount } from 'vue'
 import feather from 'feather-icons'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
 // Props
 const props = defineProps({
@@ -185,17 +188,16 @@ function handleCancel() {
   emit('cancel')
 }
 
-function handleDelete() {
-  if (confirm('Are you sure you want to delete this feature?')) {
-    emit('delete')
-  }
-}
+const { confirm } = useConfirm()
 
-// Close modal on backdrop click
-function handleBackdropClick(event: MouseEvent) {
-  if (event.target === event.currentTarget) {
-    handleCancel()
-  }
+async function handleDelete() {
+  const ok = await confirm({
+    title: 'Delete this feature?',
+    message: 'This removes the feature from your character.',
+    confirmLabel: 'Delete',
+    danger: true,
+  })
+  if (ok) emit('delete')
 }
 
 // Computed property for modal title
@@ -328,22 +330,14 @@ function removeModifier(stat: string) {
 </script>
 
 <template>
-  <div v-if="isOpen" class="modal-backdrop" @click="handleBackdropClick">
-    <div class="modal-content max-w-4xl w-full mx-4">
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-fell text-tertiary">{{ modalTitle }}</h2>
-        <button @click="handleCancel" class="info-button" title="Close">
-          <span v-html="feather.icons?.x?.toSvg({ width: 20, height: 20 })"></span>
-        </button>
-      </div>
-
+  <BaseModal :open="isOpen" :title="modalTitle" size="xl" @close="handleCancel">
       <!-- Error Messages -->
       <div
         v-if="errors.length > 0"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"
+        role="alert"
+        class="mb-4 rounded-lg border border-error/40 bg-error/10 px-4 py-3 text-on-surface"
       >
-        <ul class="list-disc list-inside">
+        <ul class="list-inside list-disc">
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>
       </div>
@@ -358,6 +352,7 @@ function removeModifier(stat: string) {
               <label for="feature-title" class="block text-sm font-bold mb-1">Feature Title:</label>
               <input
                 id="feature-title"
+                data-autofocus
                 v-model="formData.title"
                 type="text"
                 class="edit-mode-input"
@@ -372,6 +367,8 @@ function removeModifier(stat: string) {
                   class="info-button"
                   title="Key features appear on the front page"
                   @click.prevent="toggleHelp('key')"
+                  aria-label="More information"
+                  :aria-expanded="showHelp.key"
                 >
                   <span
                     v-html="feather.icons?.['help-circle']?.toSvg({ width: 16, height: 16 })"
@@ -448,6 +445,8 @@ function removeModifier(stat: string) {
                   class="info-button"
                   title="Add ability score increases granted by this feature."
                   @click.prevent="toggleHelp('ability')"
+                  aria-label="More information"
+                  :aria-expanded="showHelp.ability"
                 >
                   <span
                     v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"
@@ -465,7 +464,7 @@ function removeModifier(stat: string) {
               </div>
             </div>
 
-            <div class="space-y-2 bg-gray-50 p-2 rounded border border-gray-200">
+            <div class="space-y-2 bg-surface-container-high p-2 rounded border border-outline-variant">
               <!-- Existing Modifiers -->
               <div
                 v-if="
@@ -476,15 +475,16 @@ function removeModifier(stat: string) {
                 <div
                   v-for="(val, stat) in formData.abilityModifiers"
                   :key="stat"
-                  class="flex items-center justify-between bg-surface-container-high px-2 py-1 rounded border border-gray-200 text-sm"
+                  class="flex items-center justify-between bg-surface-container-high px-2 py-1 rounded border border-outline-variant text-sm"
                 >
                   <span>
                     <span class="font-bold uppercase">{{ stat }}</span
                     >: {{ val > 0 ? '+' : '' }}{{ val }}
                   </span>
                   <button
+                    :aria-label="`Remove ${String(stat).toUpperCase()} modifier`"
                     @click="removeModifier(stat as string)"
-                    class="text-red-500 hover:text-red-700"
+                    class="text-error hover:text-error/80"
                   >
                     <span v-html="feather.icons?.x?.toSvg({ width: 14, height: 14 })"></span>
                   </button>
@@ -507,8 +507,9 @@ function removeModifier(stat: string) {
                 />
                 <button
                   @click="addModifier"
-                  class="bg-blue-500 text-white rounded p-1 hover:bg-blue-600"
+                  class="bg-tertiary text-on-tertiary rounded p-1 hover:bg-tertiary/90"
                   title="Add Modifier"
+                  aria-label="Add modifier"
                 >
                   <span v-html="feather.icons?.plus?.toSvg({ width: 14, height: 14 })"></span>
                 </button>
@@ -539,6 +540,8 @@ function removeModifier(stat: string) {
                     class="info-button"
                     title="Select one or more spell levels granted by this feature."
                     @click.prevent="toggleHelp('grants')"
+                  aria-label="More information"
+                  :aria-expanded="showHelp.grants"
                   >
                     <span
                       v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"
@@ -639,6 +642,8 @@ function removeModifier(stat: string) {
                         class="info-button"
                         title="Choose when this feature's uses refresh. Use 'Special' for custom conditions."
                         @click.prevent="toggleHelp('reset')"
+                  aria-label="More information"
+                  :aria-expanded="showHelp.reset"
                       >
                         <span
                           v-html="feather.icons?.['help-circle']?.toSvg({ width: 14, height: 14 })"
@@ -659,7 +664,7 @@ function removeModifier(stat: string) {
                 </div>
 
                 <!-- Preview -->
-                <div class="bg-blue-50 p-2 rounded text-xs">
+                <div class="bg-primary/10 border border-primary/30 p-2 rounded text-xs">
                   <strong>Preview:</strong>
                   <span v-if="maxUsesType === 'fixed'">
                     {{ baseAmount || 0 }} use{{ (baseAmount || 0) !== 1 ? 's' : '' }}
@@ -675,42 +680,26 @@ function removeModifier(stat: string) {
         </div>
       </div>
 
-      <!-- Modal Actions -->
-      <div class="flex items-center justify-between mt-8 pt-4 border-t border-sheet-border">
-        <div>
-          <button
-            v-if="!isNew"
-            @click="handleDelete"
-            class="icon-button bg-red-600 text-white hover:bg-red-700"
-          >
-            <span v-html="feather.icons?.trash?.toSvg({ width: 16, height: 16 })"></span>
-            Delete
-          </button>
-        </div>
-        <div class="flex items-center gap-3">
-          <button @click="handleCancel" class="icon-button">
-            <span v-html="feather.icons?.x?.toSvg({ width: 16, height: 16 })"></span>
-            Cancel
-          </button>
-          <button
-            @click="handleSave"
-            class="icon-button bg-green-600 text-white hover:bg-green-700"
-          >
-            <span v-html="feather.icons?.save?.toSvg({ width: 16, height: 16 })"></span>
-            {{ isNew ? 'Add Feature' : 'Save Changes' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <template #footer>
+      <PressableButton v-if="!isNew" variant="danger" class="mr-auto" @click="handleDelete">
+        <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+        Delete
+      </PressableButton>
+      <PressableButton variant="ghost" @click="handleCancel">Cancel</PressableButton>
+      <PressableButton variant="primary" @click="handleSave">
+        <span class="material-symbols-outlined text-base" aria-hidden="true">save</span>
+        {{ isNew ? 'Add Feature' : 'Save Changes' }}
+      </PressableButton>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
 .usage-box {
   width: 1rem;
   height: 1rem;
-  border: 1px solid var(--sheet-border, #d1d5db);
-  background-color: white;
+  border: 1px solid var(--color-outline);
+  background-color: var(--color-surface);
 }
 
 .help-popup {

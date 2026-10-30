@@ -9,6 +9,8 @@ import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
+import LibraryModal from '@/components/ui/LibraryModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
 import type { CharacterFeature } from '@/types/character'
 import type { FeatureChoice } from '@/types/rules'
 import {
@@ -491,145 +493,91 @@ function setActiveCategory(cat: string) {
     </section>
 
     <!-- Feat Library Modal -->
-    <div
-      v-if="showFeatLibrary && store.isEditing"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      @click.self="showFeatLibrary = false"
+    <LibraryModal
+      :open="showFeatLibrary && store.isEditing"
+      v-model:search="searchFilter"
+      title="Feat Archives"
+      search-label="Search feats"
+      search-placeholder="Filter by name or description..."
+      :count-label="`Found ${libraryFeats.length} feats`"
+      @close="showFeatLibrary = false"
     >
+      <template #filters>
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          type="button"
+          :aria-pressed="activeCategory === cat"
+          :class="[
+            'min-h-9 px-3 py-1 text-xs rounded-full border transition-all font-bold',
+            activeCategory === cat
+              ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
+              : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
+          ]"
+          @click="setActiveCategory(cat)"
+        >
+          {{ cat }}
+        </button>
+      </template>
+
       <div
-        class="bg-surface-container rounded-lg max-w-4xl max-h-[85vh] overflow-hidden flex flex-col w-full border border-outline-variant shadow-xl"
+        v-if="libraryFeats.length === 0"
+        class="text-center py-12 text-on-surface-variant italic border border-dashed border-outline-variant rounded-xl"
       >
-        <!-- Modal Header -->
+        No feats found matching your criteria.
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
-          class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low rounded-t-lg"
+          v-for="(feat, index) in libraryFeats"
+          :key="index"
+          class="bg-surface-container-low border border-outline-variant rounded-lg p-4 hover:border-tertiary/50 transition-colors group relative"
         >
-          <h3
-            class="text-2xl font-headline-lg text-tertiary flex items-center gap-2 m-0 bg-transparent"
-          >
-            <span class="material-symbols-outlined" aria-hidden="true">library_books</span>
-            Feat Archives
-          </h3>
-          <button aria-label="Close feat library"
-            @click="showFeatLibrary = false"
-            class="p-2 hover:bg-surface-variant rounded-full transition-colors text-on-surface-variant"
-          >
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-        </div>
-
-        <!-- Library Controls -->
-        <div class="p-4 bg-surface-container-low border-b border-outline-variant/30">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div class="relative">
-              <span
-                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-                 aria-hidden="true">search</span
-              >
-              <input
-                v-model="searchFilter"
-                type="text"
-                placeholder="Filter by name or description..."
-                class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:border-tertiary focus:ring-1 focus:ring-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
-                autofocus
-              />
-            </div>
-            <div class="flex gap-1 flex-wrap items-center">
-              <button
-                v-for="cat in categories"
-                :key="cat"
-                @click="setActiveCategory(cat)"
-                :class="[
-                  'px-3 py-1 text-xs rounded-full border transition-all font-bold',
-                  activeCategory === cat
-                    ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
-                    : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50',
-                ]"
-              >
-                {{ cat }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Library Scroll Area -->
-        <div class="flex-grow overflow-y-auto p-6 custom-scrollbar">
-          <div
-            v-if="libraryFeats.length === 0"
-            class="text-center py-12 text-on-surface-variant italic border border-dashed border-outline-variant rounded-xl"
-          >
-            No feats found matching your criteria.
-          </div>
-
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div
-              v-for="(feat, index) in libraryFeats"
-              :key="index"
-              class="bg-surface-container-low border border-outline-variant rounded-lg p-4 hover:border-tertiary/50 transition-colors group relative"
+          <div class="flex justify-between items-start mb-1">
+            <h3 class="font-headline-md text-on-surface group-hover:text-tertiary transition-colors m-0">
+              {{ feat.title }}
+            </h3>
+            <span
+              v-if="feat.source"
+              class="text-label-sm bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md ml-2 flex-shrink-0"
             >
-              <div class="flex justify-between items-start mb-1">
-                <h5
-                  class="font-headline-md text-on-surface group-hover:text-tertiary transition-colors m-0"
-                >
-                  {{ feat.title }}
-                </h5>
-                <span
-                  v-if="feat.source"
-                  class="text-[12px] bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md ml-2 flex-shrink-0"
-                >
-                  {{ feat.source }}
-                </span>
-              </div>
-              <div
-                v-if="feat.prerequisite"
-                class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-[11px] mb-2"
-              >
-                Prerequisite: {{ feat.prerequisite }}
-              </div>
-              <ExpandableText
-                :text="feat.desc"
-                :lines="2"
-                markdown
-                text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-3"
-              />
-
-              <div class="flex justify-between items-end">
-                <div
-                  class="flex gap-2 text-[10px] text-primary/70 uppercase font-bold tracking-tighter"
-                >
-                  <span v-if="feat.actionType">{{ feat.actionType }}</span>
-                  <span
-                    v-if="feat.featureType && feat.featureType !== feat.actionType"
-                    >{{ feat.featureType }}</span
-                  >
-                </div>
-                <button
-                  @click="addFeatFromLibrary(feat)"
-                  class="bg-tertiary text-on-tertiary text-xs px-3 py-1 rounded font-bold hover:bg-tertiary-fixed transition-colors shadow-sm"
-                >
-                  Transcribe
-                </button>
-              </div>
-            </div>
+              {{ feat.source }}
+            </span>
           </div>
-        </div>
+          <div
+            v-if="feat.prerequisite"
+            class="inline-block bg-primary-container/30 border border-primary/20 px-2 py-0.5 rounded text-secondary-fixed-dim font-label-md text-label-sm mb-2"
+          >
+            Prerequisite: {{ feat.prerequisite }}
+          </div>
+          <ExpandableText
+            :text="feat.desc"
+            :lines="2"
+            markdown
+            text-class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-3"
+          />
 
-        <!-- Footer -->
-        <div
-          class="p-4 border-t border-outline-variant bg-surface-container-low flex justify-between items-center rounded-b-lg"
-        >
-          <span class="font-label-md text-on-surface-variant"
-            >Found {{ libraryFeats.length }} feats</span
-          >
-          <button
-            @click="addManualFeat"
-            class="text-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-container/20 px-4 py-2 rounded-lg transition-colors cursor-pointer"
-          >
-            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
-            Custom Entry
-          </button>
+          <div class="flex justify-between items-end">
+            <div class="flex gap-2 text-label-sm text-primary uppercase font-bold tracking-tighter">
+              <span v-if="feat.actionType">{{ feat.actionType }}</span>
+              <span v-if="feat.featureType && feat.featureType !== feat.actionType">{{
+                feat.featureType
+              }}</span>
+            </div>
+            <PressableButton variant="primary" size="sm" @click="addFeatFromLibrary(feat)">
+              Transcribe
+            </PressableButton>
+          </div>
         </div>
       </div>
-    </div>
+
+      <template #actions>
+        <PressableButton variant="ghost" @click="addManualFeat">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
+          Custom Entry
+        </PressableButton>
+      </template>
+    </LibraryModal>
 
     <!-- Feature Choice Modal (for class-based selections like Eldritch Invocations) -->
     <FeatureChoiceModal

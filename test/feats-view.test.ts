@@ -10,7 +10,7 @@
  * - "Custom Entry" button opens FeatureEditorModal
  * - Non-edit mode hides all add/remove buttons
  */
-import { mount } from '@vue/test-utils'
+import { config, mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { nextTick } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
@@ -18,6 +18,9 @@ import 'fake-indexeddb/auto'
 import Feats from '../src/views/Feats.vue'
 import { useCharacterStore } from '../src/stores/character'
 import { useRulesStore } from '../src/stores/rulesStore'
+
+// BaseModal teleports to <body>; render it in place so wrapper queries find it.
+config.global.stubs = { ...config.global.stubs, teleport: true }
 
 function makeMinimalCharacter(features: any[] = []) {
   return {
@@ -247,12 +250,10 @@ describe('Feats.vue (modal-based selection pattern)', () => {
 
       expect(wrapper.text()).toContain('Feat Archives')
 
-      // Click the close button (X) in modal header
-      // The close button is inside the rounded-t-lg div with text "close"
-      const closeBtns = wrapper.findAll('button')
-      const closeBtn = closeBtns.find((b) => b.text().includes('close') && b.classes().includes('p-2'))
-      expect(closeBtn).toBeDefined()
-      await closeBtn!.trigger('click')
+      // Click the close button (X) in the modal header
+      const closeBtn = wrapper.find('button[aria-label="Close dialog"]')
+      expect(closeBtn.exists()).toBe(true)
+      await closeBtn.trigger('click')
 
       expect(wrapper.text()).not.toContain('Feat Archives')
     })

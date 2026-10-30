@@ -11,6 +11,7 @@ describe('FeatureEditorModal (more edge cases)', () => {
     }
 
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: { isOpen: true, feature: legacyFeature, isNew: false },
     })
 
@@ -44,6 +45,7 @@ describe('FeatureEditorModal (more edge cases)', () => {
 
   it('normalizes scalingStat to lowercase on save when user chooses an ability modifier', async () => {
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: { isOpen: true, feature: {}, isNew: true },
     })
 
@@ -71,6 +73,7 @@ describe('FeatureEditorModal (more edge cases)', () => {
 
   it('saves grantsSpells=false and empty grantedSpellLevels when unchecked', async () => {
     const wrapper = mount(FeatureEditorModal, {
+      global: { stubs: { teleport: true } },
       props: { isOpen: true, feature: {}, isNew: true },
     })
 

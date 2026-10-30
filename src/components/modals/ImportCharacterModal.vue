@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
+import StatusBanner from '@/components/ui/StatusBanner.vue'
 
 defineProps<{
   show: boolean
@@ -141,78 +144,74 @@ async function confirmImport() {
 </script>
 
 <template>
-  <Transition name="sheet-up">
-    <div v-if="show" class="modal-backdrop backdrop-blur-sm bg-black/40">
-      <div class="modal-content max-w-2xl rounded-xl">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-tertiary">Import Character</h2>
-          <button aria-label="Close" @click="close" class="icon-button" title="Close">
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
+  <BaseModal
+    :open="show"
+    title="Import Character"
+    size="lg"
+    :close-on-escape="status !== 'processing'"
+    :close-on-backdrop="status !== 'processing'"
+    @close="close"
+  >
+    <div class="space-y-4">
+      <p class="text-sm text-on-surface-variant">
+        Upload a character JSON file that was previously exported from this app. Importing
+        replaces the currently open character and saves it to your library.
+      </p>
+
+      <!-- File Upload Area -->
+      <div
+        :class="[
+          'rounded-lg border-2 border-dashed p-8 text-center transition-colors',
+          isDragging ? 'border-tertiary bg-tertiary/10' : 'border-outline-variant bg-surface-variant/40',
+          status === 'processing' ? 'pointer-events-none opacity-50' : '',
+        ]"
+        @dragover="handleDragOver"
+        @dragleave="handleDragLeave"
+        @drop="handleDrop"
+      >
+        <div v-if="!selectedFile" class="space-y-3">
+          <span class="material-symbols-outlined text-4xl text-tertiary" aria-hidden="true">upload_file</span>
+          <p class="text-on-surface-variant">Drag &amp; drop a character .json file here, or choose one to browse</p>
+          <input
+            ref="fileInputRef"
+            id="import-character-file-input"
+            type="file"
+            accept=".json,application/json"
+            class="peer sr-only"
+            @change="handleFileSelect"
+          />
+          <label
+            for="import-character-file-input"
+            class="inline-flex min-h-11 cursor-pointer items-center rounded-lg bg-tertiary px-4 py-2 font-label-md text-on-tertiary transition-transform active:scale-95 peer-focus-visible:ring-2 peer-focus-visible:ring-tertiary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-surface-container"
+          >
+            Choose File
+          </label>
         </div>
 
-        <div class="space-y-4">
-          <p class="text-sm text-on-surface-variant font-body-sm">
-            Upload a character JSON file that was previously exported from this app. Importing
-            replaces the currently open character and saves it to your library.
-          </p>
-
-          <!-- File Upload Area -->
-          <div
-            @dragover="handleDragOver"
-            @dragleave="handleDragLeave"
-            @drop="handleDrop"
-            :class="[
-              'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-              isDragging
-                ? 'border-tertiary bg-tertiary/10'
-                : 'border-outline-variant bg-surface-variant/40',
-              status === 'processing' ? 'opacity-50 pointer-events-none' : '',
-            ]"
-          >
-            <div v-if="!selectedFile" class="space-y-3">
-              <span class="material-symbols-outlined text-4xl text-tertiary" aria-hidden="true">upload_file</span>
-              <p class="text-on-surface-variant font-body-sm">
-                Drag &amp; drop a character .json file here, or click to browse
-              </p>
-              <input
-                ref="fileInputRef"
-                id="import-character-file-input"
-                type="file"
-                accept=".json,application/json"
-                class="hidden"
-                @change="handleFileSelect"
-              />
-              <label
-                for="import-character-file-input"
-                class="inline-block px-4 py-2 rounded-lg bg-tertiary text-on-tertiary font-label-md text-sm cursor-pointer active:scale-95 transition-transform"
-              >
-                Choose File
-              </label>
-            </div>
-
-            <div v-else class="flex items-center justify-between gap-4 text-left">
-              <div class="flex items-center gap-3 min-w-0">
-                <span class="material-symbols-outlined text-tertiary" aria-hidden="true">description</span>
-                <span class="text-sm text-on-surface truncate">{{ selectedFile.name }}</span>
-              </div>
-              <button
-                class="text-sm text-error hover:underline shrink-0"
-                :disabled="status === 'processing'"
-                @click="reset"
-              >
-                Remove File
-              </button>
-            </div>
+        <div v-else class="flex items-center justify-between gap-4 text-left">
+          <div class="flex min-w-0 items-center gap-3">
+            <span class="material-symbols-outlined text-tertiary" aria-hidden="true">description</span>
+            <span class="truncate text-sm text-on-surface">{{ selectedFile.name }}</span>
           </div>
-
-          <!-- Preview -->
-          <div
-            v-if="preview"
-            class="border border-outline-variant bg-surface-variant/40 p-4 rounded-lg"
+          <PressableButton
+            variant="ghost"
+            size="sm"
+            class="shrink-0 text-error"
+            :disabled="status === 'processing'"
+            @click="reset"
           >
-            <h3 class="font-label-md text-label-md text-tertiary mb-2">Preview</h3>
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            Remove File
+          </PressableButton>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div
+        v-if="preview"
+        class="rounded-lg border border-outline-variant bg-surface-variant/40 p-4"
+      >
+        <h3 class="mb-2 font-label-md text-label-md text-tertiary">Preview</h3>
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               <dt class="text-on-surface-variant">Name</dt>
               <dd class="text-on-surface text-right">{{ preview.name }}</dd>
               <dt class="text-on-surface-variant">Class</dt>
@@ -230,80 +229,36 @@ async function confirmImport() {
                 {{ preview.featureCount }} / {{ preview.spellCount }}
               </dd>
             </dl>
-          </div>
-
-          <!-- Status Messages -->
-          <div
-            v-if="statusMessage"
-            :class="[
-              'p-3 rounded text-sm',
-              status === 'success' ? 'bg-green-100 text-green-800' : '',
-              status === 'error' ? 'bg-red-100 text-red-800' : '',
-              status === 'processing' ? 'bg-blue-100 text-blue-800' : '',
-            ]"
-          >
-            {{ statusMessage }}
-          </div>
-
-          <!-- Validation errors -->
-          <ul v-if="importErrors.length" class="list-disc list-inside text-sm text-error space-y-1">
-            <li v-for="(err, i) in importErrors" :key="i">{{ err }}</li>
-          </ul>
-
-          <!-- Warning -->
-          <div class="bg-amber-50 border border-amber-300 p-3 rounded text-sm text-amber-900">
-            <strong>Note:</strong> Importing replaces the currently open character. Any unsaved
-            changes to the current character will be lost.
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex gap-3 justify-end">
-            <button
-              @click="close"
-              class="px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-variant active:scale-95 transition-all"
-              :disabled="status === 'processing'"
-            >
-              Cancel
-            </button>
-            <button
-              @click="confirmImport"
-              class="px-4 py-2 rounded-lg bg-tertiary text-on-tertiary font-label-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-              :disabled="!canConfirm"
-            >
-              Import Character
-            </button>
-          </div>
-        </div>
       </div>
+
+      <!-- Status Messages -->
+      <StatusBanner
+        v-if="statusMessage"
+        :tone="status === 'error' ? 'error' : 'info'"
+        :icon="status === 'success' ? 'check_circle' : status === 'processing' ? 'progress_activity' : undefined"
+      >
+        {{ statusMessage }}
+      </StatusBanner>
+
+      <!-- Validation errors -->
+      <ul v-if="importErrors.length" class="list-inside list-disc space-y-1 text-sm text-error">
+        <li v-for="(err, i) in importErrors" :key="i">{{ err }}</li>
+      </ul>
+
+      <!-- Warning -->
+      <StatusBanner tone="warning">
+        Importing replaces the currently open character. Any unsaved changes to the current
+        character will be lost.
+      </StatusBanner>
     </div>
-  </Transition>
+
+    <template #footer>
+      <PressableButton variant="ghost" :disabled="status === 'processing'" @click="close">
+        Cancel
+      </PressableButton>
+      <PressableButton variant="primary" :disabled="!canConfirm" @click="confirmImport">
+        Import Character
+      </PressableButton>
+    </template>
+  </BaseModal>
 </template>
-
-<style scoped>
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: var(--color-sheet-bg);
-  padding: 2rem;
-  border-radius: 0.75rem;
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.25),
-    0 10px 10px rgba(0, 0, 0, 0.12);
-  max-height: 90vh;
-  overflow-y: auto;
-  width: 90%;
-}
-</style>
-
