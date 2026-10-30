@@ -4,7 +4,7 @@ import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSpellStore } from '@/stores/spellStore'
 import { useSpellcasting } from '@/composables/useSpellcasting'
-import { renderMarkdown } from '@/utils/markdown'
+import ExpandableText from '@/components/ui/ExpandableText.vue'
 import { generateQrSvg } from '@/utils/qrCode'
 import * as DND_RULES from '@/data/rules'
 
@@ -436,10 +436,13 @@ function formatSpellLevel(level: number) {
           <header class="flex justify-between items-baseline border-b border-black mb-2 pb-1">
             <h3 class="font-headline-md text-headline-md uppercase text-sm text-black">{{ feat.title }}</h3>
           </header>
-          <div
-            class="appendix-markdown text-xs leading-relaxed whitespace-pre-wrap text-black"
-            v-html="renderMarkdown(feat.desc)"
-          ></div>
+          <ExpandableText
+            :text="feat.desc"
+            markdown
+            :collapsible="false"
+            class="appendix-markdown"
+            text-class="text-xs leading-relaxed whitespace-pre-wrap text-black"
+          />
         </article>
 
         <article
@@ -453,10 +456,13 @@ function formatSpellLevel(level: number) {
               {{ formatSpellLevel(spell.level) }}<span v-if="spell.school"> • {{ spell.school }}</span>
             </span>
           </header>
-          <div
-            class="appendix-markdown text-xs leading-relaxed whitespace-pre-wrap text-black"
-            v-html="renderMarkdown(spell.desc)"
-          ></div>
+          <ExpandableText
+            :text="spell.desc"
+            markdown
+            :collapsible="false"
+            class="appendix-markdown"
+            text-class="text-xs leading-relaxed whitespace-pre-wrap text-black"
+          />
         </article>
       </div>
     </main>
@@ -466,9 +472,10 @@ function formatSpellLevel(level: number) {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
 
-/* Markdown-rendered appendix content (#215). Tailwind's preflight strips
-   list styles, so restore them for print. :deep() is required because v-html
-   content does not receive the scoped data attribute. */
+/* Markdown-rendered appendix content (#215), rendered by ExpandableText
+   (#224). Use plain print bullets instead of the on-screen .markdown-content
+   dot treatment. :deep() is required because the rendered markup does not
+   receive the scoped data attribute. */
 .appendix-markdown :deep(p) {
   margin: 0.25rem 0;
 }
@@ -482,6 +489,14 @@ function formatSpellLevel(level: number) {
 
 .appendix-markdown :deep(ol) {
   list-style: decimal;
+}
+
+.appendix-markdown :deep(li) {
+  padding-left: 0;
+}
+
+.appendix-markdown :deep(li)::before {
+  content: none;
 }
 
 /* Share QR code. The qrcode library returns an <svg> string injected via

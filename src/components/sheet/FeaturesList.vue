@@ -8,7 +8,6 @@ import draggable from 'vuedraggable'
 import type { CharacterFeature } from '@/types/character'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
-import { renderMarkdown } from '@/utils/markdown'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
@@ -384,10 +383,7 @@ watch(
                 v-show="expandedFeatures.has(feature.title)"
                 class="pl-7 pt-2 font-body-md text-body-md text-on-surface-variant leading-relaxed"
               >
-                <div
-                  class="markdown-content"
-                  v-html="renderMarkdown(feature.desc)"
-                ></div>
+                <ExpandableText :text="feature.desc" markdown :collapsible="false" />
               </div>
             </div>
           </div>

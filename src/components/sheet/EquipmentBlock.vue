@@ -2,7 +2,7 @@
 import { useCharacterStore } from '@/stores/character'
 import { useInventory } from '@/composables/useInventory'
 import { gearTypeToIcon } from '@/utils/gearTypeToIcon'
-import { renderMarkdown } from '@/utils/markdown'
+import ExpandableText from '@/components/ui/ExpandableText.vue'
 import type { GearType } from '@/types/equipment'
 
 const store = useCharacterStore()
@@ -279,10 +279,12 @@ const gearTypeOptions: GearType[] = [
                 }}</span>
               </div>
             </div>
-            <div
-              class="font-body-md text-body-md opacity-90 markdown-content"
-              v-html="renderMarkdown(gear.description || 'No description')"
-            ></div>
+            <ExpandableText
+              :text="gear.description || 'No description'"
+              markdown
+              :collapsible="false"
+              text-class="font-body-md text-body-md opacity-90"
+            />
           </template>
         </div>
       </div>
