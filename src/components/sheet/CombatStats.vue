@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useCombat } from '@/composables/useCombat'
+import type { RollMode } from '@/domain'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import UsageTracker from '@/components/ui/UsageTracker.vue'
@@ -10,7 +11,7 @@ import RestActions from '@/components/sheet/RestActions.vue'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
-const { clampCurrentHp, isDowned, hitDie, hitDiceTotal, hitDiceRemaining, takeDamage, heal } =
+const { initiativeMod, clampCurrentHp, isDowned, hitDie, hitDiceTotal, hitDiceRemaining, takeDamage, heal } =
   useCombat()
 
 const amount = ref<number | null>(null)
@@ -22,6 +23,35 @@ function applyAmount(kind: 'damage' | 'heal'): void {
   else heal(n)
   amount.value = null
 }
+
+const rollModes: { value: RollMode; label: string }[] = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'advantage', label: 'Adv' },
+  { value: 'disadvantage', label: 'Dis' },
+]
+const rollMode = ref<RollMode>('normal')
+const initiativePulsing = ref(false)
+
+function rollInitiative(): void {
+  store.rollInitiative(rollMode.value)
+  initiativePulsing.value = false
+  requestAnimationFrame(() => {
+    initiativePulsing.value = true
+  })
+}
+
+function onInitiativeInput(e: Event): void {
+  const raw = (e.target as HTMLInputElement).value
+  store.setInitiative(raw === '' ? null : Number(raw))
+}
+
+const initiativeBreakdown = computed(() => {
+  const r = store.lastInitiativeRoll
+  if (!r) return ''
+  const dice = r.rolls.length > 1 ? `d20 (${r.rolls.join(', ')}) → ${r.kept}` : `d20 ${r.kept}`
+  const mod = r.mod === 0 ? '' : ` ${r.mod > 0 ? '+' : '−'} ${Math.abs(r.mod)}`
+  return `${dice}${mod} = ${r.total}`
+})
 
 /** Re-triggers the CSS pulse on restored values after each rest or undo. */
 const pulsing = ref(false)
@@ -176,45 +206,73 @@ watch(
         </div>
       </ElevatedCard>
 
-      <!-- Initiative & Speed -->
-      <div class="grid grid-cols-2 gap-2 col-span-2 sm:col-span-1">
-        <ElevatedCard :elevation="1">
-          <div
-            class="rounded p-3 flex flex-col items-center justify-center h-full"
+      <ElevatedCard :elevation="1" class="col-span-2 sm:col-span-1">
+        <div
+          class="rounded p-3 flex flex-col items-center justify-center h-full"
+        >
+          <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
+            >Speed</span
           >
-            <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
-              >Initiative</span
+          <input
+            v-if="store.isEditing"
+            v-model="store.currentCharacterData.combat.speed"
+            class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-on-surface p-0 pb-1"
+          />
+          <span v-else class="font-headline-md text-headline-md text-on-surface">
+            <template
+              v-for="(part, i) in store.currentCharacterData.combat.speed.split(/(ft)/)"
+              :key="i"
             >
-            <span class="font-headline-md text-headline-md text-on-surface"
-              >{{ (progression.abilityMods.dex ?? 0) >= 0 ? '+' : ''
-              }}{{ progression.abilityMods.dex ?? 0 }}</span
-            >
-          </div>
-        </ElevatedCard>
-        <ElevatedCard :elevation="1">
-          <div
-            class="rounded p-3 flex flex-col items-center justify-center h-full"
+              <span v-if="part === 'ft'" class="text-base">ft</span>
+              <template v-else>{{ part }}</template>
+            </template>
+          </span>
+        </div>
+      </ElevatedCard>
+
+      <!-- Initiative -->
+      <ElevatedCard :elevation="1" class="col-span-2">
+        <div class="rounded p-3 flex flex-col items-center gap-2">
+          <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
+            >Initiative</span
           >
-            <span class="font-label-md text-label-md text-on-surface-variant text-[10px] uppercase select-none"
-              >Speed</span
-            >
+          <div class="flex items-center gap-3">
             <input
-              v-if="store.isEditing"
-              v-model="store.currentCharacterData.combat.speed"
-              class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-on-surface p-0 pb-1"
+              :value="store.currentCharacterData.combat.initiative ?? ''"
+              :class="{ 'rest-pulse': initiativePulsing }"
+              type="number"
+              inputmode="numeric"
+              placeholder="—"
+              aria-label="Initiative"
+              data-testid="initiative-value"
+              class="w-20 bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-headline-md text-on-surface p-0 pb-1"
+              @change="onInitiativeInput"
             />
-            <span v-else class="font-headline-md text-headline-md text-on-surface">
-              <template
-                v-for="(part, i) in store.currentCharacterData.combat.speed.split(/(ft)/)"
-                :key="i"
-              >
-                <span v-if="part === 'ft'" class="text-base">ft</span>
-                <template v-else>{{ part }}</template>
-              </template>
-            </span>
+            <span class="font-body-md text-body-md text-on-surface-variant select-none" data-testid="initiative-mod"
+              >{{ initiativeMod >= 0 ? '+' : '' }}{{ initiativeMod }} mod</span
+            >
+            <IconButton icon="casino" label="Roll initiative" data-testid="initiative-roll" @click="rollInitiative" />
           </div>
-        </ElevatedCard>
-      </div>
+          <div class="flex gap-1" role="radiogroup" aria-label="Initiative roll mode">
+            <button
+              v-for="m in rollModes"
+              :key="m.value"
+              type="button"
+              role="radio"
+              :aria-checked="rollMode === m.value"
+              :data-testid="`initiative-mode-${m.value}`"
+              class="min-h-9 px-3 rounded border font-label-md text-label-md select-none"
+              :class="rollMode === m.value ? 'bg-primary-container text-primary border-primary' : 'border-outline-variant text-on-surface-variant'"
+              @click="rollMode = m.value"
+            >
+              {{ m.label }}
+            </button>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant min-h-5" aria-live="polite" data-testid="initiative-breakdown">
+            {{ initiativeBreakdown }}
+          </p>
+        </div>
+      </ElevatedCard>
     </div>
     <RestActions />
   </section>

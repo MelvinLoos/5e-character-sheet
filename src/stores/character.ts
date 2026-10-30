@@ -10,7 +10,14 @@ import {
   getSpellcastingAbility,
 } from '@/domain'
 import type { CharacterData, RestContext } from '@/domain'
-import { applyShortRest, applyLongRest, cloneCharacter } from '@/domain'
+import type { InitiativeRoll, RollMode } from '@/domain'
+import {
+  applyShortRest,
+  applyLongRest,
+  cloneCharacter,
+  rollInitiative as rollInitiativeDice,
+  resetInitiativeFeatures,
+} from '@/domain'
 import { useProgressionStore } from './progression'
 
 import {
@@ -75,6 +82,8 @@ export const useCharacterStore = defineStore('character', () => {
   const lastRestKind = ref<'short' | 'long' | null>(null)
   /** Bumped on every rest/undo so the sheet can pulse the restored values. */
   const lastRestAt = ref(0)
+  /** Breakdown of the most recent initiative roll (not persisted). */
+  const lastInitiativeRoll = ref<InitiativeRoll | null>(null)
 
   // --- COMPOSABLES (extracted state) ---
   const modals = useModals()
@@ -722,6 +731,26 @@ export const useCharacterStore = defineStore('character', () => {
     lastRestKind.value = null
   }
 
+  // --- Initiative ---
+
+  /** Roll d20 + DEX mod, store it and refresh features that reset on Initiative. */
+  function rollInitiative(mode: RollMode = 'normal'): void {
+    if (!currentCharacterData.value) return
+    const roll = rollInitiativeDice(useProgressionStore().initiativeMod, mode)
+    currentCharacterData.value.combat.initiative = roll.total
+    currentCharacterData.value.features = resetInitiativeFeatures(currentCharacterData.value).features
+    lastInitiativeRoll.value = roll
+  }
+
+  /** Manual entry; does not reset features (only rolling does). */
+  function setInitiative(value: number | null): void {
+    if (!currentCharacterData.value) return
+    const n = Number(value)
+    if (value === null || !Number.isFinite(n)) delete currentCharacterData.value.combat.initiative
+    else currentCharacterData.value.combat.initiative = Math.trunc(n)
+    lastInitiativeRoll.value = null
+  }
+
   // --- Starting Equipment Actions (delegates to equipment wizard composable) ---
 
   /** Wraps equipmentWizard.finalizeEquipment to maintain backward-compatible API. */
@@ -775,6 +804,7 @@ export const useCharacterStore = defineStore('character', () => {
     restUndoSnapshot,
     lastRestKind,
     lastRestAt,
+    lastInitiativeRoll,
     // Modal state (backward-compatible — new code should use useModals())
     isLoading: modals.isLoading,
     loadingText: modals.loadingText,
@@ -819,6 +849,8 @@ export const useCharacterStore = defineStore('character', () => {
     longRest,
     undoRest,
     clearRestUndo,
+    rollInitiative,
+    setInitiative,
     // Getters
     displaySpeciesName,
     // Modals

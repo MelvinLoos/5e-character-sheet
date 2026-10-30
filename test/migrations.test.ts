@@ -205,3 +205,17 @@ describe('rest tracking backfill', () => {
     expect(migrated.combat.death_saves?.successes).toBe(1)
   })
 })
+
+describe('initiative sanitising', () => {
+  const base = { ac: 10, isAcOverride: false, hp_max: 12, speed: '30ft' }
+  it('keeps a valid initiative', () => {
+    expect(migrateCharacterData({ combat: { ...base, initiative: 15 } }).combat.initiative).toBe(15)
+  })
+  it('leaves initiative unset on legacy data', () => {
+    expect(migrateCharacterData({ combat: base }).combat.initiative).toBeUndefined()
+  })
+  it('drops a non-numeric initiative', () => {
+    const c = migrateCharacterData({ combat: { ...base, initiative: 'abc' } })
+    expect(c.combat.initiative).toBeUndefined()
+  })
+})

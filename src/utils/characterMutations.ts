@@ -151,6 +151,9 @@ export function migrateCharacterData(data: unknown): CharacterData {
     if (!combat.death_saves) {
       combat.death_saves = { successes: 0, failures: 0 }
     }
+    if (combat.initiative !== undefined && !Number.isFinite(combat.initiative)) {
+      delete combat.initiative
+    }
   }
 
   // Ensure attacks

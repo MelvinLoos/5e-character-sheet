@@ -130,6 +130,8 @@ export interface CombatStats {
   hit_dice_used?: number
   /** Death saving throw tallies (0-3 each); reset by healing and long rests. */
   death_saves?: { successes: number; failures: number }
+  /** Last rolled or manually entered initiative; unset until the first roll. */
+  initiative?: number
   speed: string
 }
 

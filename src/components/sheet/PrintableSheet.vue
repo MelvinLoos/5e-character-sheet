@@ -230,6 +230,12 @@ function formatSpellLevel(level: number) {
                 <span class="text-2xl font-headline-lg text-headline-lg text-black">
                   {{ progression.initiativeMod >= 0 ? '+' : '' }}{{ progression.initiativeMod }}
                 </span>
+                <span
+                  v-if="store.currentCharacterData.combat.initiative !== undefined"
+                  class="text-[11px] block text-black"
+                  data-testid="print-initiative-rolled"
+                  >Rolled: {{ store.currentCharacterData.combat.initiative }}</span
+                >
               </div>
               <div class="border border-black p-1 bg-white">
                 <span class="text-[11px] font-bold block uppercase text-black">Speed</span>

@@ -78,7 +78,7 @@ export function rollHitDiceHealing(
   return total
 }
 
-function resetMatches(feature: CharacterFeature, resets: string[]): boolean {
+export function resetMatches(feature: CharacterFeature, resets: string[]): boolean {
   const reset = feature.resource?.reset ?? (feature.uses?.per ? legacyReset(feature.uses.per) : '')
   return resets.some((r) => r.toLowerCase() === reset.toLowerCase())
 }
@@ -88,11 +88,12 @@ function legacyReset(per: string): string {
   if (p.includes('short')) return 'Short Rest'
   if (p.includes('long')) return 'Long Rest'
   if (p.includes('dawn')) return 'Dawn'
+  if (p.includes('initiative')) return 'Initiative'
   if (p.includes('day')) return 'Day'
   return ''
 }
 
-function featuresToReset(data: CharacterData, resets: string[]): CharacterFeature[] {
+export function featuresToReset(data: CharacterData, resets: string[]): CharacterFeature[] {
   return data.features.filter((f) => (f.used ?? 0) > 0 && resetMatches(f, resets))
 }
 

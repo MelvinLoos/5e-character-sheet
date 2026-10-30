@@ -123,6 +123,7 @@
         "hp_max": { "type": "number" },
         "hp_current": { "type": "number" },
         "hp_temp": { "type": "number", "default": 0 },
+        "initiative": { "type": "number" },
         "hit_dice_used": { "type": "number", "default": 0 },
         "death_saves": {
           "type": "object",
