@@ -9,6 +9,7 @@ Welcome! This document outlines the architectural patterns, state management rul
 We maintain a strict separation between business logic, third-party infrastructure, and UI presentation:
 
 - `src/domain/`: Core D&D rules, schema validation, and local library persistence (`characterService.ts`, `schemaService.ts`). Import using `import { ... } from '@/domain'`.
+- `src/data/`: Static rules catalogs, one module per catalog (`classes.ts`, `species.ts`, `backgrounds.ts`, `feats.ts`, `progressions.ts`, …). `@/data/rules` is a thin re-export barrel of all of them. Rules *functions* (`getEffectiveLevel`, `getSpellcastingAbility`) live in `src/domain/rulesService.ts`, not here.
 - `src/infra/`: External third-party integrations, API clients, and network communication (`aiService.ts`, `apiService.ts`, `sharingService.ts`). Import using `import { ... } from '@/infra'`.
 - `src/stores/`: Pinia state stores. Divided into single-responsibility domain stores.
 - `src/composables/`: Reusable Vue 3 composables containing stateless D&D domain math (`useSkills`, `useCombat`, `useSpellcasting`, `useInventory`).

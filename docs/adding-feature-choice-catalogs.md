@@ -4,7 +4,7 @@ This guide explains how to add a "choose N from catalog" feature choice to a cla
 
 ## Overview
 
-Feature choices are defined in `src/data/rules.ts` on the `featureChoices` array of a `ClassData` entry. They provide a structured way for players to select traits from a curated catalog, with support for:
+Feature choices are defined in `src/data/classes.ts` on the `featureChoices` array of a `ClassData` entry. They provide a structured way for players to select traits from a curated catalog, with support for:
 
 - **Tier scaling** — the number of choices increases at higher renown tiers
 - **Prerequisites** — simple string-based gating (e.g. `"Warlock:level:1"`)
@@ -131,8 +131,8 @@ it('has MyChoice featureChoice with N options', () => {
 
 ## Reference Implementation
 
-- **Fighting Style** (Fighter): `src/data/rules.ts` lines 485-533 — simplest example with 3 options
-- **Eldritch Invocations** (Warlock): `src/data/rules.ts` lines 931-1021 — full example with 10 options, tier scaling, and prerequisites
+- **Fighting Style** (Fighter): `src/data/classes.ts`, choice id `fighting-style` — simplest example with 3 options
+- **Eldritch Invocations** (Warlock): `src/data/classes.ts`, choice id `eldritch-invocations` — full example with options, tier scaling, and prerequisites
 
 ## Type Definitions
 
