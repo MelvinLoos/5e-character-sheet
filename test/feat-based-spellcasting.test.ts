@@ -8,12 +8,10 @@ import { createBlankCharacter } from '@/domain'
 import { applyAllChanges, migrateCharacterData } from '@/utils/characterMutations'
 import { useSpellcasting } from '@/composables/useSpellcasting'
 import type { CharacterData, CharacterFeature } from '@/types/character'
-import {
-  CLASS_SPELLCASTING_FEATS,
-  FEATS,
-  SPELL_SLOT_PROGRESSION,
-  getEffectiveLevel,
-} from '@/data/rules'
+import { CLASS_SPELLCASTING_FEATS } from '@/data/classSpellcasting'
+import { FEATS } from '@/data/feats'
+import { SPELL_SLOT_PROGRESSION } from '@/data/progressions'
+import { getEffectiveLevel } from '@/domain'
 import Elara from '../characters/Elara.json'
 
 // ---------------------------------------------------------------------------

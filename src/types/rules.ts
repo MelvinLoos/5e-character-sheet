@@ -1,5 +1,5 @@
 /**
- * Canonical rules-data interfaces used by src/data/rules.ts.
+ * Canonical rules-data interfaces used by the src/data/ catalog modules.
  * Import from '@/types/rules'.
  */
 

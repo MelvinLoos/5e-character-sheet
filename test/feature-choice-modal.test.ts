@@ -7,7 +7,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, afterEach } from 'vitest'
 import FeatureChoiceModal from '../src/components/modals/FeatureChoiceModal.vue'
-import { CLASSES } from '../src/data/rules'
+import { CLASSES } from '../src/data/classes'
 import type { FeatureChoice } from '../src/types/rules'
 
 const warlockInvocations: FeatureChoice = CLASSES.Warlock!.featureChoices![0]

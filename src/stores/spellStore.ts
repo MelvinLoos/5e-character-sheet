@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useCharacterStore } from './character'
 import { useProgressionStore } from './progression'
-import { getSpellcastingAbility } from '@/data/rules'
-import { hasSpellcasting } from '@/domain'
+import { hasSpellcasting, getSpellcastingAbility } from '@/domain'
 import type { CharacterFeature } from '@/types/character'
 
 /**

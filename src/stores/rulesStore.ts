@@ -1,13 +1,9 @@
 import { defineStore } from 'pinia'
-import {
-  ABILITIES,
-  SKILLS,
-  PROFICIENCY_BONUS_PROGRESSION,
-  SPELL_SLOT_PROGRESSION,
-  CLASSES,
-  SPECIES,
-  BACKGROUNDS,
-} from '@/data/rules'
+import { ABILITIES, SKILLS } from '@/data/constants'
+import { PROFICIENCY_BONUS_PROGRESSION, SPELL_SLOT_PROGRESSION } from '@/data/progressions'
+import { CLASSES } from '@/data/classes'
+import { SPECIES } from '@/data/species'
+import { BACKGROUNDS } from '@/data/backgrounds'
 import { logger } from '@/utils/logger'
 import { get, set } from 'idb-keyval'
 

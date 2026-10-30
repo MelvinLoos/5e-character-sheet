@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SPELL_SLOT_PROGRESSION } from '@/data/rules'
+import { SPELL_SLOT_PROGRESSION } from '@/data/progressions'
 import {
   computeSpellSlots,
   computeClassSpellSlots,

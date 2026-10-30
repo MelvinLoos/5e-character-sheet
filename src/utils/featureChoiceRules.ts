@@ -1,4 +1,5 @@
 import * as DND_RULES from '@/data/rules'
+import { getEffectiveLevel } from '@/domain'
 import type { FeatureChoice } from '@/types/rules'
 
 /**
@@ -41,7 +42,7 @@ export function effectiveMaxCountForChoice(
     return fc.scalesPerTier ? fc.count + (tier - 1) : fc.count
   }
 
-  const level = DND_RULES.getEffectiveLevel(tier)
+  const level = getEffectiveLevel(tier)
   const levels = Object.keys(fc.count).map(Number).sort((a, b) => a - b)
   let max = levels[0] !== undefined ? (fc.count[levels[0]] ?? 0) : 0
   for (const lvl of levels) {
