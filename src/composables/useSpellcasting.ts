@@ -46,6 +46,7 @@ export function useSpellcasting(
 
   const showSpellLibrary: Ref<boolean> = ref(false)
   const searchFilter: Ref<string> = ref('')
+  const librarySearchFilter: Ref<string> = ref('')
   const filterByLevel: Ref<number | null> = ref(null)
 
   // ---------------------------------------------------------------------------
@@ -257,8 +258,8 @@ export function useSpellcasting(
     })
 
     // Search filter
-    if (searchFilter.value.trim()) {
-      const search = searchFilter.value.toLowerCase()
+    if (librarySearchFilter.value.trim()) {
+      const search = librarySearchFilter.value.toLowerCase()
       filtered = filtered.filter(
         (s) =>
           s.name.toLowerCase().includes(search) ||
@@ -301,7 +302,7 @@ export function useSpellcasting(
   function toggleSpellLibrary(): void {
     showSpellLibrary.value = !showSpellLibrary.value
     if (showSpellLibrary.value) {
-      searchFilter.value = ''
+      librarySearchFilter.value = ''
       filterByLevel.value = null
     }
   }
@@ -336,7 +337,7 @@ export function useSpellcasting(
   }
 
   function clearFilters(): void {
-    searchFilter.value = ''
+    librarySearchFilter.value = ''
     filterByLevel.value = null
   }
 
@@ -344,6 +345,7 @@ export function useSpellcasting(
     // UI state
     showSpellLibrary,
     searchFilter,
+    librarySearchFilter,
     filterByLevel,
     spellSortMode,
     sortedSpells,

@@ -225,7 +225,7 @@ describe('PrintableSheet (component integration)', () => {
     expect(wrapper.text()).toContain('+12 more')
   })
 
-  it('applies the fixed A4 page class to every rendered page', () => {
+  it('applies the fixed A4 page class to the character pages', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()
     character.features = [{ title: 'Alert', desc: 'You gain a +5 bonus to initiative.' }]
@@ -235,12 +235,33 @@ describe('PrintableSheet (component integration)', () => {
     const pages = wrapper.findAll('.a4-page')
 
     expect(pages.length).toBeGreaterThan(0)
-    pages.forEach((page) => {
-      expect(page.classes()).toContain('a4-page--fixed')
-    })
+    pages
+      .filter((page) => !page.classes().includes('a4-page--flow'))
+      .forEach((page) => {
+        expect(page.classes()).toContain('a4-page--fixed')
+      })
   })
 
-  it('clamps every page to a strict A4 height with overflow hidden', () => {
+  it('lets the appendix grow with its content instead of clipping it', () => {
+    const store = useCharacterStore()
+    const character = createBaseCharacter()
+    character.features = Array.from({ length: 12 }, (_, i) => ({
+      title: `Feature ${i + 1}`,
+      desc: 'A long description. '.repeat(40),
+    }))
+    store.currentCharacterData = character
+
+    const wrapper = mount(PrintableSheet)
+    const appendix = wrapper.find('.a4-page--flow')
+
+    expect(appendix.exists()).toBe(true)
+    expect(appendix.classes()).not.toContain('overflow-hidden')
+    const style = appendix.attributes('style') || ''
+    expect(style).toMatch(/min-height:\s*\d+(\.\d+)?mm/)
+    expect(style).not.toMatch(/(?<!min-)height:\s*\d/)
+  })
+
+  it('clamps every fixed page to a strict A4 height with overflow hidden', () => {
     const store = useCharacterStore()
     const character = createBaseCharacter()
     character.features = [{ title: 'Alert', desc: 'You gain a +5 bonus to initiative.' }]

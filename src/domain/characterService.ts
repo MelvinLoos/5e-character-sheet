@@ -124,6 +124,7 @@ export const createBlankCharacter = (): CharacterData => {
       isAcOverride: false,
       hp_max: 1,
       hp_current: 1,
+      hp_temp: 0,
       speed: defaultSpeciesData?.speed || '30ft',
     },
     attacks: [],

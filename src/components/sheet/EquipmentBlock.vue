@@ -6,7 +6,6 @@ import ExpandableText from '@/components/ui/ExpandableText.vue'
 import type { GearType } from '@/types/equipment'
 
 const store = useCharacterStore()
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, addConsumable, removeConsumable, getGearBgClass } = useInventory()
 
 // Canonical gear type values for the edit-mode dropdown
@@ -158,10 +157,15 @@ const gearTypeOptions: GearType[] = [
         class="h-4 bg-surface-container-highest rounded-full overflow-hidden border border-[#1A3C40] flex"
       >
         <div
-          class="h-full bg-tertiary transition-all duration-300"
-          :style="{ width: `\${slotPercentage}%` }"
+          class="h-full transition-all duration-300"
+          :class="usedSlots > maxSlots ? 'bg-error' : 'bg-tertiary'"
+          :style="{ width: `${slotPercentage}%` }"
+          role="progressbar"
+          aria-label="Inventory slots used"
+          :aria-valuenow="usedSlots"
+          aria-valuemin="0"
+          :aria-valuemax="maxSlots"
         ></div>
-        <div class="h-full" :style="{ width: `\${100 - slotPercentage}%` }"></div>
       </div>
       <p class="font-body-md text-body-md text-on-surface-variant mt-2 text-sm italic">
         Slots determined by current Strength Score (min 15).

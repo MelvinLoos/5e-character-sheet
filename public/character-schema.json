@@ -122,6 +122,7 @@
         "isAcOverride": { "type": "boolean", "default": false },
         "hp_max": { "type": "number" },
         "hp_current": { "type": "number" },
+        "hp_temp": { "type": "number", "default": 0 },
         "speed": { "type": "string", "default": "30ft" }
       },
       "required": ["ac", "speed"]

@@ -124,6 +124,8 @@ export interface CombatStats {
   isAcOverride: boolean
   hp_max: number
   hp_current?: number
+  /** Temporary hit points; absorbed before hp_current. */
+  hp_temp?: number
   speed: string
 }
 
