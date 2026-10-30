@@ -1,13 +1,39 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
-import * as DND_RULES from '@/data/rules'
+import { ref, watch } from 'vue'
 import { useCombat } from '@/composables/useCombat'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
+import PressableButton from '@/components/ui/PressableButton.vue'
+import UsageTracker from '@/components/ui/UsageTracker.vue'
+import RestActions from '@/components/sheet/RestActions.vue'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
-const { clampCurrentHp } = useCombat()
+const { clampCurrentHp, isDowned, hitDie, hitDiceTotal, hitDiceRemaining, takeDamage, heal } =
+  useCombat()
+
+const amount = ref<number | null>(null)
+
+function applyAmount(kind: 'damage' | 'heal'): void {
+  const n = Math.floor(Number(amount.value))
+  if (!Number.isFinite(n) || n <= 0) return
+  if (kind === 'damage') takeDamage(n)
+  else heal(n)
+  amount.value = null
+}
+
+/** Re-triggers the CSS pulse on restored values after each rest or undo. */
+const pulsing = ref(false)
+watch(
+  () => store.lastRestAt,
+  () => {
+    pulsing.value = false
+    requestAnimationFrame(() => {
+      pulsing.value = true
+    })
+  },
+)
 </script>
 
 <template>
@@ -71,7 +97,11 @@ const { clampCurrentHp } = useCombat()
           <div class="flex items-end gap-2 border-b border-surface-variant pb-2 mb-2">
             <input
               class="w-16 bg-transparent border-none text-right font-headline-lg text-headline-lg text-on-surface p-0 focus:ring-0"
+              :class="{ 'rest-pulse': pulsing }"
               type="number"
+              min="0"
+              aria-label="Current hit points"
+              data-testid="hp-current"
               v-model.number="store.currentCharacterData.combat.hp_current"
               @input="clampCurrentHp()"
             />
@@ -83,6 +113,7 @@ const { clampCurrentHp } = useCombat()
             <span class="font-label-md text-label-md text-on-surface-variant select-none">Temp</span>
             <input
               v-model.number="store.currentCharacterData.combat.hp_temp"
+              :class="{ 'rest-pulse': pulsing }"
               class="w-12 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="0"
               type="number"
@@ -90,6 +121,40 @@ const { clampCurrentHp } = useCombat()
               min="0"
               aria-label="Temporary hit points"
             />
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <input
+              v-model.number="amount"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              placeholder="Amount"
+              aria-label="Damage or healing amount"
+              data-testid="hp-amount"
+              class="min-h-11 w-20 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary"
+              @keydown.enter="applyAmount('damage')"
+            />
+            <PressableButton variant="danger" size="sm" class="min-h-11" data-testid="hp-damage" @click="applyAmount('damage')">
+              Damage
+            </PressableButton>
+            <PressableButton variant="secondary" size="sm" class="min-h-11" data-testid="hp-heal" @click="applyAmount('heal')">
+              Heal
+            </PressableButton>
+          </div>
+          <div
+            v-if="isDowned && store.currentCharacterData.combat.death_saves"
+            class="mt-3 flex flex-col gap-1 border-t border-surface-variant pt-2"
+            data-testid="death-saves"
+          >
+            <span class="font-label-md text-label-md text-error uppercase select-none">Downed — Death Saves</span>
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-label-md text-label-md text-on-surface-variant">Successes</span>
+              <UsageTracker v-model="store.currentCharacterData.combat.death_saves.successes" :total="3" label="Death save successes" />
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-label-md text-label-md text-on-surface-variant">Failures</span>
+              <UsageTracker v-model="store.currentCharacterData.combat.death_saves.failures" :total="3" label="Death save failures" />
+            </div>
           </div>
         </div>
       </ElevatedCard>
@@ -104,15 +169,12 @@ const { clampCurrentHp } = useCombat()
             ><span class="material-symbols-outlined text-sm" aria-hidden="true">casino</span> Hit Dice</span
           >
           <div class="flex items-center gap-3">
-            <div class="font-headline-md text-headline-md text-on-surface">
-              {{ progression.derivedLevel
-              }}<span class="text-on-surface-variant text-lg"
-                >d{{
-                  store.currentCharacterData.class
-                    ? DND_RULES.CLASSES[store.currentCharacterData.class]?.hitDice || 8
-                    : 8
-                }}</span
-              >
+            <div
+              class="font-headline-md text-headline-md text-on-surface"
+              :class="{ 'rest-pulse': pulsing }"
+              data-testid="hit-dice-pool"
+            >
+              {{ hitDiceRemaining }}<span class="text-on-surface-variant text-lg">/{{ hitDiceTotal }}d{{ hitDie }}</span>
             </div>
           </div>
         </div>
@@ -158,5 +220,6 @@ const { clampCurrentHp } = useCombat()
         </ElevatedCard>
       </div>
     </div>
+    <RestActions />
   </section>
 </template>

@@ -93,6 +93,27 @@ export function autoSeedAttacks(
 }
 
 /**
+ * Applies damage: temporary HP is consumed first, then current HP (floored at 0).
+ * Pure utility — no store dependency.
+ */
+export function applyDamage(
+  hp: { current: number; temp: number },
+  amount: number,
+): { current: number; temp: number } {
+  const dmg = Math.max(0, amount)
+  const temp = Math.max(0, hp.temp)
+  const absorbed = Math.min(temp, dmg)
+  return { temp: temp - absorbed, current: Math.max(0, hp.current - (dmg - absorbed)) }
+}
+
+/**
+ * Applies healing, clamped to [0, max]. Pure utility — no store dependency.
+ */
+export function applyHealing(current: number, amount: number, max: number): number {
+  return Math.min(max, Math.max(0, current + Math.max(0, amount)))
+}
+
+/**
  * Composable encapsulating D&D 5.5e combat logic.
  *
  * Extracts from AttacksList.vue and CombatStats.vue:
@@ -147,9 +168,54 @@ export function useCombat(characterStore?: ReturnType<typeof useCharacterStore>)
    */
   function clampCurrentHp(): void {
     const combat = store.currentCharacterData.combat
-    if ((combat.hp_current ?? 0) > progression.maxHp) {
+    const current = combat.hp_current ?? 0
+    if (current > progression.maxHp) {
       combat.hp_current = progression.maxHp
+    } else if (current < 0) {
+      combat.hp_current = 0
     }
+  }
+
+  /** True when the character is at 0 HP (feeds the death-save tracker). */
+  const isDowned: ComputedRef<boolean> = computed(
+    () => store.currentCharacterData.combat.hp_current === 0,
+  )
+
+  /** Hit die size for the character's class (d8 fallback). */
+  const hitDie: ComputedRef<number> = computed(() => {
+    const className = store.currentCharacterData.class
+    return (className ? DND_RULES.CLASSES[className]?.hitDice : undefined) ?? 8
+  })
+
+  /** Total Hit Dice in the pool. */
+  const hitDiceTotal: ComputedRef<number> = computed(() => progression.derivedLevel || 1)
+
+  /** Hit Dice not yet spent. */
+  const hitDiceRemaining: ComputedRef<number> = computed(() =>
+    Math.max(0, hitDiceTotal.value - (store.currentCharacterData.combat.hit_dice_used ?? 0)),
+  )
+
+  function resetDeathSaves(): void {
+    store.currentCharacterData.combat.death_saves = { successes: 0, failures: 0 }
+  }
+
+  /** Deals damage, consuming temp HP first. */
+  function takeDamage(amount: number): void {
+    const combat = store.currentCharacterData.combat
+    const next = applyDamage(
+      { current: combat.hp_current ?? progression.maxHp, temp: combat.hp_temp ?? 0 },
+      amount,
+    )
+    combat.hp_current = next.current
+    combat.hp_temp = next.temp
+  }
+
+  /** Heals up to max HP; healing from 0 HP clears death saves. */
+  function heal(amount: number): void {
+    const combat = store.currentCharacterData.combat
+    const before = combat.hp_current ?? progression.maxHp
+    combat.hp_current = applyHealing(before, amount, progression.maxHp)
+    if (before === 0 && combat.hp_current > 0) resetDeathSaves()
   }
 
   // ---------------------------------------------------------------------------
@@ -262,6 +328,12 @@ export function useCombat(characterStore?: ReturnType<typeof useCharacterStore>)
     hitDiceDisplay,
     walkingSpeed,
     clampCurrentHp,
+    isDowned,
+    hitDie,
+    hitDiceTotal,
+    hitDiceRemaining,
+    takeDamage,
+    heal,
     // Attacks
     editableAttacks,
     getAttackBonus,

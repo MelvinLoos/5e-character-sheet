@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { migrateCharacterData } from '../src/utils/characterMutations'
 import {
   migrateUsesToResource,
   migrateEquippedGearCatalogIds,
@@ -178,5 +179,29 @@ describe('migrateDescriptionHtmlToMarkdown', () => {
     const migrated = migrateDescriptionHtmlToMarkdown({ name: 'No arrays' })
 
     expect(migrated).toEqual({ name: 'No arrays' })
+  })
+})
+
+describe('rest tracking backfill', () => {
+  it('adds hit_dice_used and death_saves to legacy combat data', () => {
+    const migrated = migrateCharacterData({
+      combat: { ac: 10, isAcOverride: false, hp_max: 12, speed: '30ft' },
+    })
+    expect(migrated.combat.hit_dice_used).toBe(0)
+    expect(migrated.combat.death_saves).toEqual({ successes: 0, failures: 0 })
+  })
+  it('keeps existing values', () => {
+    const migrated = migrateCharacterData({
+      combat: {
+        ac: 10,
+        isAcOverride: false,
+        hp_max: 12,
+        hit_dice_used: 2,
+        death_saves: { successes: 1, failures: 0 },
+        speed: '30ft',
+      },
+    })
+    expect(migrated.combat.hit_dice_used).toBe(2)
+    expect(migrated.combat.death_saves?.successes).toBe(1)
   })
 })

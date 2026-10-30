@@ -51,6 +51,8 @@ declare module 'vue' {
     ProficiencyToggle: typeof import('./components/ui/ProficiencyToggle.vue')['default']
     RenownProgression: typeof import('./components/sheet/RenownProgression.vue')['default']
     ReorderControls: typeof import('./components/ui/ReorderControls.vue')['default']
+    RestActions: typeof import('./components/sheet/RestActions.vue')['default']
+    RestConfirmationModal: typeof import('./components/modals/RestConfirmationModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SavingThrows: typeof import('./components/sheet/SavingThrows.vue')['default']
@@ -63,6 +65,7 @@ declare module 'vue' {
     SubChoiceModal: typeof import('./components/modals/SubChoiceModal.vue')['default']
     TextField: typeof import('./components/ui/TextField.vue')['default']
     ThemeToggle: typeof import('./components/ThemeToggle.vue')['default']
+    UndoToast: typeof import('./components/ui/UndoToast.vue')['default']
     UpdateNotification: typeof import('./components/UpdateNotification.vue')['default']
     UsageTracker: typeof import('./components/ui/UsageTracker.vue')['default']
   }
@@ -109,6 +112,8 @@ declare global {
   const ProficiencyToggle: typeof import('./components/ui/ProficiencyToggle.vue')['default']
   const RenownProgression: typeof import('./components/sheet/RenownProgression.vue')['default']
   const ReorderControls: typeof import('./components/ui/ReorderControls.vue')['default']
+  const RestActions: typeof import('./components/sheet/RestActions.vue')['default']
+  const RestConfirmationModal: typeof import('./components/modals/RestConfirmationModal.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
   const SavingThrows: typeof import('./components/sheet/SavingThrows.vue')['default']
@@ -121,6 +126,7 @@ declare global {
   const SubChoiceModal: typeof import('./components/modals/SubChoiceModal.vue')['default']
   const TextField: typeof import('./components/ui/TextField.vue')['default']
   const ThemeToggle: typeof import('./components/ThemeToggle.vue')['default']
+  const UndoToast: typeof import('./components/ui/UndoToast.vue')['default']
   const UpdateNotification: typeof import('./components/UpdateNotification.vue')['default']
   const UsageTracker: typeof import('./components/ui/UsageTracker.vue')['default']
 }

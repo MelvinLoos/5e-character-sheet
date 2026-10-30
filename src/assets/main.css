@@ -888,6 +888,17 @@ html {
   scroll-padding-bottom: 6rem;
 }
 
+/* Brief highlight on values changed by a rest. */
+@keyframes rest-pulse {
+  0% { background-color: color-mix(in srgb, var(--color-tertiary) 45%, transparent); }
+  100% { background-color: transparent; }
+}
+
+.rest-pulse {
+  animation: rest-pulse 1.2s ease-out;
+  border-radius: 0.25rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -898,7 +909,8 @@ html {
     scroll-behavior: auto !important;
   }
 
-  .edit-toggle-btn--active {
+  .edit-toggle-btn--active,
+  .rest-pulse {
     animation: none;
   }
 

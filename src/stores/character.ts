@@ -9,7 +9,9 @@ import {
   getEffectiveLevel,
   getSpellcastingAbility,
 } from '@/domain'
-import type { CharacterData } from '@/domain'
+import type { CharacterData, RestContext } from '@/domain'
+import { applyShortRest, applyLongRest, cloneCharacter } from '@/domain'
+import { useProgressionStore } from './progression'
 
 import {
   loadLibrary,
@@ -68,6 +70,11 @@ export const useCharacterStore = defineStore('character', () => {
   const geminiSchema = computed(() => getAiSchema())
   const isSupabaseReady = ref(false)
   const sourceCharacterId = ref<string | null>(null)
+  /** Pre-rest snapshot that undoRest() restores; cleared when the undo window closes. */
+  const restUndoSnapshot = ref<CharacterData | null>(null)
+  const lastRestKind = ref<'short' | 'long' | null>(null)
+  /** Bumped on every rest/undo so the sheet can pulse the restored values. */
+  const lastRestAt = ref(0)
 
   // --- COMPOSABLES (extracted state) ---
   const modals = useModals()
@@ -668,6 +675,53 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
   }
 
+  // --- Rest Actions ---
+
+  function buildRestContext(): RestContext {
+    const progression = useProgressionStore()
+    const className = currentCharacterData.value.class
+    const classData = className ? DND_RULES.CLASSES[className] : undefined
+    return {
+      maxHp: progression.maxHp,
+      level: progression.derivedLevel || 1,
+      hitDie: classData?.hitDice ?? 8,
+      hitDiceAverage: classData?.hitDiceAverage ?? 5,
+      conMod: progression.abilityMods.con ?? 0,
+    }
+  }
+
+  function commitRest(kind: 'short' | 'long', next: CharacterData): void {
+    restUndoSnapshot.value = cloneCharacter(currentCharacterData.value)
+    lastRestKind.value = kind
+    currentCharacterData.value = next
+    lastRestAt.value++
+  }
+
+  /** Spend Hit Dice to heal, reset Short Rest features and restore Pact Magic slots. */
+  function shortRest(options: { hitDiceSpent: number; useAverage: boolean }): void {
+    if (!currentCharacterData.value) return
+    commitRest('short', applyShortRest(currentCharacterData.value, buildRestContext(), options))
+  }
+
+  /** Restore HP, slots, half the Hit Dice and Short/Long Rest/Day/Dawn features. */
+  function longRest(): void {
+    if (!currentCharacterData.value) return
+    commitRest('long', applyLongRest(currentCharacterData.value, buildRestContext()))
+  }
+
+  function undoRest(): void {
+    if (!restUndoSnapshot.value) return
+    currentCharacterData.value = restUndoSnapshot.value
+    restUndoSnapshot.value = null
+    lastRestKind.value = null
+    lastRestAt.value++
+  }
+
+  function clearRestUndo(): void {
+    restUndoSnapshot.value = null
+    lastRestKind.value = null
+  }
+
   // --- Starting Equipment Actions (delegates to equipment wizard composable) ---
 
   /** Wraps equipmentWizard.finalizeEquipment to maintain backward-compatible API. */
@@ -718,6 +772,9 @@ export const useCharacterStore = defineStore('character', () => {
     geminiSchema,
     isSupabaseReady,
     sourceCharacterId,
+    restUndoSnapshot,
+    lastRestKind,
+    lastRestAt,
     // Modal state (backward-compatible — new code should use useModals())
     isLoading: modals.isLoading,
     loadingText: modals.loadingText,
@@ -757,6 +814,11 @@ export const useCharacterStore = defineStore('character', () => {
     applyFeatureChoice,
     applyBonusSelectionChange,
     recalculateAll,
+    buildRestContext,
+    shortRest,
+    longRest,
+    undoRest,
+    clearRestUndo,
     // Getters
     displaySpeciesName,
     // Modals
