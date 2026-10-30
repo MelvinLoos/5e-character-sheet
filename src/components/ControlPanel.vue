@@ -160,7 +160,7 @@ onUnmounted(() => {
         v-model="selectedCharacter"
       >
         <option value="" disabled class="bg-primary-container text-on-surface font-body-md text-sm">
-          Heroes Guild
+          Character Sheet
         </option>
         <option
           value="new"
@@ -184,7 +184,7 @@ onUnmounted(() => {
           </option>
         </optgroup>
       </select>
-      <p class="font-label-md text-on-surface-variant">Character Manager</p>
+      <p class="font-label-md text-on-surface-variant">Heroes Guild</p>
     </div>
 
     <!-- Edit Mode Toggle Bar (Option A) -->

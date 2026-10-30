@@ -7,7 +7,7 @@
       <!-- Header -->
       <header class="mb-8 pb-6 border-b border-outline-variant print:border-b print:border-black/20">
         <h1 class="font-display-lg text-display-lg text-tertiary print:text-black">Privacy Policy</h1>
-        <p class="font-headline-md text-headline-md text-on-surface mt-2 print:text-black">Adventurers Guild 5e Tool</p>
+        <p class="font-headline-md text-headline-md text-on-surface mt-2 print:text-black">Heroes Guild Character Sheet</p>
         <div class="flex flex-col gap-1 mt-4 font-body-md text-body-md text-on-surface-variant print:text-gray-700">
           <p><strong>Version:</strong> 1.0 (Draft)</p>
           <p><strong>Last Updated:</strong> August 6, 2026</p>
