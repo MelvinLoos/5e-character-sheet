@@ -76,6 +76,7 @@ onMounted(async () => {
     />
     <FeedbackModal :is-open="showFeedbackModal" @close="showFeedbackModal = false" />
     <DiscordUnlockReminderModal />
+    <ConfirmDialog />
 
     <MobileTabBar
       v-if="store.currentCharacterData"

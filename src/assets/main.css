@@ -425,6 +425,15 @@ html.light {
     opacity: 0;
   }
 
+  .modal-fade-enter-active,
+  .modal-fade-leave-active {
+    transition: opacity 150ms ease-out;
+  }
+  .modal-fade-enter-from,
+  .modal-fade-leave-to {
+    opacity: 0;
+  }
+
   .modal-backdrop {
     @apply fixed inset-0 w-full h-full bg-black/50 z-50 flex items-center justify-center;
   }
