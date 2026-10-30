@@ -150,6 +150,8 @@ jobs:
         run: npm run build
         env:
           VITE_POSTHOG_DISABLED: 'true'
+          # Exposes window.__hgDiceTest so the dice specs can force roll outcomes.
+          VITE_DICE_TEST_HOOK: 'true'
       - name: Run E2E tests
         run: npx playwright test --reporter=json > pw-results.json 2>pw-stderr.txt
         continue-on-error: true

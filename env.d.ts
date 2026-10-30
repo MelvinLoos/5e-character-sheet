@@ -8,6 +8,8 @@ interface ImportMetaEnv {
   readonly VITE_POSTHOG_PROJECT_TOKEN?: string
   readonly VITE_POSTHOG_HOST?: string
   readonly VITE_POSTHOG_DISABLED?: string
+  /** e2e only: exposes window.__hgDiceTest so specs can force the next roll. */
+  readonly VITE_DICE_TEST_HOOK?: string
 }
 
 interface ImportMeta {

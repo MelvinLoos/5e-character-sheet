@@ -49,6 +49,11 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        // Chromium in CI has no GPU: SwiftShader gives Playwright a WebGL
+        // context so the 3D dice engine can initialise for real.
+        launchOptions: {
+          args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
+        },
       },
     },
     {
@@ -111,6 +116,8 @@ export default defineConfig({
     env: {
       // Keep e2e runs hermetic: don't emit analytics events or require PostHog config.
       VITE_POSTHOG_DISABLED: 'true',
+      // Exposes window.__hgDiceTest so dice specs can force the next roll.
+      VITE_DICE_TEST_HOOK: 'true',
     },
   },
 })

@@ -18,6 +18,8 @@ const DiscordUnlockReminderModal = defineAsyncComponent(
   () => import('./components/modals/DiscordUnlockReminderModal.vue'),
 )
 const UpdateNotification = defineAsyncComponent(() => import('./components/UpdateNotification.vue'))
+// The 3D dice engine (~700 KB) is only pulled in when the tray is first opened.
+const DiceTray = defineAsyncComponent(() => import('./components/DiceTray.vue'))
 
 const store = useCharacterStore()
 const route = useRoute()
@@ -27,6 +29,14 @@ const showImportModal = ref(false)
 const showImportCharacterModal = ref(false)
 const showFeedbackModal = ref(false)
 const showMoreMenu = ref(false)
+const showDiceTray = ref(false)
+/** The tray is mounted on first open and never unmounted (reuses the WebGL context). */
+const diceTrayMounted = ref(false)
+
+function openDiceTray(): void {
+  diceTrayMounted.value = true
+  showDiceTray.value = true
+}
 
 onMounted(async () => {
   await useRulesStore().loadFromStorage()
@@ -101,6 +111,24 @@ onMounted(async () => {
     />
 
     <UpdateNotification class="print:hidden" />
+
+    <!-- Floating dice roller — visible whenever a character is loaded -->
+    <button
+      v-if="store.currentCharacterData && !isStandalonePage"
+      type="button"
+      class="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-tertiary text-on-tertiary shadow-elevation-3 transition-all duration-200 hover:scale-105 active:scale-90 md:bottom-6 md:right-6 print:hidden"
+      aria-label="Open dice roller"
+      title="Open dice roller"
+      data-testid="dice-fab"
+      @click="openDiceTray"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">casino</span>
+    </button>
+
+    <!-- Mounted on first open and kept alive so the WebGL context is reused. -->
+    <DiceTray v-if="diceTrayMounted" v-model:open="showDiceTray" />
+
+    <CelebrationOverlay />
 
     <!-- Viewport grain overlay — non-interactive -->
     <div
