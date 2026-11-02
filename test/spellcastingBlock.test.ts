@@ -261,3 +261,38 @@ describe('SpellcastingBlock spell card backgrounds', () => {
     expect(card.classList.contains('bg-gradient-to-br')).toBe(false)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Prepared-spell selection counter — surfaces how many of the allowed leveled
+// spells have been selected (SRD "Prepared Spells" column).
+// ---------------------------------------------------------------------------
+
+describe('SpellcastingBlock prepared-spell counter', () => {
+  it('shows the selected / limit counter for a caster', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createWizardCharacter([
+      { id: 'mm', name: 'Magic Missile', level: 1, desc: 'Auto-hit.', prepared: true },
+      { id: 'fb', name: 'Fire Bolt', level: 0, desc: 'Cantrip.', prepared: false },
+    ])
+
+    const wrapper = await mountBlock()
+
+    expect(wrapper.text()).toContain('Prepared Spells')
+    // Cantrips do not count against the limit.
+    expect(wrapper.text()).toContain('1 / 6')
+  })
+
+  it('does not render the counter for a non-caster', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = {
+      ...createBlankCharacter(),
+      class: 'Fighter',
+      features: [],
+      spells: [],
+    } as unknown as CharacterData
+
+    const wrapper = await mountBlock()
+
+    expect(wrapper.text()).not.toContain('Prepared Spells')
+  })
+})

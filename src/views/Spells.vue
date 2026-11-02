@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 
 const SpellcastingBlock = defineAsyncComponent(
   () => import('@/components/sheet/SpellcastingBlock.vue'),
 )
+
+const { badges } = useCharacterCompletion()
 </script>
 
 <template>
@@ -12,6 +15,9 @@ const SpellcastingBlock = defineAsyncComponent(
       title="Spells"
       subtitle="When you are a spellcaster here is where you decide your spells"
     />
+    <StatusBanner v-if="badges.spells" tone="error" class="md:hidden">
+      {{ badges.spells.label }}
+    </StatusBanner>
     <!-- Render the overhauled self-contained SpellcastingBlock component -->
     <SpellcastingBlock class="w-full flex-grow" />
   </div>
