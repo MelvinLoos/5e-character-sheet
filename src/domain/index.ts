@@ -1,6 +1,7 @@
 export * from './characterService'
 export * from './schemaService'
 export * from './spellSlotService'
+export * from './spellSelectionService'
 export * from './spellbookService'
 export * from './rulesService'
 export * from './restService'

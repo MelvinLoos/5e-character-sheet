@@ -13,6 +13,8 @@ import {
   createSpellFromLibrary,
   createBlankSpell,
   removeSpellById,
+  countSelectedSpells,
+  remainingSpellSelections as computeRemainingSpellSelections,
 } from '@/domain'
 import type { Ref, ComputedRef, WritableComputedRef } from 'vue'
 import type { CharacterFeature, CharacterSpell } from '@/types/character'
@@ -203,6 +205,35 @@ export function useSpellcasting(
   })
 
   // ---------------------------------------------------------------------------
+  // Prepared Spell Selection
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Maximum number of level 1+ spells the character may prepare, per the 2024
+   * SRD "Prepared Spells" column. `null` for non-casters.
+   */
+  const preparedSpellLimit: ComputedRef<number | null> = computed(
+    () => progression.preparedSpellLimit,
+  )
+
+  /** Number of leveled spells currently on the sheet (cantrips excluded). */
+  const selectedSpellCount: ComputedRef<number> = computed(() =>
+    countSelectedSpells(store.currentCharacterData?.spells),
+  )
+
+  /**
+   * Number of level 1+ spell selections still owed (0 when the limit is reached
+   * or the character has no prepared-spell limit).
+   */
+  const remainingSpellSelections: ComputedRef<number> = computed(() =>
+    computeRemainingSpellSelections(
+      store.currentCharacterData?.class,
+      progression.derivedLevel,
+      store.currentCharacterData?.spells,
+    ),
+  )
+
+  // ---------------------------------------------------------------------------
   // Spellbook
   // ---------------------------------------------------------------------------
 
@@ -361,6 +392,10 @@ export function useSpellcasting(
     slotsSpent,
     getSpent,
     setSpent,
+    // Prepared spell selection
+    preparedSpellLimit,
+    selectedSpellCount,
+    remainingSpellSelections,
     // Spellbook
     editableSpells,
     characterClass,

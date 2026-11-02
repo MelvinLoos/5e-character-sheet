@@ -25,6 +25,9 @@ const {
   maxSpellSlotLevel,
   getSpent,
   setSpent,
+  preparedSpellLimit,
+  selectedSpellCount,
+  remainingSpellSelections,
   editableSpells,
   characterClass,
   librarySpells,
@@ -38,6 +41,9 @@ const {
   clearFilters,
   formatLevel,
 } = useSpellcasting()
+
+/** True once the character has selected as many leveled spells as allowed. */
+const selectionComplete = computed(() => remainingSpellSelections.value === 0)
 
 /** Keyboard / single-pointer alternative to dragging a spell (manual sort only). */
 function moveSpell(index: number, delta: -1 | 1): void {
@@ -89,6 +95,29 @@ const allowedLevels = computed(() => {
               </ElevatedCard>
             </div>
           </div>
+        </div>
+
+        <!-- Prepared-spell selection progress (SRD "Prepared Spells" limit) -->
+        <div
+          v-if="preparedSpellLimit !== null"
+          class="flex items-center justify-between gap-4 mb-6 rounded-lg border px-4 py-2"
+          :class="selectionComplete ? 'border-tertiary/40 bg-tertiary/5' : 'border-error/40 bg-error/5'"
+        >
+          <span
+            class="flex items-center gap-2 font-label-md text-label-md font-bold uppercase tracking-wider select-none"
+            :class="selectionComplete ? 'text-tertiary' : 'text-error'"
+          >
+            <span class="material-symbols-outlined text-lg" aria-hidden="true">
+              {{ selectionComplete ? 'check_circle' : 'info' }}
+            </span>
+            Prepared Spells
+          </span>
+          <span class="font-bold" :class="selectionComplete ? 'text-tertiary' : 'text-error'">
+            {{ selectedSpellCount }} / {{ preparedSpellLimit }}
+            <span v-if="!selectionComplete" class="font-normal opacity-80">
+              ({{ remainingSpellSelections }} to go)
+            </span>
+          </span>
         </div>
 
         <div class="flex flex-col md:flex-row gap-4 mb-6 items-center">

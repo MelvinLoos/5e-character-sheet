@@ -2,11 +2,12 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSkills } from '@/composables/useSkills'
+import { hasSpellcasting, remainingSpellSelections } from '@/domain'
 import {
   eligibleFeatureChoices,
   effectiveMaxCountForChoice,
 } from '@/utils/featureChoiceRules'
-import type { CharacterData } from '@/types/character'
+import type { CharacterData, CharacterFeature } from '@/types/character'
 
 /**
  * Completion badges surfaced on the navigation.
@@ -80,6 +81,22 @@ export function useCharacterCompletion() {
       (char.gold ?? 0) === 0
     if (char.class && char.background && noEquipment) {
       result.inventory = { type: 'alert', label: 'Choose starting equipment' }
+    }
+
+    // Spells — remaining prepared-spell selections for spellcasters
+    if (hasSpellcasting((char.features || []) as CharacterFeature[])) {
+      const spellsRemaining = remainingSpellSelections(
+        char.class,
+        progression.derivedLevel,
+        char.spells,
+      )
+      if (spellsRemaining > 0) {
+        result.spells = {
+          type: 'count',
+          count: spellsRemaining,
+          label: `${spellsRemaining} spell${spellsRemaining === 1 ? '' : 's'} to select`,
+        }
+      }
     }
 
     return result

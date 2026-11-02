@@ -6,6 +6,7 @@ import {
   getMod,
   pointBuyCosts,
   computeSpellSlots,
+  computePreparedSpellLimit,
   hasSpellcasting,
   getEffectiveLevel,
   getSpellcastingAbility,
@@ -133,6 +134,22 @@ export const useProgressionStore = defineStore('progression', () => {
     return computeSpellSlots(features, derivedLevel.value)
   })
 
+  /**
+   * Maximum number of level 1+ spells the character may prepare, per the 2024
+   * SRD "Prepared Spells" column for their class. `null` for non-casters.
+   *
+   * Cantrips never count against this limit. Feat-granted spells (e.g. Magic
+   * Initiate) are also not distinguished here, so all leveled spells on the
+   * sheet are counted — this is a soft guide, not a hard cap.
+   */
+  const preparedSpellLimit = computed<number | null>(() => {
+    if (!characterStore.currentCharacterData) return null
+    return computePreparedSpellLimit(
+      characterStore.currentCharacterData.class,
+      derivedLevel.value,
+    )
+  })
+
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
@@ -200,6 +217,7 @@ export const useProgressionStore = defineStore('progression', () => {
     initiativeMod,
     walkingSpeed,
     spellSlots,
+    preparedSpellLimit,
     pointBuyPointsUsed,
     pointBuyPointsRemaining,
     pointBuyCostForScore,
