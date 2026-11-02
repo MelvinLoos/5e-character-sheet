@@ -203,6 +203,7 @@ const allowedLevels = computed(() => {
           <template #item="{ element: spell, index }">
             <ElevatedCard
               :elevation="spell.prepared ? 3 : 1"
+              :surface="false"
               :class="[
                 'rounded border p-4 relative overflow-hidden transition-all group duration-200',
                 spell.prepared ? 'parchment-bg border-secondary-container' : 'bg-primary-container border-outline-variant',
@@ -323,6 +324,7 @@ const allowedLevels = computed(() => {
             v-for="spell in filteredActiveSpells"
             :key="spell.id"
             :elevation="spell.prepared ? 3 : 1"
+            :surface="false"
             :class="[
               'rounded border p-4 relative overflow-hidden transition-all group duration-200',
               spell.prepared ? 'parchment-bg border-secondary-container' : 'bg-primary-container border-outline-variant',
@@ -550,8 +552,10 @@ const allowedLevels = computed(() => {
 }
 
 .parchment-bg {
-  background-color: var(--color-surface-container-high);
-  color: var(--color-on-background);
+  /* Fixed parchment "paper" — deliberately theme-independent so the dark
+     secondary-fixed text stays legible on it in both themes. */
+  background-color: #e8e2d4;
+  color: #15130b;
 }
 
 /* Custom scrollbar for library — gold thumb matching the Heroes Guild tertiary accent */
