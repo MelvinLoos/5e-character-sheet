@@ -4,6 +4,7 @@ import {
   migrateUsesToResource,
   migrateEquippedGearCatalogIds,
   migrateDescriptionHtmlToMarkdown,
+  migrateConcentration,
 } from '../src/utils/migrations'
 import { createBlankCharacter, getLibrary, saveLibrary } from '@/domain'
 
@@ -217,5 +218,29 @@ describe('initiative sanitising', () => {
   it('drops a non-numeric initiative', () => {
     const c = migrateCharacterData({ combat: { ...base, initiative: 'abc' } })
     expect(c.combat.initiative).toBeUndefined()
+  })
+})
+
+describe('concentration backfill', () => {
+  it('initialises concentration to null for a caster', () => {
+    const c = migrateCharacterData({ spellcasting: { ability: 'wis' } })
+    expect(c.spellcasting?.concentration).toBeNull()
+  })
+
+  it('preserves an existing concentration marker', () => {
+    const c = migrateCharacterData({
+      spellcasting: { ability: 'wis', concentration: { spellName: 'Bless', level: 1 } },
+    })
+    expect(c.spellcasting?.concentration).toEqual({ spellName: 'Bless', level: 1 })
+  })
+
+  it('leaves non-casters alone', () => {
+    const c = migrateCharacterData({ spellcasting: null })
+    expect(c.spellcasting).toBeNull()
+  })
+
+  it('is a no-op on migrateConcentration for primitives', () => {
+    expect(migrateConcentration(null)).toBeNull()
+    expect(migrateConcentration('nope')).toBe('nope')
   })
 })
