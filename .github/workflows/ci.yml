@@ -153,55 +153,22 @@ jobs:
           # Exposes window.__hgDiceTest so the dice specs can force roll outcomes.
           VITE_DICE_TEST_HOOK: 'true'
       - name: Run E2E tests
+        # Do NOT add `continue-on-error` here: Playwright exits non-zero when a
+        # test fails, and that exit code is the primary guard. A previous
+        # `continue-on-error: true` combined with a non-recursive report parser
+        # silently kept this job green while tests were failing (#253).
         run: npx playwright test --reporter=json > pw-results.json 2>pw-stderr.txt
-        continue-on-error: true
       - name: Playwright Summary
         if: always()
-        run: |
-          node <<'EOF' >> $GITHUB_STEP_SUMMARY
-            const fs = require('fs');
-            const write = (s) => fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, s + '\n');
-
-            if (!fs.existsSync('pw-results.json') || !fs.statSync('pw-results.json').size) {
-              const stderr = fs.existsSync('pw-stderr.txt') ? fs.readFileSync('pw-stderr.txt','utf8').trim() : 'No output';
-              write('## ❌ E2E Tests\n\nFailed to produce results.\n\n```\n' + stderr + '\n```');
-              process.exit(0);
-            }
-
-            const result = JSON.parse(fs.readFileSync('pw-results.json','utf8'));
-            const suites = result.suites || [];
-            const allSpecs = suites.flatMap(s => s.specs || []);
-            const failed = allSpecs.filter(s => !s.ok).length;
-            const passed = allSpecs.length - failed;
-            const icon = failed === 0 ? '✅' : '❌';
-            write('## ' + icon + ' E2E Tests (' + passed + '/' + allSpecs.length + ' passed)');
-            write('');
-
-            suites.forEach(suite => {
-              write('### ' + (suite.title || 'Tests'));
-              (suite.specs || []).forEach(spec => {
-                const project = spec.tests?.[0]?.projectName || '?';
-                const sym = spec.ok ? '✅' : '❌';
-                write('- ' + sym + ' [' + project + '] ' + spec.title);
-                if (!spec.ok && spec.tests?.[0]?.results?.[0]?.error?.message) {
-                  const lines = spec.tests[0].results[0].error.message.split('\n').slice(0, 3);
-                  write('  ```\n  ' + lines.join('\n  ') + '\n  ```');
-                }
-              });
-              write('');
-            });
-          EOF
-      - run: |
-          node <<'EOF'
-            const fs = require('fs');
-            if (fs.existsSync('pw-results.json') && fs.statSync('pw-results.json').size) {
-              const result = JSON.parse(fs.readFileSync('pw-results.json','utf8'));
-              const failed = (result.suites || []).flatMap(s => s.specs || []).filter(s => !s.ok).length;
-              if (failed > 0) process.exit(1);
-            } else {
-              process.exit(1);
-            }
-          EOF
+        run: node scripts/ci/playwright-report.mjs pw-results.json --markdown >> $GITHUB_STEP_SUMMARY
+      - name: Fail on E2E failures
+        # Defence in depth: re-derive pass/fail from the JSON report *recursively*.
+        # The previous inline parser only read top-level `suites[].specs`, so
+        # failures inside `test.describe(...)` were invisible and the job stayed
+        # green while tests failed (#253). The script walks nested suites and
+        # exits 1 on any failure (or when the report is missing/empty).
+        if: always()
+        run: node scripts/ci/playwright-report.mjs pw-results.json
 
   build:
     name: Vite Build

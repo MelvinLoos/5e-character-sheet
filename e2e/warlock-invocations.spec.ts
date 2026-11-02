@@ -3,6 +3,10 @@ import { test, expect } from '@playwright/test'
 /**
  * E2E tests for Warlock Eldritch Invocations feature choice catalog.
  *
+ * Counts follow the 2024 SRD (System Reference Document 5.2): a Warlock knows
+ * 3 invocations at Tier 1 (level 3), 5 at Tier 2 (level 6) and 7 at Tier 3
+ * (level 10) — see `CLASSES.Warlock.featureChoices` in `src/data/classes.ts`.
+ *
  * Validates:
  *  - Creating a Warlock character and entering edit mode
  *  - Invocation selection via the Feats/Features view
@@ -51,17 +55,19 @@ test.describe('Warlock Eldritch Invocations', () => {
       .locator('[data-test="feature-choice-manage-eldritch-invocations"]')
       .click()
 
-    // Verify modal is open and shows invocation options
+    // Verify modal is open and shows invocation options.
+    // 2024 SRD: a Tier 1 (level 3) Warlock selects 3 invocations, so the modal
+    // counter reads "0 / 3 selected".
     await expect(page.getByText(/Armor of Shadows/)).toBeVisible()
-    await expect(page.getByText(/0 \/ 2 selected/)).toBeVisible()
+    await expect(page.getByText(/0 \/ 3 selected/)).toBeVisible()
 
     // Select Armor of Shadows (no prerequisite — always available)
     await page.locator('[data-id="armor-of-shadows"]').click()
-    await expect(page.getByText(/1 \/ 2 selected/)).toBeVisible()
+    await expect(page.getByText(/1 \/ 3 selected/)).toBeVisible()
 
     // Select Eldritch Mind as second invocation
     await page.locator('[data-id="eldritch-mind"]').click()
-    await expect(page.getByText(/2 \/ 2 selected/)).toBeVisible()
+    await expect(page.getByText(/2 \/ 3 selected/)).toBeVisible()
 
     // Confirm selections
     await page.locator('[data-test="modal-confirm-btn"]').click()
@@ -140,7 +146,7 @@ test.describe('Warlock Eldritch Invocations', () => {
     // Verify the Eligible Feature Choices section appears
     await expect(page.getByText(/Class Features & Choices/)).toBeVisible()
     await expect(page.getByText('Eldritch Invocations')).toBeVisible()
-    await expect(page.getByText(/Choose up to 2 of/)).toBeVisible()
+    await expect(page.getByText(/Choose up to 3 of/)).toBeVisible()
   })
 
   test('class-change cleanup removes old invocation traits', async ({ page }) => {
@@ -211,7 +217,7 @@ test.describe('Warlock Eldritch Invocations', () => {
 
     // Verify we can still select it (modal doesn't block — store validates)
     await agonizingOption.click()
-    await expect(page.getByText(/1 \/ 2 selected/)).toBeVisible()
+    await expect(page.getByText(/1 \/ 3 selected/)).toBeVisible()
 
     // Close modal without saving — modal should close, no selection persisted
     await page.locator('[data-test="modal-cancel-btn"]').click()
