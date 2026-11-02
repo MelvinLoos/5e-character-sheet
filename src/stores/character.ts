@@ -733,13 +733,20 @@ export const useCharacterStore = defineStore('character', () => {
 
   // --- Initiative ---
 
-  /** Roll d20 + DEX mod, store it and refresh features that reset on Initiative. */
-  function rollInitiative(mode: RollMode = 'normal'): void {
+  /**
+   * Persist an initiative result produced by any roller (the 3D dice engine or
+   * a local roll) and refresh the features that reset on Initiative.
+   */
+  function recordInitiativeRoll(roll: InitiativeRoll): void {
     if (!currentCharacterData.value) return
-    const roll = rollInitiativeDice(useProgressionStore().initiativeMod, mode)
     currentCharacterData.value.combat.initiative = roll.total
     currentCharacterData.value.features = resetInitiativeFeatures(currentCharacterData.value).features
     lastInitiativeRoll.value = roll
+  }
+
+  /** Roll d20 + DEX mod locally, store it and refresh Initiative-reset features. */
+  function rollInitiative(mode: RollMode = 'normal'): void {
+    recordInitiativeRoll(rollInitiativeDice(useProgressionStore().initiativeMod, mode))
   }
 
   /** Manual entry; does not reset features (only rolling does). */
@@ -850,6 +857,7 @@ export const useCharacterStore = defineStore('character', () => {
     undoRest,
     clearRestUndo,
     rollInitiative,
+    recordInitiativeRoll,
     setInitiative,
     // Getters
     displaySpeciesName,

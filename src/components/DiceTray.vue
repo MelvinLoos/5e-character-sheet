@@ -13,7 +13,7 @@
  */
 import { computed, nextTick, ref, watch } from 'vue'
 import { DICE_TYPES, MAX_DICE, MAX_MODIFIER } from '@/domain/diceService'
-import { canUse3d, useDiceRoller } from '@/composables/useDiceRoller'
+import { canUse3d, DICE_CANVAS_HOST_ID, useDiceRoller } from '@/composables/useDiceRoller'
 import { useDialogBehavior } from '@/composables/useDialogBehavior'
 import PressableButton from '@/components/ui/PressableButton.vue'
 import IconButton from '@/components/ui/IconButton.vue'
@@ -21,7 +21,7 @@ import IconButton from '@/components/ui/IconButton.vue'
 const open = defineModel<boolean>('open', { default: false })
 
 /** Selector (not a ref) so the engine can look the host up on its own. */
-const CANVAS_HOST_ID = 'dice-canvas-host'
+const CANVAS_HOST_ID = DICE_CANVAS_HOST_ID
 
 const faces = ref(20)
 const count = ref(1)
