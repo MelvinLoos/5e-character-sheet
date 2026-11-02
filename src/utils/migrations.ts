@@ -56,6 +56,23 @@ export function migrateUsesToResource(character: unknown) {
   return ch
 }
 
+/**
+ * Backfill `spellcasting.concentration` to `null` so the field always exists.
+ * Existing saved characters predate the concentration tracker.
+ */
+export function migrateConcentration(character: unknown) {
+  if (!character || typeof character !== 'object') return character
+
+  const ch = character as { spellcasting?: Record<string, unknown> | null }
+  if (ch.spellcasting && typeof ch.spellcasting === 'object') {
+    if (ch.spellcasting.concentration === undefined) {
+      ch.spellcasting.concentration = null
+    }
+  }
+
+  return ch
+}
+
 export function migrateLevelToRenown(character: unknown) {
   if (!character || typeof character !== 'object') return character
 

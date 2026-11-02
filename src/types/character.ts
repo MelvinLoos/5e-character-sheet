@@ -89,10 +89,21 @@ export interface CharacterSpell {
   classes?: string[]
 }
 
+/** The single spell the character is currently concentrating on. */
+export interface Concentration {
+  /** Stable id of the source spell when it has one. */
+  spellId?: string
+  spellName: string
+  level?: number
+  source?: string
+}
+
 /** Spellcasting tracking data attached to a character. */
 export interface Spellcasting {
   ability?: AbilityKey
   slotsSpent?: Record<string, number>
+  /** The spell being concentrated on; `null`/absent when none is active. */
+  concentration?: Concentration | null
 }
 
 // ---------------------------------------------------------------------------

@@ -222,7 +222,18 @@
       "description": "Spellcasting details, populated if a feature grants casting.",
       "properties": {
         "ability": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] },
-        "slotsSpent": { "type": "object", "additionalProperties": { "type": "number" } }
+        "slotsSpent": { "type": "object", "additionalProperties": { "type": "number" } },
+        "concentration": {
+          "type": ["object", "null"],
+          "description": "The single spell the character is currently concentrating on.",
+          "properties": {
+            "spellId": { "type": "string" },
+            "spellName": { "type": "string" },
+            "level": { "type": "integer" },
+            "source": { "type": "string" }
+          },
+          "required": ["spellName"]
+        }
       }
     },
     "spells": {
