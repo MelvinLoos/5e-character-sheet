@@ -45,6 +45,20 @@ describe('ElevatedCard', () => {
     const wrapper = mount(ElevatedCard, { props: { elevation } })
     expect(wrapper.classes()).toContain(`shadow-elevation-${elevation}`)
   })
+
+  it('paints the surface gradient background by default', () => {
+    const wrapper = mount(ElevatedCard)
+    expect(wrapper.classes()).toContain('bg-gradient-to-br')
+    expect(wrapper.classes()).toContain('from-surface-container-high')
+    expect(wrapper.classes()).toContain('to-surface-container')
+  })
+
+  it('omits the surface gradient when surface is false so callers own the background', () => {
+    const wrapper = mount(ElevatedCard, { props: { surface: false } })
+    expect(wrapper.classes()).not.toContain('bg-gradient-to-br')
+    expect(wrapper.classes()).not.toContain('from-surface-container-high')
+    expect(wrapper.classes()).not.toContain('to-surface-container')
+  })
 })
 
 describe('theme + accessibility foundations', () => {
@@ -62,6 +76,23 @@ describe('theme + accessibility foundations', () => {
 
   it('no longer overrides grid gaps globally', () => {
     expect(css).not.toMatch(/\.grid\s*\{\s*gap:\s*[12]rem;/)
+  })
+})
+
+describe('spell grimoire card backgrounds', () => {
+  const src = readFileSync('src/components/sheet/SpellcastingBlock.vue', 'utf8')
+
+  it('keeps parchment-bg a fixed light parchment (readable with dark secondary-fixed text)', () => {
+    // A theme-dependent surface colour goes dark in the dark theme, which made
+    // prepared spell cards illegible (dark text on a dark card).
+    const block = src.slice(src.indexOf('.parchment-bg {'))
+    expect(block).toMatch(/background-color:\s*#e8e2d4/)
+    expect(block).toMatch(/color:\s*#15130b/)
+  })
+
+  it('opts grimoire spell cards out of the ElevatedCard surface gradient', () => {
+    const surfaces = src.match(/:surface="false"/g) ?? []
+    expect(surfaces.length).toBeGreaterThanOrEqual(2)
   })
 })
 

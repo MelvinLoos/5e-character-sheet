@@ -220,3 +220,44 @@ describe('SpellcastingBlock markdown descriptions (#215)', () => {
     expect(wrapper.html()).not.toContain('<script>')
   })
 })
+
+// ---------------------------------------------------------------------------
+// Spell card backgrounds — cards must keep their own solid background instead
+// of inheriting the grimoire's surface gradient (which masked them entirely).
+// ---------------------------------------------------------------------------
+
+/** Returns the grimoire card element (ElevatedCard root) for a spell by name. */
+function findSpellCard(wrapper: VueWrapper, name: string) {
+  const heading = wrapper.findAll('h4').find((h) => h.text() === name)
+  expect(heading, `no spell card heading found for "${name}"`).toBeDefined()
+  return heading!.element.closest('div.rounded-xl') as HTMLElement
+}
+
+describe('SpellcastingBlock spell card backgrounds', () => {
+  it('keeps a solid background on unprepared cards', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createWizardCharacter([
+      { id: 'identify', name: 'Identify', level: 1, desc: 'Reads magic.', prepared: false },
+    ])
+
+    const wrapper = await mountBlock()
+    const card = findSpellCard(wrapper, 'Identify')
+
+    expect(card.classList.contains('bg-primary-container')).toBe(true)
+    // The grimoire's gradient must not paint over the card colour.
+    expect(card.classList.contains('bg-gradient-to-br')).toBe(false)
+  })
+
+  it('keeps a solid background on prepared cards', async () => {
+    const store = useCharacterStore()
+    store.currentCharacterData = createWizardCharacter([
+      { id: 'mage-armor', name: 'Mage Armor', level: 1, desc: 'Shield of force.', prepared: true },
+    ])
+
+    const wrapper = await mountBlock()
+    const card = findSpellCard(wrapper, 'Mage Armor')
+
+    expect(card.classList.contains('parchment-bg')).toBe(true)
+    expect(card.classList.contains('bg-gradient-to-br')).toBe(false)
+  })
+})
