@@ -30,7 +30,7 @@ function createTestCharacter(overrides: Partial<CharacterData> = {}): CharacterD
 }
 
 /** Create a character with a full-caster feature (Wizard Spellcasting). */
-function createWizardCharacter(): CharacterData {
+function createWizardCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
   return createTestCharacter({
     features: [
       {
@@ -40,6 +40,7 @@ function createWizardCharacter(): CharacterData {
         key: true,
       },
     ] as CharacterFeature[],
+    ...overrides,
   })
 }
 
@@ -350,6 +351,47 @@ describe('useSpellcasting', () => {
 
       expect(hasSpellcasting.value).toBe(true)
       expect(casterType.value).toBe('pact')
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // Prepared spell selection tracking
+  // -----------------------------------------------------------------------
+
+  describe('prepared spell selection tracking', () => {
+    it('exposes the prepared spell limit for a caster class', () => {
+      characterStore.currentCharacterData = createWizardCharacter()
+      const { preparedSpellLimit } = useSpellcasting(characterStore, rulesStore)
+      expect(preparedSpellLimit.value).toBe(6)
+    })
+
+    it('counts only leveled spells as selected (cantrips excluded)', () => {
+      characterStore.currentCharacterData = createWizardCharacter({
+        spells: [
+          { name: 'Fire Bolt', level: 0, desc: '' },
+          { name: 'Magic Missile', level: 1, desc: '' },
+        ] as CharacterSpell[],
+      })
+      const { selectedSpellCount } = useSpellcasting(characterStore, rulesStore)
+      expect(selectedSpellCount.value).toBe(1)
+    })
+
+    it('reports the remaining number of spell selections', () => {
+      characterStore.currentCharacterData = createWizardCharacter({
+        spells: [{ name: 'Magic Missile', level: 1, desc: '' }] as CharacterSpell[],
+      })
+      const { remainingSpellSelections } = useSpellcasting(characterStore, rulesStore)
+      expect(remainingSpellSelections.value).toBe(5)
+    })
+
+    it('returns a null limit and zero remaining for non-casters', () => {
+      characterStore.currentCharacterData = createFighterCharacter()
+      const { preparedSpellLimit, remainingSpellSelections } = useSpellcasting(
+        characterStore,
+        rulesStore,
+      )
+      expect(preparedSpellLimit.value).toBeNull()
+      expect(remainingSpellSelections.value).toBe(0)
     })
   })
 })
