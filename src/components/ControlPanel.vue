@@ -10,6 +10,7 @@ import { useFeedbackStore } from '@/stores/feedbackStore'
 import CompletionBadge from './ui/CompletionBadge.vue'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import { useCharacterActions } from '@/composables/useCharacterActions'
+import { useOnboardingTour } from '@/composables/useOnboardingTour'
 import { NAV_LINKS } from '@/constants/navigation'
 import ThemeToggle from './ThemeToggle.vue'
 
@@ -18,6 +19,7 @@ const guildStore = useGuildStore()
 const feedbackStore = useFeedbackStore()
 const route = useRoute()
 const { badges } = useCharacterCompletion()
+const { startTour } = useOnboardingTour()
 const emit = defineEmits<{
   showImport: []
   showCharacterImport: []
@@ -70,6 +72,12 @@ function closeMorePopover() {
 function handleMoreAction(action: () => void) {
   action()
   closeMorePopover()
+}
+
+/** Close the popover and replay the guided tour. */
+function restartTour() {
+  closeMorePopover()
+  void startTour()
 }
 
 function handleClickOutside(event: MouseEvent) {
@@ -356,6 +364,16 @@ onUnmounted(() => {
               >
                 <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">print</span>
                 Print Sheet
+              </button>
+
+              <button
+                @click="restartTour"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Restart Tour"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">tour</span>
+                Restart Tour
               </button>
               </template>
             </div>

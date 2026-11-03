@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, defineAsyncComponent } from 'vue'
+import { computed, onMounted, ref, defineAsyncComponent, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
 import { useFeedbackStore } from './stores/feedbackStore'
 import { useDiceTray } from './composables/useDiceTray'
+import { useOnboardingTour } from './composables/useOnboardingTour'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
 import UndoToast from './components/ui/UndoToast.vue'
@@ -33,6 +34,19 @@ const showMoreMenu = ref(false)
 // The tray lives in a module-level singleton so the initiative tracker can open
 // it and roll through the same engine (see useDiceTray).
 const { isMounted: diceTrayMounted, isOpen: showDiceTray, openTray: openDiceTray } = useDiceTray()
+// First-time onboarding tour — also replayable from the More actions menus.
+const { startTour, hasCompletedTour } = useOnboardingTour()
+
+/**
+ * Kick off the tour from the empty state. A fresh character must exist first so
+ * the sheet views (and their `data-tour` anchors) are mounted before the tour
+ * measures element coordinates.
+ */
+async function handleStartTourFromEmptyState(): Promise<void> {
+  store.handleNewCharacter()
+  await nextTick()
+  await startTour()
+}
 
 onMounted(async () => {
   await useRulesStore().loadFromStorage()
@@ -61,23 +75,43 @@ onMounted(async () => {
     >
       <div class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-gutter">
         <div
-          v-if="!store.currentCharacterData && !isStandalonePage"
-          class="text-center p-10 max-w-4xl mx-auto bg-surface-container rounded-xl shadow-sm border border-primary-container"
+          v-if="!store.hasCharacter && !isStandalonePage"
+          class="bg-surface-container rounded-2xl border border-outline-variant shadow-elevation-2 p-10 max-w-2xl mx-auto text-center"
         >
-          <h1 class="font-headline-lg text-headline-lg text-tertiary">Welcome, Gamemaster!</h1>
+          <h2 class="font-headline-lg text-headline-lg text-tertiary">Welcome, Adventurer</h2>
           <p class="mt-4 text-on-surface-variant font-body-md">
-            Start by creating a
-            <button @click="store.handleNewCharacter" class="text-primary font-bold hover:underline">
-              new character</button
-            >, or open the menu to load one from your library or import a character file.
+            Create your first character or import an existing character sheet from JSON.
           </p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              type="button"
+              @click="store.handleNewCharacter"
+              class="px-6 py-3 rounded-xl bg-tertiary text-on-tertiary font-label-md transition-all duration-200 active:scale-95 hover:bg-tertiary-fixed select-none"
+            >
+              Create Character
+            </button>
+            <button
+              type="button"
+              @click="showImportModal = true"
+              class="px-6 py-3 rounded-xl bg-surface-variant text-on-surface font-label-md transition-all duration-200 active:scale-95 hover:bg-surface-bright select-none"
+            >
+              Import JSON
+            </button>
+          </div>
+          <button
+            type="button"
+            @click="handleStartTourFromEmptyState"
+            class="mt-6 text-primary font-label-md hover:underline select-none"
+          >
+            {{ hasCompletedTour ? 'Replay the tour' : 'Take a quick tour' }}
+          </button>
         </div>
 
-        <CharacterSheet v-if="store.currentCharacterData || isStandalonePage" />
+        <CharacterSheet v-if="store.hasCharacter || isStandalonePage" />
       </div>
     </main>
 
-    <PrintableSheet v-if="store.currentCharacterData" />
+    <PrintableSheet v-if="store.hasCharacter" />
 
     <UndoToast />
     <LoadingModal />
@@ -93,7 +127,7 @@ onMounted(async () => {
     <ConfirmDialog />
 
     <MobileTabBar
-      v-if="store.currentCharacterData"
+      v-if="store.hasCharacter"
       class="md:hidden print:hidden"
       @show-more="showMoreMenu = true"
     />
@@ -110,7 +144,7 @@ onMounted(async () => {
 
     <!-- Floating dice roller — visible whenever a character is loaded -->
     <button
-      v-if="store.currentCharacterData && !isStandalonePage"
+      v-if="store.hasCharacter && !isStandalonePage"
       type="button"
       class="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-tertiary text-on-tertiary shadow-elevation-3 transition-all duration-200 hover:scale-105 active:scale-90 md:bottom-6 md:right-6 print:hidden"
       aria-label="Open dice roller"
@@ -125,6 +159,9 @@ onMounted(async () => {
     <DiceTray v-if="diceTrayMounted" v-model:open="showDiceTray" />
 
     <CelebrationOverlay />
+
+    <!-- First-time onboarding tour overlay (auto-imported component) -->
+    <TourTooltip />
 
     <!-- Viewport grain overlay — non-interactive -->
     <div

@@ -64,7 +64,7 @@ const allowedLevels = computed(() => {
 </script>
 
 <template>
-  <div v-if="hasSpellcasting" class="flex flex-col gap-card-gap w-full text-sm">
+  <div v-if="hasSpellcasting" data-tour="spellcasting" class="flex flex-col gap-card-gap w-full text-sm">
     <!-- Concentration marker (active effect / picker) -->
     <ConcentrationTracker />
 

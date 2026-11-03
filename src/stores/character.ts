@@ -69,6 +69,13 @@ import { useEquipmentWizard } from '@/composables/useEquipmentWizard'
 export const useCharacterStore = defineStore('character', () => {
   // --- STATE ---
   const currentCharacterData = ref<CharacterData>(createBlankCharacter())
+  /**
+   * Whether the player has actually started a character. The store always holds
+   * a (blank) `currentCharacterData` so downstream code never has to null-check,
+   * but the empty state / sheet only render once a draft, saved character, URL
+   * share, import, or explicit "new character" has been loaded.
+   */
+  const hasCharacter = ref(false)
   const currentUserData = computed(() => currentCharacterData.value)
   const isEditing = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(loadLibrary())
@@ -203,6 +210,7 @@ export const useCharacterStore = defineStore('character', () => {
 
     // Assign after asserting it matches CharacterData shape (migration ensures required fields)
     currentCharacterData.value = migratedData as unknown as CharacterData
+    hasCharacter.value = true
     isEditing.value = false
     // Restore a remembered share id so the printed QR code survives reloads and
     // round-trips through the local library. loadCharacterFromUrl overrides this
@@ -800,6 +808,7 @@ export const useCharacterStore = defineStore('character', () => {
   return {
     // State
     currentCharacterData,
+    hasCharacter,
     currentUserData,
     isEditing,
     characterLibrary,

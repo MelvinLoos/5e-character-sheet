@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
 import { useCharacterActions } from '@/composables/useCharacterActions'
+import { useOnboardingTour } from '@/composables/useOnboardingTour'
 import AuthButton from './AuthButton.vue'
 import GuildSelector from './GuildSelector.vue'
 import GuildManagementModal from './modals/GuildManagementModal.vue'
@@ -23,6 +24,13 @@ const emit = defineEmits<{
 const store = useCharacterStore()
 useAuthStore()
 const guildStore = useGuildStore()
+const { startTour } = useOnboardingTour()
+
+/** Close the sheet and replay the guided tour. */
+function restartTour() {
+  close()
+  void startTour()
+}
 
 const { characterSelectOptions, currentCharacterValue, selectCharacter, printSheet } =
   useCharacterActions()
@@ -224,6 +232,15 @@ watch(
                 >
                   <span class="material-symbols-outlined text-2xl" aria-hidden="true">print</span>
                   <span class="text-xs font-label-md text-center">Print Sheet</span>
+                </button>
+
+                <button
+                  @click="restartTour"
+                  class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Restart Tour"
+                >
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">tour</span>
+                  <span class="text-xs font-label-md">Restart Tour</span>
                 </button>
 
                 </template>
