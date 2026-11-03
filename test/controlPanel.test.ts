@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent, nextTick } from 'vue'
 import ControlPanel from '../src/components/ControlPanel.vue'
 import { useCharacterStore } from '../src/stores/character'
 import { useFeedbackStore } from '../src/stores/feedbackStore'
+import { useOnboardingTour } from '../src/composables/useOnboardingTour'
 
 vi.mock('../src/infra/supabaseClient', () => ({
   createSupabaseClient: vi.fn(() => ({
@@ -20,6 +21,10 @@ vi.mock('../src/infra/supabaseClient', () => ({
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => ({ query: {}, name: undefined, fullPath: '/' })),
+  useRouter: vi.fn(() => ({
+    currentRoute: { value: { path: '/identity' } },
+    push: vi.fn(async () => {}),
+  })),
 }))
 
 // Stub GuildSelector to avoid onMounted side-effects (API calls)
@@ -153,6 +158,26 @@ describe('ControlPanel feedback entry point', () => {
     await openMorePopover()
 
     expect(bodyText()).not.toContain('Give Feedback')
+  })
+
+  it('restarts the onboarding tour from the More popover', async () => {
+    const target = document.createElement('div')
+    target.setAttribute('data-tour', 'sheet-header')
+    document.body.appendChild(target)
+
+    const wrapper = mountWithCharacter()
+    await openMorePopover()
+
+    const restart = Array.from(document.body.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Restart Tour'),
+    )
+    expect(restart).toBeDefined()
+    restart!.click()
+    await flushPromises()
+
+    expect(useOnboardingTour().active.value).toBe(true)
+    useOnboardingTour().skip()
+    wrapper.unmount()
   })
 })
 
