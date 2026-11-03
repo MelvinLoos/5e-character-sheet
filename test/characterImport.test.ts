@@ -54,6 +54,13 @@ describe('character-schema.json', () => {
     expect(valid).toBe(true)
   })
 
+  it('ships a modernized Elara sample (canonical feat, no legacy casterType)', () => {
+    const features = (elara.features ?? []) as Array<Record<string, unknown>>
+    expect(features.some((f) => f.title === 'Wizard Spellcasting')).toBe(true)
+    expect(features.some((f) => f.title === 'Spellcasting (Wizard)')).toBe(false)
+    expect(elara.renownTier).toBeTypeOf('number')
+  })
+
   it('requires a name (custom error message)', () => {
     const broken = exportedCharacter() as unknown as Record<string, unknown>
     delete broken.name

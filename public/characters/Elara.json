@@ -1,18 +1,14 @@
 {
   "name": "Elara Vance",
   "title": "Seeker of the Arcane",
+  "jobInParty": "Controller",
   "class": "Wizard",
-  "level": 3,
+  "renownTier": 2,
+  "renownMilestones": 1,
   "species": "Elf",
+  "subChoice": "high-elf",
+  "featureChoices": {},
   "background": "Sage",
-  "abilityScores": {
-    "str": 8,
-    "dex": 14,
-    "con": 14,
-    "int": 15,
-    "wis": 10,
-    "cha": 10
-  },
   "pointBuyBaseScores": {
     "str": 8,
     "dex": 14,
@@ -23,26 +19,38 @@
   },
   "backgroundBonusSelections": {
     "plusTwo": "int",
-    "plusOne": "wis"
+    "plusOne": "con"
   },
+  "abilityScores": {
+    "str": 8,
+    "dex": 14,
+    "con": 15,
+    "int": 17,
+    "wis": 10,
+    "cha": 10
+  },
+  "profBonus": 2,
   "proficiencies": {
-    "skills": [
-      "arcana",
-      "history",
-      "investigation",
-      "insight"
-    ],
-    "savingThrows": [
-      "int",
-      "wis"
-    ]
+    "skills": ["arcana", "history", "investigation", "insight"],
+    "savingThrows": ["int", "wis"]
   },
   "combat": {
     "ac": 12,
+    "isAcOverride": false,
+    "hp_max": 17,
+    "hp_current": 17,
+    "hp_temp": 0,
+    "initiative": 2,
+    "hit_dice_used": 0,
+    "death_saves": {
+      "successes": 0,
+      "failures": 0
+    },
     "speed": "30ft"
   },
   "attacks": [
     {
+      "id": "quarterstaff",
       "name": "Quarterstaff",
       "atkStat": "str",
       "dmgDie": "1d6",
@@ -51,6 +59,7 @@
       "notes": "Versatile (1d8 when used with two hands)."
     },
     {
+      "id": "fire-bolt",
       "name": "Fire Bolt",
       "atkStat": "int",
       "dmgDie": "1d10",
@@ -61,112 +70,229 @@
   ],
   "features": [
     {
-      "title": "Spellcasting (Wizard)",
+      "title": "Wizard Spellcasting",
       "desc": "You can cast wizard spells you have prepared. Intelligence is your spellcasting ability.",
       "key": true,
-      "casterType": "full"
+      "casterType": "full",
+      "source": "Class",
+      "featureType": "Class Feature"
     },
     {
       "title": "Arcane Recovery",
-      "desc": "Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up)."
+      "desc": "Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level equal to or less than half your wizard level (rounded up), and none of the slots can be level 6 or higher.",
+      "source": "Class",
+      "featureType": "Class Feature"
+    },
+    {
+      "title": "Evocation Savant",
+      "desc": "Choose two wizard spells from the Evocation school, each of which must be no higher than level 2, and add them to your spellbook for free.",
+      "source": "Class",
+      "featureType": "Class Feature"
+    },
+    {
+      "title": "Sculpt Spells",
+      "desc": "When you cast an evocation spell that affects other creatures you can see, you can choose a number of them equal to 1 plus the spell's level. The chosen creatures automatically succeed on their saving throws against the spell, and they take no damage if they would normally take half damage on a successful save.",
+      "key": true,
+      "source": "Class",
+      "featureType": "Class Feature"
     },
     {
       "title": "Darkvision",
       "desc": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.",
-      "key": true
+      "key": true,
+      "source": "Species",
+      "featureType": "Species Trait"
     },
     {
       "title": "Fey Ancestry",
-      "desc": "You have advantage on saving throws against being Charmed, and magic can’t put you to sleep.",
-      "key": true
+      "desc": "You have advantage on saving throws you make to avoid or end the Charmed condition, and magic can't put you to sleep.",
+      "key": true,
+      "source": "Species",
+      "featureType": "Species Trait"
     },
     {
       "title": "Trance",
-      "desc": "You don’t need to sleep. Instead, you meditate deeply, remaining semiconscious, for 4 hours a day."
+      "desc": "You don't need to sleep. Instead, you meditate deeply for 4 hours a day to gain the benefit of a long rest.",
+      "source": "Species",
+      "featureType": "Species Trait"
     },
     {
-      "title": "Magic Initiate (Wizard)",
-      "desc": "You learn two cantrips and one 1st-level spell from the Wizard spell list. You can cast the 1st-level spell once per long rest without a spell slot."
-    },
-    {
-      "title": "Arcane Tradition",
-      "desc": "You follow the School of Evocation, focusing your study on spells that create powerful elemental effects."
-    },
-    {
-      "title": "Evocation Savant",
-      "desc": "The gold and time you must spend to copy an evocation spell into your spellbook is halved."
-    },
-    {
-      "title": "Sculpt Spells",
-      "desc": "When you cast an evocation spell, you can create pockets of safety. Choose a number of creatures equal to 1 + the spell's level. The chosen creatures automatically succeed on their saving throws against the spell, and they take no damage if they would normally take half damage.",
-      "key": true
+      "title": "High Elf Cantrip",
+      "desc": "You know the Prestidigitation cantrip. Intelligence, Wisdom, or Charisma is your spellcasting ability for it (choose when you select this species).",
+      "source": "Species",
+      "featureType": "Species Trait"
     }
   ],
-  "equipment": "A quarterstaff, a spellbook, a scholar's pack, a component pouch, and a letter from a dead master.",
+  "equipment": "A quarterstaff, a spellbook, a scholar's pack, a component pouch, and a letter from a dead mentor.",
   "personality": {
-    "traits": "I use polysyllabic words that convey the impression of great erudition. I am never without my spellbook.",
+    "traits": "I use polysyllabic words that convey the impression of great erudition, and I am never without my spellbook.",
     "ideal": "Knowledge. The path to power and self-improvement is through knowledge.",
     "bond": "I work to preserve the ancient library of my mentor, which was thought to be lost.",
-    "flaw": "I am easily distracted by the promise of new information or a rare, forgotten text."
+    "flaw": "I am easily distracted by the promise of new information or a rare, forgotten text.",
+    "notes": "Elara is a player-facing sample character demonstrating a complete 2024 rules Wizard."
   },
   "spellcasting": {
-    "ability": "int"
+    "ability": "int",
+    "slotsSpent": {},
+    "concentration": null
   },
   "spells": [
     {
+      "id": "fire-bolt",
       "name": "Fire Bolt",
       "level": 0,
-      "desc": "Hurl a mote of fire at a creature or object within range."
+      "desc": "You hurl a mote of fire at a creature or object within range. Make a ranged spell attack. On a hit, the target takes 1d10 fire damage.",
+      "school": "Evocation",
+      "castingTime": "Action",
+      "range": "120 feet",
+      "components": "V, S",
+      "duration": "Instantaneous",
+      "prepared": true
     },
     {
+      "id": "light",
       "name": "Light",
       "level": 0,
-      "desc": "Touch one object and cause it to glow with light."
+      "desc": "You touch one Large or smaller object that isn't being worn or carried by another creature and cause it to shed bright light in a 20-foot radius and dim light for an additional 20 feet.",
+      "school": "Evocation",
+      "castingTime": "Action",
+      "range": "Touch",
+      "components": "V, M",
+      "duration": "1 hour",
+      "prepared": true
     },
     {
+      "id": "mage-hand",
       "name": "Mage Hand",
       "level": 0,
-      "desc": "A spectral, floating hand appears at a point you choose within range."
+      "desc": "A spectral, floating hand appears at a point you choose within range. You can use it to manipulate objects, open unlocked doors, or stow or retrieve an item.",
+      "school": "Conjuration",
+      "castingTime": "Action",
+      "range": "30 feet",
+      "components": "V, S",
+      "duration": "1 minute",
+      "prepared": true
     },
     {
+      "id": "prestidigitation",
       "name": "Prestidigitation",
       "level": 0,
-      "desc": "You create one of several minor magical effects."
+      "desc": "You create one of several minor magical effects, such as a harmless sensory effect, a small mark, or a trinket that lasts until the end of your next turn.",
+      "school": "Transmutation",
+      "castingTime": "Action",
+      "range": "10 feet",
+      "components": "V, S",
+      "duration": "Up to 1 hour",
+      "prepared": true
     },
     {
-      "name": "Ray of Frost",
-      "level": 0,
-      "desc": "A frigid beam of blue-white light streaks toward a creature."
-    },
-    {
+      "id": "mage-armor",
       "name": "Mage Armor",
       "level": 1,
-      "desc": "Touch a willing creature who isn't wearing armor, and a protective magical force surrounds it until the spell ends. The target's base AC becomes 13 + its Dexterity modifier."
+      "desc": "You touch a willing creature who isn't wearing armor. Until the spell ends, the target's base AC becomes 13 plus its Dexterity modifier.",
+      "school": "Abjuration",
+      "castingTime": "Action",
+      "range": "Touch",
+      "components": "V, S, M",
+      "duration": "8 hours",
+      "prepared": true
     },
     {
+      "id": "magic-missile",
       "name": "Magic Missile",
       "level": 1,
-      "desc": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range."
+      "desc": "You create three glowing darts of magical force. Each dart strikes a creature of your choice that you can see within range, dealing 1d4+1 force damage.",
+      "school": "Evocation",
+      "castingTime": "Action",
+      "range": "120 feet",
+      "components": "V, S",
+      "duration": "Instantaneous",
+      "prepared": true
     },
     {
+      "id": "shield",
       "name": "Shield",
       "level": 1,
-      "desc": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC."
+      "desc": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC and take no damage from Magic Missile.",
+      "school": "Abjuration",
+      "castingTime": "Reaction",
+      "range": "Self",
+      "components": "V, S",
+      "duration": "1 round",
+      "prepared": true
     },
     {
-      "name": "Identify",
-      "level": 1,
-      "desc": "You choose one object that you must touch. You learn its properties and whether it requires attunement."
-    },
-    {
+      "id": "misty-step",
       "name": "Misty Step",
       "level": 2,
-      "desc": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see."
+      "desc": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see.",
+      "school": "Conjuration",
+      "castingTime": "Bonus Action",
+      "range": "Self",
+      "components": "V",
+      "duration": "Instantaneous",
+      "prepared": true
     },
     {
+      "id": "web",
       "name": "Web",
       "level": 2,
-      "desc": "You conjure a mass of thick, sticky webbing at a point of your choice within range."
+      "desc": "You conjure a mass of thick, sticky webbing at a point of your choice within range. The webs fill a 20-foot cube and lightly obscure the area.",
+      "school": "Conjuration",
+      "castingTime": "Action",
+      "range": "60 feet",
+      "components": "V, S, M",
+      "duration": "Concentration, up to 1 hour",
+      "concentration": true,
+      "prepared": true
+    }
+  ],
+  "gold": 15,
+  "supply": 5,
+  "influence": 1,
+  "inventorySlots": 10,
+  "equippedGear": [
+    {
+      "id": "gear-quarterstaff",
+      "catalogId": "quarterstaff",
+      "name": "Quarterstaff",
+      "type": "Weapon",
+      "description": "A simple melee weapon that can be wielded one- or two-handed.",
+      "slotCost": 1,
+      "theme": "default"
+    },
+    {
+      "id": "gear-spellbook",
+      "name": "Spellbook",
+      "type": "Focus",
+      "description": "A leather-bound tome holding Elara's prepared wizard spells.",
+      "slotCost": 1,
+      "theme": "default"
+    },
+    {
+      "id": "gear-scholars-pack",
+      "name": "Scholar's Pack",
+      "type": "Pack",
+      "description": "A backpack, a book of lore, an ink bottle, an ink pen, and parchment.",
+      "slotCost": 2,
+      "theme": "default"
+    },
+    {
+      "id": "gear-component-pouch",
+      "name": "Component Pouch",
+      "type": "Focus",
+      "description": "A small watertight pouch holding material components for spellcasting.",
+      "slotCost": 1,
+      "theme": "default"
+    }
+  ],
+  "consumables": [
+    {
+      "id": "consumable-potion-of-healing",
+      "name": "Potion of Healing",
+      "type": "Potion",
+      "slotCost": 1,
+      "usageDie": "1d6"
     }
   ]
 }

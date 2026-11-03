@@ -19,6 +19,12 @@ export const STORAGE_KEYS = {
    * reload or when reopened from the local library.
    */
   SHARE_LINKS: 'dnd_share_links',
+  /**
+   * Set once the player completes or skips the first-time onboarding tour, so
+   * it is not shown automatically again. The tour can still be replayed on
+   * demand from the More actions menus.
+   */
+  ONBOARDING_TOUR_COMPLETED: 'dnd_onboarding_tour_completed',
 } as const;
 
 /**
