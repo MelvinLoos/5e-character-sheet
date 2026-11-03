@@ -81,6 +81,12 @@ const TOOLTIP_MAX_WIDTH = 320
 const TOOLTIP_ESTIMATED_HEIGHT = 200
 const EDGE_GAP = 16
 const TARGET_GAP = 12
+/**
+ * How long to wait for a step's target to mount after a route change. Lazy route
+ * chunks can take a moment on slower engines (WebKit in CI), so be generous in
+ * production builds; stay short under Vitest so the missing-target tests are fast.
+ */
+const TARGET_TIMEOUT_MS = import.meta.env.MODE === 'test' ? 50 : 2000
 
 const active = ref(false)
 const currentIndex = ref(0)
@@ -245,7 +251,7 @@ async function navigateTo(step: TourStep): Promise<void> {
  * Wait for a target that may mount after a lazy route change or an async
  * component resolves. Returns null when it never appears within the timeout.
  */
-async function waitForTarget(selector: string, timeoutMs = 400): Promise<HTMLElement | null> {
+async function waitForTarget(selector: string, timeoutMs = TARGET_TIMEOUT_MS): Promise<HTMLElement | null> {
   let el = findTarget(selector)
   if (el) return el
   const deadline = Date.now() + timeoutMs

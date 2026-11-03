@@ -10,19 +10,21 @@ import type { Page } from '@playwright/test'
  */
 export async function openSheet(page: Page, path = '/identity'): Promise<void> {
   await page.goto(path)
-  await page
-    .getByRole('button', { name: 'Create Character' })
-    .click({ timeout: 5000 })
-    .catch(() => {
-      // A character was already loaded — nothing to create.
-    })
+
+  // Brand-new players land on the welcome screen — create a character first.
+  const create = page.getByRole('button', { name: 'Create Character' })
+  const created = await create
+    .waitFor({ state: 'visible', timeout: 15000 })
+    .then(() => true)
+    .catch(() => false)
+  if (created) await create.click()
+
   // A freshly created character opens in edit mode; the specs expect the
   // read-only view (the previous blank sheet was not editing).
-  await page
-    .getByLabel('Exit Edit Mode')
-    .first()
-    .click({ timeout: 2000 })
-    .catch(() => {
-      // Already viewing.
-    })
+  const exitEdit = page.getByLabel('Exit Edit Mode').first()
+  const editing = await exitEdit
+    .waitFor({ state: 'visible', timeout: 15000 })
+    .then(() => true)
+    .catch(() => false)
+  if (editing) await exitEdit.click()
 }
