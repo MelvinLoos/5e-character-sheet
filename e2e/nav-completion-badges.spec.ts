@@ -45,10 +45,8 @@ const charData = {
 function injectCharacter(page: import('@playwright/test').Page) {
   return page.addInitScript((data) => {
     localStorage.setItem('dnd_character_library', JSON.stringify({ Default: [data] }))
-    localStorage.setItem(
-      'dnd_current_character_id',
-      JSON.stringify({ session: 'Default', characterName: data.name }),
-    )
+    // The app stores the tracking id as "session|name" (see characterRepository).
+    localStorage.setItem('dnd_current_character_id', `Default|${data.name}`)
   }, charData)
 }
 

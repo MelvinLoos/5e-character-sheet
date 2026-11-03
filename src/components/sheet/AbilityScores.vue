@@ -88,7 +88,7 @@ watch(
 </script>
 
 <template>
-  <section class="flex flex-col gap-6">
+  <section data-tour="ability-scores" class="flex flex-col gap-6">
     <div
       class="flex justify-between items-end border-b pb-2"
       :class="badges.identity ? 'border-error/50' : 'border-primary-container'"

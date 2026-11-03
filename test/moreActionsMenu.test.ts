@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { defineComponent } from 'vue'
 import { useCharacterStore } from '../src/stores/character'
@@ -7,6 +7,15 @@ import MoreActionsMenu from '../src/components/MoreActionsMenu.vue'
 import { useAuthStore } from '../src/stores/authStore'
 import { useGuildStore } from '../src/stores/guildStore'
 import { useFeedbackStore } from '../src/stores/feedbackStore'
+import { useOnboardingTour } from '../src/composables/useOnboardingTour'
+
+vi.mock('vue-router', () => ({
+  useRoute: vi.fn(() => ({ query: {}, name: undefined, fullPath: '/' })),
+  useRouter: vi.fn(() => ({
+    currentRoute: { value: { path: '/identity' } },
+    push: vi.fn(async () => {}),
+  })),
+}))
 
 vi.mock('../src/infra/supabaseClient', () => ({
   createSupabaseClient: vi.fn(() => ({
@@ -153,6 +162,26 @@ describe('MoreActionsMenu', () => {
 
       mountOpen()
       expect(bodyText()).not.toContain('Give Feedback')
+    })
+  })
+
+  describe('Restart tour', () => {
+    it('starts the onboarding tour from the mobile actions sheet', async () => {
+      const target = document.createElement('div')
+      target.setAttribute('data-tour', 'sheet-header')
+      document.body.appendChild(target)
+
+      mountOpen()
+
+      const restart = Array.from(document.body.querySelectorAll('button')).find((b) =>
+        b.textContent?.includes('Restart Tour'),
+      )
+      expect(restart).toBeDefined()
+      restart!.click()
+      await flushPromises()
+
+      expect(useOnboardingTour().active.value).toBe(true)
+      useOnboardingTour().skip()
     })
   })
 

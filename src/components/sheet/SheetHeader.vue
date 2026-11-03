@@ -97,6 +97,7 @@ function incrementTier() {
 <template>
   <ElevatedCard :elevation="3">
     <section
+      data-tour="sheet-header"
       class="rounded-xl p-6 relative overflow-hidden"
     >
       <!-- Decorative backdrop -->

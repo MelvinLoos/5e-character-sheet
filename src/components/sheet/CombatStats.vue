@@ -106,7 +106,7 @@ watch(
 </script>
 
 <template>
-  <section class="flex flex-col gap-6">
+  <section data-tour="combat-stats" class="flex flex-col gap-6">
     <h3
       class="font-headline-md text-headline-md text-primary border-b border-primary-container pb-2 select-none"
     >

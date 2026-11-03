@@ -47,7 +47,7 @@ function isLocked(skillName: string): boolean {
 </script>
 
 <template>
-  <section class="flex flex-col gap-4">
+  <section data-tour="skills-list" class="flex flex-col gap-4">
     <div
       class="flex items-center justify-between border-b pb-2"
       :class="badges.skills ? 'border-error/50' : 'border-primary-container'"

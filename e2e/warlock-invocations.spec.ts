@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { openSheet } from './helpers'
 
 /**
  * E2E tests for Warlock Eldritch Invocations feature choice catalog.
@@ -27,7 +28,7 @@ test.describe('Warlock Eldritch Invocations', () => {
   })
 
   test('selects invocations and verifies they appear on character features', async ({ page }) => {
-    await page.goto('/identity')
+    await openSheet(page)
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode via the header edit toggle button
@@ -82,7 +83,7 @@ test.describe('Warlock Eldritch Invocations', () => {
   })
 
   test('persists feature selections across page reload', async ({ page }) => {
-    await page.goto('/identity')
+    await openSheet(page)
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
@@ -111,6 +112,11 @@ test.describe('Warlock Eldritch Invocations', () => {
     // Verify selection before reload
     await expect(page.getByText('1 selected')).toBeVisible()
 
+    // The draft is persisted on a short debounce; make sure it has landed before
+    // reloading, since the app now opens on a welcome screen when no character
+    // has been persisted.
+    await page.waitForFunction(() => !!localStorage.getItem('dnd_current_draft'))
+
     // Reload and verify the selection survives
     await page.reload()
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
@@ -125,7 +131,7 @@ test.describe('Warlock Eldritch Invocations', () => {
   })
 
   test('Warlock class features appear after selecting Warlock', async ({ page }) => {
-    await page.goto('/identity')
+    await openSheet(page)
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
@@ -150,7 +156,7 @@ test.describe('Warlock Eldritch Invocations', () => {
   })
 
   test('class-change cleanup removes old invocation traits', async ({ page }) => {
-    await page.goto('/identity')
+    await openSheet(page)
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
@@ -187,7 +193,7 @@ test.describe('Warlock Eldritch Invocations', () => {
   })
 
   test('prerequisite gating prevents selecting restricted invocations', async ({ page }) => {
-    await page.goto('/identity')
+    await openSheet(page)
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode

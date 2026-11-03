@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { openSheet } from './helpers'
 
 /**
  * 3D dice roller (issue #69).
@@ -29,7 +30,7 @@ test.describe('Dice roller', () => {
         },
       })
     })
-    await page.goto('/identity')
+    await openSheet(page, '/')
   })
 
   test('rolls a forced Natural 20 with breakdown, crit overlay and crit haptics', async ({ page }) => {
