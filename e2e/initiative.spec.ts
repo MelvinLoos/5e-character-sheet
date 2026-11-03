@@ -1,11 +1,12 @@
 import { test, expect, type Page } from '@playwright/test'
+import { openSheet } from './helpers'
 
 test.describe('Initiative tracker', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('dnd_discord_unlock_reminder_dismissed', 'true')
     })
-    await page.goto('/identity')
+    await openSheet(page)
     await page.getByLabel('Enter Edit Mode').first().click()
     const classSelect = page.locator('select').filter({
       has: page.locator('option[value="Fighter"]'),

@@ -1,17 +1,13 @@
 import { test, expect } from '@playwright/test'
 import { createRequire } from 'module'
+import { openSheet } from './helpers'
 
 const require = createRequire(import.meta.url)
 const { PDFParse } = require('pdf-parse')
 
 // This test only runs on Chromium (configured in playwright.config.ts)
 test('generates a PDF whose page count matches the DOM page count', async ({ page }) => {
-  await page.goto('/')
-
-  const newCharButton = page.locator('button:has-text(\"new character\")')
-  await newCharButton.click({ timeout: 3000 }).catch(() => {
-    // Button may not exist if character is already loaded
-  })
+  await openSheet(page, '/')
 
   const printable = page.locator('.printable-sheet-container')
   await printable.waitFor({ state: 'attached' })
