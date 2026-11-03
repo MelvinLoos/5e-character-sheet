@@ -12,11 +12,35 @@ import { CLASS_SPELLCASTING_FEATS } from '@/data/classSpellcasting'
 import { FEATS } from '@/data/feats'
 import { SPELL_SLOT_PROGRESSION } from '@/data/progressions'
 import { getEffectiveLevel } from '@/domain'
-import Elara from '../characters/Elara.json'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * A legacy (pre-2024) Wizard shape, kept inline so the migration test does not
+ * depend on the shipped sample character in `public/characters/`. The legacy
+ * `Spellcasting (Wizard)` feature (with a `casterType`) must be upgraded to the
+ * canonical `Wizard Spellcasting` feat by `migrateCharacterData`.
+ */
+const LEGACY_ELARA = {
+  ...createBlankCharacter(),
+  name: 'Elara Vance',
+  class: 'Wizard',
+  species: 'Elf',
+  background: 'Sage',
+  spellcasting: { ability: 'int' as const },
+  features: [
+    {
+      title: 'Spellcasting (Wizard)',
+      desc: 'You can cast wizard spells you have prepared.',
+      key: true,
+      casterType: 'full' as const,
+    },
+    { title: 'Arcane Recovery', desc: 'Recover spell slots on a short rest.' },
+    { title: 'Darkvision', desc: 'See in dim light within 60 feet.', key: true },
+  ],
+} as CharacterData
 
 function createTestCharacter(overrides: Partial<CharacterData> = {}): CharacterData {
   const baseScores = { str: 10, dex: 10, con: 10, int: 16, wis: 12, cha: 14 }
@@ -321,7 +345,7 @@ describe('feat-based spellcasting architecture', () => {
 
   describe('real sample-character migration', () => {
     it('migrates the bundled Elara Wizard to use the Wizard Spellcasting feat', () => {
-      const migrated = migrateCharacterData(Elara as CharacterData)
+      const migrated = migrateCharacterData(LEGACY_ELARA)
 
       // Original v1 legacy feature should be replaced by the canonical feat
       expect(migrated.features.some((f) => f.title === 'Wizard Spellcasting')).toBe(true)
