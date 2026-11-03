@@ -94,6 +94,8 @@ const viewport = ref<TourViewport>({
 let cachedRouter: Router | null = null
 let rafId: number | null = null
 let listenersAttached = false
+/** Guards against overlapping next/prev clicks racing a route change. */
+let busy = false
 
 function getRouter(): Router {
   if (!cachedRouter) cachedRouter = useRouter()
@@ -243,7 +245,7 @@ async function navigateTo(step: TourStep): Promise<void> {
  * Wait for a target that may mount after a lazy route change or an async
  * component resolves. Returns null when it never appears within the timeout.
  */
-async function waitForTarget(selector: string, timeoutMs = 200): Promise<HTMLElement | null> {
+async function waitForTarget(selector: string, timeoutMs = 400): Promise<HTMLElement | null> {
   let el = findTarget(selector)
   if (el) return el
   const deadline = Date.now() + timeoutMs
@@ -261,19 +263,24 @@ async function waitForTarget(selector: string, timeoutMs = 200): Promise<HTMLEle
  * Returns false when the tour has run out of steps.
  */
 async function advance(direction: 1 | -1): Promise<boolean> {
-  let index = currentIndex.value + direction
-  while (index >= 0 && index < TOUR_STEPS.length) {
-    const step = TOUR_STEPS[index]!
-    await navigateTo(step)
-    const el = await waitForTarget(step.target)
-    if (el) {
-      currentIndex.value = index
-      highlight(el)
-      return true
+  busy = true
+  try {
+    let index = currentIndex.value + direction
+    while (index >= 0 && index < TOUR_STEPS.length) {
+      const step = TOUR_STEPS[index]!
+      await navigateTo(step)
+      const el = await waitForTarget(step.target)
+      if (el) {
+        currentIndex.value = index
+        highlight(el)
+        return true
+      }
+      index += direction
     }
-    index += direction
+    return false
+  } finally {
+    busy = false
   }
-  return false
 }
 
 function endTour(): void {
@@ -300,13 +307,13 @@ async function startTour(): Promise<void> {
 }
 
 async function next(): Promise<void> {
-  if (!active.value) return
+  if (!active.value || busy) return
   const found = await advance(1)
   if (!found) endTour()
 }
 
 async function prev(): Promise<void> {
-  if (!active.value || isFirst.value) return
+  if (!active.value || busy || isFirst.value) return
   await advance(-1)
 }
 

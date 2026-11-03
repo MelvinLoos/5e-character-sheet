@@ -81,7 +81,7 @@ describe('App empty state', () => {
     // No sheet is rendered in this shallow mount, so the tour finds nothing to
     // point at and deactivates itself rather than persisting completion.
     await vi.waitFor(() => expect(useOnboardingTour().active.value).toBe(false), {
-      timeout: 2000,
+      timeout: 6000,
     })
   })
 
