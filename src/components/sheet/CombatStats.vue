@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
+import { useSpellStore } from '@/stores/spellStore'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useCombat } from '@/composables/useCombat'
 import { DICE_CANVAS_HOST_ID, canUse3d, useDiceRoller } from '@/composables/useDiceRoller'
@@ -11,9 +12,11 @@ import IconButton from '@/components/ui/IconButton.vue'
 import UsageTracker from '@/components/ui/UsageTracker.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
 import RestActions from '@/components/sheet/RestActions.vue'
+import ConcentrationTracker from '@/components/sheet/ConcentrationTracker.vue'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
+const spellStore = useSpellStore()
 const { initiativeMod, clampCurrentHp, isDowned, hitDie, hitDiceTotal, hitDiceRemaining, takeDamage, heal } =
   useCombat()
 
@@ -22,8 +25,13 @@ const amount = ref<number | null>(null)
 function applyAmount(kind: 'damage' | 'heal'): void {
   const n = Math.floor(Number(amount.value))
   if (!Number.isFinite(n) || n <= 0) return
-  if (kind === 'damage') takeDamage(n)
-  else heal(n)
+  if (kind === 'damage') {
+    takeDamage(n)
+    // Surface the CON save DC if the character is (still) concentrating.
+    spellStore.noteConcentrationDamage(n)
+  } else {
+    heal(n)
+  }
   amount.value = null
 }
 
@@ -323,6 +331,7 @@ watch(
         </div>
       </ElevatedCard>
     </div>
+    <ConcentrationTracker />
     <RestActions />
   </section>
 </template>

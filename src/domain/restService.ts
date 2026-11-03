@@ -217,7 +217,11 @@ export function applyLongRest(data: CharacterData, ctx: RestContext): CharacterD
     0,
     (next.combat.hit_dice_used ?? 0) - hitDiceRegainedOnLongRest(ctx.level),
   )
-  if (next.spellcasting) next.spellcasting.slotsSpent = {}
+  if (next.spellcasting) {
+    next.spellcasting.slotsSpent = {}
+    // A long rest ends any active concentration.
+    next.spellcasting.concentration = null
+  }
   resetFeatures(next, LONG_REST_RESETS)
   resetDeathSaves(next)
   return next

@@ -125,4 +125,10 @@ describe('long rest', () => {
     const c = makeChar({ hp_current: 40, hp_temp: 0, hit_dice_used: 0 })
     expect(describeLongRest(c, ctx).hasAnything).toBe(false)
   })
+
+  it('ends any active concentration', () => {
+    const c = makeChar()
+    c.spellcasting = { ability: 'wis', concentration: { spellName: 'Bless', level: 1 } }
+    expect(applyLongRest(c, ctx).spellcasting?.concentration).toBeNull()
+  })
 })

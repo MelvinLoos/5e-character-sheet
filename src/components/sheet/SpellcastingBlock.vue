@@ -7,6 +7,7 @@ import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
 import LibraryModal from '@/components/ui/LibraryModal.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
+import ConcentrationTracker from '@/components/sheet/ConcentrationTracker.vue'
 
 import draggable from 'vuedraggable'
 import ReorderControls from '@/components/ui/ReorderControls.vue'
@@ -64,6 +65,9 @@ const allowedLevels = computed(() => {
 
 <template>
   <div v-if="hasSpellcasting" class="flex flex-col gap-card-gap w-full text-sm">
+    <!-- Concentration marker (active effect / picker) -->
+    <ConcentrationTracker />
+
     <!-- Spell Grimoire -->
     <ElevatedCard :elevation="2">
       <section

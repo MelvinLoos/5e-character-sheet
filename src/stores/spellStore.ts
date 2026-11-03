@@ -1,9 +1,15 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useCharacterStore } from './character'
 import { useProgressionStore } from './progression'
-import { hasSpellcasting, getSpellcastingAbility } from '@/domain'
-import type { CharacterFeature } from '@/types/character'
+import {
+  hasSpellcasting,
+  getSpellcastingAbility,
+  concentrationCandidates,
+  concentrationFromSpell,
+  concentrationSaveDC,
+} from '@/domain'
+import type { CharacterFeature, CharacterSpell, Concentration } from '@/types/character'
 
 /**
  * Spell Store — magic vitals, feature filtering, and usage-tracking helpers.
@@ -42,6 +48,63 @@ export const useSpellStore = defineStore('spellStore', () => {
   const spellAttack = computed<number>(() => {
     return progressionStore.profBonus + spellMod.value
   })
+
+  // ---------------------------------------------------------------------------
+  // Concentration
+  // ---------------------------------------------------------------------------
+
+  /** The spell the character is currently concentrating on, if any. */
+  const activeConcentration = computed<Concentration | null>(
+    () => characterStore.currentCharacterData?.spellcasting?.concentration ?? null,
+  )
+
+  /** Spellbook spells that require concentration (the picker entries). */
+  const concentrationSpells = computed<CharacterSpell[]>(() =>
+    concentrationCandidates(characterStore.currentCharacterData?.spells),
+  )
+
+  /** CON save DC from the most recent damage taken while concentrating (not persisted). */
+  const lastConcentrationCheck = ref<number | null>(null)
+
+  /**
+   * Begin concentrating on a spell. Only one effect can be active at a time, so
+   * any previous concentration is replaced (the UI confirms before calling this).
+   */
+  function startConcentration(spell: CharacterSpell): void {
+    const data = characterStore.currentCharacterData
+    if (!data?.spellcasting) return
+    data.spellcasting.concentration = concentrationFromSpell(spell)
+    lastConcentrationCheck.value = null
+  }
+
+  /** Stop concentrating and clear any pending CON save reminder. */
+  function endConcentration(): void {
+    lastConcentrationCheck.value = null
+    const data = characterStore.currentCharacterData
+    if (!data?.spellcasting) return
+    data.spellcasting.concentration = null
+  }
+
+  /** Surface the CON save DC after taking damage while concentrating. */
+  function noteConcentrationDamage(damage: number): void {
+    if (!activeConcentration.value) return
+    lastConcentrationCheck.value = concentrationSaveDC(damage)
+  }
+
+  function clearConcentrationCheck(): void {
+    lastConcentrationCheck.value = null
+  }
+
+  // Concentration ends the moment the character drops to 0 HP (unconscious).
+  // Synchronous so `noteConcentrationDamage` sees the cleared state right after
+  // a lethal damage application.
+  watch(
+    () => characterStore.currentCharacterData?.combat?.hp_current,
+    (hp) => {
+      if (hp === 0) endConcentration()
+    },
+    { flush: 'sync' },
+  )
 
   // ---------------------------------------------------------------------------
   // Feature Getters
@@ -151,10 +214,17 @@ export const useSpellStore = defineStore('spellStore', () => {
     spellMod,
     spellSaveDC,
     spellAttack,
+    activeConcentration,
+    concentrationSpells,
+    lastConcentrationCheck,
     keyFeatures,
     otherFeatures,
     // Methods
     getFeatureMaxUses,
     setupSpellcasting,
+    startConcentration,
+    endConcentration,
+    noteConcentrationDamage,
+    clearConcentrationCheck,
   }
 })

@@ -13,6 +13,7 @@ import {
   migrateLevelToRenown,
   migrateEquippedGearCatalogIds,
   migrateDescriptionHtmlToMarkdown,
+  migrateConcentration,
 } from './migrations'
 import { getMod, hasSpellcasting, getEffectiveLevel, getSpellcastingAbility } from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
@@ -46,6 +47,7 @@ export function migrateCharacterData(data: unknown): CharacterData {
   migrated = migrateLevelToRenown(migrated) as Record<string, unknown>
   migrated = migrateEquippedGearCatalogIds(migrated) as Record<string, unknown>
   migrated = migrateDescriptionHtmlToMarkdown(migrated) as Record<string, unknown>
+  migrated = migrateConcentration(migrated) as Record<string, unknown>
 
   // Ensure jobInParty exists
   migrated.jobInParty = (migrated.jobInParty as string) ?? ''
