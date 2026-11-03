@@ -5,6 +5,7 @@ import { useCharacterStore } from './stores/character'
 import { useRulesStore } from './stores/rulesStore'
 import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
 import { useFeedbackStore } from './stores/feedbackStore'
+import { useDiceTray } from './composables/useDiceTray'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
 import UndoToast from './components/ui/UndoToast.vue'
@@ -29,14 +30,9 @@ const showImportModal = ref(false)
 const showImportCharacterModal = ref(false)
 const showFeedbackModal = ref(false)
 const showMoreMenu = ref(false)
-const showDiceTray = ref(false)
-/** The tray is mounted on first open and never unmounted (reuses the WebGL context). */
-const diceTrayMounted = ref(false)
-
-function openDiceTray(): void {
-  diceTrayMounted.value = true
-  showDiceTray.value = true
-}
+// The tray lives in a module-level singleton so the initiative tracker can open
+// it and roll through the same engine (see useDiceTray).
+const { isMounted: diceTrayMounted, isOpen: showDiceTray, openTray: openDiceTray } = useDiceTray()
 
 onMounted(async () => {
   await useRulesStore().loadFromStorage()

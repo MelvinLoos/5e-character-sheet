@@ -29,6 +29,13 @@ export interface DiceBoxInstance {
 }
 
 /**
+ * DOM id of the canvas host inside `DiceTray.vue`. The engine is a session
+ * singleton bound to this container, so any caller that rolls must pass the
+ * same selector — otherwise the dice render into a container that is not laid out.
+ */
+export const DICE_CANVAS_HOST_ID = 'dice-canvas-host'
+
+/**
  * The default theme (`white` colourset + `glass` material on a green-felt
  * surface) resolves to the engine's textureless "none" texture, so **no**
  * external assets are needed. Sounds stay off to keep the main thread free.

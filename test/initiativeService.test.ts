@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { createBlankCharacter, resetInitiativeFeatures, rollInitiative } from '@/domain'
+import {
+  buildInitiativeRoll,
+  createBlankCharacter,
+  resetInitiativeFeatures,
+  rollInitiative,
+} from '@/domain'
 import type { CharacterFeature } from '@/types/character'
 
 /** rng returning values that make d20 produce the given faces in order. */
@@ -31,6 +36,29 @@ describe('rollInitiative', () => {
   it('covers faces 1 to 20', () => {
     expect(rollInitiative(0, 'normal', () => 0).kept).toBe(1)
     expect(rollInitiative(0, 'normal', () => 0.999).kept).toBe(20)
+  })
+})
+
+describe('buildInitiativeRoll', () => {
+  it('uses the single die for a normal roll', () => {
+    expect(buildInitiativeRoll('normal', 3, [14])).toEqual({
+      mode: 'normal', mod: 3, rolls: [14], kept: 14, total: 17,
+    })
+  })
+  it('keeps the higher die for advantage', () => {
+    expect(buildInitiativeRoll('advantage', 2, [7, 14])).toEqual({
+      mode: 'advantage', mod: 2, rolls: [7, 14], kept: 14, total: 16,
+    })
+  })
+  it('keeps the lower die for disadvantage', () => {
+    expect(buildInitiativeRoll('disadvantage', 2, [7, 14])).toEqual({
+      mode: 'disadvantage', mod: 2, rolls: [7, 14], kept: 7, total: 9,
+    })
+  })
+  it('mirrors rollInitiative for the same faces', () => {
+    expect(buildInitiativeRoll('advantage', 4, [3, 18])).toEqual(
+      rollInitiative(4, 'advantage', seq(3, 18)),
+    )
   })
 })
 

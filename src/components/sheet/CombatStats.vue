@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
-import { computed, ref, watch } from 'vue'
+import { useSpellStore } from '@/stores/spellStore'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useCombat } from '@/composables/useCombat'
-import type { RollMode } from '@/domain'
+import { DICE_CANVAS_HOST_ID, canUse3d, useDiceRoller } from '@/composables/useDiceRoller'
+import { useDiceTray } from '@/composables/useDiceTray'
+import { buildInitiativeRoll, type RollMode } from '@/domain'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import UsageTracker from '@/components/ui/UsageTracker.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
 import RestActions from '@/components/sheet/RestActions.vue'
+import ConcentrationTracker from '@/components/sheet/ConcentrationTracker.vue'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
+const spellStore = useSpellStore()
 const { initiativeMod, clampCurrentHp, isDowned, hitDie, hitDiceTotal, hitDiceRemaining, takeDamage, heal } =
   useCombat()
 
@@ -20,8 +25,13 @@ const amount = ref<number | null>(null)
 function applyAmount(kind: 'damage' | 'heal'): void {
   const n = Math.floor(Number(amount.value))
   if (!Number.isFinite(n) || n <= 0) return
-  if (kind === 'damage') takeDamage(n)
-  else heal(n)
+  if (kind === 'damage') {
+    takeDamage(n)
+    // Surface the CON save DC if the character is (still) concentrating.
+    spellStore.noteConcentrationDamage(n)
+  } else {
+    heal(n)
+  }
   amount.value = null
 }
 
@@ -33,8 +43,36 @@ const rollModes: { value: RollMode; label: string }[] = [
 const rollMode = ref<RollMode>('normal')
 const initiativePulsing = ref(false)
 
-function rollInitiative(): void {
-  store.rollInitiative(rollMode.value)
+const diceTray = useDiceTray()
+const { isRolling: rollingInitiative, roll: rollDice } = useDiceRoller()
+
+/**
+ * Resolve once the lazily-mounted dice canvas host is in the DOM. Bounded, and
+ * skipped entirely when the engine can't use 3D (numeric fallback needs no host).
+ */
+async function waitForCanvasHost(): Promise<void> {
+  if (!canUse3d()) return
+  for (let attempt = 0; attempt < 40; attempt++) {
+    if (document.getElementById(DICE_CANVAS_HOST_ID)) return
+    await nextTick()
+    await new Promise((resolve) => setTimeout(resolve, 25))
+  }
+}
+
+/**
+ * Roll initiative through the shared 3D dice engine (issue #69). Opening the
+ * tray first makes the tumbling dice visible; the settled faces are folded into
+ * an InitiativeRoll and persisted (which also resets Initiative features).
+ */
+async function rollInitiative(): Promise<void> {
+  if (rollingInitiative.value) return
+  diceTray.openTray()
+  await waitForCanvasHost()
+  const count = rollMode.value === 'normal' ? 1 : 2
+  const summary = await rollDice(`#${DICE_CANVAS_HOST_ID}`, 20, count, initiativeMod.value)
+  store.recordInitiativeRoll(
+    buildInitiativeRoll(rollMode.value, initiativeMod.value, summary.values),
+  )
   initiativePulsing.value = false
   requestAnimationFrame(() => {
     initiativePulsing.value = true
@@ -259,9 +297,16 @@ watch(
                 {{ m.label }}
               </button>
             </div>
-            <PressableButton variant="secondary" class="flex-1 gap-2 whitespace-nowrap" data-testid="initiative-roll" @click="rollInitiative">
+            <PressableButton
+              variant="secondary"
+              class="flex-1 gap-2 whitespace-nowrap"
+              :loading="rollingInitiative"
+              :disabled="rollingInitiative"
+              data-testid="initiative-roll"
+              @click="rollInitiative"
+            >
               <span class="material-symbols-outlined" aria-hidden="true">casino</span>
-              Roll
+              {{ rollingInitiative ? 'Rolling…' : 'Roll' }}
             </PressableButton>
           </div>
 
@@ -286,6 +331,7 @@ watch(
         </div>
       </ElevatedCard>
     </div>
+    <ConcentrationTracker />
     <RestActions />
   </section>
 </template>
