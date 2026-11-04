@@ -169,4 +169,44 @@ describe('useProgressionStore', () => {
       expect(validFn('con', '+1')).toBe(true)
     })
   })
+
+  describe('point buy cap vs background bonuses', () => {
+    it('computes point buy cost exclusively from base scores', () => {
+      charStore.currentCharacterData.pointBuyBaseScores = {
+        str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8,
+      }
+      charStore.currentCharacterData.backgroundBonusSelections = {
+        plusTwo: 'str',
+        plusOne: 'dex',
+      }
+      // 9 + 7 + 5 + 4 + 2 + 0 = 27, unaffected by the background selections.
+      expect(progStore.pointBuyPointsUsed).toBe(27)
+      expect(progStore.pointBuyPointsRemaining).toBe(0)
+    })
+
+    it('caps the base score at 15 even when a bonus lifts the final score to 17', () => {
+      charStore.currentCharacterData.pointBuyBaseScores = {
+        str: 15, dex: 8, con: 8, int: 8, wis: 8, cha: 8,
+      }
+      charStore.currentCharacterData.backgroundBonusSelections = {
+        plusTwo: 'str',
+        plusOne: null,
+      }
+      progStore.adjustPointBuyScore('str', 1)
+      // Base stays at the 15 cap; the +2 bonus lives only in the final score.
+      expect(charStore.currentCharacterData.pointBuyBaseScores['str']).toBe(15)
+    })
+
+    it('exposes a base-aware increment check (pointBuyCanIncrementBase)', () => {
+      charStore.currentCharacterData.pointBuyBaseScores = {
+        str: 13, dex: 8, con: 8, int: 8, wis: 8, cha: 8,
+      }
+      charStore.currentCharacterData.backgroundBonusSelections = {
+        plusTwo: 'str',
+        plusOne: null,
+      }
+      // Final STR is 15, but base 13 can still climb within budget.
+      expect(progStore.pointBuyCanIncrementBase('str')).toBe(true)
+    })
+  })
 })
