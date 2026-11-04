@@ -76,6 +76,30 @@ export const useProgressionStore = defineStore('progression', () => {
     return pointBuyCosts[score] ?? 0
   })
 
+  /**
+   * Whether the *base* score for `key` may be incremented within the point-buy
+   * budget. Reads `pointBuyBaseScores` directly (never the derived
+   * `abilityScores`), so background bonuses that lift a final score above 15
+   * (e.g. base 13 + 2 = final 15) can never mask a legal base increment.
+   *
+   * The 8–15 cap and the 27-point budget apply to base allocations only; the
+   * final score may legitimately reach 16/17 once bonuses are applied.
+   */
+  const pointBuyCanIncrementBase = computed(() => (key: string): boolean => {
+    const baseScores = characterStore.currentCharacterData?.pointBuyBaseScores
+    if (!baseScores) return false
+    const score = baseScores[key] ?? 8
+    if (score < 8 || score >= 15) return false
+    const currentCost = pointBuyCosts[score] ?? 0
+    const nextCost = pointBuyCosts[score + 1] ?? 0
+    return pointBuyPointsUsed.value - currentCost + nextCost <= 27
+  })
+
+  /**
+   * @deprecated Operates on a raw score and therefore cannot tell a base score
+   * apart from a derived final score. Prefer `pointBuyCanIncrementBase(key)`,
+   * which always reads the base score and is immune to background bonuses.
+   */
   const pointBuyMaxForScore = computed(() => (score: number): boolean => {
     if (score < 8 || score >= 15) return false
     const currentCost = pointBuyCosts[score] ?? 0
@@ -157,7 +181,11 @@ export const useProgressionStore = defineStore('progression', () => {
   function adjustPointBuyScore(key: string, delta: number): void {
     const data = characterStore.currentCharacterData
     if (!data) return
-    const currentScore = data.pointBuyBaseScores[key] || 8
+    // Point buy operates exclusively on *base* scores (8–15). Background
+    // bonuses and feature modifiers are applied afterwards by
+    // `recalculateAbilityScores`, so they must never influence this check.
+    // Use `??` (not `||`) so an explicit 0 is never silently coerced to 8.
+    const currentScore = data.pointBuyBaseScores[key] ?? 8
     const newScore = currentScore + delta
     let totalCost = 0
     Object.values(data.pointBuyBaseScores).forEach(
@@ -221,6 +249,7 @@ export const useProgressionStore = defineStore('progression', () => {
     pointBuyPointsUsed,
     pointBuyPointsRemaining,
     pointBuyCostForScore,
+    pointBuyCanIncrementBase,
     pointBuyMaxForScore,
     isValidBonusSelection,
     // Actions
