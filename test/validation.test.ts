@@ -70,4 +70,46 @@ describe('validateAgainstSchema', () => {
     expect(new Set(errors).size).toBe(errors.length)
     expect(errors.length).toBeGreaterThan(0)
   })
+  it('accepts base scores at the 15 cap with background bonuses selected', () => {
+    const character = validCharacter()
+    character.pointBuyBaseScores.str = 15
+    character.backgroundBonusSelections = { plusTwo: 'str', plusOne: 'con' }
+
+    const { valid, errors } = validateAgainstSchema(schema, character)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
 })
+
+// The round-trip schema accepts derived fields, including final ability scores
+// that legitimately exceed the 15 point-buy base cap once background bonuses
+// are applied (up to 17). Lock that in as a regression guard.
+const characterSchemaPath = resolve(process.cwd(), 'public/character-schema.json')
+const characterSchema = JSON.parse(readFileSync(characterSchemaPath, 'utf-8')) as object
+
+describe('character-schema.json ability score bounds', () => {
+  it('accepts a final ability score of 17 (base 15 + 2 background bonus)', () => {
+    const imported = {
+      name: 'Test Hero',
+      pointBuyBaseScores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      backgroundBonusSelections: { plusTwo: 'str', plusOne: 'con' },
+      abilityScores: { str: 17, dex: 14, con: 14, int: 12, wis: 10, cha: 8 },
+    }
+
+    const { valid, errors } = validateAgainstSchema(characterSchema, imported)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('still rejects a base score above 15 in the round-trip schema', () => {
+    const imported = {
+      name: 'Test Hero',
+      pointBuyBaseScores: { str: 16, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+    }
+
+    const { valid } = validateAgainstSchema(characterSchema, imported)
+    expect(valid).toBe(false)
+  })
+})
+

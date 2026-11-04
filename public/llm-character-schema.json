@@ -89,7 +89,7 @@
     },
     "pointBuyBaseScores": {
       "type": "object",
-      "description": "The six base ability scores purchased with the standard 27-point point-buy budget. Each is between 8 and 15. REQUIRED. A legal point-buy array costs exactly 27 points (costs: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9).",
+      "description": "The six base ability scores purchased with the standard 27-point point-buy budget. Each is between 8 and 15. REQUIRED. A legal point-buy array costs up to 27 points (costs: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9). Background bonuses are applied on top of these base scores afterwards and may raise a final score above 15 (up to 17).",
       "additionalProperties": false,
       "properties": {
         "str": { "type": "integer", "minimum": 8, "maximum": 15, "description": "Strength." },

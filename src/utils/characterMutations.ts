@@ -527,6 +527,12 @@ export function applySpeciesTraits(char: CharacterData): CharacterData {
 /**
  * Rebuild abilityScores from pointBuyBaseScores + background bonus selections
  * + feature-granted ability modifiers.
+ *
+ * The 8–15 cap applies to the base point-buy allocation only. Bonuses are
+ * applied on top of the base and are intentionally NOT clamped: a base of 15
+ * with a +2 background bonus yields a final score of 17, and feature modifiers
+ * can push it higher still (per the 2024 rules). `pointBuyBaseScores` is left
+ * untouched so the point-buy cost stays based on the base allocation alone.
  */
 export function applyBackgroundBonuses(char: CharacterData): CharacterData {
   const baseScores = char.pointBuyBaseScores || { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }
