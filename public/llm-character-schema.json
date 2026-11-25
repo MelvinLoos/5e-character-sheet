@@ -65,6 +65,12 @@
       "default": null,
       "description": "Optional sub-choice id for species with lineages/ancestries/legacies, e.g. 'high-elf', 'wood-elf', 'drow' (Elf); 'cloud-giant', 'fire-giant' (Goliath); 'infernal', 'abyssal' (Tiefling). Use null when the species has no sub-choices."
     },
+    "featureChoices": {
+      "type": "object",
+      "default": {},
+      "description": "Class feature choices (subclass, fighting style, invocations...) as { choiceId: [optionId, ...] }. Get the valid choice ids, option ids and counts from get_option_details for the class. Only choices available at the character's renown tier are allowed, and the number of options per choice is capped.",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
     "background": {
       "type": "string",
       "description": "The character's background. REQUIRED. Must be exactly one of the enum values.",
@@ -149,7 +155,7 @@
           "items": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] }
         }
       },
-      "required": ["skills", "savingThrows"]
+      "required": ["skills"]
     },
     "attacks": {
       "type": "array",

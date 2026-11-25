@@ -138,4 +138,38 @@ describe('MCP handler', () => {
     })
     expect(ok.isError).toBe(false)
   })
+
+  it('accepts feature choices and reports pending ones', async () => {
+    const fighter = {
+      ...wizard,
+      class: 'Fighter',
+      background: 'Soldier',
+      pointBuyBaseScores: { str: 15, dex: 13, con: 14, int: 8, wis: 10, cha: 8 },
+      backgroundBonusSelections: { plusTwo: 'str', plusOne: 'con' },
+    }
+    const pending = await tool('validate_character', { character: fighter })
+    expect(
+      pending.body.summary.pendingFeatureChoices.map((p: { choice: string }) => p.choice),
+    ).toContain('fighting-style')
+    const done = await tool('validate_character', {
+      character: {
+        ...fighter,
+        featureChoices: { 'fighting-style': ['defense'] },
+        proficiencies: { skills: ['perception', 'survival'] },
+      },
+    })
+    expect(done.isError).toBe(false)
+    expect(done.body.summary.featureChoices).toEqual({ 'fighting-style': ['defense'] })
+    expect(done.body.summary.features).toContain('Fighting Style: Defense')
+    expect(done.body.summary.skills).not.toContain('religion')
+    expect(done.body.summary.pendingSkillChoices).toBeNull()
+  })
+
+  it('rejects unknown feature choice options', async () => {
+    const r = await tool('validate_character', {
+      character: { ...wizard, featureChoices: { 'fighting-style': ['defense'] } },
+    })
+    expect(r.isError).toBe(true)
+    expect(r.body.errors.join(' ')).toMatch(/not available/)
+  })
 })
