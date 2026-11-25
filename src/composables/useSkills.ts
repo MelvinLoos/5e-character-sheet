@@ -2,17 +2,10 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
+import { normalizeSkillName, lockedSkillsFor, chosenSkills } from '@/domain/creationRules'
 import type { ComputedRef } from 'vue'
 
-/**
- * Normalize a skill name by lowercasing and removing all whitespace.
- * Pure utility function — no store dependency, fully testable in isolation.
- *
- * @example normalizeSkillName('Sleight of Hand') // 'sleightofhand'
- */
-export function normalizeSkillName(name: string): string {
-  return name.toLowerCase().replace(/ /g, '')
-}
+export { normalizeSkillName }
 
 /**
  * Composable encapsulating D&D 5.5e skill proficiency logic.
@@ -77,27 +70,9 @@ export function useSkills(characterStore?: ReturnType<typeof useCharacterStore>)
    * Fixed skill proficiencies granted automatically by the current
    * background and class. These skills cannot be toggled off by the player.
    */
-  const lockedSkills: ComputedRef<string[]> = computed(() => {
-    const locked = new Set<string>()
-
-    // Background fixed skills
-    if (store.currentCharacterData.background) {
-      const bgData = DND_RULES.BACKGROUNDS[store.currentCharacterData.background]
-      for (const skill of bgData?.skills || []) {
-        locked.add(normalizeSkillName(skill))
-      }
-    }
-
-    // Class fixed skills
-    if (store.currentCharacterData.class) {
-      const classData = DND_RULES.CLASSES[store.currentCharacterData.class]
-      for (const skill of classData?.fixedSkills || []) {
-        locked.add(normalizeSkillName(skill))
-      }
-    }
-
-    return Array.from(locked)
-  })
+  const lockedSkills: ComputedRef<string[]> = computed(() =>
+    lockedSkillsFor(store.currentCharacterData.class, store.currentCharacterData.background),
+  )
 
   /**
    * The current class's skill choice rule (e.g. { count: 2, from: [...] }).
@@ -119,9 +94,10 @@ export function useSkills(characterStore?: ReturnType<typeof useCharacterStore>)
     const options = classSkillOptions.value
     if (!options) return 0
 
-    const locked = new Set(lockedSkills.value)
-    const manuallySelected = store.currentCharacterData.proficiencies.skills.filter(
-      (skill) => !locked.has(skill),
+    const manuallySelected = chosenSkills(
+      store.currentCharacterData.proficiencies.skills,
+      store.currentCharacterData.class,
+      store.currentCharacterData.background,
     )
 
     return Math.max(0, options.count - manuallySelected.length)
