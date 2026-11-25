@@ -13,7 +13,7 @@ export interface McpDeps {
 
 const INSTRUCTIONS = `Create D&D 5.5e (2024 rules) characters for the Heroes Guild West Marches.
 Workflow: list_options -> get_option_details for the chosen class/species/background -> validate_character -> fix errors -> create_character, then give the player the returned link.
-House rules: Renown Tier 1/2/3 replaces levels (effective level 3/6/10). Ability scores use 27-point buy (base 8-15); the background's +2/+1 go on top and must be different abilities offered by that background. Only author inputs; HP, AC, proficiency bonus and final scores are computed. Choose skills the class allows; class/background skills are added automatically. Species with sub-choices need subChoice. Spells are free-form and are NOT checked against a catalog; keep them to real 2024 spells for the class.`
+House rules: Renown Tier 1/2/3 replaces levels (effective level 3/6/10). Ability scores use 27-point buy (base 8-15); the background's +2/+1 go on top and must be different abilities offered by that background. Only author inputs; HP, AC, proficiency bonus and final scores are computed. Choose skills the class allows; class/background skills are added automatically. Species with sub-choices need subChoice. Class feature choices (subclass, fighting style, invocations) go in featureChoices; get_option_details lists the choice ids, options and counts, and the validate/create summary reports pendingFeatureChoices that are still unfilled - and pendingSkillChoices reports class skill picks still to make in proficiencies.skills. Fill all pending choices before create_character. Spells are free-form and are NOT checked against a catalog; keep them to real 2024 spells for the class.`
 
 const equipmentSchema = {
   type: 'object',

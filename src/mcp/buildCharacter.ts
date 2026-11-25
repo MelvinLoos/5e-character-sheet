@@ -5,8 +5,10 @@
  */
 import authoringSchema from '../../public/llm-character-schema.json'
 import { createBlankCharacter } from '@/domain/characterService'
-import { validateCreationRules } from '@/domain/creationRules'
+import { chosenSkills, validateCreationRules } from '@/domain/creationRules'
+import * as DND_RULES from '@/data/rules'
 import { getEffectiveLevel } from '@/domain/rulesService'
+import { eligibleFeatureChoices, effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { computeSpellSlots } from '@/domain/spellSlotService'
 import {
   applyAllChanges,
@@ -86,7 +88,11 @@ export function buildCharacter(input: unknown, equipment?: StartingEquipmentInpu
   const schemaResult = validateAgainstSchema(authoringSchema as object, input)
   if (!schemaResult.valid) return { errors: schemaResult.errors }
 
-  const merged = { ...createBlankCharacter(), ...(input as Record<string, unknown>) }
+  // The blank character carries the first class/background's features and skills;
+  // clear them so nothing from those defaults leaks into the new character.
+  const blank = { ...createBlankCharacter(), features: [], featureChoices: {} }
+  blank.proficiencies = { savingThrows: [], skills: [] }
+  const merged = { ...blank, ...(input as Record<string, unknown>) }
   let char = migrateCharacterData(merged)
   const ruleErrors = validateCreationRules(char)
   const eq = equipment
@@ -119,6 +125,29 @@ function summarize(c: CharacterData): Record<string, unknown> {
     savingThrows: c.proficiencies.savingThrows,
     gold: c.gold,
     spellSlots: computeSpellSlots(c.features, getEffectiveLevel(c.renownTier || 1)),
+    featureChoices: c.featureChoices ?? {},
+    pendingSkillChoices: pendingSkillChoices(c),
+    pendingFeatureChoices: pendingFeatureChoices(c),
     features: c.features.map((f) => f.title),
   }
+}
+
+/** Feature choices available at this tier that still have unfilled picks. */
+function pendingFeatureChoices(c: CharacterData): Array<Record<string, unknown>> {
+  const tier = c.renownTier || 1
+  return eligibleFeatureChoices(c.class, tier).flatMap((fc) => {
+    const max = effectiveMaxCountForChoice(fc, tier)
+    const missing = max - (c.featureChoices?.[fc.id]?.length ?? 0)
+    return missing > 0
+      ? [{ choice: fc.id, label: fc.label, missing, options: fc.options?.map((o) => o.id) }]
+      : []
+  })
+}
+
+/** Class skill picks the character may still make (proficiencies.skills). */
+function pendingSkillChoices(c: CharacterData): { missing: number; from: string[] | 'any' } | null {
+  const options = c.class ? DND_RULES.CLASSES[c.class]?.skillChoices : undefined
+  if (!options) return null
+  const missing = options.count - chosenSkills(c.proficiencies.skills, c.class, c.background).length
+  return missing > 0 ? { missing, from: options.from } : null
 }
