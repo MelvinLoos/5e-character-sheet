@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "run-p type-check \"build-only {@}\" build:mcp --",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
@@ -17,10 +17,12 @@
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/",
     "start": "vite preview",
-    "netlify": "netlify dev"
+    "netlify": "netlify dev",
+    "build:mcp": "vite build --config vite.mcp.config.ts"
   },
   "dependencies": {
     "@3d-dice/dice-box-threejs": "^0.0.12",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@supabase/supabase-js": "^2.79.0",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",

@@ -120,6 +120,25 @@ The app ships these schemas in `public/`:
 
 To author a character with an LLM, provide it with `public/llm-character-schema.json` and a prompt such as *"Create a level-3 elven wizard named Elara using this schema."* Save the returned JSON and load it via **Import Character**.
 
+## Create characters with an AI agent (MCP)
+
+The site hosts a stateless [MCP](https://modelcontextprotocol.io) server at `https://<your-site>/mcp` (Streamable HTTP, no sign-in). Any MCP client can use it to build a legal character in conversation.
+
+```sh
+claude mcp add --transport http heroes-guild https://<your-site>/mcp
+```
+
+Claude and ChatGPT: add it as a custom connector with the same URL.
+
+| Tool | Purpose |
+| --- | --- |
+| `list_options` | List classes, species, backgrounds, feats or invocations. |
+| `get_option_details` | Features, skill choices, sub-choices and starting equipment for one option. |
+| `validate_character` | Check a draft against `llm-character-schema.json` and the creation rules (27-point buy, background +2/+1, skill limits, sub-choices, feature choices) without saving. |
+| `create_character` | Validate, save, and return a share link (`?id=`). Open it and use **More actions → Save to library**. |
+
+Spells are free-form and not checked against a catalog. The server inserts into the same Supabase `characters` table as the share button, using `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The handler is prebuilt from `src/mcp/` by `npm run build:mcp` (part of `npm run build`); to try it locally, run `npm run build:mcp && npm run netlify`.
+
 ## Deployment
 
 The site is deployed to Netlify from `main`.

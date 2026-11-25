@@ -45,3 +45,6 @@ playwright-report/
 
 # Local Netlify folder
 .netlify
+
+# MCP handler build output
+dist-mcp/
