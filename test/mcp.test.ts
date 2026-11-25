@@ -45,13 +45,16 @@ const wizard = {
 }
 
 describe('MCP handler', () => {
-  it('lists the four tools with the stripped authoring schema', async () => {
+  it('lists the tools with the stripped authoring schema', async () => {
     const { result } = await rpc('tools/list')
     expect(result.tools.map((t: { name: string }) => t.name)).toEqual([
       'list_options',
       'get_option_details',
       'validate_character',
       'create_character',
+      'list_guilds',
+      'search_guild_spells',
+      'search_guild_feats',
     ])
     const schema = JSON.parse(
       readFileSync(resolve(process.cwd(), 'public/llm-character-schema.json'), 'utf-8'),

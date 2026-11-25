@@ -90,7 +90,8 @@ export const useAuthStore = defineStore('auth', () => {
     })
   }
 
-  async function signInWithDiscord() {
+  /** @param redirectTo Where Discord should return to; defaults to the site root. */
+  async function signInWithDiscord(redirectTo?: string) {
     if (!supabase) {
       logger.warn('Supabase client not available. Cannot sign in.')
       return
@@ -102,7 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
       provider: 'discord',
       options: {
         scopes: 'identify guilds',
-        redirectTo: window.location.origin,
+        redirectTo: typeof redirectTo === 'string' ? redirectTo : window.location.origin,
       },
     })
 

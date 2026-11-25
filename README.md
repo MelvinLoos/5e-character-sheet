@@ -136,8 +136,19 @@ Claude and ChatGPT: add it as a custom connector with the same URL.
 | `get_option_details` | Features, skill choices, sub-choices and starting equipment for one option. |
 | `validate_character` | Check a draft against `llm-character-schema.json` and the creation rules (27-point buy, background +2/+1, skill limits, sub-choices, feature choices) without saving. |
 | `create_character` | Validate, save, and return a share link (`?id=`). Open it and use **More actions → Save to library**. |
+| `list_guilds`, `search_guild_spells`, `search_guild_feats` | Guild homebrew content. Requires sign-in. |
 
-Spells are free-form and not checked against a catalog. The server inserts into the same Supabase `characters` table as the share button, using `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The handler is prebuilt from `src/mcp/` by `npm run build:mcp` (part of `npm run build`); to try it locally, run `npm run build:mcp && npm run netlify`.
+**Sign in for guild content.** Three more tools (`list_guilds`, `search_guild_spells`, `search_guild_feats`) read the guild homebrew spells and feats available to the player's account. The first time an agent calls one, the client opens a consent page (`/oauth/consent`) where the player signs in with Discord and approves the agent. Everything else works without signing in. Only guild content is reachable; characters saved on a device never leave it.
+
+Spells on a character are free-form and not checked against a catalog. The server inserts into the same Supabase `characters` table as the share button, using `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The handler is prebuilt from `src/mcp/` by `npm run build:mcp` (part of `npm run build`); to try it locally, run `npm run build:mcp && npm run netlify`.
+
+### Enabling sign-in for MCP (one-time Supabase setup)
+
+Sign-in uses Supabase Auth's OAuth 2.1 server, so the MCP endpoint never stores tokens and row level security applies as the player.
+
+1. Supabase dashboard → **Authentication → OAuth Server**: enable it, set the **Authorization Path** to `/oauth/consent`, and turn on **Allow dynamic client registration** so MCP clients can register themselves.
+2. **Authentication → URL Configuration**: set the Site URL to the production URL and add `https://<your-site>/oauth/consent` (and your deploy-preview pattern) to the redirect allow-list, so the Discord login can return to the consent page.
+3. The function advertises the OAuth server at `/.well-known/oauth-protected-resource`; no extra environment variables are needed beyond the existing `VITE_SUPABASE_*` ones.
 
 ## Deployment
 
