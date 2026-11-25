@@ -5,7 +5,7 @@
 // diagnostics. Prefer this over calling `console.*` directly so debug
 // noise never reaches end users in a production build.
 
-const isDev = import.meta.env.DEV
+const isDev = import.meta.env?.DEV ?? false
 
 export const logger = {
   log: (...args: unknown[]): void => {

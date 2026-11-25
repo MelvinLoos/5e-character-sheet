@@ -61,6 +61,7 @@ import {
 } from '@/domain'
 import { calculateArmorClass } from '@/utils/acCalculator'
 import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
+import { meetsOptionPrerequisite } from '@/domain/creationRules'
 import { buildShareUrl } from '@/utils/shareUrl'
 import { autoSeedAttacks } from '@/composables/useCombat'
 import { useModals } from '@/composables/useModals'
@@ -646,17 +647,7 @@ export const useCharacterStore = defineStore('character', () => {
       const option = availableOptions.find((o) => o.id === optionId)
       if (!option) continue
 
-      // Check prerequisite (basic format: "Fighter:level:3")
-      if (option.prerequisite) {
-        const parts = option.prerequisite.split(':')
-        if (parts.length >= 3 && parts[0] === className && parts[1] === 'level') {
-          const part2 = parts[2]
-          if (part2 !== undefined) {
-            const requiredLevel = parseInt(part2, 10)
-            if (!isNaN(requiredLevel) && level < requiredLevel) continue
-          }
-        }
-      }
+      if (!meetsOptionPrerequisite(option, className, level)) continue
 
       validOptionIds.push(optionId)
     }

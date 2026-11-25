@@ -12,6 +12,7 @@ import {
   getSpellcastingAbility,
 } from '@/domain'
 import { applyBackgroundBonuses } from '@/utils/characterMutations'
+import { POINT_BUY_BUDGET, POINT_BUY_MIN, POINT_BUY_MAX, pointBuyCostTotal } from '@/domain/creationRules'
 import type { CharacterFeature } from '@/types/character'
 
 /**
@@ -63,14 +64,10 @@ export const useProgressionStore = defineStore('progression', () => {
 
   const pointBuyPointsUsed = computed(() => {
     if (!characterStore.currentCharacterData) return 0
-    let total = 0
-    Object.values(characterStore.currentCharacterData.pointBuyBaseScores).forEach(
-      (s) => (total += pointBuyCosts[s] ?? 0),
-    )
-    return total
+    return pointBuyCostTotal(characterStore.currentCharacterData.pointBuyBaseScores)
   })
 
-  const pointBuyPointsRemaining = computed(() => 27 - pointBuyPointsUsed.value)
+  const pointBuyPointsRemaining = computed(() => POINT_BUY_BUDGET - pointBuyPointsUsed.value)
 
   const pointBuyCostForScore = computed(() => (score: number): number => {
     return pointBuyCosts[score] ?? 0
@@ -89,10 +86,10 @@ export const useProgressionStore = defineStore('progression', () => {
     const baseScores = characterStore.currentCharacterData?.pointBuyBaseScores
     if (!baseScores) return false
     const score = baseScores[key] ?? 8
-    if (score < 8 || score >= 15) return false
+    if (score < POINT_BUY_MIN || score >= POINT_BUY_MAX) return false
     const currentCost = pointBuyCosts[score] ?? 0
     const nextCost = pointBuyCosts[score + 1] ?? 0
-    return pointBuyPointsUsed.value - currentCost + nextCost <= 27
+    return pointBuyPointsUsed.value - currentCost + nextCost <= POINT_BUY_BUDGET
   })
 
   /**
