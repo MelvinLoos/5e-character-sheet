@@ -34,7 +34,7 @@ const authStore = useAuthStore()
 
     <button
       v-else
-      @click="authStore.signInWithDiscord"
+      @click="authStore.signInWithDiscord()"
       class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#5865F2] hover:bg-[#4752C4] transition-colors text-white font-label-md"
       aria-label="Login with Discord"
     >
