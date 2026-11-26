@@ -145,7 +145,7 @@ watch(
             <input
               v-model="store.currentCharacterData.combat.isAcOverride"
               type="checkbox"
-              class="form-checkbox h-4 w-4 rounded border-outline-variant bg-surface-container text-primary focus:ring-primary"
+              class="form-checkbox h-6 w-6 rounded border-outline-variant bg-surface-container text-primary focus:ring-primary"
             />
             <span>Override AC</span>
           </label>

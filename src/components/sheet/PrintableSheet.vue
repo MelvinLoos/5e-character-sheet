@@ -173,7 +173,7 @@ function formatSpellLevel(level: number) {
 <template>
   <div class="printable-sheet-container hidden print:block bg-white text-black p-0 m-0 w-full">
     <!-- PAGE 1: Core Vitals & Skills -->
-    <main
+    <section
       class="a4-page a4-page--fixed p-8 border-black font-body-md text-body-md bg-white text-black overflow-hidden"
       style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto; page-break-after: always"
     >
@@ -346,10 +346,10 @@ function formatSpellLevel(level: number) {
           <p class="text-[11px] break-all">{{ store.shareUrl }}</p>
         </div>
       </div>
-    </main>
+    </section>
 
     <!-- PAGE 2: Combat, Magic, & Inventory -->
-    <main
+    <section
       class="a4-page a4-page--fixed p-6 border-black font-body-md text-body-md bg-white text-black overflow-hidden"
       style="width: 210mm; height: 296.5mm; min-height: 296.5mm; max-height: 296.5mm; margin: 0 auto; page-break-after: always"
     >
@@ -520,10 +520,10 @@ function formatSpellLevel(level: number) {
       >
         Continues in Appendix
       </div>
-    </main>
+    </section>
 
     <!-- PAGE 3+: The Appendix -->
-    <main
+    <section
       v-if="hasAppendix"
       class="a4-page a4-page--flow p-6 border-black font-body-md text-body-md bg-white text-black"
       style="width: 210mm; min-height: 296.5mm; margin: 0 auto"
@@ -625,7 +625,7 @@ function formatSpellLevel(level: number) {
           />
         </article>
       </div>
-    </main>
+    </section>
   </div>
 </template>
 
