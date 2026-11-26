@@ -11,20 +11,20 @@ const { badges } = useCharacterCompletion()
 
 <template>
   <div class="flex flex-col gap-8 w-full max-w-7xl mx-auto">
-    <SheetHeader />
+    <SheetHeader :class="store.isEditing ? '' : 'max-lg:order-2'" />
 
-    <StatusBanner v-if="badges.identity" tone="error" class="md:hidden">
+    <StatusBanner v-if="badges.identity && store.isEditing" tone="error" class="md:hidden">
       {{ badges.identity.label }}
     </StatusBanner>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" :class="store.isEditing ? '' : 'max-lg:order-1'">
       <!-- Row 1: Ability Scores (full width) -->
       <section class="lg:col-span-12 flex flex-col gap-6 w-full">
         <AbilityScores />
       </section>
 
       <!-- Row 2: Combat Vitals + Progression -->
-      <section class="lg:col-span-5 flex flex-col gap-4 w-full">
+      <section class="lg:col-span-5 flex flex-col gap-4 w-full" :class="{ 'max-lg:order-first': !store.isEditing }">
         <CombatStats class="w-full" />
       </section>
 

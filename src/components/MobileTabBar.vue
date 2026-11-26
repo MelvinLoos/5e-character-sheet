@@ -13,8 +13,14 @@ defineEmits<{
 
 const { badges } = useCharacterCompletion()
 
+/** Sections kept off the bar (reachable from the More sheet) so four tabs fit at 44px+. */
+const MORE_SECTIONS: readonly string[] = ['feats', 'narrative']
+
+/** Hint on the More tab when a section tucked inside it still needs attention. */
+const moreNeedsAttention = computed(() => MORE_SECTIONS.some((name) => badges.value[name as keyof typeof badges.value]))
+
 const navEntries = computed(() =>
-  NAV_LINKS.map((link) => ({
+  NAV_LINKS.filter((link) => !MORE_SECTIONS.includes(link.name)).map((link) => ({
     ...link,
     badge: badges.value[link.name],
   })),
@@ -31,7 +37,7 @@ const queryParams = computed(() => {
   >
     <div class="flex items-center justify-around h-full max-w-lg mx-auto">
       <router-link
-        v-for="entry in navEntries.slice(0, 3)"
+        v-for="entry in navEntries.slice(0, 2)"
         :key="entry.name"
         :to="{ name: entry.name, ...queryParams }"
         class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all duration-200 ease-out active:scale-95 select-none"
@@ -54,17 +60,23 @@ const queryParams = computed(() => {
         <span class="text-[11px] font-label-md leading-none">{{ entry.label }}</span>
       </router-link>
 
+      <!-- A regular tab (not a raised bump) so the dice roller is the only floating button -->
       <button
+        type="button"
         @click="$emit('showMore')"
-        class="relative -top-3 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-tertiary text-on-tertiary shadow-[0_4px_14px_rgba(0,0,0,0.35)] hover:bg-tertiary-fixed hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-95 transition-all duration-200 ease-out select-none"
+        class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 text-on-surface-variant hover:text-on-surface transition-all duration-200 ease-out active:scale-95 select-none"
         title="More Actions"
         aria-label="More Actions"
       >
-        <span class="material-symbols-outlined text-[1.6rem]" aria-hidden="true">more_horiz</span>
+        <span class="relative">
+          <span class="material-symbols-outlined text-[1.35rem]" aria-hidden="true">more_horiz</span>
+          <span v-if="moreNeedsAttention" class="absolute -top-0.5 -right-1 h-2.5 w-2.5 rounded-full bg-error" aria-hidden="true"></span>
+        </span>
+        <span class="text-[11px] font-label-md leading-none">More</span>
       </button>
 
       <router-link
-        v-for="entry in navEntries.slice(3)"
+        v-for="entry in navEntries.slice(2)"
         :key="entry.name"
         :to="{ name: entry.name, ...queryParams }"
         class="flex flex-col items-center justify-center flex-1 gap-0.5 py-2 transition-all duration-200 ease-out active:scale-95 select-none"
@@ -84,7 +96,7 @@ const queryParams = computed(() => {
             class="absolute -top-1.5 -right-2"
           />
         </span>
-        <span class="text-[10px] font-label-md leading-none">{{ entry.label }}</span>
+        <span class="text-[11px] font-label-md leading-none">{{ entry.label }}</span>
       </router-link>
     </div>
   </nav>

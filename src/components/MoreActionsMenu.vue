@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 import { useAuthStore } from '@/stores/authStore'
 import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
 import { useCharacterActions } from '@/composables/useCharacterActions'
 import { useOnboardingTour } from '@/composables/useOnboardingTour'
+import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
+import CompletionBadge from './ui/CompletionBadge.vue'
 import AuthButton from './AuthButton.vue'
 import GuildSelector from './GuildSelector.vue'
 import GuildManagementModal from './modals/GuildManagementModal.vue'
@@ -25,6 +28,15 @@ const store = useCharacterStore()
 useAuthStore()
 const guildStore = useGuildStore()
 const { startTour } = useOnboardingTour()
+const { badges } = useCharacterCompletion()
+// Optional so the sheet can mount without a router (unit tests)
+const route = useRoute() as ReturnType<typeof useRoute> | undefined
+
+/** Sections that don't fit on the mobile tab bar. */
+const moreSections = [
+  { name: 'feats', label: 'Feats', icon: 'military_tech' },
+  { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
+] as const
 
 /** Close the sheet and replay the guided tour. */
 function restartTour() {
@@ -159,6 +171,24 @@ watch(
               <div class="w-12 h-1 bg-outline-variant rounded-full mx-auto mb-4"></div>
 
               <h3 class="font-headline-md text-tertiary mb-4 px-2">More Actions</h3>
+
+              <!-- Sections that don't fit on the tab bar -->
+              <nav v-if="store.currentCharacterData" aria-label="More sections" class="grid grid-cols-2 gap-3 px-2 mb-4">
+                <router-link
+                  v-for="section in moreSections"
+                  :key="section.name"
+                  :to="{ name: section.name, query: route?.query.id ? { id: route.query.id } : {} }"
+                  class="relative flex min-h-12 items-center justify-center gap-2 rounded-xl bg-surface-variant p-3 text-on-surface hover:bg-surface-bright active:scale-95 transition-all duration-200 select-none"
+                  :class="{ 'ring-1 ring-tertiary': route?.name === section.name }"
+                  :aria-current="route?.name === section.name ? 'page' : undefined"
+                  :aria-label="badges[section.name] ? `${section.label} — ${badges[section.name]!.label}` : undefined"
+                  @click="close"
+                >
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">{{ section.icon }}</span>
+                  <span class="text-sm font-label-md">{{ section.label }}</span>
+                  <CompletionBadge v-if="badges[section.name]" :badge="badges[section.name]!" class="absolute -top-1.5 -right-1.5" />
+                </router-link>
+              </nav>
 
               <!-- Character Select -->
               <div class="px-2 mb-4">

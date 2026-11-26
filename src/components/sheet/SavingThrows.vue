@@ -4,9 +4,11 @@ import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
 import { formatMod } from '@/domain'
+import { useSheetRoll } from '@/composables/useSheetRoll'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
+const { rollCheck } = useSheetRoll()
 
 function isProficient(key: string) {
   return store.currentCharacterData.proficiencies.savingThrows.includes(key)
@@ -39,14 +41,21 @@ function toggleProficiency(key: string) {
     >
       Saving Throws
     </h3>
-    <div style="gap: 1em" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-0">
+    <p v-if="!store.isEditing" class="font-body-sm text-body-sm text-on-surface-variant md:hidden">Tap a save to roll it.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-[1em]">
       <div
         v-for="[key, name] in Object.entries(DND_RULES.ABILITIES)"
         :key="key"
         class="bg-surface-container border rounded-lg p-2 flex items-center justify-between hover:bg-surface-variant transition-colors group gap-0"
         :class="'border-primary-container'"
       >
-        <div class="flex items-center gap-2 flex-1">
+        <component
+          :is="store.isEditing ? 'div' : 'button'"
+          :type="store.isEditing ? undefined : 'button'"
+          :aria-label="store.isEditing ? undefined : `Roll ${name} saving throw, ${formatMod(getSaveMod(key))}`"
+          class="flex items-center gap-2 flex-1 min-h-12 text-left rounded-lg select-none"
+          @click="!store.isEditing && rollCheck(`${name} save`, getSaveMod(key))"
+        >
           <div
             class="w-12 h-12 rounded bg-surface-dim border flex items-center justify-center font-headline-md text-headline-md transition-colors"
             :class="
@@ -65,7 +74,7 @@ function toggleProficiency(key: string) {
               key.toUpperCase()
             }}</span>
           </div>
-        </div>
+        </component>
         <div class="flex items-center gap-3">
           <ProficiencyToggle
             :model-value="isProficient(key)"

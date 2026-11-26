@@ -6,10 +6,12 @@ import { useProgressionStore } from '@/stores/progression'
 import * as DND_RULES from '@/data/rules'
 import { formatMod } from '@/domain'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
+import { useSheetRoll } from '@/composables/useSheetRoll'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
 const { badges } = useCharacterCompletion()
+const { rollCheck } = useSheetRoll()
 
 // Animation state for points counter
 const pointsAnimationClass = ref('')
@@ -94,10 +96,10 @@ watch(
       :class="badges.identity ? 'border-error/50' : 'border-primary-container'"
     >
       <h3 class="font-headline-md text-headline-md text-primary select-none">
-        Ability Scores<InfoButton topic="point-buy" />
+        Ability Scores<InfoButton v-if="store.isEditing" topic="point-buy" />
       </h3>
       <span
-        v-if="badges.identity"
+        v-if="badges.identity && store.isEditing"
         class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none animate-pulse"
       >
         {{ badges.identity.label }}
@@ -152,11 +154,18 @@ watch(
       </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-6 gap-4 sm:gap-16">
-      <div
+    <div class="grid sm:grid-cols-6 gap-2 sm:gap-16" :class="store.isEditing ? 'grid-cols-2' : 'grid-cols-3'">
+      <p v-if="!store.isEditing" class="col-span-3 font-body-sm text-body-sm text-on-surface-variant sm:hidden">
+        Tap an ability to roll a check.
+      </p>
+      <component
+        :is="store.isEditing ? 'div' : 'button'"
         v-for="[key, value] in Object.entries(store.currentCharacterData?.abilityScores || {})"
         :key="key"
-        class="stat-orb-gradient rounded-full p-2 border border-primary-container flex flex-col items-center relative aspect-[1] justify-center group hover:border-tertiary/50 transition-colors shadow-[0_8px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]"
+        :type="store.isEditing ? undefined : 'button'"
+        :aria-label="store.isEditing ? undefined : `Roll ${DND_RULES.ABILITIES[key] ?? key} check, ${formatMod(progression.abilityMods[key] ?? 0)}`"
+        @click="!store.isEditing && rollCheck(`${DND_RULES.ABILITIES[key] ?? key} check`, progression.abilityMods[key] ?? 0)"
+        class="stat-orb-gradient rounded-full p-1 sm:p-2 border border-primary-container flex flex-col items-center relative aspect-[1] justify-center group hover:border-tertiary/50 transition-colors shadow-[0_8px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]"
         
       >
         <div
@@ -164,12 +173,12 @@ watch(
          
         ></div>
         <span
-          class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-4 select-none"
+          class="font-label-md text-label-md text-tertiary font-bold tracking-widest mt-2 sm:mt-4 select-none"
           :class="{ 'text-on-surface-variant': (progression.abilityMods[key] ?? 0) < 0 }"
           >{{ key.toUpperCase() }}</span
         >
         <div
-          class="font-display-lg text-[44px] leading-none text-on-surface font-bold my-1 select-none"
+          class="font-display-lg text-[28px] sm:text-[44px] leading-none text-on-surface font-bold my-1 select-none"
           :class="{ 'text-on-surface-variant': (progression.abilityMods[key] ?? 0) < 0 }"
         >
           {{ formatMod(progression.abilityMods[key] ?? 0) }}
@@ -201,11 +210,11 @@ watch(
         </div>
         <div
           v-else
-          class="font-body-lg text-body-lg text-on-surface-variant mb-4 font-bold border border-outline-variant/30 rounded-full px-4 py-1 bg-background/30 backdrop-blur-sm select-none"
+          class="font-body-lg text-body-lg text-on-surface-variant mb-2 sm:mb-4 font-bold border border-outline-variant/30 rounded-full px-3 sm:px-4 sm:py-1 bg-background/30 backdrop-blur-sm select-none"
         >
           {{ value }}
         </div>
-      </div>
+      </component>
     </div>
   </section>
 </template>

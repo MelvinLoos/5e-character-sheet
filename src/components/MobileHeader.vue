@@ -12,12 +12,21 @@ defineEmits<{ showMore: [] }>()
   <header
     class="md:hidden fixed inset-x-0 top-0 z-nav flex items-center justify-between gap-2 bg-primary-container px-4 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-sm print:hidden"
   >
+    <!-- With a character: its name leads, class beneath. Otherwise the brand lockup. -->
+    <span v-if="store.currentCharacterData" class="flex min-w-0 flex-col leading-tight" data-testid="mobile-character-name">
+      <span class="truncate font-headline-md text-headline-md text-tertiary">{{
+        store.currentCharacterData.name || 'Unnamed character'
+      }}</span>
+      <span class="truncate font-label-sm text-label-sm text-on-surface-variant">{{
+        store.currentCharacterData.class || 'Heroes Guild'
+      }}</span>
+    </span>
     <!-- Organisation over app name: "Heroes Guild" / "Character Sheet" -->
-    <span class="flex flex-col leading-tight">
+    <span v-else class="flex flex-col leading-tight">
       <span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Heroes Guild</span>
       <span class="font-headline-md text-headline-md text-tertiary">Character Sheet</span>
     </span>
-    <div class="flex items-center gap-1">
+    <div class="flex shrink-0 items-center gap-1">
       <ThemeToggle />
       <button
         v-if="store.currentCharacterData"
