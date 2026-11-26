@@ -27,6 +27,12 @@ export default defineConfigWithVueTs(
     '**/coverage/**',
     '**/.vscode/**',
     '**/*.log',
+    // Generated / vendored / tooling output
+    '**/dist-mcp/**',
+    '.agents/**',
+    '.claude/**',
+    '.github/skills/**',
+    '.playwright-mcp/**',
   ]),
 
   pluginVue.configs['flat/essential'],
