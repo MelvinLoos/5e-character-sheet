@@ -96,7 +96,7 @@ function focusMain(): void {
           class="bg-surface-container rounded-2xl border border-outline-variant shadow-elevation-2 p-10 max-w-2xl mx-auto text-center"
         >
           <h2 class="font-headline-lg text-headline-lg text-tertiary">Welcome, Adventurer</h2>
-          <p class="mt-4 text-on-surface-variant font-body-md">
+          <p class="mt-4 [text-wrap:pretty] text-on-surface-variant font-body-md">
             Create your first character or import an existing character sheet from JSON.
           </p>
           <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
