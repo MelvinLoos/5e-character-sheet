@@ -145,14 +145,20 @@ describe('option visuals', () => {
     useCharacterStore().handleNewCharacter()
   })
 
-  it('renders the monogram for a species card and an emblem for a class card', async () => {
+  it('renders emblems for species and classes, a monogram for backgrounds', async () => {
     const w = mountWizard()
     const first = w.find('[data-testid="option-visual"]')
-    expect(first.find('[data-visual="monogram"]').exists()).toBe(true)
+    expect(first.find('svg').exists()).toBe(true) // Human has an emblem
+    expect(first.attributes('aria-hidden')).toBe('true')
     await w.findAll('input[type="radio"]').find((r) => r.attributes('value') === 'Human')!.trigger('change')
     await flushPromises()
     await next(w).trigger('click')
     expect(w.find('[data-testid="option-visual"] svg').exists()).toBe(true)
-    expect(w.find('[data-testid="option-visual"]').attributes('aria-hidden')).toBe('true')
+    for (const v of ['Fighter', 'champion']) {
+      await w.findAll('input[type="radio"]').find((r) => r.attributes('value') === v)!.trigger('change')
+      await flushPromises()
+      await next(w).trigger('click')
+    }
+    expect(w.find('[data-testid="option-visual"] [data-visual="monogram"]').exists()).toBe(true)
   })
 })

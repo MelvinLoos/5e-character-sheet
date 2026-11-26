@@ -223,7 +223,215 @@ export const CLASS_EMBLEMS: Record<string, EmblemDefinition> = {
 }
 
 // Ready for future expansion (Species and Background emblems plug in here).
-export const SPECIES_EMBLEMS: Record<string, EmblemDefinition> = {}
+export const SPECIES_EMBLEMS: Record<string, EmblemDefinition> = {
+  aasimar: {
+    accent: '#fde047',
+    accentSoft: '#713f12',
+    svgBody: `
+      <circle cx="100" cy="74" r="42" fill="url(#accentGrad)" opacity="0.14"/>
+      <ellipse cx="100" cy="30" rx="28" ry="6.5" fill="none" stroke="url(#accentGrad)" stroke-width="3"/>
+      <ellipse cx="100" cy="30" rx="22" ry="3.5" fill="none" stroke="#fef9c3" stroke-width="1" opacity="0.7"/>
+      <path d="M92 66 C70 44 44 42 32 58 C46 60 56 64 68 70 C48 70 38 78 40 88 C54 84 66 84 78 86 C62 90 54 98 58 106 C72 100 84 94 94 86 Z" fill="url(#accentGrad)" stroke="#fef9c3" stroke-opacity="0.55" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M108 66 C130 44 156 42 168 58 C154 60 144 64 132 70 C152 70 162 78 160 88 C146 84 134 84 122 86 C138 90 146 98 142 106 C128 100 116 94 106 86 Z" fill="url(#accentGrad)" stroke="#fef9c3" stroke-opacity="0.55" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M100 42 L107 66 L130 74 L107 82 L100 118 L93 82 L70 74 L93 66 Z" fill="#fef9c3" stroke="url(#accentGrad)" stroke-width="1.5"/>
+      <circle cx="100" cy="74" r="8" fill="#0f172a" stroke="#fde047" stroke-width="2"/>
+      <circle cx="100" cy="74" r="3.5" fill="#fef08a"/>
+      <circle cx="60" cy="36" r="2" fill="#fef08a"/>
+      <circle cx="140" cy="36" r="2" fill="#fef08a"/>
+    `,
+  },
+  dragonborn: {
+    accent: '#ef4444',
+    accentSoft: '#7f1d1d',
+    svgBody: `
+      <circle cx="104" cy="74" r="42" fill="url(#accentGrad)" opacity="0.16"/>
+      <path d="M134 74 C146 66 156 68 164 62 C158 72 162 78 168 82 C156 84 146 88 134 82 Z" fill="#f97316" opacity="0.85"/>
+      <path d="M136 75 C144 71 152 72 158 70 C152 76 154 80 144 80 Z" fill="#fef08a"/>
+      <circle cx="164" cy="56" r="2.2" fill="#fde047"/>
+      <circle cx="170" cy="72" r="2" fill="#fb923c"/>
+      <path d="M74 62 L58 58 L70 72 L54 74 L68 86 L54 92 L68 102 L58 110 L74 114 Z" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M90 48 C74 34 54 24 38 26 C50 36 62 46 78 56 Z" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M84 56 C70 46 56 42 46 46 C58 52 68 58 78 64 Z" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M68 126 C64 98 68 72 82 54 L106 60 C98 78 100 102 112 126 Z" fill="#b91c1c" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M98 78 C95 92 98 110 108 124 L114 124 C104 108 102 92 106 78 Z" fill="#fbbf24" opacity="0.85"/>
+      <path d="M96 90 L106 90 M97 101 L108 100 M101 112 L111 110" stroke="#78350f" stroke-width="1.8"/>
+      <path d="M98 76 L138 86 L134 94 L106 94 L94 86 Z" fill="#991b1b" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <polygon points="108,94 102,102 114,95" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.2"/>
+      <path d="M80 56 C86 44 104 42 118 48 L146 58 L148 68 L138 72 L106 72 L86 76 Z" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="138,55 148,44 146,59" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="1.4"/>
+      <polygon points="136,70 139,79 143,69" fill="#fef9c3" stroke="#0f172a" stroke-width="1"/>
+      <polygon points="124,71 127,78 131,71" fill="#fef9c3" stroke="#0f172a" stroke-width="1"/>
+      <polygon points="129,85 133,78 136,86" fill="#fef9c3" stroke="#0f172a" stroke-width="1"/>
+      <path d="M94 53 L112 55 L108 61 L96 59 Z" fill="#0f172a"/>
+      <polygon points="97,55 109,57 104,60" fill="#fde047"/>
+      <circle cx="140" cy="63" r="1.8" fill="#0f172a"/>
+    `,
+  },
+  dwarf: {
+    accent: '#d97706',
+    accentSoft: '#78350f',
+    svgBody: `
+      <circle cx="100" cy="78" r="44" fill="url(#accentGrad)" opacity="0.16"/>
+      <path d="M40 124 C44 102 64 94 100 94 C136 94 156 102 160 124 Z" fill="#1e293b" stroke="url(#metalGrad)" stroke-width="2.5"/>
+      <path d="M52 72 C46 96 54 118 72 126 L84 118 L100 132 L116 118 L128 126 C146 118 154 96 148 72 Z" fill="#b45309" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M68 78 L66 122 M84 82 L84 118 M116 82 L116 118 M132 78 L134 122" stroke="#78350f" stroke-width="2.2"/>
+      <path d="M74 84 L74 118 M100 84 L100 128 M126 84 L126 118" stroke="#f59e0b" stroke-width="2" opacity="0.75"/>
+      <rect x="64" y="106" width="15" height="6" rx="2" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="1.3"/>
+      <rect x="121" y="106" width="15" height="6" rx="2" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="1.3"/>
+      <rect x="91" y="112" width="18" height="7" rx="2" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="1.3"/>
+      <path d="M66 56 L134 56 L132 76 L68 76 Z" fill="#d6a37a" stroke="#0f172a" stroke-width="1.5"/>
+      <path d="M72 58 L92 62 M128 58 L108 62" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="83" cy="64" r="2.5" fill="#0f172a"/>
+      <circle cx="117" cy="64" r="2.5" fill="#0f172a"/>
+      <path d="M94 60 L106 60 L109 73 C106 77 94 77 91 73 Z" fill="#c08457" stroke="#78350f" stroke-width="1.5"/>
+      <path d="M100 74 C84 70 62 72 46 84 C58 92 78 90 100 84 C122 90 142 92 154 84 C138 72 116 70 100 74 Z" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M58 56 C60 32 78 24 100 24 C122 24 140 32 142 56 Z" fill="url(#metalGrad)" stroke="#0f172a" stroke-width="2"/>
+      <path d="M52 50 L148 50 L146 60 L54 60 Z" fill="#1e293b" stroke="url(#accentGrad)" stroke-width="2"/>
+      <polygon points="100,32 108,43 100,54 92,43" fill="url(#accentGrad)" stroke="#0f172a" stroke-width="1.5"/>
+      <circle cx="68" cy="55" r="2" fill="#fef3c7"/>
+      <circle cx="132" cy="55" r="2" fill="#fef3c7"/>
+    `,
+  },
+  elf: {
+    accent: '#34d399',
+    accentSoft: '#064e3b',
+    svgBody: `
+      <path d="M100 124 A46 46 0 1 1 142 52 A36 36 0 1 0 58 52 A46 46 0 0 1 100 124 Z" fill="url(#accentGrad)" opacity="0.22"/>
+      <path d="M100 30 C76 30 64 50 62 84 C60 102 56 112 52 120 L148 120 C144 112 140 102 138 84 C136 50 124 30 100 30 Z" fill="#1e293b" stroke="url(#metalGrad)" stroke-width="2"/>
+      <path d="M74 68 C58 64 46 56 36 46 C44 62 56 76 74 82 Z" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M126 68 C142 64 154 56 164 46 C156 62 144 76 126 82 Z" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M68 72 C58 68 50 62 44 54" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M132 72 C142 68 150 62 156 54" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M76 52 C76 38 124 38 124 52 C125 72 116 94 100 102 C84 94 75 72 76 52 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.8"/>
+      <path d="M76 54 C84 42 94 38 100 42 C106 38 116 42 124 54 C122 36 112 30 100 30 C88 30 78 36 76 54 Z" fill="#0f172a"/>
+      <path d="M74 52 Q100 60 126 52" fill="none" stroke="url(#accentGrad)" stroke-width="2.5"/>
+      <path d="M100 36 L105 50 L114 54 L105 58 L100 66 L95 58 L86 54 L95 50 Z" fill="url(#accentGrad)" stroke="#ecfdf5" stroke-width="1.2"/>
+      <circle cx="100" cy="54" r="3" fill="#ecfdf5"/>
+      <path d="M82 70 Q88 66 94 71 Q88 74 82 70 Z" fill="#059669"/>
+      <path d="M118 70 Q112 66 106 71 Q112 74 118 70 Z" fill="#059669"/>
+      <circle cx="88" cy="70" r="1.4" fill="#ecfdf5"/>
+      <circle cx="112" cy="70" r="1.4" fill="#ecfdf5"/>
+      <path d="M100 120 C82 114 68 106 60 98 C74 100 88 106 100 114 C112 106 126 100 140 98 C132 106 118 114 100 120 Z" fill="url(#accentGrad)" stroke="#d1fae5" stroke-width="1.2"/>
+      <circle cx="56" cy="34" r="2.2" fill="#d1fae5"/>
+      <circle cx="144" cy="34" r="2.2" fill="#d1fae5"/>
+    `,
+  },
+  gnome: {
+    accent: '#06b6d4',
+    accentSoft: '#164e63',
+    svgBody: `
+      <g transform="translate(62 52)">
+        <circle cx="0" cy="0" r="15" fill="none" stroke="#f59e0b" stroke-width="5" stroke-dasharray="6 4"/>
+        <circle cx="0" cy="0" r="10" fill="#1e293b" stroke="#fcd34d" stroke-width="2"/>
+        <circle cx="0" cy="0" r="3.5" fill="#fcd34d"/>
+      </g>
+      <g transform="translate(138 98)">
+        <circle cx="0" cy="0" r="14" fill="none" stroke="#f59e0b" stroke-width="5" stroke-dasharray="6 4"/>
+        <circle cx="0" cy="0" r="9" fill="#1e293b" stroke="#fcd34d" stroke-width="2"/>
+        <circle cx="0" cy="0" r="3" fill="#fcd34d"/>
+      </g>
+      <circle cx="100" cy="75" r="34" fill="none" stroke="url(#metalGrad)" stroke-width="7" stroke-dasharray="9 6"/>
+      <circle cx="100" cy="75" r="28" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5"/>
+      <polygon points="100,45 122,64 114,96 86,96 78,64" fill="url(#accentGrad)" stroke="#cffafe" stroke-width="1.8" stroke-linejoin="round"/>
+      <polygon points="100,53 113,67 108,88 92,88 87,67" fill="#ecfeff" opacity="0.35"/>
+      <line x1="100" y1="45" x2="100" y2="96" stroke="#cffafe" stroke-width="1.2" opacity="0.6"/>
+      <line x1="78" y1="64" x2="122" y2="64" stroke="#cffafe" stroke-width="1.2" opacity="0.6"/>
+      <path d="M138 40 L140 45 L145 47 L140 49 L138 54 L136 49 L131 47 L136 45 Z" fill="#fef08a"/>
+      <circle cx="62" cy="102" r="2.5" fill="#67e8f9"/>
+    `,
+  },
+  goliath: {
+    accent: '#60a5fa',
+    accentSoft: '#1e3a8a',
+    svgBody: `
+      <circle cx="100" cy="70" r="42" fill="url(#accentGrad)" opacity="0.14"/>
+      <polygon points="36,118 68,58 98,118" fill="#1e293b" stroke="url(#metalGrad)" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="102,118 132,58 164,118" fill="#1e293b" stroke="url(#metalGrad)" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="56,120 100,26 144,120" fill="#0f172a" stroke="url(#accentGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+      <polygon points="100,26 116,60 104,54 100,66 92,54 84,60" fill="#e0f2fe" opacity="0.9"/>
+      <path d="M100 62 L114 82 L100 106 L86 82 Z" fill="url(#accentGrad)" opacity="0.25" stroke="url(#accentGrad)" stroke-width="2.5"/>
+      <line x1="100" y1="68" x2="100" y2="100" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>
+      <polyline points="92,78 100,86 108,78" fill="none" stroke="#e0f2fe" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="42" y1="120" x2="158" y2="120" stroke="url(#accentGrad)" stroke-width="3" stroke-linecap="round"/>
+    `,
+  },
+  halfling: {
+    accent: '#84cc16',
+    accentSoft: '#365314',
+    svgBody: `
+      <circle cx="100" cy="76" r="42" fill="#f59e0b" opacity="0.14"/>
+      <circle cx="100" cy="76" r="38" fill="#78350f" stroke="#d97706" stroke-width="4"/>
+      <line x1="82" y1="42" x2="82" y2="110" stroke="#451a03" stroke-width="2"/>
+      <line x1="100" y1="38" x2="100" y2="114" stroke="#451a03" stroke-width="2"/>
+      <line x1="118" y1="42" x2="118" y2="110" stroke="#451a03" stroke-width="2"/>
+      <circle cx="100" cy="76" r="19" fill="#1e293b" stroke="#fbbf24" stroke-width="2.5"/>
+      <path d="M100 76 C92 64 96 58 100 62 C104 58 108 64 100 76 Z" fill="url(#accentGrad)"/>
+      <path d="M100 76 C92 88 96 94 100 90 C104 94 108 88 100 76 Z" fill="url(#accentGrad)"/>
+      <path d="M100 76 C88 68 82 72 86 76 C82 80 88 84 100 76 Z" fill="url(#accentGrad)"/>
+      <path d="M100 76 C112 68 118 72 114 76 C118 80 112 84 100 76 Z" fill="url(#accentGrad)"/>
+      <circle cx="100" cy="76" r="3" fill="#fef08a"/>
+      <path d="M56 96 C50 64 68 34 100 32 C132 34 150 64 144 96" fill="none" stroke="url(#accentGrad)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="56" cy="96" r="3.5" fill="#bef264"/>
+      <circle cx="144" cy="96" r="3.5" fill="#bef264"/>
+    `,
+  },
+  human: {
+    accent: '#3b82f6',
+    accentSoft: '#1e3a8a',
+    svgBody: `
+      <circle cx="100" cy="75" r="42" fill="#1e293b" fill-opacity="0.7" stroke="url(#accentGrad)" stroke-width="2.5"/>
+      <circle cx="100" cy="75" r="34" fill="none" stroke="#93c5fd" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <polygon points="100,75 124,51 106,75 124,99 100,75 76,99 94,75 76,51" fill="url(#metalGrad)" opacity="0.85"/>
+      <polygon points="100,22 109,66 153,75 109,84 100,128 91,84 47,75 91,66" fill="url(#accentGrad)" stroke="#eff6ff" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="100" cy="75" r="11" fill="#0f172a" stroke="#fbbf24" stroke-width="2.5"/>
+      <circle cx="100" cy="75" r="5" fill="#fbbf24"/>
+      <path d="M52 108 C64 122 80 128 92 128" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M148 108 C136 122 120 128 108 128" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+    `,
+  },
+  orc: {
+    accent: '#65a30d',
+    accentSoft: '#1a2e05',
+    svgBody: `
+      <circle cx="100" cy="74" r="42" fill="url(#accentGrad)" opacity="0.16"/>
+      <path d="M46 124 C52 104 72 98 100 98 C128 98 148 104 154 124 Z" fill="#1e293b" stroke="url(#metalGrad)" stroke-width="2.5"/>
+      <circle cx="62" cy="114" r="3" fill="#94a3b8"/>
+      <circle cx="138" cy="114" r="3" fill="#94a3b8"/>
+      <path d="M68 62 L46 56 L58 76 L68 78 Z" fill="#4d7c0f" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M132 62 L154 56 L142 76 L132 78 Z" fill="#4d7c0f" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M72 40 C78 28 122 28 128 40 L134 74 L126 106 L100 116 L74 106 L66 74 Z" fill="#4d7c0f" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M78 44 C84 36 116 36 122 44 L126 68 L74 68 Z" fill="#65a30d" opacity="0.75"/>
+      <path d="M84 32 C90 20 110 20 116 32 L110 38 L90 38 Z" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+      <path d="M76 46 L86 50 M124 46 L114 50" stroke="#f97316" stroke-width="2.8" stroke-linecap="round"/>
+      <path d="M72 78 L84 82 M128 78 L116 82" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M70 58 L96 65 L104 65 L130 58 L126 52 L100 58 L74 52 Z" fill="#365314" stroke="#0f172a" stroke-width="1.5"/>
+      <polygon points="77,63 92,66 83,69" fill="#fbbf24" stroke="#0f172a" stroke-width="1"/>
+      <polygon points="123,63 108,66 117,69" fill="#fbbf24" stroke="#0f172a" stroke-width="1"/>
+      <path d="M94 68 L106 68 L110 80 L100 83 L90 80 Z" fill="#3f6212" stroke="#0f172a" stroke-width="1.5"/>
+      <circle cx="96" cy="78" r="1.8" fill="#0f172a"/>
+      <circle cx="104" cy="78" r="1.8" fill="#0f172a"/>
+      <path d="M78 92 Q100 88 122 92 L118 103 Q100 106 82 103 Z" fill="#0f172a"/>
+      <path d="M90 92 L93 97 L96 92 M104 92 L107 97 L110 92" fill="#fef3c7"/>
+      <path d="M84 103 C72 98 68 86 72 72 C76 84 80 90 90 96 Z" fill="#fef3c7" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M116 103 C128 98 132 86 128 72 C124 84 120 90 110 96 Z" fill="#fef3c7" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+    `,
+  },
+  tiefling: {
+    accent: '#d946ef',
+    accentSoft: '#701a75',
+    svgBody: `
+      <circle cx="100" cy="76" r="40" fill="url(#accentGrad)" opacity="0.16"/>
+      <path d="M84 82 C54 78 40 54 48 26 C52 44 64 56 88 64 Z" fill="#1e1b4b" stroke="url(#accentGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M116 82 C146 78 160 54 152 26 C148 44 136 56 112 64 Z" fill="#1e1b4b" stroke="url(#accentGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M56 54 L66 60 M64 66 L74 70" stroke="#f0abfc" stroke-width="1.5" opacity="0.7"/>
+      <path d="M144 54 L134 60 M136 66 L126 70" stroke="#f0abfc" stroke-width="1.5" opacity="0.7"/>
+      <polygon points="100,40 124,76 100,114 76,76" fill="#0f172a" stroke="url(#accentGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M100 54 C110 68 112 80 100 96 C88 80 90 68 100 54 Z" fill="url(#accentGrad)"/>
+      <circle cx="100" cy="78" r="4.5" fill="#fdf4ff"/>
+      <polygon points="100,132 108,118 100,122 92,118" fill="url(#accentGrad)"/>
+    `,
+  },
+}
 export const BACKGROUND_EMBLEMS: Record<string, EmblemDefinition> = {}
 
 const EMBLEM_REGISTRIES: Record<OptionCategory, Record<string, EmblemDefinition>> = {

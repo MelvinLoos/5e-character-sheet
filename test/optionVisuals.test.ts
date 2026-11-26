@@ -23,8 +23,7 @@ describe('optionVisuals', () => {
     }
   })
 
-  it('returns null for species and unknown classes', () => {
-    expect(getFallbackEmblemSvg('Elf', 'species')).toBeNull()
+  it('returns null for unknown classes', () => {
     expect(getFallbackEmblemSvg('Artificer', 'class')).toBeNull()
   })
 
@@ -35,5 +34,28 @@ describe('optionVisuals', () => {
     expect(ids(a).length).toBeGreaterThan(0)
     expect(ids(a)).not.toEqual(ids(b))
     expect(ids(a).every((i) => i!.includes('a'))).toBe(true)
+  })
+
+  it('has valid species emblems for every bundled species', () => {
+    const species = Object.keys(DND_RULES.SPECIES)
+    expect(species.map(toSlug).sort()).toEqual(
+      ['aasimar', 'dragonborn', 'dwarf', 'elf', 'gnome', 'goliath', 'halfling', 'human', 'orc', 'tiefling'],
+    )
+    for (const name of species) {
+      expect(getFallbackEmblemSvg(name, 'species')).not.toBeNull()
+    }
+    for (const name of ['Dragonborn', 'Elf', 'Orc']) {
+      const svg = getFallbackEmblemSvg(name, 'species')!
+      expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"')
+      expect(svg).toContain('aria-hidden="true"')
+      const ids = [...svg.matchAll(/id="([^"]+)"/g)].map((m) => m[1]!)
+      expect(ids.length).toBeGreaterThan(0)
+      expect(ids.every((i) => i.includes('species-'))).toBe(true)
+    }
+  })
+
+  it('returns null for unknown species and for backgrounds', () => {
+    expect(getFallbackEmblemSvg('Half-Elf', 'species')).toBeNull()
+    expect(getFallbackEmblemSvg('Sage', 'background')).toBeNull()
   })
 })

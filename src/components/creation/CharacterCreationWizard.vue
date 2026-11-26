@@ -365,7 +365,7 @@ const cardState = (on: boolean) =>
             :category="step.id === 'species' || step.id === 'background' ? step.id : 'class'"
             :selected="selectedName === o.id"
             instance="card"
-            class="mb-1 !w-28 sm:!w-full"
+            class="mb-1 !w-28 sm:!aspect-auto sm:!h-36 sm:!w-full"
           />
           <span class="flex items-center justify-between gap-2 font-headline-sm text-headline-sm text-on-surface">
             {{ o.name }}
