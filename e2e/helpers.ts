@@ -21,7 +21,7 @@ export async function openSheet(page: Page, path = '/identity'): Promise<void> {
 
   // A freshly created character opens in edit mode; the specs expect the
   // read-only view (the previous blank sheet was not editing).
-  const exitEdit = page.getByLabel('Exit Edit Mode').first()
+  const exitEdit = page.getByRole('button', { name: 'Viewing', exact: true })
   const editing = await exitEdit
     .waitFor({ state: 'visible', timeout: 15000 })
     .then(() => true)

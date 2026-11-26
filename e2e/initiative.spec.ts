@@ -7,12 +7,12 @@ test.describe('Initiative tracker', () => {
       localStorage.setItem('dnd_discord_unlock_reminder_dismissed', 'true')
     })
     await openSheet(page)
-    await page.getByLabel('Enter Edit Mode').first().click()
+    await page.getByRole('button', { name: 'Edit', exact: true }).click()
     const classSelect = page.locator('select').filter({
       has: page.locator('option[value="Fighter"]'),
     })
     await classSelect.selectOption('Fighter')
-    await page.getByLabel('Exit Edit Mode').first().click()
+    await page.getByRole('button', { name: 'Viewing', exact: true }).click()
   })
 
   /**

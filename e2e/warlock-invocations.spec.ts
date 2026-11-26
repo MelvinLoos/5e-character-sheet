@@ -32,7 +32,7 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode via the header edit toggle button
-    const editToggle = page.getByLabel('Enter Edit Mode').first()
+    const editToggle = page.getByRole('button', { name: 'Edit', exact: true })
     await expect(editToggle).toBeVisible({ timeout: 10_000 })
     await editToggle.click()
 
@@ -87,7 +87,7 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
-    const editToggle = page.getByLabel('Enter Edit Mode').first()
+    const editToggle = page.getByRole('button', { name: 'Edit', exact: true })
     await expect(editToggle).toBeVisible({ timeout: 10_000 })
     await editToggle.click()
 
@@ -135,7 +135,7 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
-    const editToggle = page.getByLabel('Enter Edit Mode').first()
+    const editToggle = page.getByRole('button', { name: 'Edit', exact: true })
     await expect(editToggle).toBeVisible({ timeout: 10_000 })
     await editToggle.click()
 
@@ -160,7 +160,7 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
-    const editToggle = page.getByLabel('Enter Edit Mode').first()
+    const editToggle = page.getByRole('button', { name: 'Edit', exact: true })
     await expect(editToggle).toBeVisible({ timeout: 10_000 })
     await editToggle.click()
 
@@ -197,7 +197,7 @@ test.describe('Warlock Eldritch Invocations', () => {
     await expect(page).toHaveTitle(/Heroes Guild Character Sheet/)
 
     // Enter edit mode
-    const editToggle = page.getByLabel('Enter Edit Mode').first()
+    const editToggle = page.getByRole('button', { name: 'Edit', exact: true })
     await expect(editToggle).toBeVisible({ timeout: 10_000 })
     await editToggle.click()
 
