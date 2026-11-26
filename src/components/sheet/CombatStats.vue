@@ -99,11 +99,11 @@ watch(
 
 <template>
   <section data-tour="combat-stats" class="flex flex-col gap-6">
-    <h3
+    <h2
       class="font-headline-md text-headline-md text-primary border-b border-primary-container pb-2 select-none"
     >
       Combat Vitals
-    </h3>
+    </h2>
     <div class="grid grid-cols-2 gap-4">
       <!-- AC Card -->
       <ElevatedCard :elevation="2" class="max-sm:order-5">
@@ -247,6 +247,7 @@ watch(
           <input
             v-if="store.isEditing"
             v-model="store.currentCharacterData.combat.speed"
+            aria-label="Speed"
             class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 text-center font-headline-md text-on-surface p-0 pb-1"
           />
           <span v-else class="font-headline-md text-headline-md text-on-surface">

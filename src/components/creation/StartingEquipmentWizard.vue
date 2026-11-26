@@ -236,7 +236,7 @@ const masteryDescriptions: Record<string, string> = {
   <div v-if="showWizard" class="flex flex-col gap-6 w-full max-w-5xl mx-auto">
     <!-- Header -->
     <header class="mb-4 border-b border-surface-variant pb-4">
-      <h2 class="font-display-lg text-display-lg text-tertiary">Starting Equipment</h2>
+      <h2 class="font-headline-lg text-headline-lg text-tertiary">Starting Equipment</h2>
       <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">
         Choose how your {{ className }} acquired their gear.
       </p>
@@ -375,7 +375,7 @@ const masteryDescriptions: Record<string, string> = {
         <button
           @click="goToNextStep"
           :disabled="!selectedClassOption"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
+          class="min-h-11 px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
@@ -438,7 +438,7 @@ const masteryDescriptions: Record<string, string> = {
         </button>
         <button
           @click="goToNextStep"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
+          class="min-h-11 px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
@@ -525,7 +525,7 @@ const masteryDescriptions: Record<string, string> = {
         <button
           @click="goToNextStep"
           :disabled="!selectedBackgroundOption"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
+          class="min-h-11 px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
@@ -576,7 +576,7 @@ const masteryDescriptions: Record<string, string> = {
         <button
           @click="goToNextStep"
           :disabled="!selectedTrinketId"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
+          class="min-h-11 px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 disabled:shadow-none select-none"
         >
           Continue <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">arrow_forward</span>
         </button>
@@ -701,7 +701,7 @@ const masteryDescriptions: Record<string, string> = {
         </button>
         <button
           @click="confirmEquipment"
-          class="px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
+          class="min-h-11 px-6 py-2 rounded font-label-md text-label-md bg-tertiary text-on-tertiary hover:bg-tertiary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out select-none"
         >
           <span class="material-symbols-outlined text-sm align-text-bottom" aria-hidden="true">check</span> Confirm &amp; Apply Equipment
         </button>

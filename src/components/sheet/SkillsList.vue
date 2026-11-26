@@ -54,7 +54,7 @@ function isLocked(skillName: string): boolean {
       class="flex items-center justify-between border-b pb-2"
       :class="badges.skills ? 'border-error/50' : 'border-primary-container'"
     >
-      <h3 class="font-headline-md text-headline-md text-primary select-none">Skills</h3>
+      <h2 class="font-headline-md text-headline-md text-primary select-none">Skills</h2>
       <span
         v-if="badges.skills || store.isEditing"
         class="text-sm font-label-md select-none"

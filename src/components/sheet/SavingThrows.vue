@@ -36,11 +36,11 @@ function toggleProficiency(key: string) {
 
 <template>
   <section class="flex flex-col gap-4">
-    <h3
+    <h2
       class="font-headline-md text-headline-md text-primary border-b border-primary-container pb-2"
     >
       Saving Throws
-    </h3>
+    </h2>
     <p v-if="!store.isEditing" class="font-body-sm text-body-sm text-on-surface-variant md:hidden">Tap a save to roll it.</p>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-[1em]">
       <div

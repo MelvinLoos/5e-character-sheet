@@ -71,9 +71,9 @@ function getProgressText(data: MilestoneData, milestones: number) {
     class="bg-surface-container-highest rounded-lg p-6 border border-outline-variant shadow-sm"
   >
     <div class="flex justify-between items-center border-b border-primary-container pb-3 mb-6">
-      <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+      <h2 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
         <span class="material-symbols-outlined" aria-hidden="true">military_tech</span> Progression<InfoButton topic="renown-system" />
-      </h3>
+      </h2>
       <div class="flex items-center gap-3">
         <button
           v-if="store.isEditing && (store.currentCharacterData?.renownTier || 1) > 1"

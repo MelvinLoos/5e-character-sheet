@@ -60,12 +60,24 @@ onMounted(async () => {
   // (logs a console error for devs when the service is unconfigured).
   useFeedbackStore().checkAvailability()
 })
+
+/** Skip link target: move focus (and scroll) to the main region without touching the route. */
+function focusMain(): void {
+  document.getElementById('main-content')?.focus()
+}
 </script>
 
 <template>
   <div
     class="antialiased min-h-dvh flex flex-col text-on-background bg-background print:bg-white print:block print:min-h-0 select-none print:overflow-visible"
   >
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-toast focus:rounded focus:bg-tertiary focus:px-4 focus:py-3 focus:font-label-md focus:text-on-tertiary print:hidden"
+      @click.prevent="focusMain"
+    >
+      Skip to content
+    </a>
     <ControlPanel
       @show-import="showImportModal = true"
       @show-character-import="showImportCharacterModal = true"
@@ -74,7 +86,9 @@ onMounted(async () => {
     <MobileHeader @show-more="showMoreMenu = true" />
 
     <main
-      class="flex-1 min-h-0 w-full md:pl-64 pt-[calc(4.5rem+env(safe-area-inset-top,0px))] md:pt-0 pb-mobile-safe md:pb-0 print:hidden"
+      id="main-content"
+      tabindex="-1"
+      class="focus:outline-none flex-1 min-h-0 w-full md:pl-64 pt-[calc(4.5rem+env(safe-area-inset-top,0px))] md:pt-0 pb-mobile-safe md:pb-0 print:hidden"
     >
       <div class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-gutter">
         <div
@@ -104,7 +118,7 @@ onMounted(async () => {
           <button
             type="button"
             @click="handleStartTourFromEmptyState"
-            class="mt-6 text-primary font-label-md hover:underline select-none"
+            class="mt-4 inline-flex min-h-11 items-center px-3 text-primary font-label-md hover:underline select-none"
           >
             {{ hasCompletedTour ? 'Replay the tour' : 'Take a quick tour' }}
           </button>

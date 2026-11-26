@@ -133,7 +133,7 @@ function confirmShare() {
       <div class="text-center w-full px-2">
         <select
           aria-label="Character"
-          class="focus-visible:ring-2 focus-visible:ring-tertiary font-headline-lg text-headline-lg text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full"
+          class="focus-visible:ring-2 focus-visible:ring-tertiary font-headline-md text-headline-md text-tertiary leading-tight text-ellipsis min-h-11 bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full"
           v-model="selectedCharacter"
         >
           <option
@@ -434,13 +434,13 @@ function confirmShare() {
       <ThemeToggle />
       <router-link
         :to="{ name: 'terms' }"
-        class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+        class="inline-flex min-h-11 items-center px-2 text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
       >
         Terms
       </router-link>
       <router-link
         :to="{ name: 'privacy' }"
-        class="text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
+        class="inline-flex min-h-11 items-center px-2 text-xs text-on-surface-variant hover:text-on-surface transition-colors font-label-md"
       >
         Privacy
       </router-link>

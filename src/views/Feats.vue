@@ -294,10 +294,10 @@ function setActiveCategory(cat: string) {
       class="bg-surface-container rounded-lg p-6 border border-outline-variant shadow-sm flex-1"
     >
       <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
-        <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
+        <h2 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
           <span class="material-symbols-outlined text-3xl" aria-hidden="true">auto_awesome</span>
           Feats &amp; Features
-        </h3>
+        </h2>
       </div>
 
       <!-- Search + Add Feats Button -->
@@ -309,7 +309,7 @@ function setActiveCategory(cat: string) {
           >
           <input
             v-model="mySearchFilter"
-            class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
+            aria-label="Search feats" class="w-full min-h-11 bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary outline-none font-body-md text-body-md placeholder:text-outline transition-colors shadow-sm"
             placeholder="Search my feats..."
             type="text"
           />
@@ -459,13 +459,13 @@ function setActiveCategory(cat: string) {
         class="flex justify-between items-end border-b pb-4 mb-6"
         :class="badges.feats ? 'border-error/30' : 'border-surface-variant'"
       >
-        <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
+        <h2 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
           <span class="material-symbols-outlined text-3xl" aria-hidden="true">fact_check</span>
           Class Features &amp; Choices
-        </h3>
+        </h2>
         <span
           v-if="badges.feats"
-          class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none animate-pulse"
+          class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none"
         >
           {{ badges.feats.label }}
         </span>

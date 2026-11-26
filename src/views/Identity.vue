@@ -35,9 +35,9 @@ const { showRenown } = useGuildWidgets()
         class="lg:col-span-7 bg-surface-container-highest rounded-lg p-6 border border-outline-variant shadow-sm"
       >
         <div class="flex items-center justify-between border-b border-primary-container pb-3 mb-4">
-          <h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+          <h2 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
             <span class="material-symbols-outlined" aria-hidden="true">swords</span> Offense
-          </h3>
+          </h2>
         </div>
 
         <!-- Spell Attack / Save DC Summary Badge -->

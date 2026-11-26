@@ -72,7 +72,7 @@ describe('PersonalityBlock (component integration)', () => {
 
   it('uses theme-aware text classes on Backstory heading instead of hardcoded near-black', () => {
     const wrapper = mountComponent()
-    const headings = wrapper.findAll('h3')
+    const headings = wrapper.findAll('h2')
     const backstoryHeading = headings.at(1)
     expect(backstoryHeading?.classes()).toContain('text-on-tertiary-fixed')
     expect(backstoryHeading?.classes()).toContain('dark:text-on-background')

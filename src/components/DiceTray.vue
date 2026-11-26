@@ -198,7 +198,6 @@ function onModifierBlur(): void {
               <span class="font-label-md text-label-md text-on-surface-variant">Dice</span>
               <PressableButton
                 variant="secondary"
-                size="sm"
                 aria-label="One fewer die"
                 :disabled="count <= 1"
                 data-testid="dice-count-down"
@@ -211,7 +210,6 @@ function onModifierBlur(): void {
               </span>
               <PressableButton
                 variant="secondary"
-                size="sm"
                 aria-label="One more die"
                 :disabled="count >= MAX_DICE"
                 data-testid="dice-count-up"

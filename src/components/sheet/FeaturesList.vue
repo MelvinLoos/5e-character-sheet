@@ -318,9 +318,9 @@ watch(
                       :class="{ 'rotate-90': expandedFeatures.has(feature.title) }"
                        aria-hidden="true">chevron_right</span
                     >
-                    <h3 class="font-headline-md text-headline-md text-tertiary m-0">
+                    <h2 class="font-headline-md text-headline-md text-tertiary m-0">
                       {{ feature.title }}
-                    </h3>
+                    </h2>
                   </div>
 
                   <!-- Chips section -->

@@ -105,7 +105,7 @@ function onBackdropClick(): void {
               v-if="!hideClose"
               icon="close"
               label="Close dialog"
-              size="sm"
+              size="md"
               data-modal-close
               :data-test="closeTestId"
               class="-mr-2 -mt-1 shrink-0"

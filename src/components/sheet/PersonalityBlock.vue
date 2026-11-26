@@ -13,7 +13,7 @@ const store = useCharacterStore()
     >
       <div class="flex items-center gap-3 mb-4 border-b border-outline-variant/50 pb-3">
         <span class="material-symbols-outlined text-tertiary" aria-hidden="true">group_work</span>
-        <h3 class="font-headline-md text-headline-md text-on-background">Job In The Party</h3>
+        <h2 class="font-headline-md text-headline-md text-on-background">Job In The Party</h2>
       </div>
 
       <textarea
@@ -46,11 +46,11 @@ const store = useCharacterStore()
           style="font-variation-settings: 'FILL' 1"
            aria-hidden="true">menu_book</span
         >
-        <h3
+        <h2
           class="font-display-lg text-headline-lg text-on-tertiary-fixed dark:text-on-background border-b-2 border-tertiary-container pb-1 inline-block"
         >
           Backstory
-        </h3>
+        </h2>
       </div>
 
       <textarea
@@ -77,7 +77,7 @@ const store = useCharacterStore()
     >
       <div class="flex items-center gap-3 mb-6 border-b border-tertiary/30 pb-3">
         <span class="material-symbols-outlined text-tertiary" aria-hidden="true">psychology</span>
-        <h3 class="font-headline-md text-headline-md text-tertiary">Lore &amp; Identity</h3>
+        <h2 class="font-headline-md text-headline-md text-tertiary">Lore &amp; Identity</h2>
       </div>
 
       <div class="space-y-6 flex-1">

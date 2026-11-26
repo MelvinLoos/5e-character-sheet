@@ -75,9 +75,9 @@ const allowedLevels = computed(() => {
         class="rounded-lg p-6 flex-1"
       >
         <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
-          <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 select-none">
+          <h2 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 select-none">
             <span class="material-symbols-outlined text-3xl" aria-hidden="true">menu_book</span> Spell Grimoire
-          </h3>
+          </h2>
           <div class="text-right">
             <span
               class="font-label-md text-label-md text-on-surface-variant block uppercase tracking-wider mb-1 select-none"
@@ -133,7 +133,7 @@ const allowedLevels = computed(() => {
             >
             <input
               v-model="searchFilter"
-              class="w-full bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary"
+              aria-label="Search spells" class="w-full min-h-11 bg-surface-container-high border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-on-surface focus:ring-tertiary focus:border-tertiary"
               placeholder="Search Spells..."
               type="text"
             />
@@ -171,14 +171,14 @@ const allowedLevels = computed(() => {
                       getSpent(parseInt(levelKey.replace('level', ''))) - 1,
                     )
                   "
-                  class="w-8 h-8 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container hover:bg-tertiary/10 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-90 transition-all duration-200 ease-out cursor-pointer select-none"
+                  class="w-11 h-11 rounded-full border border-tertiary flex items-center justify-center font-bold text-tertiary bg-surface-container hover:bg-tertiary/10 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:shadow-sm active:scale-90 transition-all duration-200 ease-out cursor-pointer select-none"
                   title="Click to decrement used slots"
                 >
                   {{ max - getSpent(parseInt(levelKey.replace('level', ''))) }}
                 </button>
                 <span class="text-outline select-none">/</span>
                 <div
-                  class="w-8 h-8 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant select-none"
+                  class="w-11 h-11 rounded-full border border-outline flex items-center justify-center font-bold text-on-surface bg-surface-variant select-none"
                 >
                   {{ max }}
                 </div>
@@ -190,7 +190,7 @@ const allowedLevels = computed(() => {
                       getSpent(parseInt(levelKey.replace('level', ''))) + 1,
                     )
                   "
-                  class="mt-2 text-label-sm uppercase font-bold text-tertiary/60 hover:text-tertiary hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
+                  class="mt-2 inline-flex min-h-11 items-center px-3 text-label-sm uppercase font-bold text-tertiary hover:text-tertiary hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer select-none"
                 >
                   Spend Slot
                 </button>
@@ -215,7 +215,7 @@ const allowedLevels = computed(() => {
             :key="mode.key"
             @click="spellSortMode = mode.key"
             :class="[
-              'px-3 py-1 text-xs rounded-full border transition-all duration-200 ease-out font-bold select-none active:scale-95',
+              'min-h-11 px-4 py-1 text-xs rounded-full border transition-all duration-200 ease-out font-bold select-none active:scale-95',
               spellSortMode === mode.key
                 ? 'bg-tertiary text-on-tertiary border-tertiary shadow-sm'
                 : 'bg-surface-container-high text-on-surface-variant border-outline-variant hover:border-tertiary/50 hover:-translate-y-0.5 hover:shadow-sm',
