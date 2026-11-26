@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useCharacterStore } from '@/stores/character'
 import { useInventory } from '@/composables/useInventory'
+import { useGuildWidgets } from '@/composables/useGuildWidgets'
 import { gearTypeToIcon } from '@/utils/gearTypeToIcon'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
 import type { GearType } from '@/types/equipment'
 
 const store = useCharacterStore()
+const { showGuildCurrencies } = useGuildWidgets()
 const { maxSlots, usedSlots, slotPercentage, buySupply, addGear, removeGear, addConsumable, removeConsumable, getGearBgClass } = useInventory()
 
 // Canonical gear type values for the edit-mode dropdown
@@ -79,6 +81,7 @@ const gearTypeOptions: GearType[] = [
           </div>
         </div>
       </div>
+      <template v-if="showGuildCurrencies">
       <!-- Supply -->
       <div
         class="bg-surface-container p-4 rounded border border-[#1A3C40] flex items-center justify-between"
@@ -143,6 +146,7 @@ const gearTypeOptions: GearType[] = [
           </div>
         </div>
       </div>
+      </template>
     </section>
 
     <!-- Slot Meter -->

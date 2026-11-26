@@ -8,29 +8,21 @@ import InfoButton from '@/components/ui/InfoButton.vue'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import SubChoiceModal from '@/components/modals/SubChoiceModal.vue'
 import decorativeBackdrop from '@/assets/decorative-backdrop.png'
-import { hasStartingEquipment } from '@/utils/characterMutations'
-import { useConfirm } from '@/composables/useConfirm'
+import { useSelectionChange } from '@/composables/useSelectionChange'
 
 const store = useCharacterStore()
 
-/** Apply a class/background change, confirming first if starting gear would be removed. */
-const { confirm } = useConfirm()
+const { confirmSelectionChange } = useSelectionChange()
 
+/** Apply a class/background change, confirming first if starting gear would be removed. */
 async function onSelectionChange(event: Event, field: 'class' | 'background'): Promise<void> {
   const select = event.target as HTMLSelectElement
   const current = store.currentCharacterData[field]
   const next = select.value
-  if (next !== current && hasStartingEquipment(store.currentCharacterData)) {
-    // Keep showing the current value until the player decides.
-    select.value = current ?? ''
-    const ok = await confirm({
-      title: `Change ${field}?`,
-      message: `Changing your ${field} will remove the starting equipment you selected. Continue?`,
-      confirmLabel: `Change ${field}`,
-      danger: true,
-    })
-    if (!ok) return
-  }
+  // Keep showing the current value until the player decides.
+  if (next !== current) select.value = current ?? ''
+  if (!(await confirmSelectionChange(field, next))) return
+  select.value = next
   if (field === 'class') store.applyClassChange(next)
   else store.applyBackgroundChange(next)
 }

@@ -16,12 +16,12 @@ const { celebration } = useCelebration()
 const visible = ref(false)
 let timer: ReturnType<typeof setTimeout> | undefined
 
-const label = computed(() => (celebration.value.type === 'crit' ? 'NAT 20' : ''))
+const label = computed(() => (celebration.value.type === 'crit' ? 'NAT 20' : 'Character ready'))
 
 watch(
   () => celebration.value.timestamp,
   (timestamp) => {
-    if (!timestamp || celebration.value.type !== 'crit') return
+    if (!timestamp || !['crit', 'success'].includes(celebration.value.type ?? '')) return
     visible.value = true
     clearTimeout(timer)
     timer = setTimeout(() => (visible.value = false), VISIBLE_MS)
@@ -98,7 +98,8 @@ onBeforeUnmount(() => clearTimeout(timer))
 .crit-text {
   position: relative;
   font-family: 'EB Garamond', serif;
-  font-size: 3.5rem;
+  font-size: clamp(2rem, 11vw, 3.5rem);
+  white-space: nowrap;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-tertiary);

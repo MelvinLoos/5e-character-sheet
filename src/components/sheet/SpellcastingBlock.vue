@@ -41,6 +41,7 @@ const {
   togglePrepared,
   clearFilters,
   formatLevel,
+  availableSpells,
 } = useSpellcasting()
 
 /** True once the character has selected as many leveled spells as allowed. */
@@ -142,7 +143,8 @@ const allowedLevels = computed(() => {
             @click="addSpell"
             class="bg-primary-container text-primary border border-primary/30 px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:bg-surface-variant hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-sm active:scale-95 transition-all duration-200 ease-out whitespace-nowrap select-none"
           >
-            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span> Add Spell
+            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+            {{ availableSpells.length ? 'Add Spell' : 'Add Spell (custom)' }}
           </button>
         </div>
 
@@ -456,7 +458,9 @@ const allowedLevels = computed(() => {
           v-if="filteredActiveSpells.length === 0"
           class="text-center py-12 text-on-surface-variant italic select-none"
         >
-          No spells found matching your search.
+          <template v-if="searchFilter">No spells match your search.</template>
+          <template v-else-if="store.isEditing">No spells yet. Use Add Spell to build your list.</template>
+          <template v-else>No spells yet. Switch to Edit mode to add spells.</template>
         </div>
       </section>
     </ElevatedCard>

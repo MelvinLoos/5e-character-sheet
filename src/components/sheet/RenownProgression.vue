@@ -62,7 +62,7 @@ function decrementTier() {
 function getProgressText(data: MilestoneData, milestones: number) {
   if (data.tier >= 4) return 'Maximum Renown Achieved'
   const left = data.maxMilestones - milestones
-  return `Complete ${left} more major scholarly contribution${left > 1 ? 's' : ''} to ascend to the next Tier.`
+  return `Complete ${left} more Great Work${left > 1 ? 's' : ''} to reach the next Tier.`
 }
 </script>
 
@@ -131,6 +131,9 @@ function getProgressText(data: MilestoneData, milestones: number) {
 
       <p class="text-center text-sm font-body-md text-on-surface-variant italic">
         {{ getProgressText(getMilestoneData(), store.currentCharacterData?.renownMilestones || 0) }}
+      </p>
+      <p class="mt-3 text-center text-xs font-body-md text-on-surface-variant">
+        Renown tiers replace character levels: Tier 1 plays at level 3, Tier 2 at level 6 and Tier 3 at level 10.
       </p>
     </div>
   </section>

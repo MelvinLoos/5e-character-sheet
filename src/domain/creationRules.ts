@@ -15,7 +15,7 @@ import { pointBuyCosts } from './characterService'
 import { getEffectiveLevel } from './rulesService'
 import { eligibleFeatureChoices, effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import type { CharacterData } from '@/types/character'
-import type { FeatureChoiceOption } from '@/types/rules'
+import type { FeatureChoice, FeatureChoiceOption } from '@/types/rules'
 
 export const POINT_BUY_BUDGET = 27
 export const POINT_BUY_MIN = 8
@@ -31,6 +31,22 @@ export function normalizeSkillName(name: string): string {
 /** Total point-buy cost of a set of base scores. Unknown scores cost 0. */
 export function pointBuyCostTotal(base: Record<string, number>): number {
   return Object.values(base).reduce((sum, score) => sum + (pointBuyCosts[score] ?? 0), 0)
+}
+
+/** Point cost of raising a base score by one, or null when already at the maximum. */
+export function pointBuyNextCost(score: number): number | null {
+  if (score >= POINT_BUY_MAX) return null
+  return (pointBuyCosts[score + 1] ?? 0) - (pointBuyCosts[score] ?? 0)
+}
+
+/** Background bonus (+2, +1 or 0) a given ability receives from the chosen selections. */
+export function backgroundBonusFor(
+  ability: string,
+  selections: { plusTwo?: string | null; plusOne?: string | null } | undefined | null,
+): number {
+  if (selections?.plusTwo === ability) return 2
+  if (selections?.plusOne === ability) return 1
+  return 0
 }
 
 export function validatePointBuy(base: Record<string, number> | undefined | null): string[] {
@@ -199,4 +215,73 @@ export function validateCreationRules(character: CharacterData): string[] {
     ...validateSubChoice(character.species, character.subChoice),
     ...validateFeatureChoices(character),
   ]
+}
+
+export type FeatureGroup = 'feat' | 'class' | 'species'
+
+/**
+ * Which list a character feature belongs to: Class Features, Species Traits
+ * or Feats. Uses an explicit `featureType` when present, otherwise matches the
+ * title against the rules catalog (auto-granted features carry no type).
+ * Background features are feats (e.g. Alert, Magic Initiate).
+ */
+export function featureGroup(feature: { title: string; featureType?: string }): FeatureGroup {
+  if (feature.featureType === 'Class Feature' || feature.featureType === 'Spellcasting') return 'class'
+  if (feature.featureType === 'Species Trait') return 'species'
+  if (feature.featureType === 'Feat' || feature.featureType === 'Background Feature') return 'feat'
+  const t = feature.title
+  for (const c of Object.values(DND_RULES.CLASSES)) {
+    if (c.features.some((f) => f.title === t)) return 'class'
+    for (const fc of c.featureChoices ?? []) {
+      if ((fc.options ?? []).some((o) => o.traits.some((tr) => tr.title === t))) return 'class'
+    }
+  }
+  if (Object.values(DND_RULES.CLASS_SPELLCASTING_FEATS).some((f) => f.title === t)) return 'class'
+  for (const sp of Object.values(DND_RULES.SPECIES)) {
+    if (sp.traits.some((f) => f.title === t)) return 'species'
+    if ((sp.subChoices ?? []).some((sc) => sc.traits.some((f) => f.title === t))) return 'species'
+  }
+  return 'feat'
+}
+
+/** Feature-choice ids that are a class's subclass pick (Primal Path, Divine Domain, ...). */
+export const SUBCLASS_CHOICE_IDS: readonly string[] = [
+  'barbarian-subclass',
+  'bard-college',
+  'divine-domain',
+  'druid-circle',
+  'fighter-subclass',
+  'monk-subclass',
+  'paladin-oath',
+  'ranger-conclave',
+  'rogue-subclass',
+  'sorcerer-origin',
+  'warlock-subclass',
+  'wizard-school',
+]
+
+/** The subclass choice a class offers at the given Renown Tier, or null. */
+export function subclassChoiceFor(
+  className: string | null | undefined,
+  renownTier: number | null | undefined = 1,
+): FeatureChoice | null {
+  if (!className) return null
+  return (
+    eligibleFeatureChoices(className, renownTier).find((c) => SUBCLASS_CHOICE_IDS.includes(c.id)) ??
+    null
+  )
+}
+
+/** A class that offers a subclass at the character's tier needs exactly one picked. */
+export function validateSubclass(
+  character: Pick<CharacterData, 'class' | 'renownTier' | 'featureChoices'>,
+): string[] {
+  const choice = subclassChoiceFor(character.class, character.renownTier)
+  if (!choice) return []
+  const picked = character.featureChoices?.[choice.id] ?? []
+  if (picked.length !== 1) return [`${character.class} must choose one ${choice.label}.`]
+  if (!(choice.options ?? []).some((o) => o.id === picked[0])) {
+    return [`"${picked[0]}" is not a ${character.class} ${choice.label}.`]
+  }
+  return []
 }

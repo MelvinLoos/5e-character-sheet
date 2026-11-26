@@ -57,7 +57,10 @@ function isSelected(optionId: string): boolean {
 }
 
 function toggleOption(optionId: string) {
-  if (isSelected(optionId)) {
+  if (maxCount.value === 1) {
+    // Choose-one behaves like a radio group: picking replaces the previous pick.
+    selectedIds.value = [optionId]
+  } else if (isSelected(optionId)) {
     selectedIds.value = selectedIds.value.filter((id) => id !== optionId)
   } else if (selectedIds.value.length < maxCount.value) {
     selectedIds.value = [...selectedIds.value, optionId]
@@ -103,13 +106,17 @@ function handleClose() {
     </div>
 
     <!-- Feature Choice Options -->
-    <div class="space-y-3" role="group" :aria-label="choice?.label">
+    <div
+      class="space-y-3"
+      :role="maxCount === 1 ? 'radiogroup' : 'group'"
+      :aria-label="choice?.label"
+    >
       <div
         v-for="option in choice?.options"
         :key="option.id"
         :data-test="'feature-choice-option'"
         :data-id="option.id"
-        role="checkbox"
+        :role="maxCount === 1 ? 'radio' : 'checkbox'"
         tabindex="0"
         :aria-checked="isSelected(option.id)"
         :class="[
@@ -126,7 +133,8 @@ function handleClose() {
           <div class="flex items-center gap-2">
             <div
               :class="[
-                'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2',
+                'flex h-5 w-5 flex-shrink-0 items-center justify-center border-2',
+                maxCount === 1 ? 'rounded-full' : 'rounded',
                 isSelected(option.id)
                   ? 'border-tertiary bg-tertiary text-on-tertiary'
                   : 'border-sheet-border',
@@ -162,7 +170,7 @@ function handleClose() {
 
     <template #footer>
       <span class="mr-auto self-center text-sm text-on-surface-variant">
-        {{ choice?.options?.length ?? 0 }} options available
+        {{ choice?.options?.length ?? 0 }} option{{ choice?.options?.length === 1 ? '' : 's' }} available
       </span>
       <PressableButton data-test="modal-cancel-btn" variant="ghost" @click="handleClose">
         Cancel

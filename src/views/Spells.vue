@@ -13,7 +13,7 @@ const { badges } = useCharacterCompletion()
   <div class="flex-grow flex flex-col gap-4 w-full max-w-7xl mx-auto items-stretch">
     <PageHeader
       title="Spells"
-      subtitle="When you are a spellcaster here is where you decide your spells"
+      subtitle="Prepared spells, spell slots and your spell list. Only spellcasting classes use this page."
     />
     <StatusBanner v-if="badges.spells" tone="error" class="md:hidden">
       {{ badges.spells.label }}

@@ -79,6 +79,12 @@ export const useCharacterStore = defineStore('character', () => {
   const hasCharacter = ref(false)
   const currentUserData = computed(() => currentCharacterData.value)
   const isEditing = ref(false)
+  /** True while the guided Create flow is building a brand-new character. */
+  const isCreating = ref(false)
+  /** Pre-guide copy of the character while the guide is reopened on an existing one; cancel restores it. */
+  const creationSnapshot = ref<CharacterData | null>(null)
+  const snapshotWasEditing = ref(false)
+  const isReopening = computed(() => creationSnapshot.value !== null)
   const characterLibrary = ref<Record<string, CharacterData[]>>(loadLibrary())
   const sessionName = ref('Uncategorized')
   const schema = computed(() => getSchema())
@@ -213,6 +219,7 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value = migratedData as unknown as CharacterData
     hasCharacter.value = true
     isEditing.value = false
+    isCreating.value = false
     // Restore a remembered share id so the printed QR code survives reloads and
     // round-trips through the local library. loadCharacterFromUrl overrides this
     // with the id from the URL when one is present.
@@ -349,7 +356,39 @@ export const useCharacterStore = defineStore('character', () => {
     clearCurrentCharacterId()
     _setCharacter(createBlankCharacter())
     isEditing.value = true
+    isCreating.value = true
     capturePostHogEvent('character_created')
+  }
+
+  /** Leave the guided Create flow and open the finished character read-only. */
+  function finishCreation(): void {
+    isEditing.value = isReopening.value ? snapshotWasEditing.value : false
+    isCreating.value = false
+    creationSnapshot.value = null
+  }
+
+  /** Reopen the guide on the current character; finishing keeps changes, cancelling restores. */
+  function openCreationGuide(): void {
+    creationSnapshot.value = JSON.parse(JSON.stringify(currentCharacterData.value)) as CharacterData
+    snapshotWasEditing.value = isEditing.value
+    isEditing.value = true
+    isCreating.value = true
+  }
+
+  /** Leave the guide: restore the character when reopened, otherwise just drop the guide. */
+  function leaveGuide(): void {
+    if (isReopening.value) cancelCreationGuide()
+    else isCreating.value = false
+  }
+
+  /** Leave a reopened guide without keeping any change. */
+  function cancelCreationGuide(): void {
+    if (creationSnapshot.value) {
+      currentCharacterData.value = creationSnapshot.value
+      isEditing.value = snapshotWasEditing.value
+    }
+    creationSnapshot.value = null
+    isCreating.value = false
   }
 
   function toggleEdit(): void {
@@ -556,6 +595,10 @@ export const useCharacterStore = defineStore('character', () => {
     if (currentCharacterData.value.class !== newClass) {
       currentCharacterData.value = removeStartingEquipment(currentCharacterData.value)
       equipmentWizard.resetStartingEquipment()
+    }
+    if (currentCharacterData.value.class !== newClass) {
+      // Choices belong to the old class (subclass, fighting style, ...).
+      currentCharacterData.value.featureChoices = {}
     }
     currentCharacterData.value.class = newClass
     currentCharacterData.value = applyAllChanges(currentCharacterData.value)
@@ -802,6 +845,11 @@ export const useCharacterStore = defineStore('character', () => {
     hasCharacter,
     currentUserData,
     isEditing,
+    isCreating,
+    isReopening,
+    openCreationGuide,
+    cancelCreationGuide,
+    leaveGuide,
     characterLibrary,
     sessionName,
     schema,
@@ -829,6 +877,7 @@ export const useCharacterStore = defineStore('character', () => {
     saveToLibrary,
     handleNewCharacter,
     toggleEdit,
+    finishCreation,
     generateCharacter,
     shareCharacter,
     exportCharacter,

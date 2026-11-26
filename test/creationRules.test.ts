@@ -68,3 +68,48 @@ describe('validateCreationRules', () => {
     expect(errs.filter((e) => /point|Base/i.test(e))).toEqual([])
   })
 })
+
+describe('pointBuyNextCost / backgroundBonusFor', () => {
+  it('reports the marginal cost of the next point', async () => {
+    const { pointBuyNextCost } = await import('@/domain/creationRules')
+    expect(pointBuyNextCost(8)).toBe(1)
+    expect(pointBuyNextCost(13)).toBe(2)
+    expect(pointBuyNextCost(14)).toBe(2)
+    expect(pointBuyNextCost(15)).toBeNull()
+  })
+
+  it('maps background selections to per-ability bonuses', async () => {
+    const { backgroundBonusFor } = await import('@/domain/creationRules')
+    const sel = { plusTwo: 'int', plusOne: 'wis' }
+    expect(backgroundBonusFor('int', sel)).toBe(2)
+    expect(backgroundBonusFor('wis', sel)).toBe(1)
+    expect(backgroundBonusFor('str', sel)).toBe(0)
+    expect(backgroundBonusFor('str', null)).toBe(0)
+  })
+})
+
+describe('featureGroup', () => {
+  it('uses an explicit featureType first', async () => {
+    const { featureGroup } = await import('@/domain/creationRules')
+    expect(featureGroup({ title: 'x', featureType: 'Species Trait' })).toBe('species')
+    expect(featureGroup({ title: 'x', featureType: 'Feat' })).toBe('feat')
+  })
+  it('classifies auto-granted features from the rules catalog', async () => {
+    const { featureGroup } = await import('@/domain/creationRules')
+    expect(featureGroup({ title: 'Rage' })).toBe('class')
+    expect(featureGroup({ title: 'Darkvision' })).toBe('species')
+    expect(featureGroup({ title: 'Some Homebrew Feat' })).toBe('feat')
+  })
+})
+
+describe('subclass rules', () => {
+  it('finds the subclass choice per class', async () => {
+    const { subclassChoiceFor, validateSubclass } = await import('@/domain/creationRules')
+    expect(subclassChoiceFor('Fighter')?.id).toBe('fighter-subclass')
+    expect(subclassChoiceFor('Wizard')?.id).toBe('wizard-school')
+    expect(subclassChoiceFor(null)).toBeNull()
+    expect(validateSubclass({ class: 'Fighter', renownTier: 1, featureChoices: {} })[0]).toMatch(/must choose/)
+    expect(validateSubclass({ class: 'Fighter', renownTier: 1, featureChoices: { 'fighter-subclass': ['champion'] } })).toEqual([])
+    expect(validateSubclass({ class: 'Fighter', renownTier: 1, featureChoices: { 'fighter-subclass': ['nope'] } })[0]).toMatch(/not a/)
+  })
+})
