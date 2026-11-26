@@ -70,7 +70,10 @@ function saveToLibrary() {
   close()
 }
 
+const SHARE_CONFIRM = 'Share this character online? Anyone with the link can view it.'
+
 function shareCharacter() {
+  if (!window.confirm(SHARE_CONFIRM)) return
   store.shareCharacter()
   close()
 }

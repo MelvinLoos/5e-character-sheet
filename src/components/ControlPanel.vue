@@ -105,6 +105,9 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+function confirmShare() {
+  if (window.confirm('Share this character online? Anyone with the link can view it.')) store.shareCharacter()
+}
 </script>
 
 <template>
@@ -122,7 +125,8 @@ onUnmounted(() => {
       </div>
       <div class="text-center w-full px-2">
         <select
-          class="font-headline-lg text-headline-lg text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full"
+          aria-label="Character"
+          class="focus-visible:ring-2 focus-visible:ring-tertiary font-headline-lg text-headline-lg text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full"
           v-model="selectedCharacter"
         >
           <option
@@ -164,7 +168,8 @@ onUnmounted(() => {
 
     <div class="px-6 mb-8 text-center w-full" v-else>
       <select
-        class="font-headline-md text-headline-md text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full mb-2"
+        aria-label="Character"
+        class="focus-visible:ring-2 focus-visible:ring-tertiary font-headline-md text-headline-md text-tertiary leading-tight bg-transparent border-0 border-b border-transparent hover:border-tertiary/30 focus:border-tertiary focus:ring-0 focus:outline-none text-center cursor-pointer py-0 px-2 appearance-none w-full mb-2"
         v-model="selectedCharacter"
       >
         <option value="" disabled class="bg-primary-container text-on-surface font-body-md text-sm">
@@ -201,21 +206,19 @@ onUnmounted(() => {
       class="mx-4 mb-6 p-1 rounded-xl bg-surface-variant/50 border border-outline-variant/30 flex items-stretch"
     >
       <button
-        @click="store.toggleEdit()"
-        class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-label-md transition-all duration-200 ease-out active:scale-95 select-none"
+        @click="store.isEditing && store.toggleEdit()"
+        class="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-sm font-label-md transition-all duration-200 ease-out active:scale-95 select-none"
         :class="store.isEditing ? 'text-on-surface-variant hover:bg-surface-bright' : 'bg-tertiary text-on-tertiary shadow-sm'"
-        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
-        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+        :aria-pressed="!store.isEditing"
       >
         <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">visibility</span>
         <span>Viewing</span>
       </button>
       <button
-        @click="store.toggleEdit()"
-        class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-label-md transition-all duration-200 ease-out active:scale-95 select-none"
+        @click="!store.isEditing && store.toggleEdit()"
+        class="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-sm font-label-md transition-all duration-200 ease-out active:scale-95 select-none"
         :class="store.isEditing ? 'bg-tertiary text-on-tertiary shadow-sm' : 'text-on-surface-variant hover:bg-surface-bright'"
-        :title="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
-        :aria-label="store.isEditing ? 'Exit Edit Mode' : 'Enter Edit Mode'"
+        :aria-pressed="store.isEditing"
       >
         <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">edit</span>
         <span>Edit</span>
@@ -334,7 +337,7 @@ onUnmounted(() => {
               </button>
 
               <button
-                @click="handleMoreAction(() => store.shareCharacter())"
+                @click="handleMoreAction(confirmShare)"
                 :disabled="!store.isSupabaseReady"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed select-none w-full text-left"
                 title="Share Online"

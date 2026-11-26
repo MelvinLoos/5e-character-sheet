@@ -102,7 +102,7 @@ html.light {
   --color-on-secondary-fixed-variant: #5c4d3d;
 
   /* Tertiary */
-  --color-tertiary: #8c6b1f;
+  --color-tertiary: #6e5214;
   --color-on-tertiary: #fdf6e3;
   --color-tertiary-container: #f0e6c8;
   --color-on-tertiary-container: #3a2d21;
@@ -918,3 +918,6 @@ html {
     transform: none !important;
   }
 }
+
+/* a11y: readable placeholders in both themes */
+::placeholder { color: var(--color-on-surface-variant); opacity: 0.8; }

@@ -51,7 +51,7 @@ const queryParams = computed(() => {
             class="absolute -top-1.5 -right-2"
           />
         </span>
-        <span class="text-[10px] font-label-md leading-none">{{ entry.label }}</span>
+        <span class="text-[11px] font-label-md leading-none">{{ entry.label }}</span>
       </router-link>
 
       <button

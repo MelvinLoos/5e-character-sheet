@@ -69,7 +69,7 @@ function isLocked(skillName: string): boolean {
         :hover="false"
         :class="[
           'rounded-lg p-2 flex items-center justify-between hover:bg-surface-variant transition-colors group',
-          isSkillDisabled(skill.name) && !skill.proficient ? 'opacity-60' : '',
+          isSkillDisabled(skill.name) && !skill.proficient ? 'text-on-surface-variant' : '',
         ]"
       >
         <div class="flex items-center gap-4 flex-1">
