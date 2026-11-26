@@ -2,13 +2,11 @@
 import { useCharacterStore } from '@/stores/character'
 import { useSpellStore } from '@/stores/spellStore'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
-import { useGuildWidgets } from '@/composables/useGuildWidgets'
 import AttacksList from '@/components/sheet/AttacksList.vue'
 
 const store = useCharacterStore()
 const spellStore = useSpellStore()
 const { badges } = useCharacterCompletion()
-const { showRenown } = useGuildWidgets()
 </script>
 
 <template>
@@ -63,7 +61,7 @@ const { showRenown } = useGuildWidgets()
         <AttacksList />
       </section>
 
-      <RenownProgression v-if="showRenown" class="lg:col-span-12" />
+      <RenownProgression class="lg:col-span-12" />
     </div>
   </div>
 </template>

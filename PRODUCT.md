@@ -20,7 +20,8 @@ Create, manage, play and share 5e (2024) characters without an account. Characte
 
 What makes it different from D&D Beyond and other sheets:
 
-- **Guild-native:** guild homebrew spells and feats, renown progression and Discord sign-in, built around Heroes Guild.
+- **Guild-native:** guild homebrew spells and feats and Discord sign-in, built around Heroes Guild.
+- **Westmarches homebrew rules:** Renown replaces levelling (simpler progression for a massive, multiplayer, asynchronous campaign), and Supply and Influence are homebrew currencies that simplify resource tracking. They are core rules for every character, not guild content, and always shown.
 - **Agent and AI creation:** Gemini generates characters from a prompt, and a hosted MCP server lets external agents (Claude, ChatGPT and others) build, check and save characters in conversation. All of it is validated against the same creation rules.
 - **Free and local-first:** no account is required, characters stay on the device unless shared, and the code is open source (MIT).
 - **Print and table use:** a real A4 printed sheet alongside a touch-optimized mobile sheet.
@@ -62,7 +63,7 @@ What makes it different from D&D Beyond and other sheets:
 
 1. **Rules-correct by construction.** Every path into a character (manual, AI, MCP agent, import) is checked against the same creation rules.
 2. **Playable at the table.** In-play use on a phone, and on paper, comes before builder polish.
-3. **Guild-first, never guild-only.** Guild content and renown add on top of the base product, and the base product works for any 5e player without an account.
+3. **Guild-first, never guild-only.** Guild content (homebrew spells, feats, Discord sign-in) adds on top of the base product, and the base product works for any 5e player without an account.
 4. **Your character is yours.** It's local-first, accounts are optional, and import and export are open and schema-validated.
 
 ## Accessibility & Inclusion
