@@ -95,12 +95,12 @@ watch(
       class="flex justify-between items-end border-b pb-2"
       :class="badges.identity ? 'border-error/50' : 'border-primary-container'"
     >
-      <h3 class="font-headline-md text-headline-md text-primary select-none">
+      <h2 class="font-headline-md text-headline-md text-primary select-none">
         Ability Scores<InfoButton v-if="store.isEditing" topic="point-buy" />
-      </h3>
+      </h2>
       <span
         v-if="badges.identity && store.isEditing"
-        class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none animate-pulse"
+        class="font-label-md text-label-md text-error bg-error/10 px-3 py-1 rounded-full border border-error/30 select-none"
       >
         {{ badges.identity.label }}
       </span>
@@ -128,8 +128,9 @@ watch(
       <div class="text-sm font-label-md text-on-surface-variant select-none">Background Bonuses</div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block font-label-sm text-label-sm text-tertiary mb-1 select-none">+2 Bonus</label>
+          <label for="bonus-plus-two" class="block font-label-sm text-label-sm text-tertiary mb-1 select-none">+2 Bonus</label>
           <select
+            id="bonus-plus-two"
             v-model="store.currentCharacterData.backgroundBonusSelections.plusTwo"
             class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >
@@ -140,8 +141,9 @@ watch(
           </select>
         </div>
         <div>
-          <label class="block font-label-sm text-label-sm text-tertiary mb-1 select-none">+1 Bonus</label>
+          <label for="bonus-plus-one" class="block font-label-sm text-label-sm text-tertiary mb-1 select-none">+1 Bonus</label>
           <select
+            id="bonus-plus-one"
             v-model="store.currentCharacterData.backgroundBonusSelections.plusOne"
             class="w-full bg-background border border-outline-variant rounded p-2 text-on-surface font-body-md text-sm focus:border-tertiary focus:ring-1 focus:ring-tertiary"
           >

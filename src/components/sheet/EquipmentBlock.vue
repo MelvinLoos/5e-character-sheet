@@ -148,7 +148,7 @@ const gearTypeOptions: GearType[] = [
     <!-- Slot Meter -->
     <section>
       <div class="flex justify-between items-end mb-2">
-        <h3 class="font-headline-md text-headline-md text-on-surface">Inventory Slots<InfoButton topic="inventory-slots" /></h3>
+        <h2 class="font-headline-md text-headline-md text-on-surface">Inventory Slots<InfoButton topic="inventory-slots" /></h2>
         <span class="font-label-md text-label-md text-tertiary"
           >Used: {{ usedSlots }} / Max: {{ maxSlots }} (STR)</span
         >
@@ -175,9 +175,9 @@ const gearTypeOptions: GearType[] = [
     <!-- Tactile Item Grid -->
     <section>
       <div class="flex justify-between items-center mb-4 border-b border-[#1A3C40] pb-2">
-        <h3 class="font-headline-md text-headline-md text-on-surface">
+        <h2 class="font-headline-md text-headline-md text-on-surface">
           Equipped Gear & Artifacts
-        </h3>
+        </h2>
         <button
           v-if="store.isEditing"
           @click="addGear"
@@ -303,9 +303,9 @@ const gearTypeOptions: GearType[] = [
     <!-- Consumables -->
     <section>
       <div class="flex justify-between items-center mb-4 border-b border-[#1A3C40] pb-2">
-        <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+        <h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
           <span class="material-symbols-outlined" aria-hidden="true">casino</span> Consumables<InfoButton topic="usage-dice" />
-        </h3>
+        </h2>
         <button aria-label="Add consumable"
           v-if="store.isEditing"
           @click="addConsumable"

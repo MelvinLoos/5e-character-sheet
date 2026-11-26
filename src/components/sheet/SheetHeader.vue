@@ -103,25 +103,28 @@ function incrementTier() {
 
       <div class="relative z-10 flex flex-col md:flex-row gap-6 md:items-end">
         <div class="flex-grow w-full md:w-auto">
+          <h1 v-if="store.isEditing" class="sr-only">Edit character</h1>
           <input
             v-if="store.isEditing"
             v-model="store.currentCharacterData.name"
-            class="w-full bg-transparent border-b-2 border-surface-variant focus:border-tertiary focus:ring-0 font-display-lg text-display-lg text-on-surface p-0 pb-2 placeholder-on-surface-variant/50 transition-colors"
+            class="w-full bg-transparent border-b-2 border-surface-variant focus:border-tertiary focus:ring-0 font-display-lg text-display-lg text-on-surface p-0 pb-2 transition-colors"
             placeholder="Enter Name..."
+            aria-label="Character name"
             type="text"
           />
-          <div
+          <h1
             v-else
             class="w-full border-b-2 border-transparent font-display-lg text-display-lg text-tertiary p-0 pb-2 select-none"
           >
             {{ store.currentCharacterData.name || 'Unnamed' }}
-          </div>
+          </h1>
 
           <input
             v-if="store.isEditing"
             v-model="store.currentCharacterData.title"
             class="w-full bg-transparent border-b border-surface-variant focus:border-tertiary focus:ring-0 font-body-md text-on-surface-variant italic p-0 pb-1 mt-2"
             placeholder="Character title or epithet"
+            aria-label="Character title or epithet"
           />
           <div v-else class="w-full font-body-md text-on-surface-variant italic p-0 pb-1 mt-2 select-none">
             {{ store.currentCharacterData.title }}
