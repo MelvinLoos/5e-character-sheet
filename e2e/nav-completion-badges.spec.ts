@@ -77,7 +77,10 @@ test.describe('Navigation completion badges', () => {
 
     await expect(page.getByRole('link', { name: /27 ability points remaining/ })).toBeVisible()
     await expect(page.getByRole('link', { name: /2 skill choices remaining/ })).toBeVisible()
-    await expect(page.getByRole('link', { name: /Class feature choices remaining/ })).toBeVisible()
     await expect(page.getByRole('link', { name: /Choose starting equipment/ })).toBeVisible()
+
+    // Feats lives in the More sheet on phones; the More tab carries a hint dot.
+    await page.getByRole('button', { name: 'More Actions' }).click()
+    await expect(page.getByRole('link', { name: /Class feature choices remaining/ })).toBeVisible()
   })
 })

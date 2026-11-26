@@ -11,6 +11,8 @@ const props = defineProps<{
   /** Feature / feat name, used for accessible names. */
   label: string
   disabled?: boolean
+  /** 44px targets for critical in-play controls such as death saves. */
+  large?: boolean
 }>()
 
 const used = defineModel<number>({ default: 0 })
@@ -25,8 +27,8 @@ function toggle(n: number): void {
     <label
       v-for="n in props.total"
       :key="n"
-      class="relative inline-flex h-6 w-6 items-center justify-center"
-      :class="disabled ? 'cursor-default' : 'cursor-pointer'"
+      class="relative inline-flex items-center justify-center"
+      :class="[large ? 'h-11 w-11' : 'h-6 w-6', disabled ? 'cursor-default' : 'cursor-pointer']"
     >
       <input
         type="checkbox"
@@ -37,8 +39,8 @@ function toggle(n: number): void {
         @change="toggle(n)"
       />
       <span
-        class="flex h-4 w-4 items-center justify-center rounded-sm border transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-tertiary peer-focus-visible:ring-offset-1 peer-focus-visible:ring-offset-surface-container"
-        :class="n <= used ? 'border-tertiary bg-tertiary text-on-tertiary' : 'border-outline bg-transparent'"
+        class="flex items-center justify-center rounded-sm border transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-tertiary peer-focus-visible:ring-offset-1 peer-focus-visible:ring-offset-surface-container"
+        :class="[large ? 'h-7 w-7' : 'h-4 w-4', n <= used ? 'border-tertiary bg-tertiary text-on-tertiary' : 'border-outline bg-transparent']"
         aria-hidden="true"
       >
         <svg v-if="n <= used" class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

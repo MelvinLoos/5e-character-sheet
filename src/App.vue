@@ -6,6 +6,7 @@ import { useRulesStore } from './stores/rulesStore'
 import { useGuildContentSyncStore } from './stores/guildContentSyncStore'
 import { useFeedbackStore } from './stores/feedbackStore'
 import { useDiceTray } from './composables/useDiceTray'
+import { announcement } from './composables/useSheetRoll'
 import { useOnboardingTour } from './composables/useOnboardingTour'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
@@ -112,6 +113,9 @@ onMounted(async () => {
     </main>
 
     <PrintableSheet v-if="store.hasCharacter" />
+
+    <!-- Polite announcements for HP changes and roll results -->
+    <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="live-region">{{ announcement }}</div>
 
     <UndoToast />
     <LoadingModal />

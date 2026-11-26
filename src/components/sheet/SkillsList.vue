@@ -6,9 +6,11 @@ import { formatMod } from '@/domain'
 import { useSkills, normalizeSkillName } from '@/composables/useSkills'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
+import { useSheetRoll } from '@/composables/useSheetRoll'
 
 const store = useCharacterStore()
 const { badges } = useCharacterCompletion()
+const { rollCheck } = useSheetRoll()
 const {
   allSkillMods,
   toggleProficiency,
@@ -61,7 +63,8 @@ function isLocked(skillName: string): boolean {
         {{ choiceHeader }}
       </span>
     </div>
-    <div style="gap: 1em" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-card-gap pb-4">
+    <p v-if="!store.isEditing" class="font-body-sm text-body-sm text-on-surface-variant md:hidden">Tap a skill to roll it.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-[1em] pb-4">
       <ElevatedCard
         v-for="skill in allSkillMods"
         :key="skill.name"
@@ -72,7 +75,13 @@ function isLocked(skillName: string): boolean {
           isSkillDisabled(skill.name) && !skill.proficient ? 'text-on-surface-variant' : '',
         ]"
       >
-        <div class="flex items-center gap-4 flex-1">
+        <component
+          :is="store.isEditing ? 'div' : 'button'"
+          :type="store.isEditing ? undefined : 'button'"
+          :aria-label="store.isEditing ? undefined : `Roll ${skill.name}, ${formatMod(skill.mod)}`"
+          class="flex items-center gap-4 flex-1 min-h-12 text-left rounded-lg select-none"
+          @click="!store.isEditing && rollCheck(skill.name, skill.mod)"
+        >
           <div
             class="w-12 h-12 rounded bg-surface-dim border flex items-center justify-center font-headline-md text-headline-md transition-colors"
             :class="
@@ -97,7 +106,7 @@ function isLocked(skillName: string): boolean {
               skill.stat.toUpperCase()
             }}</span>
           </div>
-        </div>
+        </component>
         <div class="flex items-center gap-3">
           <ProficiencyToggle
             :model-value="skill.proficient"

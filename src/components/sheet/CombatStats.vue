@@ -2,9 +2,10 @@
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSpellStore } from '@/stores/spellStore'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useCombat } from '@/composables/useCombat'
-import { DICE_CANVAS_HOST_ID, canUse3d, useDiceRoller } from '@/composables/useDiceRoller'
+import { DICE_CANVAS_HOST_ID, useDiceRoller } from '@/composables/useDiceRoller'
+import { announce, waitForCanvasHost } from '@/composables/useSheetRoll'
 import { useDiceTray } from '@/composables/useDiceTray'
 import { buildInitiativeRoll, type RollMode } from '@/domain'
 import ElevatedCard from '@/components/ui/ElevatedCard.vue'
@@ -32,6 +33,10 @@ function applyAmount(kind: 'damage' | 'heal'): void {
   } else {
     heal(n)
   }
+  const hp = store.currentCharacterData.combat.hp_current ?? 0
+  announce(
+    `${kind === 'damage' ? `Took ${n} damage` : `Healed ${n}`}. HP ${hp} of ${progression.maxHp}.${hp <= 0 ? ' Downed.' : ''}`,
+  )
   amount.value = null
 }
 
@@ -47,19 +52,6 @@ const diceTray = useDiceTray()
 const { isRolling: rollingInitiative, roll: rollDice } = useDiceRoller()
 
 /**
- * Resolve once the lazily-mounted dice canvas host is in the DOM. Bounded, and
- * skipped entirely when the engine can't use 3D (numeric fallback needs no host).
- */
-async function waitForCanvasHost(): Promise<void> {
-  if (!canUse3d()) return
-  for (let attempt = 0; attempt < 40; attempt++) {
-    if (document.getElementById(DICE_CANVAS_HOST_ID)) return
-    await nextTick()
-    await new Promise((resolve) => setTimeout(resolve, 25))
-  }
-}
-
-/**
  * Roll initiative through the shared 3D dice engine (issue #69). Opening the
  * tray first makes the tumbling dice visible; the settled faces are folded into
  * an InitiativeRoll and persisted (which also resets Initiative features).
@@ -70,9 +62,9 @@ async function rollInitiative(): Promise<void> {
   await waitForCanvasHost()
   const count = rollMode.value === 'normal' ? 1 : 2
   const summary = await rollDice(`#${DICE_CANVAS_HOST_ID}`, 20, count, initiativeMod.value)
-  store.recordInitiativeRoll(
-    buildInitiativeRoll(rollMode.value, initiativeMod.value, summary.values),
-  )
+  const initiative = buildInitiativeRoll(rollMode.value, initiativeMod.value, summary.values)
+  store.recordInitiativeRoll(initiative)
+  announce(`Initiative: ${initiative.total}`)
   initiativePulsing.value = false
   requestAnimationFrame(() => {
     initiativePulsing.value = true
@@ -114,7 +106,7 @@ watch(
     </h3>
     <div class="grid grid-cols-2 gap-4">
       <!-- AC Card -->
-      <ElevatedCard :elevation="2">
+      <ElevatedCard :elevation="2" class="max-sm:order-5">
         <div
           class="rounded-lg p-4 flex flex-col items-center justify-center relative overflow-hidden group"
         >
@@ -152,8 +144,8 @@ watch(
         </div>
       </ElevatedCard>
 
-      <!-- HP Card -->
-      <ElevatedCard :elevation="2">
+      <!-- HP Card: first and full width on phones so vitals are on screen immediately -->
+      <ElevatedCard :elevation="2" class="col-span-2 max-sm:order-1 sm:col-span-1">
         <div
           class="rounded-lg p-4 flex flex-col justify-between"
         >
@@ -183,7 +175,7 @@ watch(
             <input
               v-model.number="store.currentCharacterData.combat.hp_temp"
               :class="{ 'rest-pulse': pulsing }"
-              class="w-12 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
+              class="min-h-11 w-16 bg-surface-container rounded border border-outline-variant text-center font-body-md text-on-surface p-1 focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="0"
               type="number"
               inputmode="numeric"
@@ -214,18 +206,18 @@ watch(
             <span class="font-label-md text-label-md text-error uppercase select-none">Downed — Death Saves</span>
             <div class="flex items-center justify-between gap-2">
               <span class="font-label-md text-label-md text-on-surface-variant">Successes</span>
-              <UsageTracker v-model="store.currentCharacterData.combat.death_saves.successes" :total="3" label="Death save successes" />
+              <UsageTracker v-model="store.currentCharacterData.combat.death_saves.successes" :total="3" label="Death save successes" large />
             </div>
             <div class="flex items-center justify-between gap-2">
               <span class="font-label-md text-label-md text-on-surface-variant">Failures</span>
-              <UsageTracker v-model="store.currentCharacterData.combat.death_saves.failures" :total="3" label="Death save failures" />
+              <UsageTracker v-model="store.currentCharacterData.combat.death_saves.failures" :total="3" label="Death save failures" large />
             </div>
           </div>
         </div>
       </ElevatedCard>
 
       <!-- Hit Dice -->
-      <ElevatedCard :elevation="1" class="col-span-2 sm:col-span-1">
+      <ElevatedCard :elevation="1" class="col-span-2 max-sm:order-6 sm:col-span-1">
         <div
           class="rounded-lg p-4 flex flex-col items-center justify-center"
         >
@@ -245,7 +237,7 @@ watch(
         </div>
       </ElevatedCard>
 
-      <ElevatedCard :elevation="1" class="col-span-2 sm:col-span-1">
+      <ElevatedCard :elevation="1" class="col-span-2 max-sm:order-7 sm:col-span-1">
         <div
           class="rounded p-3 flex flex-col items-center justify-center h-full"
         >
@@ -270,7 +262,7 @@ watch(
       </ElevatedCard>
 
       <!-- Initiative: modifier → roll → result -->
-      <ElevatedCard :elevation="1" class="col-span-2">
+      <ElevatedCard :elevation="1" class="col-span-2 max-sm:order-2">
         <div class="rounded p-3 flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase flex items-center gap-1 select-none"
@@ -330,8 +322,8 @@ watch(
           </div>
         </div>
       </ElevatedCard>
+      <div class="col-span-2 max-sm:order-3 empty:hidden"><ConcentrationTracker /></div>
+      <div class="col-span-2 max-sm:order-4"><RestActions /></div>
     </div>
-    <ConcentrationTracker />
-    <RestActions />
   </section>
 </template>
