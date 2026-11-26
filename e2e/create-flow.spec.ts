@@ -9,15 +9,15 @@ test('guided create flow builds a legal character and finishes on the sheet', as
   const next = wizard.getByRole('navigation', { name: 'Wizard steps (bottom)' }).getByRole('button', { name: 'Next' })
   await expect(next).toBeDisabled()
 
-  await wizard.locator('label', { hasText: /^Human/ }).click()
+  await wizard.locator('label').filter({ has: page.getByRole('radio', { name: /^Human/ }) }).click()
   await next.click()
-  await wizard.locator('label', { hasText: /^Fighter/ }).click()
+  await wizard.locator('label').filter({ has: page.getByRole('radio', { name: /^Fighter/ }) }).click()
   await next.click()
   await expect(wizard.getByRole('heading', { name: 'Choose your Martial Archetype' })).toBeVisible()
   await expect(next).toBeDisabled()
-  await wizard.locator('label', { hasText: /^Champion/ }).click()
+  await wizard.locator('label').filter({ has: page.getByRole('radio', { name: /^Champion/ }) }).click()
   await next.click()
-  await wizard.locator('label', { hasText: /^Acolyte/ }).click()
+  await wizard.locator('label').filter({ has: page.getByRole('radio', { name: /^Acolyte/ }) }).click()
   await next.click()
 
   await expect(wizard.getByText('27 of 27 points left')).toBeVisible()
@@ -53,9 +53,9 @@ test('reopening the guide lets a player change the background and finish', async
   await expect(next).toBeEnabled() // prefilled
   await next.click() // species -> class
   await next.click() // class -> subclass (Barbarian has none picked yet)
-  await wizard.locator('label', { hasText: /^Path of the Berserker/ }).click()
+  await wizard.locator('label').filter({ has: page.getByRole('radio', { name: /^Path of the Berserker/ }) }).click()
   await next.click()
-  await wizard.locator('label', { hasText: /^Sage/ }).click()
+  await wizard.locator('label').filter({ has: page.getByRole('radio', { name: /^Sage/ }) }).click()
   await next.click() // abilities
   await next.click() // skills
   await next.click() // ready

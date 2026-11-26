@@ -137,3 +137,22 @@ describe('reopening the guide', () => {
     expect(s.currentCharacterData.featureChoices).toEqual({})
   })
 })
+
+describe('option visuals', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+    useCharacterStore().handleNewCharacter()
+  })
+
+  it('renders the monogram for a species card and an emblem for a class card', async () => {
+    const w = mountWizard()
+    const first = w.find('[data-testid="option-visual"]')
+    expect(first.find('[data-visual="monogram"]').exists()).toBe(true)
+    await w.findAll('input[type="radio"]').find((r) => r.attributes('value') === 'Human')!.trigger('change')
+    await flushPromises()
+    await next(w).trigger('click')
+    expect(w.find('[data-testid="option-visual"] svg').exists()).toBe(true)
+    expect(w.find('[data-testid="option-visual"]').attributes('aria-hidden')).toBe('true')
+  })
+})

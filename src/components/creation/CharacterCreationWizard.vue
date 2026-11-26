@@ -29,6 +29,7 @@ import { useProgressionStore } from '@/stores/progression'
 import { useSkills } from '@/composables/useSkills'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import { useCelebration } from '@/composables/useCelebration'
+import OptionVisual from '@/components/creation/OptionVisual.vue'
 import { useSelectionChange } from '@/composables/useSelectionChange'
 
 type StepId = 'species' | 'class' | 'subclass' | 'background' | 'abilities' | 'skills' | 'ready'
@@ -358,6 +359,13 @@ const cardState = (on: boolean) =>
             :value="o.id"
             :checked="selectedName === o.id"
             @change="choose(o.id)"
+          />
+          <OptionVisual
+            :name="o.name"
+            :category="step.id === 'species' || step.id === 'background' ? step.id : 'class'"
+            :selected="selectedName === o.id"
+            instance="card"
+            class="mb-1 !w-28 sm:!w-full"
           />
           <span class="flex items-center justify-between gap-2 font-headline-sm text-headline-sm text-on-surface">
             {{ o.name }}
