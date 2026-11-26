@@ -41,7 +41,8 @@ const moreSections = [
 /** Close the sheet and replay the guided tour. */
 function restartTour() {
   close()
-  void startTour()
+  store.isCreating = false // the tour points at the sheet, not the guided Create flow
+  void nextTick().then(startTour)
 }
 
 const { characterSelectOptions, currentCharacterValue, selectCharacter, printSheet } =
@@ -282,10 +283,10 @@ watch(
                   ref="firstItemRef"
                   @click="openImport"
                   class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
-                  title="Import Data"
+                  title="Import spells and feats from 5e.tools JSON"
                 >
                   <span class="material-symbols-outlined text-2xl" aria-hidden="true">file_upload</span>
-                  <span class="text-xs font-label-md">Import Data</span>
+                  <span class="text-xs font-label-md">Import 5e.tools Spells &amp; Feats</span>
                 </button>
 
                 <button

@@ -26,6 +26,8 @@ const route = useRoute()
 
 const isOpen = ref(false)
 const dontShowAgain = ref(false)
+/** The reminder opens at most once per page session, not on every route change. */
+let shownThisSession = false
 
 function isRelevantRouteName(name: unknown): boolean {
   return REMINDER_ROUTES.includes(String(name ?? '') as (typeof REMINDER_ROUTES)[number])
@@ -64,12 +66,14 @@ function handleLogin(): void {
 watch(
   () => [route.name, authStore.isAuthenticated] as const,
   ([name, isAuthenticated]) => {
-    const shouldShow = !isAuthenticated && isRelevantRouteName(name) && !isDismissedPermanently()
+    const shouldShow =
+      !isAuthenticated && isRelevantRouteName(name) && !shownThisSession && !isDismissedPermanently()
 
     if (shouldShow) {
       dontShowAgain.value = false
+      shownThisSession = true
       isOpen.value = true
-    } else if (isOpen.value) {
+    } else if (isOpen.value && (isAuthenticated || !isRelevantRouteName(name))) {
       isOpen.value = false
     }
   },

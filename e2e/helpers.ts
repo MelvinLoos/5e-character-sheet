@@ -17,7 +17,11 @@ export async function openSheet(page: Page, path = '/identity'): Promise<void> {
     .waitFor({ state: 'visible', timeout: 15000 })
     .then(() => true)
     .catch(() => false)
-  if (created) await create.click()
+  if (created) {
+    await create.click()
+    // New characters open the guided Create flow; specs want the plain sheet.
+    await page.getByRole('button', { name: 'Skip the guide' }).click()
+  }
 
   // A freshly created character opens in edit mode; the specs expect the
   // read-only view (the previous blank sheet was not editing).

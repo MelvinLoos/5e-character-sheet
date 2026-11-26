@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCharacterStore } from '@/stores/character'
 import AuthButton from './AuthButton.vue'
@@ -77,7 +77,8 @@ function handleMoreAction(action: () => void) {
 /** Close the popover and replay the guided tour. */
 function restartTour() {
   closeMorePopover()
-  void startTour()
+  store.isCreating = false // the tour points at the sheet, not the guided Create flow
+  void nextTick().then(startTour)
 }
 
 function handleClickOutside(event: MouseEvent) {
@@ -306,11 +307,11 @@ function confirmShare() {
               <button
                 @click="emit('showImport'); closeMorePopover()"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
-                title="Import JSON"
+                title="Import spells and feats from 5e.tools JSON"
                 role="menuitem"
               >
                 <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">file_upload</span>
-                Import Data
+                Import 5e.tools Spells &amp; Feats
               </button>
 
               <button

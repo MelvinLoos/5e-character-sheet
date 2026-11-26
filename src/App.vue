@@ -11,6 +11,7 @@ import { useOnboardingTour } from './composables/useOnboardingTour'
 import ImportModal from './components/modals/ImportModal.vue'
 import MoreActionsMenu from './components/MoreActionsMenu.vue'
 import UndoToast from './components/ui/UndoToast.vue'
+import CharacterCreationWizard from './components/creation/CharacterCreationWizard.vue'
 
 // Lazy-load modals to reduce initial bundle size
 const LoadingModal = defineAsyncComponent(() => import('./components/modals/LoadingModal.vue'))
@@ -45,6 +46,7 @@ const { startTour, hasCompletedTour } = useOnboardingTour()
  */
 async function handleStartTourFromEmptyState(): Promise<void> {
   store.handleNewCharacter()
+  store.isCreating = false // the tour points at the sheet, not the guided Create flow
   await nextTick()
   await startTour()
 }
@@ -108,7 +110,8 @@ onMounted(async () => {
           </button>
         </div>
 
-        <CharacterSheet v-if="store.hasCharacter || isStandalonePage" />
+        <CharacterCreationWizard v-if="store.isCreating && !isStandalonePage" />
+        <CharacterSheet v-else-if="store.hasCharacter || isStandalonePage" />
       </div>
     </main>
 
@@ -131,7 +134,7 @@ onMounted(async () => {
     <ConfirmDialog />
 
     <MobileTabBar
-      v-if="store.hasCharacter"
+      v-if="store.hasCharacter && !store.isCreating"
       class="md:hidden print:hidden"
       @show-more="showMoreMenu = true"
     />

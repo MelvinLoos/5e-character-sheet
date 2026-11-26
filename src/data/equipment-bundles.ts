@@ -522,7 +522,7 @@ export const CLASS_BUNDLES: Record<string, Record<'optionA' | 'optionB' | 'optio
       bundleId: 'wizard-option-A',
       className: 'Wizard',
       optionLabel: 'A',
-      description: 'Arcane Focus (Orb), Dagger, Scholar\'s Pack, Spellbook',
+      description: 'Quarterstaff (Arcane Focus), Dagger, Scholar\'s Pack, Spellbook',
       items: [
         { itemId: 'quarterstaff', quantity: 1 },
         { itemId: 'dagger', quantity: 1 },

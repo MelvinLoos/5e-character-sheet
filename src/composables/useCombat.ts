@@ -178,7 +178,7 @@ export function useCombat(characterStore?: ReturnType<typeof useCharacterStore>)
 
   /** True when the character is at 0 HP (feeds the death-save tracker). */
   const isDowned: ComputedRef<boolean> = computed(
-    () => store.currentCharacterData.combat.hp_current === 0,
+    () => !store.isCreating && store.currentCharacterData.combat.hp_current === 0,
   )
 
   /** Hit die size for the character's class (d8 fallback). */

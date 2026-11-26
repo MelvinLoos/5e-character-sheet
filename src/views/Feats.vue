@@ -13,6 +13,7 @@ import ExpandableText from '@/components/ui/ExpandableText.vue'
 import LibraryModal from '@/components/ui/LibraryModal.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
 import type { CharacterFeature } from '@/types/character'
+import { featureGroup, type FeatureGroup } from '@/domain/creationRules'
 import type { FeatureChoice } from '@/types/rules'
 import {
   eligibleFeatureChoices as eligibleFeatureChoicesHelper,
@@ -108,6 +109,21 @@ const visibleSelectedFeats = computed(() => {
         (feat.desc && feat.desc.toLowerCase().includes(query)),
     )
 })
+
+const GROUP_LABELS: Record<FeatureGroup, string> = {
+  feat: 'Feats',
+  class: 'Class Features',
+  species: 'Species Traits',
+}
+const featGroups = computed(() =>
+  (['feat', 'class', 'species'] as const)
+    .map((id) => ({
+      id,
+      label: GROUP_LABELS[id],
+      items: visibleSelectedFeats.value.filter(({ feat }) => featureGroup(feat) === id),
+    }))
+    .filter((g) => g.items.length > 0),
+)
 
 // --- Library feats (filtered) ---
 const libraryFeats = computed(() => {
@@ -280,7 +296,7 @@ function setActiveCategory(cat: string) {
       <div class="flex justify-between items-end border-b border-surface-variant pb-4 mb-6">
         <h3 class="font-headline-lg text-headline-lg text-tertiary flex items-center gap-2 m-0">
           <span class="material-symbols-outlined text-3xl" aria-hidden="true">auto_awesome</span>
-          Transcribed Feats
+          Feats &amp; Features
         </h3>
       </div>
 
@@ -307,13 +323,24 @@ function setActiveCategory(cat: string) {
         </button>
       </div>
 
-      <!-- Selected Feat Cards Grid -->
+      <!-- Selected cards, split into Feats / Class Features / Species Traits -->
+      <section
+        v-for="group in featGroups"
+        :key="group.id"
+        :aria-labelledby="`feat-group-${group.id}`"
+        class="mb-8 last:mb-0"
+      >
+        <h4
+          :id="`feat-group-${group.id}`"
+          class="font-headline-md text-headline-md text-primary mb-4"
+        >
+          {{ group.label }}
+        </h4>
       <div
-        v-if="selectedFeats.length > 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         <div
-          v-for="{ feat, index } in visibleSelectedFeats"
+          v-for="{ feat, index } in group.items"
           :key="index"
           class="bg-surface-container-high border border-primary-container p-4 rounded-lg hover:border-tertiary/50 transition-colors group relative shadow-sm"
         >
@@ -408,6 +435,7 @@ function setActiveCategory(cat: string) {
           </button>
         </div>
       </div>
+      </section>
 
       <!-- Empty State -->
       <div
@@ -457,7 +485,7 @@ function setActiveCategory(cat: string) {
               {{ fc.description }}
             </p>
             <p class="text-xs text-on-surface-variant">
-              Choose up to {{ effectiveMaxCountForChoice(fc) }} of {{ fc.options?.length ?? 0 }} options
+              Choose up to {{ effectiveMaxCountForChoice(fc) }} of {{ fc.options?.length ?? 0 }} option{{ (fc.options?.length ?? 0) === 1 ? '' : 's' }}
             </p>
             <p
               v-if="currentFeatureChoiceSelections(fc.id).length > 0"

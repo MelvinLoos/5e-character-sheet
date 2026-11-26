@@ -79,6 +79,8 @@ export const useCharacterStore = defineStore('character', () => {
   const hasCharacter = ref(false)
   const currentUserData = computed(() => currentCharacterData.value)
   const isEditing = ref(false)
+  /** True while the guided Create flow is building a brand-new character. */
+  const isCreating = ref(false)
   const characterLibrary = ref<Record<string, CharacterData[]>>(loadLibrary())
   const sessionName = ref('Uncategorized')
   const schema = computed(() => getSchema())
@@ -213,6 +215,7 @@ export const useCharacterStore = defineStore('character', () => {
     currentCharacterData.value = migratedData as unknown as CharacterData
     hasCharacter.value = true
     isEditing.value = false
+    isCreating.value = false
     // Restore a remembered share id so the printed QR code survives reloads and
     // round-trips through the local library. loadCharacterFromUrl overrides this
     // with the id from the URL when one is present.
@@ -349,7 +352,14 @@ export const useCharacterStore = defineStore('character', () => {
     clearCurrentCharacterId()
     _setCharacter(createBlankCharacter())
     isEditing.value = true
+    isCreating.value = true
     capturePostHogEvent('character_created')
+  }
+
+  /** Leave the guided Create flow and open the finished character read-only. */
+  function finishCreation(): void {
+    isCreating.value = false
+    isEditing.value = false
   }
 
   function toggleEdit(): void {
@@ -802,6 +812,7 @@ export const useCharacterStore = defineStore('character', () => {
     hasCharacter,
     currentUserData,
     isEditing,
+    isCreating,
     characterLibrary,
     sessionName,
     schema,
@@ -829,6 +840,7 @@ export const useCharacterStore = defineStore('character', () => {
     saveToLibrary,
     handleNewCharacter,
     toggleEdit,
+    finishCreation,
     generateCharacter,
     shareCharacter,
     exportCharacter,

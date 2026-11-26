@@ -33,6 +33,22 @@ export function pointBuyCostTotal(base: Record<string, number>): number {
   return Object.values(base).reduce((sum, score) => sum + (pointBuyCosts[score] ?? 0), 0)
 }
 
+/** Point cost of raising a base score by one, or null when already at the maximum. */
+export function pointBuyNextCost(score: number): number | null {
+  if (score >= POINT_BUY_MAX) return null
+  return (pointBuyCosts[score + 1] ?? 0) - (pointBuyCosts[score] ?? 0)
+}
+
+/** Background bonus (+2, +1 or 0) a given ability receives from the chosen selections. */
+export function backgroundBonusFor(
+  ability: string,
+  selections: { plusTwo?: string | null; plusOne?: string | null } | undefined | null,
+): number {
+  if (selections?.plusTwo === ability) return 2
+  if (selections?.plusOne === ability) return 1
+  return 0
+}
+
 export function validatePointBuy(base: Record<string, number> | undefined | null): string[] {
   if (!base) return ['pointBuyBaseScores is missing.']
   const errors: string[] = []
@@ -199,4 +215,31 @@ export function validateCreationRules(character: CharacterData): string[] {
     ...validateSubChoice(character.species, character.subChoice),
     ...validateFeatureChoices(character),
   ]
+}
+
+export type FeatureGroup = 'feat' | 'class' | 'species'
+
+/**
+ * Which list a character feature belongs to: Class Features, Species Traits
+ * or Feats. Uses an explicit `featureType` when present, otherwise matches the
+ * title against the rules catalog (auto-granted features carry no type).
+ * Background features are feats (e.g. Alert, Magic Initiate).
+ */
+export function featureGroup(feature: { title: string; featureType?: string }): FeatureGroup {
+  if (feature.featureType === 'Class Feature' || feature.featureType === 'Spellcasting') return 'class'
+  if (feature.featureType === 'Species Trait') return 'species'
+  if (feature.featureType === 'Feat' || feature.featureType === 'Background Feature') return 'feat'
+  const t = feature.title
+  for (const c of Object.values(DND_RULES.CLASSES)) {
+    if (c.features.some((f) => f.title === t)) return 'class'
+    for (const fc of c.featureChoices ?? []) {
+      if ((fc.options ?? []).some((o) => o.traits.some((tr) => tr.title === t))) return 'class'
+    }
+  }
+  if (Object.values(DND_RULES.CLASS_SPELLCASTING_FEATS).some((f) => f.title === t)) return 'class'
+  for (const sp of Object.values(DND_RULES.SPECIES)) {
+    if (sp.traits.some((f) => f.title === t)) return 'species'
+    if ((sp.subChoices ?? []).some((sc) => sc.traits.some((f) => f.title === t))) return 'species'
+  }
+  return 'feat'
 }
