@@ -15,7 +15,7 @@ import { pointBuyCosts } from './characterService'
 import { getEffectiveLevel } from './rulesService'
 import { eligibleFeatureChoices, effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import type { CharacterData } from '@/types/character'
-import type { FeatureChoiceOption } from '@/types/rules'
+import type { FeatureChoice, FeatureChoiceOption } from '@/types/rules'
 
 export const POINT_BUY_BUDGET = 27
 export const POINT_BUY_MIN = 8
@@ -242,4 +242,46 @@ export function featureGroup(feature: { title: string; featureType?: string }): 
     if ((sp.subChoices ?? []).some((sc) => sc.traits.some((f) => f.title === t))) return 'species'
   }
   return 'feat'
+}
+
+/** Feature-choice ids that are a class's subclass pick (Primal Path, Divine Domain, ...). */
+export const SUBCLASS_CHOICE_IDS: readonly string[] = [
+  'barbarian-subclass',
+  'bard-college',
+  'divine-domain',
+  'druid-circle',
+  'fighter-subclass',
+  'monk-subclass',
+  'paladin-oath',
+  'ranger-conclave',
+  'rogue-subclass',
+  'sorcerer-origin',
+  'warlock-subclass',
+  'wizard-school',
+]
+
+/** The subclass choice a class offers at the given Renown Tier, or null. */
+export function subclassChoiceFor(
+  className: string | null | undefined,
+  renownTier: number | null | undefined = 1,
+): FeatureChoice | null {
+  if (!className) return null
+  return (
+    eligibleFeatureChoices(className, renownTier).find((c) => SUBCLASS_CHOICE_IDS.includes(c.id)) ??
+    null
+  )
+}
+
+/** A class that offers a subclass at the character's tier needs exactly one picked. */
+export function validateSubclass(
+  character: Pick<CharacterData, 'class' | 'renownTier' | 'featureChoices'>,
+): string[] {
+  const choice = subclassChoiceFor(character.class, character.renownTier)
+  if (!choice) return []
+  const picked = character.featureChoices?.[choice.id] ?? []
+  if (picked.length !== 1) return [`${character.class} must choose one ${choice.label}.`]
+  if (!(choice.options ?? []).some((o) => o.id === picked[0])) {
+    return [`"${picked[0]}" is not a ${character.class} ${choice.label}.`]
+  }
+  return []
 }

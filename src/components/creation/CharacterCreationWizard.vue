@@ -21,14 +21,17 @@ import {
   validatePointBuy,
   validateSubChoice,
   validateClassSkillChoices,
+  validateSubclass,
+  subclassChoiceFor,
 } from '@/domain/creationRules'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSkills } from '@/composables/useSkills'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import { useCelebration } from '@/composables/useCelebration'
+import { useSelectionChange } from '@/composables/useSelectionChange'
 
-type StepId = 'species' | 'class' | 'background' | 'abilities' | 'skills' | 'ready'
+type StepId = 'species' | 'class' | 'subclass' | 'background' | 'abilities' | 'skills' | 'ready'
 
 const store = useCharacterStore()
 const progression = useProgressionStore()
@@ -41,13 +44,21 @@ const { remainingChoices, classSkillOptions, lockedSkills, isSkillDisabled, togg
 const char = computed(() => store.currentCharacterData)
 
 // The store starts with default picks; the wizard only counts a pick once made.
-const picked = ref({ species: false, class: false, background: false })
+// A reopened guide starts with the character's existing choices already made.
+const reopened = store.isReopening
+const picked = ref({ species: reopened, class: reopened, background: reopened })
+const { confirmSelectionChange } = useSelectionChange()
+
+const subclassChoice = computed(() =>
+  picked.value.class ? subclassChoiceFor(char.value.class, char.value.renownTier) : null,
+)
 
 const hasSkillStep = computed(() => !!classSkillOptions.value)
 const steps = computed<{ id: StepId; label: string }[]>(() =>
   [
     { id: 'species' as const, label: 'Species' },
     { id: 'class' as const, label: 'Class' },
+    ...(subclassChoice.value ? [{ id: 'subclass' as const, label: subclassChoice.value.label }] : []),
     { id: 'background' as const, label: 'Background' },
     { id: 'abilities' as const, label: 'Abilities' },
     ...(hasSkillStep.value ? [{ id: 'skills' as const, label: 'Skills' }] : []),
@@ -62,6 +73,8 @@ const heading = ref<HTMLElement | null>(null)
 const abilityName = (k: string) => DND_RULES.ABILITIES[k] ?? k
 
 interface Option {
+  /** Stored value; equals `name` except for subclass options. */
+  id: string
   name: string
   summary: string
   detail: string
@@ -69,6 +82,7 @@ interface Option {
 const options = computed<Option[]>(() => {
   if (step.value.id === 'species') {
     return Object.entries(DND_RULES.SPECIES).map(([name, d]) => ({
+      id: name,
       name,
       summary: `Speed ${d.speed} · ${d.traits
         .filter((t) => t.key)
@@ -79,12 +93,25 @@ const options = computed<Option[]>(() => {
   }
   if (step.value.id === 'class') {
     return Object.entries(DND_RULES.CLASSES).map(([name, d]) => ({
+      id: name,
       name,
       summary: `d${d.hitDice} hit die · Saves ${d.savingThrows.map((s) => s.toUpperCase()).join(', ')}`,
       detail: d.description ?? '',
     }))
   }
+  if (step.value.id === 'subclass') {
+    return (subclassChoice.value?.options ?? []).map((o) => ({
+      id: o.id,
+      name: o.label,
+      summary: o.traits
+        .filter((t) => t.key)
+        .map((t) => t.title)
+        .join(', '),
+      detail: o.description ?? '',
+    }))
+  }
   return Object.entries(DND_RULES.BACKGROUNDS).map(([name, d]) => ({
+    id: name,
     name,
     summary: `${d.skills.join(', ')} · ${d.feature.title}`,
     detail: d.description ?? '',
@@ -93,6 +120,7 @@ const options = computed<Option[]>(() => {
 
 const selectedName = computed(() => {
   const id = step.value.id
+  if (id === 'subclass') return char.value.featureChoices?.[subclassChoice.value?.id ?? '']?.[0] ?? null
   if (id !== 'species' && id !== 'class' && id !== 'background') return null
   const key = id === 'species' ? 'species' : id === 'class' ? 'class' : 'background'
   return picked.value[key] ? (char.value[key] ?? null) : null
@@ -106,6 +134,9 @@ interface Fact {
 const selectedFacts = computed<Fact[]>(() => {
   const name = selectedName.value
   if (!name) return []
+  if (step.value.id === 'subclass') {
+    return subclassChoice.value?.options?.find((o) => o.id === name)?.traits ?? []
+  }
   if (step.value.id === 'species') return DND_RULES.SPECIES[name]?.traits ?? []
   if (step.value.id === 'class') {
     const d = DND_RULES.CLASSES[name]
@@ -126,15 +157,21 @@ const subChoices = computed(() => {
     : []
 })
 
-function choose(name: string): void {
+async function choose(name: string): Promise<void> {
   const id = step.value.id
+  // Re-picking the current option must not reset what depends on it.
+  if (selectedName.value === name) return
   if (id === 'species') {
     store.applySpeciesChange(name)
     picked.value.species = true
   } else if (id === 'class') {
+    if (!(await confirmSelectionChange('class', name))) return
     store.applyClassChange(name)
     picked.value.class = true
+  } else if (id === 'subclass') {
+    if (subclassChoice.value) store.applyFeatureChoice(subclassChoice.value.id, [name])
   } else if (id === 'background') {
+    if (!(await confirmSelectionChange('background', name))) return
     store.applyBackgroundChange(name)
     // Default to the first two offered abilities so a legal pair always exists.
     const offered = DND_RULES.BACKGROUNDS[name]?.abilityScoreIncrease ?? []
@@ -173,6 +210,8 @@ const stepErrors = computed<string[]>(() => {
       return picked.value.species ? validateSubChoice(char.value.species, char.value.subChoice) : ['Choose a species.']
     case 'class':
       return picked.value.class ? [] : ['Choose a class.']
+    case 'subclass':
+      return validateSubclass(char.value)
     case 'background':
       return picked.value.background ? [] : ['Choose a background.']
     case 'abilities':
@@ -222,8 +261,8 @@ async function finish(to = '/identity'): Promise<void> {
 }
 
 /** Drop the guide and keep editing on the full sheet. */
-function skipToSheet(): void {
-  store.isCreating = false
+function leave(): void {
+  store.leaveGuide()
 }
 
 const radioCard =
@@ -253,6 +292,7 @@ const cardState = (on: boolean) =>
           >
             <template v-if="step.id === 'species'">Choose your species</template>
             <template v-else-if="step.id === 'class'">Choose your class</template>
+            <template v-else-if="step.id === 'subclass'">Choose your {{ step.label }}</template>
             <template v-else-if="step.id === 'background'">Choose your background</template>
             <template v-else-if="step.id === 'abilities'">Set your ability scores</template>
             <template v-else-if="step.id === 'skills'">Choose your skills</template>
@@ -262,9 +302,9 @@ const cardState = (on: boolean) =>
         <button
           type="button"
           class="shrink-0 min-h-11 px-3 font-label-md text-label-md text-primary hover:underline"
-          @click="skipToSheet"
+          @click="leave"
         >
-          Skip the guide
+          {{ store.isReopening ? 'Cancel and keep my character' : 'Skip the guide' }}
         </button>
       </div>
       <ol class="flex gap-1.5" aria-label="Progress">
@@ -286,33 +326,43 @@ const cardState = (on: boolean) =>
           <span class="sr-only">{{ s.label }}{{ i < index ? ' (done)' : '' }}</span>
         </li>
       </ol>
+      <nav aria-label="Wizard steps (top)" class="flex items-center justify-between gap-3">
+        <PressableButton variant="secondary" class="min-h-11 px-5" :disabled="index === 0" @click="go(-1)">
+          Back
+        </PressableButton>
+        <!-- The last step's finish actions live only in the bottom bar. -->
+        <PressableButton v-if="step.id !== 'ready'" variant="primary" class="min-h-11 px-6" :disabled="!canAdvance" @click="go(1)">
+          Next
+        </PressableButton>
+      </nav>
     </header>
 
     <!-- Species / class / background: preview every option, then choose -->
-    <div v-if="step.id === 'species' || step.id === 'class' || step.id === 'background'" class="flex flex-col gap-6">
+    <div v-if="['species', 'class', 'subclass', 'background'].includes(step.id)" class="flex flex-col gap-6">
       <p class="font-body-md text-body-md text-on-surface-variant">
         <template v-if="step.id === 'species'">Your species sets your speed and innate traits.</template>
         <template v-else-if="step.id === 'class'">Your class sets your hit points, saving throws and core features.</template>
+        <template v-else-if="step.id === 'subclass'">Characters start at level 3, so your {{ char.class }} specialisation is chosen now.</template>
         <template v-else>Your background grants skills, a feat and your ability score bonuses.</template>
       </p>
       <div role="radiogroup" :aria-label="step.label" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label
           v-for="o in options"
-          :key="o.name"
-          :class="[radioCard, cardState(selectedName === o.name)]"
+          :key="o.id"
+          :class="[radioCard, cardState(selectedName === o.id)]"
         >
           <input
             type="radio"
             class="sr-only"
             :name="`wizard-${step.id}`"
-            :value="o.name"
-            :checked="selectedName === o.name"
-            @change="choose(o.name)"
+            :value="o.id"
+            :checked="selectedName === o.id"
+            @change="choose(o.id)"
           />
           <span class="flex items-center justify-between gap-2 font-headline-sm text-headline-sm text-on-surface">
             {{ o.name }}
             <span
-              v-if="selectedName === o.name"
+              v-if="selectedName === o.id"
               class="material-symbols-outlined text-tertiary"
               aria-hidden="true"
               >check_circle</span
@@ -328,7 +378,7 @@ const cardState = (on: boolean) =>
         class="rounded-xl border border-outline-variant bg-surface-container-high p-4 flex flex-col gap-3"
         aria-live="polite"
       >
-        <h3 class="font-headline-sm text-headline-sm text-primary">{{ selectedName }}</h3>
+        <h3 class="font-headline-sm text-headline-sm text-primary">{{ options.find((o) => o.id === selectedName)?.name ?? selectedName }}</h3>
         <dl class="flex flex-col gap-2">
           <div v-for="f in selectedFacts" :key="f.title">
             <dt class="font-label-md text-label-md text-on-surface">{{ f.title }}</dt>
@@ -522,7 +572,7 @@ const cardState = (on: boolean) =>
       <p v-if="!canAdvance && blockedHint" class="font-body-sm text-body-sm text-on-surface-variant" role="status">
         {{ blockedHint }}
       </p>
-      <div class="flex items-center justify-between gap-3">
+      <nav aria-label="Wizard steps (bottom)" class="flex items-center justify-between gap-3">
         <PressableButton variant="secondary" class="min-h-11 px-5" :disabled="index === 0" @click="go(-1)">
           Back
         </PressableButton>
@@ -539,7 +589,7 @@ const cardState = (on: boolean) =>
         <PressableButton v-else variant="primary" class="min-h-11 px-6" :disabled="!canAdvance" @click="go(1)">
           Next
         </PressableButton>
-      </div>
+      </nav>
     </footer>
   </section>
 </template>

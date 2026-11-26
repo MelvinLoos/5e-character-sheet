@@ -38,10 +38,16 @@ const moreSections = [
   { name: 'narrative', label: 'Narrative', icon: 'history_edu' },
 ] as const
 
+/** Close the sheet and reopen the guided Create flow on this character. */
+function reopenGuide() {
+  close()
+  store.openCreationGuide()
+}
+
 /** Close the sheet and replay the guided tour. */
 function restartTour() {
   close()
-  store.isCreating = false // the tour points at the sheet, not the guided Create flow
+  store.leaveGuide() // the tour points at the sheet, not the guided Create flow
   void nextTick().then(startTour)
 }
 
@@ -266,6 +272,15 @@ watch(
                 >
                   <span class="material-symbols-outlined text-2xl" aria-hidden="true">print</span>
                   <span class="text-xs font-label-md text-center">Print Sheet</span>
+                </button>
+
+                <button
+                  @click="reopenGuide"
+                  class="col-span-2 flex flex-row items-center justify-center gap-2 p-4 rounded-xl bg-surface-variant hover:bg-surface-bright active:scale-95 text-on-surface transition-all duration-200 ease-out select-none"
+                  title="Reopen creation guide"
+                >
+                  <span class="material-symbols-outlined text-2xl" aria-hidden="true">auto_fix_high</span>
+                  <span class="text-xs font-label-md">Reopen creation guide</span>
                 </button>
 
                 <button

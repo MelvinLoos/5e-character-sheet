@@ -46,7 +46,7 @@ const { startTour, hasCompletedTour } = useOnboardingTour()
  */
 async function handleStartTourFromEmptyState(): Promise<void> {
   store.handleNewCharacter()
-  store.isCreating = false // the tour points at the sheet, not the guided Create flow
+  store.leaveGuide() // the tour points at the sheet, not the guided Create flow
   await nextTick()
   await startTour()
 }

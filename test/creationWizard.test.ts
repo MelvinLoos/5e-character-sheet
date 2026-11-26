@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import CharacterCreationWizard from '@/components/creation/CharacterCreationWizard.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
@@ -39,8 +39,9 @@ describe('CharacterCreationWizard', () => {
 
   it('walks species, class and background then shows point-buy cost hints', async () => {
     const w = mountWizard()
-    for (let i = 0; i < 3; i++) {
-      await w.findAll('input[type="radio"]').find((r) => r.attributes('value') === ['Human', 'Fighter', 'Acolyte'][i])!.trigger('change')
+    for (const v of ['Human', 'Fighter', 'champion', 'Acolyte']) {
+      await w.findAll('input[type="radio"]').find((r) => r.attributes('value') === v)!.trigger('change')
+      await flushPromises()
       await next(w).trigger('click')
     }
     expect(w.text()).toContain('Set your ability scores')
@@ -52,5 +53,87 @@ describe('CharacterCreationWizard', () => {
     const w = mountWizard()
     await w.findAll('button').find((b) => b.text() === 'Skip the guide')!.trigger('click')
     expect(useCharacterStore().isCreating).toBe(false)
+  })
+})
+
+describe('subclass step', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+    useCharacterStore().handleNewCharacter()
+  })
+  const pick = async (w: ReturnType<typeof mountWizard>, v: string) => {
+    await w.findAll('input[type="radio"]').find((r) => r.attributes('value') === v)!.trigger('change')
+    await flushPromises()
+  }
+
+  it('adds a subclass step after class and blocks Next until one is chosen', async () => {
+    const w = mountWizard()
+    await pick(w, 'Human')
+    await next(w).trigger('click')
+    await pick(w, 'Fighter')
+    await next(w).trigger('click')
+    expect(w.text()).toContain('Choose your Martial Archetype')
+    expect(next(w).attributes('disabled')).toBeDefined()
+    await pick(w, 'champion')
+    expect(useCharacterStore().currentCharacterData.featureChoices['fighter-subclass']).toEqual(['champion'])
+    expect(next(w).attributes('disabled')).toBeUndefined()
+  })
+
+  it('renders Back and Next in two labelled landmarks', () => {
+    const w = mountWizard()
+    expect(w.find('nav[aria-label="Wizard steps (top)"]').exists()).toBe(true)
+    expect(w.find('nav[aria-label="Wizard steps (bottom)"]').exists()).toBe(true)
+    expect(w.findAllComponents(PressableButton).filter((b) => b.text() === 'Next')).toHaveLength(2)
+  })
+})
+
+describe('reopening the guide', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+    const s = useCharacterStore()
+    s.handleNewCharacter()
+    s.applySpeciesChange('Human')
+    s.applyClassChange('Fighter')
+    s.applyBackgroundChange('Acolyte')
+    s.finishCreation()
+  })
+
+  it('prefills every pick so Next is enabled on the first step', () => {
+    useCharacterStore().openCreationGuide()
+    const w = mountWizard()
+    expect(next(w).attributes('disabled')).toBeUndefined()
+    expect(w.find('input[value="Human"]').element).toHaveProperty('checked', true)
+  })
+
+  it('cancel restores the character untouched', async () => {
+    const s = useCharacterStore()
+    s.openCreationGuide()
+    s.applyBackgroundChange('Sage')
+    s.currentCharacterData.name = 'Changed'
+    s.cancelCreationGuide()
+    expect(s.currentCharacterData.background).toBe('Acolyte')
+    expect(s.currentCharacterData.name).not.toBe('Changed')
+    expect(s.isCreating).toBe(false)
+    expect(s.isEditing).toBe(false)
+  })
+
+  it('finish keeps the changes and restores the previous edit state', () => {
+    const s = useCharacterStore()
+    s.openCreationGuide()
+    s.applyBackgroundChange('Sage')
+    s.finishCreation()
+    expect(s.currentCharacterData.background).toBe('Sage')
+    expect(s.isCreating).toBe(false)
+    expect(s.isEditing).toBe(false)
+    expect(s.isReopening).toBe(false)
+  })
+
+  it('changing class clears the old class feature choices', () => {
+    const s = useCharacterStore()
+    s.applyFeatureChoice('fighter-subclass', ['champion'])
+    s.applyClassChange('Wizard')
+    expect(s.currentCharacterData.featureChoices).toEqual({})
   })
 })

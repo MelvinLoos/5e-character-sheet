@@ -101,3 +101,15 @@ describe('featureGroup', () => {
     expect(featureGroup({ title: 'Some Homebrew Feat' })).toBe('feat')
   })
 })
+
+describe('subclass rules', () => {
+  it('finds the subclass choice per class', async () => {
+    const { subclassChoiceFor, validateSubclass } = await import('@/domain/creationRules')
+    expect(subclassChoiceFor('Fighter')?.id).toBe('fighter-subclass')
+    expect(subclassChoiceFor('Wizard')?.id).toBe('wizard-school')
+    expect(subclassChoiceFor(null)).toBeNull()
+    expect(validateSubclass({ class: 'Fighter', renownTier: 1, featureChoices: {} })[0]).toMatch(/must choose/)
+    expect(validateSubclass({ class: 'Fighter', renownTier: 1, featureChoices: { 'fighter-subclass': ['champion'] } })).toEqual([])
+    expect(validateSubclass({ class: 'Fighter', renownTier: 1, featureChoices: { 'fighter-subclass': ['nope'] } })[0]).toMatch(/not a/)
+  })
+})
