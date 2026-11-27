@@ -18,6 +18,7 @@
           "parentClass": {
             "type": "string",
             "description": "The name of the parent class this subclass belongs to (e.g. 'Fighter', 'Druid'). This must match a class name defined in the rules compendium.",
+            "enum": ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard"],
             "errorMessage": "Parent class must be a non-empty string."
           },
           "description": {
