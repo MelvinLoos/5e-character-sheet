@@ -1,22 +1,22 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { handleMcpRequest, handleMetadataRequest } from '@/mcp/handler'
-import { accountApi, type AccountApi } from '@/mcp/account'
+import { handleMcpRequest } from '@/mcp/handler'
+import { accountApi, parseGuildIds, type AccountApi } from '@/mcp/account'
 
 const api: AccountApi = {
   listGuilds: async () => [{ id: '1', name: 'Heroes Guild' }],
   searchSpells: vi.fn(async () => [{ name: 'Guild Bolt', level: 1 }]),
   searchFeats: async () => [],
 }
-const verify = vi.fn(async (t: string) => (t === 'good' ? api : null))
+const accountFor = vi.fn(() => api)
 const deps = {
   siteUrl: 'https://sheet.test',
   insertCharacter: vi.fn(async () => 'id'),
-  verifier: { verify },
-  issuer: 'https://ref.supabase.co/auth/v1',
+  authEnv: { MCP_SECRET_TOKEN: 'secret', MCP_OWNER_USER_ID: 'owner-1' },
+  accountFor,
 }
 
-const call = (name: string, args: unknown, token?: string) =>
+const call = (name: string, args: unknown, token?: string, d = deps) =>
   handleMcpRequest(
     new Request('https://sheet.test/mcp', {
       method: 'POST',
@@ -32,55 +32,46 @@ const call = (name: string, args: unknown, token?: string) =>
         params: { name, arguments: args },
       }),
     }),
-    deps,
+    d,
   )
 
-describe('protected resource metadata', () => {
-  it('points at the Supabase OAuth server', async () => {
-    const res = handleMetadataRequest(
-      new Request('https://sheet.test/.well-known/oauth-protected-resource/mcp'),
+describe('bearer auth on /mcp', () => {
+  it('rejects missing and wrong tokens without an OAuth challenge', async () => {
+    for (const token of [undefined, 'wrong']) {
+      const res = await call('list_options', { category: 'classes' }, token)
+      expect(res.status).toBe(401)
+      expect(res.headers.get('www-authenticate')).toBeNull()
+    }
+  })
+  it('fails closed when auth is not configured', async () => {
+    const res = await call('list_options', {}, 'secret', { ...deps, authEnv: {} })
+    expect(res.status).toBe(500)
+  })
+  it('lets CORS preflight through without a token', async () => {
+    const res = await handleMcpRequest(
+      new Request('https://sheet.test/mcp', { method: 'OPTIONS' }),
       deps,
     )
-    expect(await res.json()).toMatchObject({
-      resource: 'https://sheet.test/mcp',
-      authorization_servers: ['https://ref.supabase.co/auth/v1'],
-    })
+    expect(res.status).toBe(204)
   })
-  it('404s when sign-in is not configured', () => {
-    expect(
-      handleMetadataRequest(new Request('https://sheet.test/x'), { ...deps, issuer: undefined })
-        .status,
-    ).toBe(404)
-  })
-})
-
-describe('account tools', () => {
-  it('challenge anonymous callers', async () => {
-    const res = await call('search_guild_spells', {})
-    expect(res.status).toBe(401)
-    const h = res.headers.get('www-authenticate')!
-    expect(h).toContain(
-      'resource_metadata="https://sheet.test/.well-known/oauth-protected-resource/mcp"',
-    )
-    expect(h).not.toContain('invalid_token')
-  })
-  it('flags a rejected token', async () => {
-    const res = await call('list_guilds', {}, 'bad')
-    expect(res.status).toBe(401)
-    expect(res.headers.get('www-authenticate')).toContain('invalid_token')
-  })
-  it('serve signed-in callers', async () => {
-    const res = await call('search_guild_spells', { query: 'bolt' }, 'good')
+  it('serves guild tools for the owner', async () => {
+    const res = await call('search_guild_spells', { query: 'bolt' }, 'secret')
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(JSON.parse(body.result.content[0].text)[0].name).toBe('Guild Bolt')
+    expect(accountFor).toHaveBeenCalledWith('owner-1')
     expect(api.searchSpells).toHaveBeenCalledWith({ query: 'bolt' })
   })
-  it('leave anonymous tools open without a token', async () => {
-    verify.mockClear()
-    const res = await call('list_options', { category: 'classes' })
-    expect(res.status).toBe(200)
-    expect(verify).not.toHaveBeenCalled()
+  it('reports guild tools as unconfigured without Supabase', async () => {
+    const res = await call('list_guilds', {}, 'secret', { ...deps, accountFor: undefined })
+    expect((await res.json()).result.isError).toBe(true)
+  })
+})
+
+describe('parseGuildIds', () => {
+  it('splits, trims and drops blanks', () => {
+    expect(parseGuildIds(' 1, 2 ,,3')).toEqual(['1', '2', '3'])
+    expect(parseGuildIds(undefined)).toEqual([])
   })
 })
 
@@ -98,18 +89,47 @@ describe('accountApi', () => {
     },
     { id: 'c', guild_id: 'g1', data: { broken: true } },
   ]
-  const chain = {
-    select: () => chain,
-    limit: () => chain,
-    eq: () => chain,
-    then: (r: (v: unknown) => void) => r({ data: rows, error: null }),
+  const makeFake = () => {
+    const calls: Array<[string, ...unknown[]]> = []
+    const chain: Record<string, unknown> = {
+      select: () => chain,
+      limit: () => chain,
+      eq: (...a: unknown[]) => (calls.push(['eq', ...a]), chain),
+      in: (...a: unknown[]) => (calls.push(['in', ...a]), chain),
+      then: (r: (v: unknown) => void) => r({ data: rows, error: null }),
+    }
+    const from = vi.fn(() => chain)
+    return { fake: { from } as unknown as SupabaseClient, calls, from }
   }
-  const fake = { from: () => chain } as unknown as SupabaseClient
+
   it('filters by class, level and text, skipping invalid rows', async () => {
-    const a = accountApi(fake)
+    const a = accountApi(makeFake().fake, ['g1'])
     expect((await a.searchSpells({})).map((s) => s.name)).toEqual(['Frost Lance', 'Mend'])
     expect((await a.searchSpells({ className: 'cleric' })).map((s) => s.name)).toEqual(['Mend'])
     expect((await a.searchSpells({ level: 2 })).map((s) => s.name)).toEqual(['Frost Lance'])
     expect((await a.searchSpells({ query: 'cold' })).map((s) => s.name)).toEqual(['Frost Lance'])
+  })
+  it('scopes every query to the owner guild ids', async () => {
+    const { fake, calls } = makeFake()
+    const a = accountApi(fake, ['g1', 'g2'])
+    await a.searchSpells({})
+    await a.searchFeats({ guildId: 'g2' })
+    await a.listGuilds()
+    expect(calls.filter((c) => c[0] === 'in')).toEqual([
+      ['in', 'guild_id', ['g1', 'g2']],
+      ['in', 'guild_id', ['g1', 'g2']],
+      ['in', 'guild_id', ['g1', 'g2']],
+    ])
+    expect(calls).toContainEqual(['eq', 'guild_id', 'g2'])
+  })
+  it('fails closed with no guilds or an out-of-scope guild', async () => {
+    const empty = makeFake()
+    const none = accountApi(empty.fake, [])
+    expect(await none.searchSpells({})).toEqual([])
+    expect(await none.listGuilds()).toEqual([])
+    const scoped = makeFake()
+    expect(await accountApi(scoped.fake, ['g1']).searchFeats({ guildId: 'other' })).toEqual([])
+    expect(empty.from).not.toHaveBeenCalled()
+    expect(scoped.from).not.toHaveBeenCalled()
   })
 })

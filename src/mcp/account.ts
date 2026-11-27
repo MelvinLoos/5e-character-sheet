@@ -1,18 +1,15 @@
 /**
- * Account-scoped reads for signed-in agents. The MCP client authenticates via
- * Supabase Auth's OAuth 2.1 server; we verify the bearer token with Supabase
- * and run every query with that same token, so row level security applies as
- * the player's own account.
+ * Owner-scoped guild reads for the MCP server. The server uses a service-role
+ * client (which bypasses RLS), so every query is explicitly restricted to the
+ * owner's guild ids and the server fails closed when that list is empty.
  */
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   isValidGuildFeat,
   isValidGuildSpell,
   normalizeGuildFeat,
   normalizeGuildSpell,
 } from '@/utils/guildContentValidator'
-
-export const ACCOUNT_TOOLS = ['list_guilds', 'search_guild_spells', 'search_guild_feats'] as const
 
 export interface SearchOpts {
   guildId?: string
@@ -29,11 +26,6 @@ export interface AccountApi {
   searchFeats(opts: SearchOpts): Promise<Array<Record<string, unknown>>>
 }
 
-export interface AccountVerifier {
-  /** Resolves to the account API for a valid Supabase access token, otherwise null. */
-  verify(token: string): Promise<AccountApi | null>
-}
-
 const MAX_ROWS = 2000
 const clampLimit = (n?: number) => Math.min(Math.max(Math.trunc(n ?? 15), 1), 25)
 const clip = (s: unknown, n = 500) =>
@@ -41,28 +33,41 @@ const clip = (s: unknown, n = 500) =>
 const matches = (q: string | undefined, ...fields: unknown[]) =>
   !q || fields.some((f) => typeof f === 'string' && f.toLowerCase().includes(q.toLowerCase()))
 
+/** Parse a comma-separated list of guild ids. */
+export const parseGuildIds = (raw?: string): string[] =>
+  (raw ?? '')
+    .split(',')
+    .map((g) => g.trim())
+    .filter(Boolean)
+
 async function rows(
   client: SupabaseClient,
   table: 'guild_spells' | 'guild_feats',
+  guildIds: string[],
   guildId?: string,
 ) {
-  let q = client.from(table).select('id,guild_id,data').limit(MAX_ROWS)
+  if (!guildIds.length || (guildId && !guildIds.includes(guildId))) return []
+  let q = client.from(table).select('id,guild_id,data').in('guild_id', guildIds).limit(MAX_ROWS)
   if (guildId) q = q.eq('guild_id', guildId)
   const { data, error } = await q
   if (error) throw new Error(`Could not read ${table}: ${error.message}`)
   return (data ?? []) as Array<{ id: string; guild_id: string; data: Record<string, unknown> }>
 }
 
-export function accountApi(client: SupabaseClient): AccountApi {
+export function accountApi(client: SupabaseClient, guildIds: string[]): AccountApi {
   return {
     async listGuilds() {
-      const { data, error } = await client.from('registered_guilds').select('guild_id,guild_name')
+      if (!guildIds.length) return []
+      const { data, error } = await client
+        .from('registered_guilds')
+        .select('guild_id,guild_name')
+        .in('guild_id', guildIds)
       if (error) throw new Error(`Could not read guilds: ${error.message}`)
       return (data ?? []).map((g) => ({ id: g.guild_id as string, name: g.guild_name as string }))
     },
     async searchSpells({ guildId, query, level, className, limit }) {
       const out: Array<Record<string, unknown>> = []
-      for (const row of await rows(client, 'guild_spells', guildId)) {
+      for (const row of await rows(client, 'guild_spells', guildIds, guildId)) {
         if (!isValidGuildSpell(row.data)) continue
         const s = normalizeGuildSpell(row.data)
         if (level !== undefined && s.level !== level) continue
@@ -88,7 +93,7 @@ export function accountApi(client: SupabaseClient): AccountApi {
     },
     async searchFeats({ guildId, query, limit }) {
       const out: Array<Record<string, unknown>> = []
-      for (const row of await rows(client, 'guild_feats', guildId)) {
+      for (const row of await rows(client, 'guild_feats', guildIds, guildId)) {
         if (!isValidGuildFeat(row.data)) continue
         const f = normalizeGuildFeat(row.data)
         if (!matches(query, f.title, f.desc)) continue
@@ -97,19 +102,6 @@ export function accountApi(client: SupabaseClient): AccountApi {
       return out
         .sort((a, b) => String(a.title).localeCompare(String(b.title)))
         .slice(0, clampLimit(limit))
-    },
-  }
-}
-
-export function supabaseVerifier(url: string, anonKey: string): AccountVerifier {
-  return {
-    async verify(token) {
-      const client = createClient(url, anonKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-        global: { headers: { Authorization: `Bearer ${token}` } },
-      })
-      const { data, error } = await client.auth.getUser(token)
-      return error || !data.user ? null : accountApi(client)
     },
   }
 }

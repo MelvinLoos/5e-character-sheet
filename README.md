@@ -76,6 +76,10 @@ Copy `.env.example` to `.env` and fill in the values. `.env` is git-ignored; sec
 | `VITE_POSTHOG_PROJECT_TOKEN` | Client | PostHog project token for product analytics. |
 | `VITE_POSTHOG_HOST` | Client | PostHog instance URL (defaults to `https://eu.i.posthog.com`). |
 | `VITE_POSTHOG_DISABLED` | Client | Set to `true` to disable analytics, e.g. in tests. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server (Netlify) | Supabase service-role key used by the MCP server. Bypasses RLS; never sent to the browser. |
+| `MCP_SECRET_TOKEN` | Server (Netlify) | Static Bearer token MCP clients must send. |
+| `MCP_OWNER_USER_ID` | Server (Netlify) | Supabase user UUID that owns characters created via MCP. |
+| `MCP_OWNER_GUILD_IDS` | Server (Netlify) | Comma-separated Discord guild ids whose homebrew MCP may read. |
 | `GEMINI_API_KEY` | Server (Netlify) | Gemini API key for AI character generation. Never sent to the browser. |
 | `DISCORD_BOT_TOKEN` | Server (Netlify) | Bot token used to post in-app feedback threads to a Discord forum channel. |
 | `DISCORD_FEEDBACK_CHANNEL_ID` | Server (Netlify) | ID of the Discord forum channel that receives feedback threads. |
@@ -122,7 +126,7 @@ To author a character with an LLM, provide it with `public/llm-character-schema.
 
 ## Create characters with an AI agent (MCP)
 
-The site hosts a stateless [MCP](https://modelcontextprotocol.io) server at `https://<your-site>/mcp` (Streamable HTTP, no sign-in). Any MCP client can use it to build a legal character in conversation.
+The site hosts a stateless [MCP](https://modelcontextprotocol.io) server at `https://<your-site>/mcp` (Streamable HTTP, single-user Bearer token). Any MCP client can use it to build a legal character in conversation.
 
 ```sh
 claude mcp add --transport http heroes-guild https://<your-site>/mcp
@@ -136,19 +140,16 @@ Claude and ChatGPT: add it as a custom connector with the same URL.
 | `get_option_details` | Features, skill choices, sub-choices and starting equipment for one option. |
 | `validate_character` | Check a draft against `llm-character-schema.json` and the creation rules (27-point buy, background +2/+1, skill limits, sub-choices, feature choices) without saving. |
 | `create_character` | Validate, save, and return a share link (`?id=`). Open it and use **More actions → Save to library**. |
-| `list_guilds`, `search_guild_spells`, `search_guild_feats` | Guild homebrew content. Requires sign-in. |
+| `list_guilds`, `search_guild_spells`, `search_guild_feats` | Homebrew spells and feats from the owner's guilds (`MCP_OWNER_GUILD_IDS`). |
 
-**Sign in for guild content.** Three more tools (`list_guilds`, `search_guild_spells`, `search_guild_feats`) read the guild homebrew spells and feats available to the player's account. The first time an agent calls one, the client opens a consent page (`/oauth/consent`) where the player signs in with Discord and approves the agent. Everything else works without signing in. Only guild content is reachable; characters saved on a device never leave it.
+**Guild content.** The three guild tools read homebrew spells and feats only for the guild ids in `MCP_OWNER_GUILD_IDS`; with that list empty they return nothing. Characters saved on a device never leave it.
 
-Spells on a character are free-form and not checked against a catalog. The server inserts into the same Supabase `characters` table as the share button, using `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The handler is prebuilt from `src/mcp/` by `npm run build:mcp` (part of `npm run build`); to try it locally, run `npm run build:mcp && npm run netlify`.
+Spells on a character are free-form and not checked against a catalog. The server uses a server-side Supabase client (`SUPABASE_SERVICE_ROLE_KEY`) and saves characters into the same `characters` table as the share button, with `user_id` set to `MCP_OWNER_USER_ID`. The handler is prebuilt from `src/mcp/` by `npm run build:mcp` (part of `npm run build`); to try it locally, run `npm run build:mcp && npm run netlify`.
 
-### Enabling sign-in for MCP (one-time Supabase setup)
-
-Sign-in uses Supabase Auth's OAuth 2.1 server, so the MCP endpoint never stores tokens and row level security applies as the player.
-
-1. Supabase dashboard → **Authentication → OAuth Server**: enable it, set the **Authorization Path** to `/oauth/consent`, and turn on **Allow dynamic client registration** so MCP clients can register themselves.
-2. **Authentication → URL Configuration**: set the Site URL to the production URL and add `https://<your-site>/oauth/consent` (and your deploy-preview pattern) to the redirect allow-list, so the Discord login can return to the consent page.
-3. The function advertises the OAuth server at `/.well-known/oauth-protected-resource`; no extra environment variables are needed beyond the existing `VITE_SUPABASE_*` ones.
+### Setting up MCP access (one-time)
+1. Apply the migration `supabase/migrations/20261127_add_characters_user_id.sql` (`supabase db push`).
+2. Set these server-side variables in Netlify (never `VITE_`-prefixed): `SUPABASE_SERVICE_ROLE_KEY`, `MCP_SECRET_TOKEN` (e.g. `openssl rand -hex 32`), `MCP_OWNER_USER_ID` (your Supabase auth user UUID) and `MCP_OWNER_GUILD_IDS`.
+3. Leave Supabase **Authentication → OAuth Server → Allow dynamic client registration** off. If `MCP_SECRET_TOKEN` or `MCP_OWNER_USER_ID` is unset, `/mcp` answers `500` and serves nothing.
 
 ## Deployment
 
