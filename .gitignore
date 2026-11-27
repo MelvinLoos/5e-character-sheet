@@ -48,3 +48,7 @@ playwright-report/
 
 # MCP handler build output
 dist-mcp/
+
+# Playwright MCP and Claude worktrees
+.playwright-mcp/
+.claude/worktrees/
