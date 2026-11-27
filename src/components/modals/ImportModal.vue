@@ -223,7 +223,7 @@ function close() {
 <template>
   <BaseModal
     :open="show"
-    title="Import 5e.tools Data"
+    title="Import Data"
     size="lg"
     :close-on-escape="status !== 'processing'"
     :close-on-backdrop="status !== 'processing'"

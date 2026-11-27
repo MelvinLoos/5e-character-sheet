@@ -232,7 +232,7 @@ describe('MoreActionsMenu without a character', () => {
     store.currentCharacterData = null as never
     mount(MoreActionsMenu, { props: { modelValue: true }, attachTo: document.body })
     const text = document.body.textContent ?? ''
-    expect(text).toContain('Import 5e.tools Spells & Feats')
+    expect(text).toContain('Import Spells, Feats & Subclasses')
     expect(text).toContain('+ New Character')
     for (const hidden of ['Save to Library', 'Share Online', 'Export JSON', 'Print Sheet']) {
       expect(text).not.toContain(hidden)

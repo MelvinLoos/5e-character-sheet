@@ -23,6 +23,7 @@ describe('character store reacts to custom subclasses', () => {
   it('adds a picked custom subclass trait when content arrives and keeps it if content goes away', async () => {
     const character = useCharacterStore()
     const rules = useRulesStore()
+    character.hasCharacter = true
     character.currentCharacterData.class = 'Fighter'
     character.currentCharacterData.renownTier = 1
     character.currentCharacterData.featureChoices = { 'fighter-subclass': [OPTION] }
@@ -53,5 +54,17 @@ describe('character store reacts to custom subclasses', () => {
 
     expect(character.currentCharacterData.featureChoices?.['fighter-subclass']).toEqual([OPTION])
     expect(character.currentCharacterData.features.some((f) => f.title === 'Opening Flourish')).toBe(true)
+  })
+
+  it('leaves the blank placeholder character alone until one is started', async () => {
+    const character = useCharacterStore()
+    const rules = useRulesStore()
+    const before = character.currentCharacterData
+
+    rules.injectGuildSubclasses([bladeDancer])
+    await nextTick()
+
+    expect(character.hasCharacter).toBe(false)
+    expect(character.currentCharacterData).toBe(before)
   })
 })

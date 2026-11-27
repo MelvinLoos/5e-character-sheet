@@ -345,7 +345,7 @@ function confirmShare() {
                 role="menuitem"
               >
                 <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">file_upload</span>
-                Import 5e.tools Spells &amp; Feats
+                Import Spells, Feats &amp; Subclasses
               </button>
 
               <button

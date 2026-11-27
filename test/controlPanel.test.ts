@@ -147,7 +147,7 @@ describe('ControlPanel feedback entry point', () => {
 
     expect(bodyText()).not.toContain('Give Feedback')
     // The rest of the popover still renders.
-    expect(bodyText()).toContain('Import 5e.tools Spells & Feats')
+    expect(bodyText()).toContain('Import Spells, Feats & Subclasses')
   })
 
   it('hides the Give Feedback menu item while availability is unknown', async () => {
@@ -203,7 +203,7 @@ describe('ControlPanel without a character', () => {
     await nextTick()
 
     const text = document.body.textContent ?? ''
-    expect(text).toContain('Import 5e.tools Spells & Feats')
+    expect(text).toContain('Import Spells, Feats & Subclasses')
     expect(text).toContain('Import Character')
     expect(text).not.toContain('Export JSON')
     expect(text).not.toContain('Print Sheet')

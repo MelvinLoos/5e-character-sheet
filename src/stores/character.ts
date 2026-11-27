@@ -852,7 +852,8 @@ export const useCharacterStore = defineStore('character', () => {
   watch(
     () => rulesStoreForSubclasses.allSubclasses,
     () => {
-      if (!currentCharacterData.value) return
+      // No started character: nothing to update, and loading one re-applies everything.
+      if (!hasCharacter.value) return
       currentCharacterData.value = applyFeatureChoices(currentCharacterData.value)
       currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
     },

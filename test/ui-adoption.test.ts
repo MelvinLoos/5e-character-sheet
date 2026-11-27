@@ -78,7 +78,7 @@ describe('theme tokens in badges', () => {
 
 describe('ImportModal / ImportCharacterModal', () => {
   it.each([
-    ['ImportModal', () => import('../src/components/modals/ImportModal.vue'), 'Import 5e.tools Data'],
+    ['ImportModal', () => import('../src/components/modals/ImportModal.vue'), 'Import Data'],
     ['ImportCharacterModal', () => import('../src/components/modals/ImportCharacterModal.vue'), 'Import Character'],
   ])('%s is a labelled dialog with a keyboard-reachable file input and no raw palette colours', async (_n, load, title) => {
     const Modal = (await load()).default
