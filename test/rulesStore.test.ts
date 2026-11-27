@@ -349,4 +349,44 @@ describe('rulesStore', () => {
       expect(store.baseSpells).toHaveLength(1)
     })
   })
+  describe('subclasses', () => {
+    const sub = {
+      name: 'Blade Dancer',
+      parentClass: 'Fighter',
+      features: [{ name: 'Whirl', level: 3, description: 'Spin.' }],
+    }
+
+    it('imports to baseSubclasses, merges with guild, and persists', () => {
+      const store = useRulesStore()
+      store.importData('subclasses', [sub])
+      store.injectGuildSubclasses([{ ...sub, name: 'Guild Dancer' }])
+
+      expect(store.baseSubclasses).toEqual([sub])
+      expect(store.allSubclasses.map((s) => s.name)).toEqual(['Blade Dancer', 'Guild Dancer'])
+      expect(vi.mocked(set)).toHaveBeenCalledWith('dndRulesLibrary', expect.any(Object))
+    })
+
+    it('stripGuildContent and resetCategory only touch their own layer', () => {
+      const store = useRulesStore()
+      store.importData('subclasses', [sub])
+      store.injectGuildSubclasses([{ ...sub, name: 'Guild Dancer' }])
+
+      store.stripGuildContent()
+      expect(store.allSubclasses.map((s) => s.name)).toEqual(['Blade Dancer'])
+
+      store.injectGuildSubclasses([{ ...sub, name: 'Guild Dancer' }])
+      store.resetCategory('subclasses')
+      expect(store.baseSubclasses).toEqual([])
+      expect(store.guildSubclasses).toHaveLength(1)
+    })
+
+    it('restores baseSubclasses from storage and migrates the legacy key', async () => {
+      vi.mocked(get).mockResolvedValue({ subclasses: [sub] })
+      const store = useRulesStore()
+      await store.loadFromStorage()
+
+      expect(store.baseSubclasses).toEqual([sub])
+      expect((store.$state as any).subclasses).toBeUndefined()
+    })
+  })
 })

@@ -7,6 +7,8 @@ import './assets/main.css'
 import { initSupabase } from './infra/sharingService'
 import { setSwUpdateCallback } from './utils/swUpdateBus'
 import { initPostHog, capturePostHogException } from './utils/posthog'
+import { setCustomSubclassSource } from './domain/customSubclasses'
+import { useRulesStore } from './stores/rulesStore'
 
 const app = createApp(App)
 
@@ -14,6 +16,9 @@ initPostHog()
 
 app.use(createPinia())
 app.use(router)
+
+// Let pure domain helpers see imported and guild subclasses.
+setCustomSubclassSource(() => useRulesStore().allSubclasses)
 
 app.config.errorHandler = (error) => {
   capturePostHogException(error)

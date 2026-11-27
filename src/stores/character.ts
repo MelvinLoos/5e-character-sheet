@@ -20,6 +20,7 @@ import {
   resetInitiativeFeatures,
 } from '@/domain'
 import { useProgressionStore } from './progression'
+import { useRulesStore } from './rulesStore'
 
 import {
   loadLibrary,
@@ -841,6 +842,20 @@ export const useCharacterStore = defineStore('character', () => {
       char.combat.ac = calculateArmorClass(char.equippedGear ?? [], dexMod)
     },
     { deep: true },
+  )
+
+  // --- Re-apply subclass traits when imported/guild subclasses change ---
+  // Import, reset, guild sync and logout all replace `allSubclasses`; a
+  // character that already picked a custom subclass must gain or lose its
+  // traits accordingly.
+  const rulesStoreForSubclasses = useRulesStore()
+  watch(
+    () => rulesStoreForSubclasses.allSubclasses,
+    () => {
+      if (!currentCharacterData.value) return
+      currentCharacterData.value = applyFeatureChoices(currentCharacterData.value)
+      currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+    },
   )
 
   // --- Auto-save draft watcher (debounced deep watch) ---
