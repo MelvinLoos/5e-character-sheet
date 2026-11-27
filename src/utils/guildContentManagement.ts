@@ -11,7 +11,9 @@
 
 import { getSupabaseClient } from '../infra/sharingService'
 import { useAuthStore } from '../stores/authStore'
-import type { GuildSpell, GuildFeat } from '../types/supabase'
+import type { GuildSpell, GuildFeat, GuildSubclass } from '../types/supabase'
+import type { SubclassImport } from '../types/rules'
+import { parseSubclass } from './subclassParser'
 
 /**
  * Maximum number of items to send in a single Supabase insert call.
@@ -434,6 +436,150 @@ export async function bulkCreateGuildFeats(input: {
     if (data) {
       allResults.push(...(data as GuildFeat[]))
     }
+  }
+
+  return allResults
+}
+
+// =============================================================================
+// Guild Subclasses CRUD + bulk — with upsert on guild_id + parentClass + name
+// =============================================================================
+
+/**
+ * Look up an existing guild subclass by guild_id, parent class and name.
+ */
+async function findExistingSubclass(
+  client: NonNullable<ReturnType<typeof getSupabaseClient>>,
+  guildId: string,
+  parentClass: string,
+  name: string,
+): Promise<GuildSubclass | null> {
+  const { data, error } = await client
+    .from('guild_subclasses')
+    .select('*')
+    .eq('guild_id', guildId)
+    .eq('data->>parentClass', parentClass)
+    .eq('data->>name', name)
+    .maybeSingle()
+
+  if (error) throw error
+  return (data as GuildSubclass) ?? null
+}
+
+/**
+ * Insert or update a homebrew subclass for a guild.
+ *
+ * The payload is validated and canonicalised with `parseSubclass` (so an
+ * invalid subclass throws before touching the database). Matches on
+ * guild_id + parentClass + name; existing rows keep id, created_by and created_at.
+ */
+export async function createGuildSubclass(input: {
+  guild_id: string
+  data: unknown
+}): Promise<GuildSubclass> {
+  const { client, userId } = assertClientAndUser()
+  const subclass = parseSubclass(input.data)
+
+  const existing = await findExistingSubclass(client, input.guild_id, subclass.parentClass, subclass.name)
+
+  if (existing) {
+    const { data: updated, error: updateError } = await client
+      .from('guild_subclasses')
+      .update({ data: subclass, updated_at: new Date().toISOString() })
+      .eq('id', existing.id)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
+    return updated as GuildSubclass
+  }
+
+  const { data, error } = await client
+    .from('guild_subclasses')
+    .insert({ guild_id: input.guild_id, data: subclass, created_by: userId })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data as GuildSubclass
+}
+
+/**
+ * Update an existing homebrew subclass's data payload (validated first).
+ */
+export async function updateGuildSubclass(id: string, data: unknown): Promise<GuildSubclass> {
+  const { client } = assertClientAndUser()
+  const subclass = parseSubclass(data)
+
+  const { data: updated, error } = await client
+    .from('guild_subclasses')
+    .update({ data: subclass, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return updated as GuildSubclass
+}
+
+/**
+ * Delete a homebrew subclass by its UUID.
+ */
+export async function deleteGuildSubclass(id: string): Promise<void> {
+  const { client } = assertClientAndUser()
+
+  const { error } = await client.from('guild_subclasses').delete().eq('id', id)
+
+  if (error) throw error
+}
+
+/**
+ * Insert or update multiple homebrew subclasses for a guild. Existing rows
+ * (guild_id + parentClass + name) are updated; new rows are batch-inserted in
+ * chunks of BULK_INSERT_CHUNK_SIZE. Input should already be parsed
+ * (`parseSubclassImport`).
+ *
+ * @returns The array of created/updated rows.
+ * @throws If any chunk insert fails.
+ */
+export async function bulkCreateGuildSubclasses(input: {
+  guild_id: string
+  subclasses: SubclassImport[]
+}): Promise<GuildSubclass[]> {
+  const { client, userId } = assertClientAndUser()
+
+  if (input.subclasses.length === 0) {
+    return []
+  }
+
+  const rowsToInsert: { guild_id: string; data: SubclassImport; created_by: string }[] = []
+  const allResults: GuildSubclass[] = []
+
+  for (const subclass of input.subclasses) {
+    const existing = await findExistingSubclass(client, input.guild_id, subclass.parentClass, subclass.name)
+
+    if (existing) {
+      const { data: updated, error: updateError } = await client
+        .from('guild_subclasses')
+        .update({ data: subclass, updated_at: new Date().toISOString() })
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (updateError) throw updateError
+      allResults.push(updated as GuildSubclass)
+    } else {
+      rowsToInsert.push({ guild_id: input.guild_id, data: subclass, created_by: userId })
+    }
+  }
+
+  for (const chunk of chunkArray(rowsToInsert, BULK_INSERT_CHUNK_SIZE)) {
+    if (chunk.length === 0) continue
+
+    const { data, error } = await client.from('guild_subclasses').insert(chunk).select()
+
+    if (error) throw error
+    if (data) allResults.push(...(data as GuildSubclass[]))
   }
 
   return allResults

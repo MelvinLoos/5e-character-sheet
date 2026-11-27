@@ -4,7 +4,12 @@
  * Markdown when guild content is fetched and synced into the rules store.
  */
 import { describe, it, expect } from 'vitest'
-import { normalizeGuildSpell, normalizeGuildFeat } from '@/utils/guildContentValidator'
+import {
+  normalizeGuildSpell,
+  normalizeGuildFeat,
+  isValidGuildSubclass,
+  normalizeGuildSubclass,
+} from '@/utils/guildContentValidator'
 
 describe('normalizeGuildSpell', () => {
   it('converts legacy HTML in descriptions to Markdown', () => {
@@ -48,5 +53,25 @@ describe('normalizeGuildFeat', () => {
     const feat = normalizeGuildFeat({ title: 'Alert', desc: '**Always** ready.' })
 
     expect(feat.desc).toBe('**Always** ready.')
+  })
+})
+
+describe('guild subclass validation', () => {
+  const ok = {
+    name: 'Blade Dancer',
+    parentClass: 'fighter',
+    features: [{ name: 'Whirl', level: 3, description: 'Spin.' }],
+  }
+
+  it('accepts a valid subclass and canonicalises it', () => {
+    expect(isValidGuildSubclass(ok)).toBe(true)
+    expect(normalizeGuildSubclass(ok).parentClass).toBe('Fighter')
+  })
+
+  it('rejects malformed, unknown-class and built-in-name subclasses', () => {
+    expect(isValidGuildSubclass(null)).toBe(false)
+    expect(isValidGuildSubclass({ ...ok, parentClass: 'Artificer' })).toBe(false)
+    expect(isValidGuildSubclass({ ...ok, name: 'Champion' })).toBe(false)
+    expect(isValidGuildSubclass({ ...ok, features: [] })).toBe(false)
   })
 })
