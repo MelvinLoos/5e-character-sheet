@@ -14,6 +14,7 @@ import {
   bulkCreateGuildFeats,
 } from '@/utils/guildContentManagement'
 import { mapSpells, mapFeats } from '@/utils/fiveToolsAdapter'
+import GuildSubclassesTab from './GuildSubclassesTab.vue'
 import { logger } from '@/utils/logger'
 
 // ---------------------------------------------------------------------------
@@ -40,7 +41,7 @@ const rulesStore = useRulesStore()
 // Local State
 // ---------------------------------------------------------------------------
 
-const activeTab = ref<'spells' | 'feats'>('spells')
+const activeTab = ref<'spells' | 'feats' | 'subclasses'>('spells')
 const isRegistering = ref(false)
 const registerError = ref<string | null>(null)
 const actionError = ref<string | null>(null)
@@ -511,7 +512,7 @@ watch(
                 This server hasn't been enabled for homebrew content yet.
               </p>
               <p class="font-body-md text-on-surface-variant mb-6">
-                Register your server to start managing custom spells and feats.
+                Register your server to start managing custom spells, feats and subclasses.
               </p>
               <button
                 @click="handleRegisterGuild"
@@ -547,6 +548,16 @@ watch(
                 >
                   <span class="material-symbols-outlined text-[1.125rem] align-middle mr-1" aria-hidden="true">military_tech</span>
                   Feats
+                </button>
+                <button
+                  @click="activeTab = 'subclasses'"
+                  class="flex-1 py-2.5 px-4 rounded-lg font-label-md text-sm transition-all duration-200"
+                  :class="activeTab === 'subclasses'
+                    ? 'bg-tertiary text-on-tertiary shadow-sm'
+                    : 'text-on-surface-variant hover:bg-surface-bright'"
+                >
+                  <span class="material-symbols-outlined text-[1.125rem] align-middle mr-1" aria-hidden="true">shield_person</span>
+                  Subclasses
                 </button>
               </div>
 
@@ -730,9 +741,14 @@ watch(
               </div>
 
               <!-- ============================================================= -->
-              <!-- Bulk Import Panel -->
+              <!-- Subclasses Tab (self-contained: own list, form and bulk import) -->
               <!-- ============================================================= -->
-              <div v-if="showBulkImport" class="mt-6 p-4 bg-surface-variant/20 border border-outline-variant/30 rounded-xl space-y-4">
+              <GuildSubclassesTab v-if="activeTab === 'subclasses'" :guild-id="guildId!" />
+
+              <!-- ============================================================= -->
+              <!-- Bulk Import Panel (spells and feats only) -->
+              <!-- ============================================================= -->
+              <div v-if="showBulkImport && activeTab !== 'subclasses'" class="mt-6 p-4 bg-surface-variant/20 border border-outline-variant/30 rounded-xl space-y-4">
                 <div class="flex items-center justify-between">
                   <h3 class="font-label-lg text-on-surface">
                     Bulk Import {{ activeTab === 'spells' ? 'Spells' : 'Feats' }}
