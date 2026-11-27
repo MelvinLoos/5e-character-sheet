@@ -3,6 +3,8 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { CATEGORIES, getOptionDetails, listOptions, type Category } from './catalog'
 import { buildCharacter, toolInputSchema, type StartingEquipmentInput } from './buildCharacter'
 import type { AccountApi } from './account'
+import { withCustomSubclasses } from '@/domain/customSubclasses'
+import type { SubclassImport } from '@/types/rules'
 import type { CharacterData } from '@/types/character'
 
 export interface McpDeps {
@@ -14,7 +16,7 @@ export interface McpDeps {
 
 const INSTRUCTIONS = `Create D&D 5.5e (2024 rules) characters for the Heroes Guild West Marches.
 Workflow: list_options -> get_option_details for the chosen class/species/background -> validate_character -> fix errors -> create_character, then give the player the returned link.
-House rules: by default Renown Tier 1/2/3 replaces levels (effective level 3/6/10). For one-shots or regular games set progressionMode "level" and level 1-20 instead; subclass unlocks at level 3. Ability scores use 27-point buy (base 8-15); the background's +2/+1 go on top and must be different abilities offered by that background. Only author inputs; HP, AC, proficiency bonus and final scores are computed. Choose skills the class allows; class/background skills are added automatically. Species with sub-choices need subChoice. Class feature choices (subclass, fighting style, invocations) go in featureChoices; get_option_details lists the choice ids, options and counts, and the validate/create summary reports pendingFeatureChoices that are still unfilled - and pendingSkillChoices reports class skill picks still to make in proficiencies.skills. Fill all pending choices before create_character. Spells are free-form and are NOT checked against a catalog; keep them to real 2024 spells for the class. search_guild_spells / search_guild_feats / list_guilds expose the owner's guild homebrew content; guild spells may be put on the character by name, level and desc.`
+House rules: by default Renown Tier 1/2/3 replaces levels (effective level 3/6/10). For one-shots or regular games set progressionMode "level" and level 1-20 instead; subclass unlocks at level 3. Ability scores use 27-point buy (base 8-15); the background's +2/+1 go on top and must be different abilities offered by that background. Only author inputs; HP, AC, proficiency bonus and final scores are computed. Choose skills the class allows; class/background skills are added automatically. Species with sub-choices need subChoice. Class feature choices (subclass, fighting style, invocations) go in featureChoices; get_option_details lists the choice ids, options and counts, and the validate/create summary reports pendingFeatureChoices that are still unfilled - and pendingSkillChoices reports class skill picks still to make in proficiencies.skills. Fill all pending choices before create_character. Spells are free-form and are NOT checked against a catalog; keep them to real 2024 spells for the class. search_guild_spells / search_guild_feats / search_guild_subclasses / list_guilds expose the owner's guild homebrew content; guild spells may be put on the character by name, level and desc. Guild subclasses appear as extra options on the class's subclass choice in get_option_details; pick one by its "custom-<class>-<name>" id (search_guild_subclasses returns the id and the features by level).`
 
 const equipmentSchema = {
   type: 'object',
@@ -82,7 +84,7 @@ const TOOLS = [
   {
     name: 'list_guilds',
     description:
-      'List the registered guilds (Discord servers) whose homebrew spells and feats are available, with their guild ids.',
+      'List the registered guilds (Discord servers) whose homebrew spells, feats and subclasses are available, with their guild ids.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true },
   },
@@ -118,6 +120,21 @@ const TOOLS = [
     },
     annotations: { readOnlyHint: true },
   },
+  {
+    name: 'search_guild_subclasses',
+    description:
+      "Search guild homebrew subclasses. Put the returned id in featureChoices for the parent class's subclass choice (see get_option_details).",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        guildId: { type: 'string' },
+        query: { type: 'string', description: 'Text to find in the name or description.' },
+        className: { type: 'string', description: 'Only subclasses of this class, e.g. Fighter.' },
+        limit: { type: 'integer', minimum: 1, maximum: 25, description: 'Default 15.' },
+      },
+    },
+    annotations: { readOnlyHint: true },
+  },
 ]
 
 const text = (value: unknown, isError = false) => ({
@@ -131,6 +148,16 @@ const text = (value: unknown, isError = false) => ({
 })
 
 export function createMcpServer(deps: McpDeps, userId: string, account?: AccountApi): Server {
+  /** Guild subclasses for validation; a read failure just means none are offered. */
+  const guildSubclasses = async (): Promise<SubclassImport[]> => {
+    if (!account) return []
+    try {
+      return await account.listSubclasses()
+    } catch {
+      return []
+    }
+  }
+
   const server = new Server(
     { name: 'heroes-guild-character-sheet', version: '1.0.0' },
     { capabilities: { tools: {} }, instructions: INSTRUCTIONS },
@@ -147,16 +174,22 @@ export function createMcpServer(deps: McpDeps, userId: string, account?: Account
       }
       case 'get_option_details': {
         if (!CATEGORIES.includes(args.category as Category)) return text('Unknown category.', true)
-        const d = getOptionDetails(args.category as Category, String(args.id))
+        const subs = args.category === 'classes' ? await guildSubclasses() : []
+        const d = withCustomSubclasses(subs, () =>
+          getOptionDetails(args.category as Category, String(args.id)),
+        )
         return d
           ? text(d)
           : text(`No ${args.category} option "${args.id}". Use list_options.`, true)
       }
       case 'validate_character':
       case 'create_character': {
-        const result = buildCharacter(
-          args.character,
-          args.startingEquipment as StartingEquipmentInput | undefined,
+        // Only hit the database when the draft actually references a custom subclass.
+        const subs = JSON.stringify(args.character ?? null).includes('custom-')
+          ? await guildSubclasses()
+          : []
+        const result = withCustomSubclasses(subs, () =>
+          buildCharacter(args.character, args.startingEquipment as StartingEquipmentInput | undefined),
         )
         if (!result.character) return text({ valid: false, errors: result.errors }, true)
         if (req.params.name === 'validate_character')
@@ -173,7 +206,8 @@ export function createMcpServer(deps: McpDeps, userId: string, account?: Account
       }
       case 'list_guilds':
       case 'search_guild_spells':
-      case 'search_guild_feats': {
+      case 'search_guild_feats':
+      case 'search_guild_subclasses': {
         if (!account) return text('Guild content is not configured.', true)
         try {
           if (req.params.name === 'list_guilds') return text(await account.listGuilds())
@@ -181,7 +215,9 @@ export function createMcpServer(deps: McpDeps, userId: string, account?: Account
           return text(
             req.params.name === 'search_guild_spells'
               ? await account.searchSpells(opts)
-              : await account.searchFeats(opts),
+              : req.params.name === 'search_guild_subclasses'
+                ? await account.searchSubclasses(opts)
+                : await account.searchFeats(opts),
           )
         } catch (e) {
           return text((e as Error).message, true)

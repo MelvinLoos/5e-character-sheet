@@ -20,6 +20,7 @@ import {
   resetInitiativeFeatures,
 } from '@/domain'
 import { useProgressionStore } from './progression'
+import { useRulesStore } from './rulesStore'
 
 import {
   loadLibrary,
@@ -63,6 +64,7 @@ import {
 import { calculateArmorClass } from '@/utils/acCalculator'
 import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { meetsOptionPrerequisite } from '@/domain/creationRules'
+import { classFeatureChoices } from '@/domain/customSubclasses'
 import { buildShareUrl } from '@/utils/shareUrl'
 import { autoSeedAttacks } from '@/composables/useCombat'
 import { useModals } from '@/composables/useModals'
@@ -689,10 +691,7 @@ export const useCharacterStore = defineStore('character', () => {
     const className = char.class
     if (!className) return
 
-    const classData = DND_RULES.CLASSES[className]
-    if (!classData?.featureChoices) return
-
-    const choice = classData.featureChoices.find((c) => c.id === choiceId)
+    const choice = classFeatureChoices(className).find((c) => c.id === choiceId)
     if (!choice) return
 
     // Resolve max count via the shared feature-choice rules helper.
@@ -843,6 +842,21 @@ export const useCharacterStore = defineStore('character', () => {
       char.combat.ac = calculateArmorClass(char.equippedGear ?? [], dexMod)
     },
     { deep: true },
+  )
+
+  // --- Re-apply subclass traits when imported/guild subclasses change ---
+  // Import, reset, guild sync and logout all replace `allSubclasses`; a
+  // character that already picked a custom subclass must gain or lose its
+  // traits accordingly.
+  const rulesStoreForSubclasses = useRulesStore()
+  watch(
+    () => rulesStoreForSubclasses.allSubclasses,
+    () => {
+      // No started character: nothing to update, and loading one re-applies everything.
+      if (!hasCharacter.value) return
+      currentCharacterData.value = applyFeatureChoices(currentCharacterData.value)
+      currentCharacterData.value = calculateDerivedStats(currentCharacterData.value)
+    },
   )
 
   // --- Auto-save draft watcher (debounced deep watch) ---

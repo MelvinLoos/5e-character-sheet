@@ -301,7 +301,7 @@ watch(
                   title="Import spells and feats from 5e.tools JSON"
                 >
                   <span class="material-symbols-outlined text-2xl" aria-hidden="true">file_upload</span>
-                  <span class="text-xs font-label-md">Import 5e.tools Spells &amp; Feats</span>
+                  <span class="text-xs font-label-md">Import Spells, Feats &amp; Subclasses</span>
                 </button>
 
                 <button

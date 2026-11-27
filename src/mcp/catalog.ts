@@ -2,6 +2,7 @@
  * Compact, read-only views over the bundled rules data for MCP clients.
  */
 import * as DND_RULES from '@/data/rules'
+import { classFeatureChoices } from '@/domain/customSubclasses'
 import { getClassBundle, getBackgroundEquipment, getTrinketList } from '@/utils/equipmentResolver'
 
 export const CATEGORIES = ['classes', 'species', 'backgrounds', 'feats', 'invocations'] as const
@@ -58,7 +59,7 @@ export function getOptionDetails(category: Category, id: string): Record<string,
         fixedSkills: c.fixedSkills ?? [],
         skillChoices: c.skillChoices ?? null,
         features: features(c.features),
-        featureChoices: (c.featureChoices ?? []).map((fc) => ({
+        featureChoices: classFeatureChoices(id).map((fc) => ({
           id: fc.id,
           label: fc.label,
           count: fc.count,

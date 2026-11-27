@@ -7,6 +7,8 @@ const api: AccountApi = {
   listGuilds: async () => [{ id: '1', name: 'Heroes Guild' }],
   searchSpells: vi.fn(async () => [{ name: 'Guild Bolt', level: 1 }]),
   searchFeats: async () => [],
+  searchSubclasses: async () => [],
+  listSubclasses: async () => [],
 }
 const accountFor = vi.fn(() => api)
 const deps = {
@@ -131,5 +133,68 @@ describe('accountApi', () => {
     expect(await accountApi(scoped.fake, ['g1']).searchFeats({ guildId: 'other' })).toEqual([])
     expect(empty.from).not.toHaveBeenCalled()
     expect(scoped.from).not.toHaveBeenCalled()
+  })
+})
+
+describe('accountApi subclasses', () => {
+  const valid = (name: string, parentClass: string) => ({
+    name,
+    parentClass,
+    description: `${name} lore`,
+    features: [{ name: `${name} Feature`, level: 3, description: 'Does a thing.' }],
+  })
+  const rows = [
+    { id: 'a', guild_id: 'g1', data: valid('Blade Dancer', 'Fighter') },
+    { id: 'b', guild_id: 'g2', data: valid('Ember Circle', 'druid') },
+    { id: 'c', guild_id: 'g1', data: valid('Champion', 'Fighter') }, // built-in name: invalid
+    { id: 'd', guild_id: 'g1', data: { broken: true } },
+  ]
+  const makeFake = () => {
+    const calls: Array<[string, ...unknown[]]> = []
+    const chain: Record<string, unknown> = {
+      select: () => chain,
+      limit: () => chain,
+      eq: (...a: unknown[]) => (calls.push(['eq', ...a]), chain),
+      in: (...a: unknown[]) => (calls.push(['in', ...a]), chain),
+      then: (r: (v: unknown) => void) => r({ data: rows, error: null }),
+    }
+    const from = vi.fn(() => chain)
+    return { fake: { from } as unknown as SupabaseClient, calls, from }
+  }
+
+  it('skips invalid rows, canonicalises, and returns the option id and features', async () => {
+    const { fake, from } = makeFake()
+    const out = await accountApi(fake, ['g1', 'g2']).searchSubclasses({})
+    expect(from).toHaveBeenCalledWith('guild_subclasses')
+    expect(out.map((s) => s.name)).toEqual(['Blade Dancer', 'Ember Circle'])
+    expect(out[1]).toMatchObject({
+      guildId: 'g2',
+      id: 'custom-druid-ember-circle',
+      parentClass: 'Druid',
+      features: [{ level: 3, name: 'Ember Circle Feature', desc: 'Does a thing.' }],
+    })
+  })
+
+  it('filters by class and text', async () => {
+    const a = accountApi(makeFake().fake, ['g1', 'g2'])
+    expect((await a.searchSubclasses({ className: 'DRUID' })).map((s) => s.name)).toEqual([
+      'Ember Circle',
+    ])
+    expect((await a.searchSubclasses({ query: 'dancer lore' })).map((s) => s.name)).toEqual([
+      'Blade Dancer',
+    ])
+  })
+
+  it('lists valid subclasses and stays scoped to the owner guilds', async () => {
+    const { fake, calls } = makeFake()
+    const list = await accountApi(fake, ['g1', 'g2']).listSubclasses()
+    expect(list.map((s) => s.name)).toEqual(['Blade Dancer', 'Ember Circle'])
+    expect(calls).toContainEqual(['in', 'guild_id', ['g1', 'g2']])
+  })
+
+  it('fails closed with no guilds', async () => {
+    const { fake, from } = makeFake()
+    expect(await accountApi(fake, []).listSubclasses()).toEqual([])
+    expect(from).not.toHaveBeenCalled()
   })
 })

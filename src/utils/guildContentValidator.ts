@@ -6,6 +6,8 @@
  */
 
 import type { CharacterSpell, CharacterFeature } from '@/types/character'
+import type { SubclassImport } from '@/types/rules'
+import { parseSubclass } from '@/utils/subclassParser'
 import { logger } from '@/utils/logger'
 import { legacyHtmlToMarkdown } from '@/utils/markdown'
 
@@ -93,4 +95,23 @@ export function normalizeGuildFeat(raw: Record<string, unknown>): CharacterFeatu
     grantsSpells: typeof raw.grantsSpells === 'boolean' ? raw.grantsSpells : undefined,
     grantedSpellLevels: Array.isArray(raw.grantedSpellLevels) ? raw.grantedSpellLevels as number[] : undefined,
   }
+}
+
+/**
+ * Validate that a raw object is an importable subclass (see subclassParser).
+ * Rows that fail are dropped on sync instead of reaching the character sheet.
+ */
+export function isValidGuildSubclass(data: unknown): boolean {
+  try {
+    parseSubclass(data)
+    return true
+  } catch (err) {
+    logger.warn('Guild subclass failed validation:', err instanceof Error ? err.message : err)
+    return false
+  }
+}
+
+/** Normalize a raw guild subclass. Call only after validation passes. */
+export function normalizeGuildSubclass(raw: Record<string, unknown>): SubclassImport {
+  return parseSubclass(raw)
 }

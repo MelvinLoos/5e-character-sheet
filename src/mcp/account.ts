@@ -7,15 +7,19 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   isValidGuildFeat,
   isValidGuildSpell,
+  isValidGuildSubclass,
   normalizeGuildFeat,
   normalizeGuildSpell,
+  normalizeGuildSubclass,
 } from '@/utils/guildContentValidator'
+import { subclassOptionId } from '@/domain/customSubclasses'
+import type { SubclassImport } from '@/types/rules'
 
 export interface SearchOpts {
   guildId?: string
   query?: string
   level?: number
-  /** Spells only: keep spells whose class list includes this class. */
+  /** Spells: keep spells whose class list includes this class. Subclasses: parent class. */
   className?: string
   limit?: number
 }
@@ -24,6 +28,9 @@ export interface AccountApi {
   listGuilds(): Promise<Array<{ id: string; name: string }>>
   searchSpells(opts: SearchOpts): Promise<Array<Record<string, unknown>>>
   searchFeats(opts: SearchOpts): Promise<Array<Record<string, unknown>>>
+  searchSubclasses(opts: SearchOpts): Promise<Array<Record<string, unknown>>>
+  /** Every valid subclass in the owner's guilds, for validating custom subclass choices. */
+  listSubclasses(): Promise<SubclassImport[]>
 }
 
 const MAX_ROWS = 2000
@@ -42,7 +49,7 @@ export const parseGuildIds = (raw?: string): string[] =>
 
 async function rows(
   client: SupabaseClient,
-  table: 'guild_spells' | 'guild_feats',
+  table: 'guild_spells' | 'guild_feats' | 'guild_subclasses',
   guildIds: string[],
   guildId?: string,
 ) {
@@ -102,6 +109,38 @@ export function accountApi(client: SupabaseClient, guildIds: string[]): AccountA
       return out
         .sort((a, b) => String(a.title).localeCompare(String(b.title)))
         .slice(0, clampLimit(limit))
+    },
+    async searchSubclasses({ guildId, query, className, limit }) {
+      const out: Array<Record<string, unknown>> = []
+      for (const row of await rows(client, 'guild_subclasses', guildIds, guildId)) {
+        if (!isValidGuildSubclass(row.data)) continue
+        const s = normalizeGuildSubclass(row.data)
+        if (className && s.parentClass.toLowerCase() !== className.toLowerCase()) continue
+        if (!matches(query, s.name, s.description)) continue
+        out.push({
+          guildId: row.guild_id,
+          // Use this as the option id in featureChoices for the class's subclass choice.
+          id: subclassOptionId(s),
+          name: s.name,
+          parentClass: s.parentClass,
+          description: clip(s.description),
+          features: s.features.map((f) => ({
+            level: f.level,
+            name: f.name,
+            desc: clip(f.description, 300),
+          })),
+        })
+      }
+      return out
+        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        .slice(0, clampLimit(limit))
+    },
+    async listSubclasses() {
+      const out: SubclassImport[] = []
+      for (const row of await rows(client, 'guild_subclasses', guildIds)) {
+        if (isValidGuildSubclass(row.data)) out.push(normalizeGuildSubclass(row.data))
+      }
+      return out
     },
   }
 }
