@@ -6,7 +6,8 @@
  * strings. Uses type="number"; `inputmode="numeric"` is added when negatives are
  * not allowed so mobile keyboards show a digit pad (iOS digit pads have no minus
  * key, hence `allowNegative` leaves the default keyboard). `min`/`max` clamp on
- * commit and the visible value is corrected too.
+ * commit and the visible value is corrected too. Native spin buttons are hidden
+ * globally (main.css); arrow keys still step the value.
  */
 import { computed, ref, useAttrs } from 'vue'
 import FormField from '@/components/ui/FormField.vue'
