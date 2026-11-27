@@ -9,6 +9,7 @@ import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
 import CompletionBadge from './ui/CompletionBadge.vue'
 import { usesLevels, getCharacterLevel } from '@/domain'
+import { useConfirm } from '@/composables/useConfirm'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import { useCharacterActions } from '@/composables/useCharacterActions'
 import { useOnboardingTour } from '@/composables/useOnboardingTour'
@@ -58,6 +59,7 @@ const navEntries = computed(() =>
 )
 
 // More popover state
+const { confirm } = useConfirm()
 const showMorePopover = ref(false)
 const moreButtonRef = ref<HTMLElement | null>(null)
 const popoverRef = ref<HTMLElement | null>(null)
@@ -82,13 +84,24 @@ function reopenGuide() {
 }
 
 /** Switch between Renown Tiers and plain levels (for one-shots and regular games). */
-function toggleProgressionMode() {
+async function toggleProgressionMode() {
   closeMorePopover()
   const toLevels = !usesLevels(store.currentCharacterData)
-  const message = toLevels
-    ? 'Use character levels instead of Renown Tiers? Your current level is kept, and Renown progress is hidden.'
-    : 'Go back to Renown Tiers? Your level is mapped to the nearest tier.'
-  if (window.confirm(message)) store.setProgressionMode(toLevels ? 'level' : 'renown')
+  const ok = await confirm(
+    toLevels
+      ? {
+          title: 'Use character levels?',
+          message:
+            'Progress by character level instead of Renown Tiers. Your current level is kept and Renown progress is hidden.',
+          confirmLabel: 'Use levels',
+        }
+      : {
+          title: 'Go back to Renown Tiers?',
+          message: 'Your level is mapped to the nearest Renown Tier.',
+          confirmLabel: 'Use Renown',
+        },
+  )
+  if (ok) store.setProgressionMode(toLevels ? 'level' : 'renown')
 }
 
 /** Close the popover and replay the guided tour. */

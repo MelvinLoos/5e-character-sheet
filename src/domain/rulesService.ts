@@ -1,4 +1,4 @@
-import { TIER_TO_LEVEL, TIER_MIN_LEVEL } from '@/data/progressions'
+import { TIER_TO_LEVEL } from '@/data/progressions'
 import { CLASS_SPELLCASTING_ABILITY } from '@/data/classSpellcasting'
 import type { AbilityKey } from '@/types/enums'
 
@@ -44,7 +44,7 @@ export function getCharacterTier(c: ProgressionState | null | undefined): number
   if (!usesLevels(c)) return c?.renownTier || 1
   const level = getCharacterLevel(c)
   let tier = 0
-  for (const [t, lvl] of Object.entries(TIER_MIN_LEVEL)) {
+  for (const [t, lvl] of Object.entries(TIER_TO_LEVEL)) {
     if (level >= lvl) tier = Math.max(tier, Number(t))
   }
   return tier
@@ -60,7 +60,7 @@ export function meetsProgressionGate(
 ): boolean {
   if (usesLevels(c)) {
     const required =
-      gate.minLevel ?? (gate.minTier ? TIER_MIN_LEVEL[gate.minTier] : undefined)
+      gate.minLevel ?? (gate.minTier ? TIER_TO_LEVEL[gate.minTier] : undefined)
     return required === undefined || getCharacterLevel(c) >= required
   }
   return !gate.minTier || gate.minTier <= getCharacterTier(c)

@@ -44,6 +44,17 @@
       "default": 1,
       "description": "West Marches Renown Tier (1=levels 1-4, 2=levels 5-8, 3=levels 9-12). Defaults to 1."
     },
+    "progressionMode": {
+      "enum": ["renown", "level"],
+      "default": "renown",
+      "description": "Defaults to \"renown\" (West Marches Renown Tiers). Use \"level\" for one-shots and regular games, then set level."
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Character level 1-20. Only with progressionMode \"level\"; ignored otherwise."
+    },
     "species": {
       "type": "string",
       "description": "The character's species. REQUIRED. Must be exactly one of the enum values.",
