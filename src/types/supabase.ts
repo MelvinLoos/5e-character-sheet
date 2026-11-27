@@ -53,3 +53,12 @@ export interface GuildFeat extends GuildContentBase {
   /** JSONB payload containing the feat definition */
   data: Record<string, unknown>
 }
+
+/**
+ * A guild-scoped homebrew subclass entry.
+ * Maps 1:1 to the `guild_subclasses` table.
+ */
+export interface GuildSubclass extends GuildContentBase {
+  /** JSONB payload containing the subclass definition (a `SubclassImport`) */
+  data: Record<string, unknown>
+}
