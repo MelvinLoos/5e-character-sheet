@@ -517,35 +517,7 @@ export const useCharacterStore = defineStore('character', () => {
   function recalculateAbilityScores(): void {
     const data = currentCharacterData.value
     if (!data) return
-    const finalScores = { ...data.pointBuyBaseScores }
-    if (data.backgroundBonusSelections.plusTwo) {
-      const score = finalScores[data.backgroundBonusSelections.plusTwo]
-      if (score !== undefined) {
-        finalScores[data.backgroundBonusSelections.plusTwo] = score + 2
-      }
-    }
-    if (data.backgroundBonusSelections.plusOne) {
-      const score = finalScores[data.backgroundBonusSelections.plusOne]
-      if (score !== undefined) {
-        finalScores[data.backgroundBonusSelections.plusOne] = score + 1
-      }
-    }
-
-    // Apply feature bonuses
-    if (data.features) {
-      data.features.forEach((feature) => {
-        if (feature.abilityModifiers) {
-          Object.entries(feature.abilityModifiers).forEach(([stat, bonus]) => {
-            const normalizedStat = stat.toLowerCase()
-            if (finalScores[normalizedStat] !== undefined && typeof bonus === 'number') {
-              finalScores[normalizedStat] += bonus
-            }
-          })
-        }
-      })
-    }
-
-    data.abilityScores = finalScores
+    data.abilityScores = applyBackgroundBonuses(data).abilityScores
 
     // Also recalculate derived stats
     const oldMax = data.combat.hp_max

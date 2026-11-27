@@ -8,6 +8,7 @@
  */
 
 import * as DND_RULES from '@/data/rules'
+import { resolveAbilityIncrease, applyCappedIncrease } from '@/domain/abilityIncreases'
 import { allClassFeatureChoices, classFeatureChoices } from '@/domain/customSubclasses'
 import {
   migrateUsesToResource,
@@ -569,6 +570,17 @@ export function applyBackgroundBonuses(char: CharacterData): CharacterData {
         if (finalScores[normalizedStat] !== undefined && typeof bonus === 'number') {
           finalScores[normalizedStat] += bonus
         }
+      }
+    }
+  }
+
+  // Apply feat ability increases (capped, player-chosen)
+  for (const feature of char.features || []) {
+    const resolved = resolveAbilityIncrease(feature)
+    if (!resolved) continue
+    for (const [stat, bonus] of Object.entries(resolved.bonuses)) {
+      if (finalScores[stat] !== undefined) {
+        finalScores[stat] = applyCappedIncrease(finalScores[stat], bonus, resolved.max)
       }
     }
   }

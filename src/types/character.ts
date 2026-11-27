@@ -27,6 +27,26 @@ export interface LegacyUses {
   per: string
 }
 
+/**
+ * One way a feat can raise ability scores. A feat lists alternatives
+ * (e.g. Ability Score Improvement: +2 to one score OR +1 to two scores).
+ */
+export interface AbilityIncreaseOption {
+  /** Fixed increases, e.g. { cha: 1 }. */
+  fixed?: Partial<Record<AbilityKey, number>>
+  /** Player picks `count` distinct abilities from `from`, each raised by `amount`. */
+  choose?: { from: AbilityKey[]; count: number; amount: number }
+  /** Score ceiling for this increase; defaults to 20. */
+  max?: number
+}
+
+/** The player's picks for a feature's `abilityIncrease`. */
+export interface AbilityChoice {
+  /** Index into the feature's `abilityIncrease` alternatives. */
+  option: number
+  picks: AbilityKey[]
+}
+
 /** A character feature / trait — the canonical runtime shape used in CharacterData.
  * featureType, actionType, and casterType accept string in addition to their strict
  * unions to accommodate user input, rules-store data, and legacy JSON. */
@@ -44,6 +64,10 @@ export interface CharacterFeature {
   grantsSpells?: boolean
   grantedSpellLevels?: number[]
   abilityModifiers?: Record<string, number>
+  /** Capped, optionally player-chosen ability increases (feats). See domain/abilityIncreases. */
+  abilityIncrease?: AbilityIncreaseOption[]
+  /** The player's picks for `abilityIncrease`. */
+  abilityChoice?: AbilityChoice
   prerequisite?: string
   /** Minimum Renown Tier (1-3) required before this trait is active. */
   minTier?: number
@@ -65,6 +89,8 @@ export interface DisplayFeature {
   grantsSpells?: boolean
   grantedSpellLevels?: number[]
   abilityModifiers?: Record<string, number>
+  abilityIncrease?: AbilityIncreaseOption[]
+  abilityChoice?: AbilityChoice
 }
 
 // ---------------------------------------------------------------------------

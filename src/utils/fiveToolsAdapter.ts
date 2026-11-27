@@ -2,6 +2,9 @@
  * Adapter utilities for importing 5e.tools JSON data.
  * Converts 5e.tools specific formats (tags, nested entries) into clean Markdown strings.
  */
+import { parseFiveToolsAbility } from '@/domain/abilityIncreases'
+import type { AbilityIncreaseOption } from '@/types/character'
+
 
 /**
  * Recursively processes 5e.tools entries arrays and converts them to Markdown strings.
@@ -460,6 +463,7 @@ interface AppFeature {
   actionType?: string
   grantsSpells?: boolean
   key?: boolean
+  abilityIncrease?: AbilityIncreaseOption[]
 }
 
 /**
@@ -503,6 +507,9 @@ export function mapFeat(fiveToolsFeat: unknown): AppFeature | null {
   if (desc.toLowerCase().includes('spell') || desc.toLowerCase().includes('cantrip')) {
     feature.grantsSpells = true
   }
+
+  const abilityIncrease = parseFiveToolsAbility(feat.ability)
+  if (abilityIncrease) feature.abilityIncrease = abilityIncrease
 
   return feature
 }

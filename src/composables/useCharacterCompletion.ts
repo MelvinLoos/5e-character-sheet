@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { useCharacterStore } from '@/stores/character'
 import { useProgressionStore } from '@/stores/progression'
 import { useSkills } from '@/composables/useSkills'
-import { hasSpellcasting, remainingSpellSelections } from '@/domain'
+import { hasSpellcasting, remainingSpellSelections, needsAbilityChoice } from '@/domain'
 import {
   eligibleFeatureChoices,
   effectiveMaxCountForChoice,
@@ -71,6 +71,8 @@ export function useCharacterCompletion() {
     // Feats — any eligible class feature choice still incomplete
     if (remainingFeatureSelections(char) > 0) {
       result.feats = { type: 'alert', label: 'Class feature choices remaining' }
+    } else if ((char.features ?? []).some(needsAbilityChoice)) {
+      result.feats = { type: 'alert', label: 'Ability score increase to choose' }
     }
 
     // Inventory — starting equipment not chosen yet
