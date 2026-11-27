@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { handleMcpRequest } from '@/mcp/handler'
 import { getClassBundle } from '@/utils/equipmentResolver'
+import { classFeatureChoices } from '@/domain/customSubclasses'
+import { CLASSES } from '@/data/classes'
+import type { AccountApi } from '@/mcp/account'
+import type { SubclassImport } from '@/types/rules'
 
 const insertCharacter = vi.fn(async () => 'row-1')
 const TOKEN = 'test-token'
@@ -62,6 +66,7 @@ describe('MCP handler', () => {
       'list_guilds',
       'search_guild_spells',
       'search_guild_feats',
+      'search_guild_subclasses',
     ])
     const schema = JSON.parse(
       readFileSync(resolve(process.cwd(), 'public/llm-character-schema.json'), 'utf-8'),
@@ -201,5 +206,107 @@ describe('MCP handler', () => {
     })
     expect(r.isError).toBe(true)
     expect(r.body.errors.join(' ')).toMatch(/not available/)
+  })
+})
+
+describe('guild subclasses over MCP', () => {
+  const bladeDancer: SubclassImport = {
+    name: 'Blade Dancer',
+    parentClass: 'Fighter',
+    features: [{ name: 'Opening Flourish', level: 3, description: 'First.' }],
+  }
+  const OPTION = 'custom-fighter-blade-dancer'
+  const listSubclasses = vi.fn(async () => [bladeDancer])
+  const account = {
+    listGuilds: async () => [],
+    searchSpells: async () => [],
+    searchFeats: async () => [],
+    searchSubclasses: vi.fn(async () => [{ id: OPTION, name: 'Blade Dancer' }]),
+    listSubclasses,
+  } as AccountApi
+
+  const fighter = {
+    ...wizard,
+    class: 'Fighter',
+    background: 'Soldier',
+    pointBuyBaseScores: { str: 15, dex: 13, con: 14, int: 8, wis: 10, cha: 8 },
+    backgroundBonusSelections: { plusTwo: 'str', plusOne: 'con' },
+    proficiencies: { skills: ['perception', 'survival'] },
+    featureChoices: { 'fighting-style': ['defense'] },
+  }
+
+  async function toolWith(withAccount: boolean, name: string, args: unknown) {
+    const res = await handleMcpRequest(
+      new Request('https://sheet.test/mcp', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json, text/event-stream',
+          ...authHeader,
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: { name, arguments: args },
+        }),
+      }),
+      { ...deps, accountFor: withAccount ? () => account : undefined },
+    )
+    const r = (await res.json()).result
+    const raw = r.content[0].text
+    let body: any = raw
+    try {
+      body = JSON.parse(raw)
+    } catch {
+      /* plain-text error */
+    }
+    return { isError: !!r.isError, body }
+  }
+
+  it('offers guild subclasses as options on the class subclass choice', async () => {
+    const r = await toolWith(true, 'get_option_details', { category: 'classes', id: 'Fighter' })
+    const choice = r.body.featureChoices.find((c: { id: string }) => c.id === 'fighter-subclass')
+    expect(choice.options.map((o: { id: string }) => o.id)).toContain(OPTION)
+  })
+
+  it('accepts a guild subclass and applies its tier-gated features', async () => {
+    const r = await toolWith(true, 'validate_character', {
+      character: { ...fighter, featureChoices: { ...fighter.featureChoices, 'fighter-subclass': [OPTION] } },
+    })
+    expect(r.isError).toBe(false)
+    expect(r.body.summary.features).toContain('Opening Flourish')
+    expect(
+      (r.body.summary.pendingFeatureChoices ?? []).map((p: { choice: string }) => p.choice),
+    ).not.toContain('fighter-subclass')
+  })
+
+  it('rejects an unknown custom id, and the guild id when no account is configured', async () => {
+    const choices = { ...fighter.featureChoices, 'fighter-subclass': ['custom-fighter-nope'] }
+    const unknown = await toolWith(true, 'validate_character', {
+      character: { ...fighter, featureChoices: choices },
+    })
+    expect(unknown.isError).toBe(true)
+
+    const noAccount = await toolWith(false, 'validate_character', {
+      character: { ...fighter, featureChoices: { ...choices, 'fighter-subclass': [OPTION] } },
+    })
+    expect(noAccount.isError).toBe(true)
+  })
+
+  it('reads guild subclasses only when needed and leaves no state behind', async () => {
+    listSubclasses.mockClear()
+    await toolWith(true, 'validate_character', { character: fighter })
+    expect(listSubclasses).not.toHaveBeenCalled()
+
+    await toolWith(true, 'get_option_details', { category: 'classes', id: 'Fighter' })
+    expect(listSubclasses).toHaveBeenCalledTimes(1)
+    expect(classFeatureChoices('Fighter')).toBe(CLASSES.Fighter!.featureChoices)
+  })
+
+  it('routes search_guild_subclasses to the account', async () => {
+    const r = await toolWith(true, 'search_guild_subclasses', { className: 'Fighter' })
+    expect(r.body[0].id).toBe(OPTION)
+    expect(account.searchSubclasses).toHaveBeenCalledWith({ className: 'Fighter' })
   })
 })
