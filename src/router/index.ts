@@ -59,12 +59,6 @@ const router = createRouter({
       },
     },
     {
-      path: '/oauth/consent',
-      name: 'oauthConsent',
-      meta: { standalone: true },
-      component: () => import('../views/OAuthConsent.vue'),
-    },
-    {
       path: '/terms',
       name: 'terms',
       meta: { standalone: true },

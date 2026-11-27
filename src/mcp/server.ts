@@ -7,14 +7,14 @@ import type { CharacterData } from '@/types/character'
 
 export interface McpDeps {
   /** Persist a finished character; resolves to the new row id. */
-  insertCharacter: (data: CharacterData) => Promise<string>
+  insertCharacter: (data: CharacterData, userId: string) => Promise<string>
   /** Public origin of the app, used to build the share link. */
   siteUrl: string
 }
 
 const INSTRUCTIONS = `Create D&D 5.5e (2024 rules) characters for the Heroes Guild West Marches.
 Workflow: list_options -> get_option_details for the chosen class/species/background -> validate_character -> fix errors -> create_character, then give the player the returned link.
-House rules: by default Renown Tier 1/2/3 replaces levels (effective level 3/6/10). For one-shots or regular games set progressionMode "level" and level 1-20 instead; subclass unlocks at level 3. Ability scores use 27-point buy (base 8-15); the background's +2/+1 go on top and must be different abilities offered by that background. Only author inputs; HP, AC, proficiency bonus and final scores are computed. Choose skills the class allows; class/background skills are added automatically. Species with sub-choices need subChoice. Class feature choices (subclass, fighting style, invocations) go in featureChoices; get_option_details lists the choice ids, options and counts, and the validate/create summary reports pendingFeatureChoices that are still unfilled - and pendingSkillChoices reports class skill picks still to make in proficiencies.skills. Fill all pending choices before create_character. Spells are free-form and are NOT checked against a catalog; keep them to real 2024 spells for the class. If the player signed in, search_guild_spells / search_guild_feats / list_guilds expose their guild homebrew content; guild spells may be put on the character by name, level and desc.`
+House rules: by default Renown Tier 1/2/3 replaces levels (effective level 3/6/10). For one-shots or regular games set progressionMode "level" and level 1-20 instead; subclass unlocks at level 3. Ability scores use 27-point buy (base 8-15); the background's +2/+1 go on top and must be different abilities offered by that background. Only author inputs; HP, AC, proficiency bonus and final scores are computed. Choose skills the class allows; class/background skills are added automatically. Species with sub-choices need subChoice. Class feature choices (subclass, fighting style, invocations) go in featureChoices; get_option_details lists the choice ids, options and counts, and the validate/create summary reports pendingFeatureChoices that are still unfilled - and pendingSkillChoices reports class skill picks still to make in proficiencies.skills. Fill all pending choices before create_character. Spells are free-form and are NOT checked against a catalog; keep them to real 2024 spells for the class. search_guild_spells / search_guild_feats / list_guilds expose the owner's guild homebrew content; guild spells may be put on the character by name, level and desc.`
 
 const equipmentSchema = {
   type: 'object',
@@ -82,14 +82,14 @@ const TOOLS = [
   {
     name: 'list_guilds',
     description:
-      'Requires sign-in. List the registered guilds (Discord servers) whose homebrew spells and feats are available, with their guild ids.',
+      'List the registered guilds (Discord servers) whose homebrew spells and feats are available, with their guild ids.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true },
   },
   {
     name: 'search_guild_spells',
     description:
-      "Requires sign-in as the player's account. Search guild homebrew spells. Spells you put on a character should come from here or the official 2024 list.",
+      'Search guild homebrew spells. Spells you put on a character should come from here or the official 2024 list.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -107,7 +107,7 @@ const TOOLS = [
   },
   {
     name: 'search_guild_feats',
-    description: "Requires sign-in as the player's account. Search guild homebrew feats.",
+    description: 'Search guild homebrew feats.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -130,7 +130,7 @@ const text = (value: unknown, isError = false) => ({
   isError,
 })
 
-export function createMcpServer(deps: McpDeps, account?: AccountApi): Server {
+export function createMcpServer(deps: McpDeps, userId: string, account?: AccountApi): Server {
   const server = new Server(
     { name: 'heroes-guild-character-sheet', version: '1.0.0' },
     { capabilities: { tools: {} }, instructions: INSTRUCTIONS },
@@ -161,7 +161,7 @@ export function createMcpServer(deps: McpDeps, account?: AccountApi): Server {
         if (!result.character) return text({ valid: false, errors: result.errors }, true)
         if (req.params.name === 'validate_character')
           return text({ valid: true, summary: result.summary })
-        const id = await deps.insertCharacter(result.character)
+        const id = await deps.insertCharacter(result.character, userId)
         return text({
           shareUrl: `${deps.siteUrl.replace(/\/$/, '')}/?id=${id}`,
           summary: result.summary,
@@ -174,7 +174,7 @@ export function createMcpServer(deps: McpDeps, account?: AccountApi): Server {
       case 'list_guilds':
       case 'search_guild_spells':
       case 'search_guild_feats': {
-        if (!account) return text('Sign-in required.', true)
+        if (!account) return text('Guild content is not configured.', true)
         try {
           if (req.params.name === 'list_guilds') return text(await account.listGuilds())
           const opts = args as Record<string, never>

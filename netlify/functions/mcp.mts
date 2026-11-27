@@ -6,8 +6,11 @@ export default async (req: Request): Promise<Response> =>
     req,
     depsFromEnv({
       supabaseUrl: process.env.VITE_SUPABASE_URL,
-      supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY,
+      serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
       siteUrl: process.env.URL,
+      mcpSecretToken: process.env.MCP_SECRET_TOKEN,
+      ownerUserId: process.env.MCP_OWNER_USER_ID,
+      ownerGuildIds: process.env.MCP_OWNER_GUILD_IDS,
     }),
   )
 

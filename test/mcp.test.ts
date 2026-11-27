@@ -5,7 +5,13 @@ import { handleMcpRequest } from '@/mcp/handler'
 import { getClassBundle } from '@/utils/equipmentResolver'
 
 const insertCharacter = vi.fn(async () => 'row-1')
-const deps = { siteUrl: 'https://sheet.test/', insertCharacter }
+const TOKEN = 'test-token'
+const deps = {
+  siteUrl: 'https://sheet.test/',
+  insertCharacter,
+  authEnv: { MCP_SECRET_TOKEN: TOKEN, MCP_OWNER_USER_ID: 'owner-1' },
+}
+const authHeader = { authorization: `Bearer ${TOKEN}` }
 
 async function rpc(method: string, params?: unknown) {
   const res = await handleMcpRequest(
@@ -14,6 +20,7 @@ async function rpc(method: string, params?: unknown) {
       headers: {
         'content-type': 'application/json',
         accept: 'application/json, text/event-stream',
+        ...authHeader,
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
     }),
@@ -66,10 +73,17 @@ describe('MCP handler', () => {
   })
 
   it('rejects non-POST and oversize bodies', async () => {
-    const get = await handleMcpRequest(new Request('https://sheet.test/mcp'), deps)
+    const get = await handleMcpRequest(
+      new Request('https://sheet.test/mcp', { headers: authHeader }),
+      deps,
+    )
     expect(get.status).toBe(405)
     const big = await handleMcpRequest(
-      new Request('https://sheet.test/mcp', { method: 'POST', body: 'x'.repeat(70_000) }),
+      new Request('https://sheet.test/mcp', {
+        method: 'POST',
+        headers: authHeader,
+        body: 'x'.repeat(70_000),
+      }),
       deps,
     )
     expect(big.status).toBe(413)
@@ -98,6 +112,7 @@ describe('MCP handler', () => {
     const r = await tool('create_character', { character: wizard })
     expect(r.body.shareUrl).toBe('https://sheet.test/?id=row-1')
     expect(insertCharacter).toHaveBeenCalledOnce()
+    expect((insertCharacter.mock.calls[0] as unknown[])[1]).toBe('owner-1')
     const saved = (insertCharacter.mock.calls[0] as unknown[])[0] as {
       combat: { hp_max: number; hp_current: number }
     }
