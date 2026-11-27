@@ -8,6 +8,7 @@
  */
 
 import * as DND_RULES from '@/data/rules'
+import { allClassFeatureChoices, classFeatureChoices } from '@/domain/customSubclasses'
 import {
   migrateUsesToResource,
   migrateLevelToRenown,
@@ -799,12 +800,10 @@ export function applyFeatureChoices(char: CharacterData): CharacterData {
   // We always filter these out, even when the current class has no
   // featureChoices, so that a class switch cleans up stale traits.
   const allChoiceFeatureTitles = new Set<string>()
-  for (const cls of Object.values(DND_RULES.CLASSES)) {
-    for (const choice of cls.featureChoices || []) {
-      for (const option of choice.options || []) {
-        for (const trait of option.traits || []) {
-          if (trait.title) allChoiceFeatureTitles.add(trait.title)
-        }
+  for (const choice of allClassFeatureChoices()) {
+    for (const option of choice.options || []) {
+      for (const trait of option.traits || []) {
+        if (trait.title) allChoiceFeatureTitles.add(trait.title)
       }
     }
   }
@@ -824,12 +823,12 @@ export function applyFeatureChoices(char: CharacterData): CharacterData {
     }
   }
 
-  const classData = DND_RULES.CLASSES[char.class]
+  const classChoices = classFeatureChoices(char.class)
   const charFeatureChoices = char.featureChoices || {}
   const newFeatureChoiceTraits: CharacterFeature[] = []
 
-  if (classData?.featureChoices) {
-    for (const choice of classData.featureChoices) {
+  if (classChoices.length > 0) {
+    for (const choice of classChoices) {
       // Respect choice minTier / minLevel
       if (!meetsProgressionGate(choice, char)) continue
 

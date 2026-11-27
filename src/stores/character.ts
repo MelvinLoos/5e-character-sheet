@@ -63,6 +63,7 @@ import {
 import { calculateArmorClass } from '@/utils/acCalculator'
 import { effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { meetsOptionPrerequisite } from '@/domain/creationRules'
+import { classFeatureChoices } from '@/domain/customSubclasses'
 import { buildShareUrl } from '@/utils/shareUrl'
 import { autoSeedAttacks } from '@/composables/useCombat'
 import { useModals } from '@/composables/useModals'
@@ -689,10 +690,7 @@ export const useCharacterStore = defineStore('character', () => {
     const className = char.class
     if (!className) return
 
-    const classData = DND_RULES.CLASSES[className]
-    if (!classData?.featureChoices) return
-
-    const choice = classData.featureChoices.find((c) => c.id === choiceId)
+    const choice = classFeatureChoices(className).find((c) => c.id === choiceId)
     if (!choice) return
 
     // Resolve max count via the shared feature-choice rules helper.

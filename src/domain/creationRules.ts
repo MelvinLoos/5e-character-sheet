@@ -17,6 +17,7 @@ import type { ProgressionState } from './rulesService'
 import { eligibleFeatureChoices, effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import type { CharacterData } from '@/types/character'
 import type { FeatureChoice, FeatureChoiceOption } from '@/types/rules'
+import { SUBCLASS_CHOICE_IDS, allClassFeatureChoices } from './customSubclasses'
 
 export const POINT_BUY_BUDGET = 27
 export const POINT_BUY_MIN = 8
@@ -233,9 +234,9 @@ export function featureGroup(feature: { title: string; featureType?: string }): 
   const t = feature.title
   for (const c of Object.values(DND_RULES.CLASSES)) {
     if (c.features.some((f) => f.title === t)) return 'class'
-    for (const fc of c.featureChoices ?? []) {
-      if ((fc.options ?? []).some((o) => o.traits.some((tr) => tr.title === t))) return 'class'
-    }
+  }
+  for (const fc of allClassFeatureChoices()) {
+    if ((fc.options ?? []).some((o) => o.traits.some((tr) => tr.title === t))) return 'class'
   }
   if (Object.values(DND_RULES.CLASS_SPELLCASTING_FEATS).some((f) => f.title === t)) return 'class'
   for (const sp of Object.values(DND_RULES.SPECIES)) {
@@ -245,21 +246,7 @@ export function featureGroup(feature: { title: string; featureType?: string }): 
   return 'feat'
 }
 
-/** Feature-choice ids that are a class's subclass pick (Primal Path, Divine Domain, ...). */
-export const SUBCLASS_CHOICE_IDS: readonly string[] = [
-  'barbarian-subclass',
-  'bard-college',
-  'divine-domain',
-  'druid-circle',
-  'fighter-subclass',
-  'monk-subclass',
-  'paladin-oath',
-  'ranger-conclave',
-  'rogue-subclass',
-  'sorcerer-origin',
-  'warlock-subclass',
-  'wizard-school',
-]
+export { SUBCLASS_CHOICE_IDS }
 
 /** The subclass choice a class offers at the given progression, or null. */
 export function subclassChoiceFor(

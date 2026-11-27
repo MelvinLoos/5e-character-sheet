@@ -1,4 +1,4 @@
-import * as DND_RULES from '@/data/rules'
+import { classFeatureChoices } from '@/domain/customSubclasses'
 import { getCharacterLevel, getCharacterTier, meetsProgressionGate } from '@/domain'
 import type { ProgressionState } from '@/domain'
 import type { FeatureChoice } from '@/types/rules'
@@ -22,9 +22,7 @@ export function eligibleFeatureChoices(
   progress: ProgressionState | null | undefined,
 ): FeatureChoice[] {
   if (!charClass) return []
-  return (DND_RULES.CLASSES[charClass]?.featureChoices || []).filter((fc) =>
-    meetsProgressionGate(fc, progress),
-  )
+  return classFeatureChoices(charClass).filter((fc) => meetsProgressionGate(fc, progress))
 }
 
 /**
