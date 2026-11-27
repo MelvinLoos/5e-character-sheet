@@ -6,17 +6,13 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { VitePWA } from 'vite-plugin-pwa'
 import Components from 'unplugin-vue-components/vite'
+import { resolveSupabaseUrl } from './resolve-supabase-url'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
-  // Netlify's Supabase integration might inject SUPABASE_URL or SUPABASE_DATABASE_URL
-  // We need to ensure we use a valid HTTP URL for the Supabase client
-  let supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || ''
-  if (!supabaseUrl && env.SUPABASE_DATABASE_URL && env.SUPABASE_DATABASE_URL.startsWith('http')) {
-    supabaseUrl = env.SUPABASE_DATABASE_URL
-  }
+  const supabaseUrl = resolveSupabaseUrl(env)
 
   return {
     plugins: [

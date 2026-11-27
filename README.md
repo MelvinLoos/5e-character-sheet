@@ -70,7 +70,7 @@ Copy `.env.example` to `.env` and fill in the values. `.env` is git-ignored; sec
 
 | Variable | Scope | Description |
 | --- | --- | --- |
-| `VITE_SUPABASE_URL` | Client | Supabase project URL used for online character sharing. |
+| `VITE_SUPABASE_URL` | Client | Supabase project URL used for online character sharing. The build and the MCP function also accept `SUPABASE_URL` or `SUPABASE_DATABASE_URL` (Netlify Supabase integration), in that priority order. |
 | `VITE_SUPABASE_ANON_KEY` | Client | Supabase anonymous (public) client key. |
 | `VITE_SUPABASE_REDIRECT_URL` | Client | OAuth redirect URL for the Discord sign-in flow. |
 | `VITE_POSTHOG_PROJECT_TOKEN` | Client | PostHog project token for product analytics. |
