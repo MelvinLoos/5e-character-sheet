@@ -7,7 +7,7 @@ import authoringSchema from '../../public/llm-character-schema.json'
 import { createBlankCharacter } from '@/domain/characterService'
 import { chosenSkills, validateCreationRules } from '@/domain/creationRules'
 import * as DND_RULES from '@/data/rules'
-import { getEffectiveLevel } from '@/domain/rulesService'
+import { getCharacterLevel } from '@/domain/rulesService'
 import { eligibleFeatureChoices, effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import { computeSpellSlots } from '@/domain/spellSlotService'
 import {
@@ -116,7 +116,7 @@ function summarize(c: CharacterData): Record<string, unknown> {
     subChoice: c.subChoice ?? null,
     background: c.background,
     renownTier: c.renownTier,
-    effectiveLevel: getEffectiveLevel(c.renownTier || 1),
+    effectiveLevel: getCharacterLevel(c),
     abilityScores: c.abilityScores,
     proficiencyBonus: c.profBonus,
     hp: c.combat.hp_max,
@@ -124,7 +124,7 @@ function summarize(c: CharacterData): Record<string, unknown> {
     skills: c.proficiencies.skills,
     savingThrows: c.proficiencies.savingThrows,
     gold: c.gold,
-    spellSlots: computeSpellSlots(c.features, getEffectiveLevel(c.renownTier || 1)),
+    spellSlots: computeSpellSlots(c.features, getCharacterLevel(c)),
     featureChoices: c.featureChoices ?? {},
     pendingSkillChoices: pendingSkillChoices(c),
     pendingFeatureChoices: pendingFeatureChoices(c),
@@ -134,9 +134,8 @@ function summarize(c: CharacterData): Record<string, unknown> {
 
 /** Feature choices available at this tier that still have unfilled picks. */
 function pendingFeatureChoices(c: CharacterData): Array<Record<string, unknown>> {
-  const tier = c.renownTier || 1
-  return eligibleFeatureChoices(c.class, tier).flatMap((fc) => {
-    const max = effectiveMaxCountForChoice(fc, tier)
+  return eligibleFeatureChoices(c.class, c).flatMap((fc) => {
+    const max = effectiveMaxCountForChoice(fc, c)
     const missing = max - (c.featureChoices?.[fc.id]?.length ?? 0)
     return missing > 0
       ? [{ choice: fc.id, label: fc.label, missing, options: fc.options?.map((o) => o.id) }]

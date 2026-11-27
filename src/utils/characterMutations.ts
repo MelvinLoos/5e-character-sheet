@@ -15,7 +15,13 @@ import {
   migrateDescriptionHtmlToMarkdown,
   migrateConcentration,
 } from './migrations'
-import { getMod, hasSpellcasting, getEffectiveLevel, getSpellcastingAbility } from '@/domain'
+import {
+  getMod,
+  hasSpellcasting,
+  getCharacterLevel,
+  meetsProgressionGate,
+  getSpellcastingAbility,
+} from '@/domain'
 import type { CharacterData, CharacterFeature } from '@/types/character'
 import { resolveStartingEquipment } from './equipmentResolver'
 import { calculateArmorClass } from './acCalculator'
@@ -581,7 +587,7 @@ export function applyBackgroundBonuses(char: CharacterData): CharacterData {
  * spellcasting state.
  */
 export function calculateDerivedStats(char: CharacterData): CharacterData {
-  const level = getEffectiveLevel(char.renownTier || 1)
+  const level = getCharacterLevel(char)
 
   // Proficiency bonus
   let prof = 2
@@ -820,14 +826,12 @@ export function applyFeatureChoices(char: CharacterData): CharacterData {
 
   const classData = DND_RULES.CLASSES[char.class]
   const charFeatureChoices = char.featureChoices || {}
-  const renownTier = char.renownTier || 1
-
   const newFeatureChoiceTraits: CharacterFeature[] = []
 
   if (classData?.featureChoices) {
     for (const choice of classData.featureChoices) {
-      // Respect choice minTier
-      if (choice.minTier !== undefined && renownTier < choice.minTier) continue
+      // Respect choice minTier / minLevel
+      if (!meetsProgressionGate(choice, char)) continue
 
       const selectedOptionIds = charFeatureChoices[choice.id]
       if (!selectedOptionIds || selectedOptionIds.length === 0) continue
@@ -844,10 +848,11 @@ export function applyFeatureChoices(char: CharacterData): CharacterData {
             key?: boolean
             uses?: { total: number; per: string }
             minTier?: number
+            minLevel?: number
           }
 
-          // Respect per-trait minTier
-          if (t.minTier !== undefined && renownTier < t.minTier) continue
+          // Respect per-trait minTier / minLevel
+          if (!meetsProgressionGate(t, char)) continue
 
           newFeatureChoiceTraits.push({
             title: t.title || '',

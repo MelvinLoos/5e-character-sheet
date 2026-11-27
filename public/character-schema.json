@@ -32,6 +32,17 @@
       "default": 1,
       "description": "Renown Tier (1-3) for the West Marches progression system. Maps to an effective level via TIER_TO_LEVEL."
     },
+    "progressionMode": {
+      "enum": ["renown", "level"],
+      "default": "renown",
+      "description": "How the character progresses: Renown Tiers (default, West Marches) or plain character levels."
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Character level. Only used when progressionMode is \"level\"."
+    },
     "renownMilestones": {
       "type": "integer",
       "minimum": 0,

@@ -79,7 +79,7 @@ export function migrateLevelToRenown(character: unknown) {
   const ch = character as Record<string, unknown>
 
   if (ch.renownTier === undefined) {
-    if (typeof ch.level === 'number') {
+    if (typeof ch.level === 'number' && ch.progressionMode !== 'level') {
       const level = ch.level
       let tier = 1
       if (level >= 5 && level <= 8) {

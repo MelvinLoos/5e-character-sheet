@@ -8,6 +8,7 @@ import GuildManagementModal from './modals/GuildManagementModal.vue'
 import { useGuildStore } from '@/stores/guildStore'
 import { useFeedbackStore } from '@/stores/feedbackStore'
 import CompletionBadge from './ui/CompletionBadge.vue'
+import { usesLevels, getCharacterLevel } from '@/domain'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import { useCharacterActions } from '@/composables/useCharacterActions'
 import { useOnboardingTour } from '@/composables/useOnboardingTour'
@@ -78,6 +79,16 @@ function handleMoreAction(action: () => void) {
 function reopenGuide() {
   closeMorePopover()
   store.openCreationGuide()
+}
+
+/** Switch between Renown Tiers and plain levels (for one-shots and regular games). */
+function toggleProgressionMode() {
+  closeMorePopover()
+  const toLevels = !usesLevels(store.currentCharacterData)
+  const message = toLevels
+    ? 'Use character levels instead of Renown Tiers? Your current level is kept, and Renown progress is hidden.'
+    : 'Go back to Renown Tiers? Your level is mapped to the nearest tier.'
+  if (window.confirm(message)) store.setProgressionMode(toLevels ? 'level' : 'renown')
 }
 
 /** Close the popover and replay the guided tour. */
@@ -167,8 +178,12 @@ function confirmShare() {
           </optgroup>
         </select>
         <p class="font-label-md text-label-md text-on-surface-variant mt-1">
-          Tier {{ store.currentCharacterData.renownTier || 1 }}
-          {{ store.currentCharacterData.class || 'Aspirant' }}
+          {{
+            usesLevels(store.currentCharacterData)
+              ? `Level ${getCharacterLevel(store.currentCharacterData)}`
+              : `Tier ${store.currentCharacterData.renownTier || 1}`
+          }}
+          {{ store.currentCharacterData.class || (usesLevels(store.currentCharacterData) ? 'Adventurer' : 'Aspirant') }}
         </p>
       </div>
     </div>
@@ -394,6 +409,16 @@ function confirmShare() {
               >
                 <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">tour</span>
                 Restart Tour
+              </button>
+
+              <button
+                @click="toggleProgressionMode"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant font-label-md text-sm hover:bg-surface-variant active:scale-[0.98] transition-all duration-150 ease-out select-none w-full text-left"
+                title="Progression mode"
+                role="menuitem"
+              >
+                <span class="material-symbols-outlined text-[1.125rem]" aria-hidden="true">trending_up</span>
+                {{ usesLevels(store.currentCharacterData) ? 'Use Renown Tiers' : 'Use character levels' }}
               </button>
               </template>
             </div>

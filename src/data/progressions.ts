@@ -12,6 +12,12 @@ export const TIER_TO_LEVEL: Record<number, number> = {
   3: 10,
 }
 
+/** Lowest character level at which each Renown Tier's features unlock (level-mode characters). */
+export const TIER_MIN_LEVEL: Record<number, number> = {
+  ...TIER_TO_LEVEL,
+  4: 14,
+}
+
 export const PROFICIENCY_BONUS_PROGRESSION: Record<number, number> = {
   1: 2,
   5: 3,

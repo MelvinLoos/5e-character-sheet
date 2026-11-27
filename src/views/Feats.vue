@@ -49,7 +49,7 @@ const activeFeatureChoice = ref<FeatureChoice | null>(null)
 const eligibleFeatureChoices = computed<FeatureChoice[]>(() => {
   return eligibleFeatureChoicesHelper(
     store.currentCharacterData?.class,
-    store.currentCharacterData?.renownTier,
+    store.currentCharacterData,
   )
 })
 
@@ -59,7 +59,7 @@ function currentFeatureChoiceSelections(choiceId: string): string[] {
 
 /** Compute the effective max count for a feature choice, accounting for tier scaling. */
 function effectiveMaxCountForChoice(fc: FeatureChoice): number {
-  return effectiveMaxCountForChoiceHelper(fc, store.currentCharacterData?.renownTier)
+  return effectiveMaxCountForChoiceHelper(fc, store.currentCharacterData)
 }
 
 function openFeatureChoiceModal(choice: FeatureChoice) {

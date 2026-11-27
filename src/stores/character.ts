@@ -6,7 +6,8 @@ import {
   createBlankCharacter,
   getMod,
   hasSpellcasting,
-  getEffectiveLevel,
+  getCharacterLevel,
+  getCharacterTier,
   getSpellcastingAbility,
 } from '@/domain'
 import type { CharacterData, RestContext } from '@/domain'
@@ -410,7 +411,11 @@ export const useCharacterStore = defineStore('character', () => {
 
         // Recalculate derived stats when level changes (ensures profBonus, HP, spell slots, etc. update)
         watch(
-          () => currentCharacterData.value?.renownTier,
+          () => [
+            currentCharacterData.value?.renownTier,
+            currentCharacterData.value?.progressionMode,
+            currentCharacterData.value?.level,
+          ],
           () => {
             recalculateAbilityScores()
           },
@@ -551,7 +556,7 @@ export const useCharacterStore = defineStore('character', () => {
     const classData = data.class ? DND_RULES.CLASSES[data.class] : undefined
     if (classData) {
       const conMod = getMod(data.abilityScores.con ?? 10)
-      const level = getEffectiveLevel(data.renownTier || 1)
+      const level = getCharacterLevel(data)
       let newHp = classData.hitDice + conMod
       if (level > 1) {
         const hpGainPerLevel = classData.hitDiceAverage + conMod
@@ -654,11 +659,28 @@ export const useCharacterStore = defineStore('character', () => {
   })
 
   /**
+   * Switch the character between Renown Tiers and plain character levels,
+   * seeding the new value from the old one so the effective level is unchanged.
+   */
+  function setProgressionMode(mode: 'renown' | 'level'): void {
+    const char = currentCharacterData.value
+    if (!char || (char.progressionMode ?? 'renown') === mode) return
+    if (mode === 'level') {
+      char.level = getCharacterLevel(char)
+    } else {
+      char.renownTier = Math.max(1, getCharacterTier(char))
+      char.renownMilestones = 0
+    }
+    char.progressionMode = mode
+    currentCharacterData.value = applyAllChanges(char)
+  }
+
+  /**
    * Apply a feature choice selection: set the selected option IDs for a given
    * choice ID, validate against the class's featureChoices rule and catalog,
    * persist to the character's featureChoices record, and re-run calculations.
    *
-   * Mirrors `applySubChoice`. Enforces count (resolved via `getEffectiveLevel`
+   * Mirrors `applySubChoice`. Enforces count (resolved via `getCharacterLevel`
    * with tier scaling) and prerequisites.
    */
   function applyFeatureChoice(choiceId: string, optionIds: string[]): void {
@@ -674,9 +696,8 @@ export const useCharacterStore = defineStore('character', () => {
     if (!choice) return
 
     // Resolve max count via the shared feature-choice rules helper.
-    const tier = char.renownTier || 1
-    const level = getEffectiveLevel(tier)
-    const maxCount = effectiveMaxCountForChoice(choice, tier)
+    const level = getCharacterLevel(char)
+    const maxCount = effectiveMaxCountForChoice(choice, char)
 
     if (optionIds.length > maxCount) {
       // Truncate to the maximum allowed count
@@ -898,6 +919,7 @@ export const useCharacterStore = defineStore('character', () => {
     applySpeciesChange,
     applySubChoice,
     applyFeatureChoice,
+    setProgressionMode,
     applyBonusSelectionChange,
     recalculateAll,
     buildRestContext,
