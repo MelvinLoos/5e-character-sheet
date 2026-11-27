@@ -120,8 +120,20 @@ describe('MCP handler', () => {
   })
 
   it('rejects unknown fields via the schema', async () => {
-    const r = await tool('validate_character', { character: { ...wizard, level: 20 } })
+    const r = await tool('validate_character', { character: { ...wizard, bogus: 20 } })
     expect(r.isError).toBe(true)
+  })
+
+  it('builds a level-mode character on request and defaults to Renown', async () => {
+    const lvl = await tool('validate_character', {
+      character: { ...wizard, progressionMode: 'level', level: 5 },
+    })
+    expect(lvl.isError).toBe(false)
+    expect(lvl.body.summary.effectiveLevel).toBe(5)
+    expect(lvl.body.summary.proficiencyBonus).toBe(3)
+
+    const renown = await tool('validate_character', { character: wizard })
+    expect(renown.body.summary.effectiveLevel).toBe(3)
   })
 
   it('applies starting equipment and demands choices', async () => {

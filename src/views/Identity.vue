@@ -2,6 +2,7 @@
 import { useCharacterStore } from '@/stores/character'
 import { useSpellStore } from '@/stores/spellStore'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
+import { usesLevels } from '@/domain'
 import AttacksList from '@/components/sheet/AttacksList.vue'
 
 const store = useCharacterStore()
@@ -61,7 +62,7 @@ const { badges } = useCharacterCompletion()
         <AttacksList />
       </section>
 
-      <RenownProgression class="lg:col-span-12" />
+      <RenownProgression v-if="!usesLevels(store.currentCharacterData)" class="lg:col-span-12" />
     </div>
   </div>
 </template>

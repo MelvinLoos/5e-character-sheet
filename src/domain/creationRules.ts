@@ -12,7 +12,8 @@
  */
 import * as DND_RULES from '@/data/rules'
 import { pointBuyCosts } from './characterService'
-import { getEffectiveLevel } from './rulesService'
+import { getCharacterLevel, getCharacterTier, usesLevels } from './rulesService'
+import type { ProgressionState } from './rulesService'
 import { eligibleFeatureChoices, effectiveMaxCountForChoice } from '@/utils/featureChoiceRules'
 import type { CharacterData } from '@/types/character'
 import type { FeatureChoice, FeatureChoiceOption } from '@/types/rules'
@@ -172,23 +173,23 @@ export function meetsOptionPrerequisite(
 }
 
 export function validateFeatureChoices(
-  character: Pick<CharacterData, 'class' | 'renownTier' | 'featureChoices'>,
+  character: Pick<CharacterData, 'class' | 'featureChoices'> & ProgressionState,
 ): string[] {
   const choices = character.featureChoices ?? {}
   if (!character.class) return []
-  const tier = character.renownTier || 1
-  const level = getEffectiveLevel(tier)
-  const eligible = eligibleFeatureChoices(character.class, tier)
+  const tier = getCharacterTier(character)
+  const level = getCharacterLevel(character)
+  const eligible = eligibleFeatureChoices(character.class, character)
   const errors: string[] = []
   for (const [choiceId, optionIds] of Object.entries(choices)) {
     const choice = eligible.find((c) => c.id === choiceId)
     if (!choice) {
       errors.push(
-        `Feature choice "${choiceId}" is not available to a tier ${tier} ${character.class}.`,
+        `Feature choice "${choiceId}" is not available to a ${usesLevels(character) ? `level ${level}` : `tier ${tier}`} ${character.class}.`,
       )
       continue
     }
-    const max = effectiveMaxCountForChoice(choice, tier)
+    const max = effectiveMaxCountForChoice(choice, character)
     if (optionIds.length > max) {
       errors.push(
         `Feature choice "${choiceId}" allows ${max} option(s); ${optionIds.length} given.`,
@@ -260,23 +261,23 @@ export const SUBCLASS_CHOICE_IDS: readonly string[] = [
   'wizard-school',
 ]
 
-/** The subclass choice a class offers at the given Renown Tier, or null. */
+/** The subclass choice a class offers at the given progression, or null. */
 export function subclassChoiceFor(
   className: string | null | undefined,
-  renownTier: number | null | undefined = 1,
+  progress: ProgressionState | null | undefined = { renownTier: 1 },
 ): FeatureChoice | null {
   if (!className) return null
   return (
-    eligibleFeatureChoices(className, renownTier).find((c) => SUBCLASS_CHOICE_IDS.includes(c.id)) ??
+    eligibleFeatureChoices(className, progress).find((c) => SUBCLASS_CHOICE_IDS.includes(c.id)) ??
     null
   )
 }
 
 /** A class that offers a subclass at the character's tier needs exactly one picked. */
 export function validateSubclass(
-  character: Pick<CharacterData, 'class' | 'renownTier' | 'featureChoices'>,
+  character: Pick<CharacterData, 'class' | 'featureChoices'> & ProgressionState,
 ): string[] {
-  const choice = subclassChoiceFor(character.class, character.renownTier)
+  const choice = subclassChoiceFor(character.class, character)
   if (!choice) return []
   const picked = character.featureChoices?.[choice.id] ?? []
   if (picked.length !== 1) return [`${character.class} must choose one ${choice.label}.`]

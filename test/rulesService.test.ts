@@ -5,7 +5,7 @@ import { CLASS_SPELLCASTING_ABILITY } from '@/data/classSpellcasting'
 
 describe('getEffectiveLevel — Tier → Level mapping', () => {
   it('contains the correct constant mappings', () => {
-    expect(TIER_TO_LEVEL).toEqual({ 1: 3, 2: 6, 3: 10 })
+    expect(TIER_TO_LEVEL).toEqual({ 1: 3, 2: 6, 3: 10, 4: 14 })
   })
 
   it('maps Tier 1 to effective level 3', () => {
@@ -25,8 +25,8 @@ describe('getEffectiveLevel — Tier → Level mapping', () => {
       expect(getEffectiveLevel(0)).toBe(3)
     })
 
-    it('defaults to 3 for Tier 4 (Paragon — max tier)', () => {
-      expect(getEffectiveLevel(4)).toBe(3)
+    it('maps Tier 4 (Paragon — max tier) to level 14', () => {
+      expect(getEffectiveLevel(4)).toBe(14)
     })
 
     it('defaults to 3 for negative tiers', () => {

@@ -10,6 +10,7 @@ export const TIER_TO_LEVEL: Record<number, number> = {
   1: 3,
   2: 6,
   3: 10,
+  4: 14,
 }
 
 export const PROFICIENCY_BONUS_PROGRESSION: Record<number, number> = {
@@ -194,7 +195,7 @@ export const SPELL_SLOT_PROGRESSION: Record<string, SpellSlotsByLevel> = {
  * uses a fixed level-keyed count (not an ability-modifier formula), and cantrips
  * are tracked separately so they never count against this limit.
  *
- * At the Renown Tiers used by this app (`TIER_TO_LEVEL`: 1→3, 2→6, 3→10) the
+ * At the Renown Tiers used by this app (`TIER_TO_LEVEL`: 1→3, 2→6, 3→10, 4→14) the
  * limits are: Bard/Sorcerer/Wizard/Cleric/Druid 6/10/15, Warlock 4/7/10, and
  * Paladin/Ranger 4/6/9.
  */

@@ -368,6 +368,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Martial Archetype',
         description: 'You choose a Martial Archetype that defines your combat style. Your choice grants you features at level 3, and again at levels 7, 10, 15, and 18.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'champion',
@@ -472,6 +473,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Monastic Tradition',
         description: 'You choose a Monastic Tradition that defines your martial arts practice. Your choice grants you features at level 3, and again at levels 6, 11, and 17.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'warrior-of-the-open-hand',
@@ -564,6 +566,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Sacred Oath',
         description: 'You swear a Sacred Oath that defines your code of conduct and grants you features at level 3, and again at levels 7, 15, and 20.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'oath-of-devotion',
@@ -645,6 +648,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Ranger Conclave',
         description: 'You choose a Ranger Conclave that embodies your ideals and grants you features at level 3, and again at levels 7, 11, and 15.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'hunter',
@@ -730,6 +734,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Rogue Subclass',
         description: 'Choose a Rogue subclass. Your choice grants you features at Rogue level 3 and again at levels 9, 13, and 17.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'thief',
@@ -763,6 +768,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Sorcerer Origin',
         description: 'Choose a sorcerer origin that describes the source of your innate magical power. Your choice grants you features at Sorcerer level 3 and again at levels 6, 14, and 18.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'draconic-sorcery',
@@ -813,8 +819,8 @@ export const CLASSES: Record<string, ClassData> = {
       {
         id: 'eldritch-invocations',
         label: 'Eldritch Invocations',
-        description: "Choose from the invocations below to customize your Warlock's magical abilities. You may select the indicated number of invocations at your current tier.",
-        count: { 3: 3, 6: 5, 10: 7 },
+        description: "Choose from the invocations below to customize your Warlock's magical abilities. You may select the indicated number of invocations at your current level.",
+        count: { 1: 1, 2: 3, 5: 5, 7: 6, 9: 7, 12: 8, 15: 9, 18: 10 },
         options: [
           {
             id: 'agonizing-blast',
@@ -906,6 +912,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Warlock Subclass',
         description: 'Choose a Warlock subclass that defines your patron. Your choice grants you features at Warlock level 3 and again at levels 6, 10, and 14.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'fiend-patron',
@@ -945,6 +952,7 @@ export const CLASSES: Record<string, ClassData> = {
         label: 'Arcane School',
         description: 'Choose a school of magic. Your choice grants you features at Wizard level 3 and again at levels 6, 10, and 14.',
         count: 1,
+        minLevel: 3,
         options: [
           {
             id: 'evoker',

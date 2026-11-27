@@ -8,7 +8,7 @@ import {
   computeSpellSlots,
   computePreparedSpellLimit,
   hasSpellcasting,
-  getEffectiveLevel,
+  getCharacterLevel,
   getSpellcastingAbility,
 } from '@/domain'
 import { applyBackgroundBonuses } from '@/utils/characterMutations'
@@ -33,8 +33,7 @@ export const useProgressionStore = defineStore('progression', () => {
 
   const derivedLevel = computed(() => {
     if (!characterStore.currentCharacterData) return 3
-    const tier = characterStore.currentCharacterData.renownTier || 1
-    return getEffectiveLevel(tier)
+    return getCharacterLevel(characterStore.currentCharacterData)
   })
 
   const profBonus = computed(() => {

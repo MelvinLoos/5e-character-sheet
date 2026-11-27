@@ -28,6 +28,7 @@ interface PreviewInfo {
   species: string
   background: string
   renownTier: number | null
+  level: number | null
   featureCount: number
   spellCount: number
 }
@@ -105,6 +106,8 @@ async function loadPreview(file: File) {
       species: typeof data.species === 'string' ? data.species : '—',
       background: typeof data.background === 'string' ? data.background : '—',
       renownTier: typeof data.renownTier === 'number' ? data.renownTier : null,
+      level:
+        data.progressionMode === 'level' && typeof data.level === 'number' ? data.level : null,
       featureCount: Array.isArray(data.features) ? data.features.length : 0,
       spellCount: Array.isArray(data.spells) ? data.spells.length : 0,
     }
@@ -220,7 +223,11 @@ async function confirmImport() {
               <dd class="text-on-surface text-right">{{ preview.species }}</dd>
               <dt class="text-on-surface-variant">Background</dt>
               <dd class="text-on-surface text-right">{{ preview.background }}</dd>
-              <template v-if="preview.renownTier !== null">
+              <template v-if="preview.level !== null">
+                <dt class="text-on-surface-variant">Level</dt>
+                <dd class="text-on-surface text-right">{{ preview.level }}</dd>
+              </template>
+              <template v-else-if="preview.renownTier !== null">
                 <dt class="text-on-surface-variant">Renown Tier</dt>
                 <dd class="text-on-surface text-right">{{ preview.renownTier }}</dd>
               </template>

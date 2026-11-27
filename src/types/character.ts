@@ -221,6 +221,10 @@ export interface CharacterData {
   class: string | null
   renownTier: number
   renownMilestones: number
+  /** How the character progresses. Absent means 'renown'. */
+  progressionMode?: 'renown' | 'level'
+  /** Character level 1-20; only used when progressionMode is 'level'. */
+  level?: number
   species: string | null
   /** Selected sub-choice ID (e.g. "high-elf") for species with lineages/ancestries/legacies. */
   subChoice?: string | null

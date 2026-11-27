@@ -25,11 +25,10 @@ export type CompletionBadge =
  * feature choices (Fighting Style, Eldritch Invocations, …).
  */
 function remainingFeatureSelections(char: CharacterData): number {
-  const tier = char.renownTier ?? 1
   let remaining = 0
-  for (const choice of eligibleFeatureChoices(char.class, tier)) {
+  for (const choice of eligibleFeatureChoices(char.class, char)) {
     const selected = char.featureChoices?.[choice.id] ?? []
-    remaining += Math.max(0, effectiveMaxCountForChoice(choice, tier) - selected.length)
+    remaining += Math.max(0, effectiveMaxCountForChoice(choice, char) - selected.length)
   }
   return remaining
 }

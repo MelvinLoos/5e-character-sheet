@@ -15,6 +15,8 @@ export interface RulesFeature {
   uses?: { total: number; per: string }
   /** Minimum Renown Tier (1-3) required before this trait is gained. */
   minTier?: number
+  /** Minimum character level in level mode; defaults to the level equivalent of `minTier`. */
+  minLevel?: number
 }
 
 /** A sub-choice within a species: lineages (Elf), ancestries (Goliath), legacies (Tiefling). */
@@ -71,6 +73,8 @@ export interface FeatureChoice {
   options?: FeatureChoiceOption[]
   /** Minimum Renown Tier (1-3) required before this choice is available. */
   minTier?: number
+  /** Minimum character level in level mode; defaults to the level equivalent of `minTier`. */
+  minLevel?: number
 }
 
 /**

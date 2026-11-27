@@ -9,6 +9,7 @@ import ElevatedCard from '@/components/ui/ElevatedCard.vue'
 import SubChoiceModal from '@/components/modals/SubChoiceModal.vue'
 import decorativeBackdrop from '@/assets/decorative-backdrop.png'
 import { useSelectionChange } from '@/composables/useSelectionChange'
+import { getCharacterLevel, usesLevels, MAX_CHARACTER_LEVEL } from '@/domain'
 
 const store = useCharacterStore()
 
@@ -64,6 +65,21 @@ function onSubChoiceModalClose() {
 function openSubChoiceModal() {
   if (currentSpeciesHasSubChoices.value) {
     isSubChoiceModalOpen.value = true
+  }
+}
+
+function decrementLevel() {
+  if (store.currentCharacterData) {
+    store.currentCharacterData.level = Math.max(1, getCharacterLevel(store.currentCharacterData) - 1)
+  }
+}
+
+function incrementLevel() {
+  if (store.currentCharacterData) {
+    store.currentCharacterData.level = Math.min(
+      MAX_CHARACTER_LEVEL,
+      getCharacterLevel(store.currentCharacterData) + 1,
+    )
   }
 }
 
@@ -132,6 +148,43 @@ function incrementTier() {
         </div>
 
         <div class="flex flex-wrap md:flex-nowrap gap-4 w-full md:w-auto">
+          <!-- Level (only for characters using levels instead of Renown) -->
+          <div v-if="usesLevels(store.currentCharacterData)" class="flex-1 min-w-[100px]">
+            <label class="block font-label-md text-label-md text-on-surface-variant mb-1 select-none">Level</label>
+            <div
+              v-if="store.isEditing"
+              class="flex items-center w-full bg-surface-container-high border border-outline-variant rounded focus-within:border-tertiary focus-within:ring-1 focus-within:ring-tertiary"
+            >
+              <button
+                @click="decrementLevel"
+                class="px-2 py-2 text-on-surface hover:text-tertiary"
+                type="button"
+              >
+                −
+              </button>
+              <input
+                v-model.number="store.currentCharacterData.level"
+                type="number"
+                min="1"
+                max="20"
+                class="w-full bg-transparent border-none text-center font-body-md text-on-surface p-2 focus:ring-0"
+              />
+              <button
+                @click="incrementLevel"
+                class="px-2 py-2 text-on-surface hover:text-tertiary"
+                type="button"
+              >
+                +
+              </button>
+            </div>
+            <div
+              v-else
+              class="w-full bg-surface-container-high border border-outline-variant rounded p-2 text-on-surface font-body-md text-center select-none"
+            >
+              {{ getCharacterLevel(store.currentCharacterData) }}
+            </div>
+          </div>
+
           <!-- Tier & Experience (hidden for now) -->
           <div class="flex-1 min-w-[100px] hidden">
             <label class="block font-label-md text-label-md text-on-surface-variant mb-1 select-none">Tier<InfoButton topic="great-work-progression" /></label>

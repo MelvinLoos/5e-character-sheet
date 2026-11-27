@@ -51,7 +51,7 @@ const picked = ref({ species: reopened, class: reopened, background: reopened })
 const { confirmSelectionChange } = useSelectionChange()
 
 const subclassChoice = computed(() =>
-  picked.value.class ? subclassChoiceFor(char.value.class, char.value.renownTier) : null,
+  picked.value.class ? subclassChoiceFor(char.value.class, char.value) : null,
 )
 
 const hasSkillStep = computed(() => !!classSkillOptions.value)

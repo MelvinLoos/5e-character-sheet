@@ -251,7 +251,7 @@ describe('CLASSES dictionary', () => {
       const invocations = choices?.find((c) => c.id === 'eldritch-invocations')
       expect(invocations).toBeDefined()
       expect(invocations?.label).toBe('Eldritch Invocations')
-      expect(invocations?.count).toEqual({ 3: 3, 6: 5, 10: 7 })
+      expect(invocations?.count).toEqual({ 1: 1, 2: 3, 5: 5, 7: 6, 9: 7, 12: 8, 15: 9, 18: 10 })
       expect(invocations?.options).toHaveLength(10)
     })
 

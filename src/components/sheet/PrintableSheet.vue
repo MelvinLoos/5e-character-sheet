@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useCharacterStore } from '@/stores/character'
+import { usesLevels, getCharacterLevel } from '@/domain'
 import { useProgressionStore } from '@/stores/progression'
 import { useSpellStore } from '@/stores/spellStore'
 import { useSpellcasting } from '@/composables/useSpellcasting'
@@ -190,8 +191,10 @@ function formatSpellLevel(level: number) {
         </div>
         <div class="text-right uppercase font-bold space-y-1">
           <div class="font-label-md text-label-md text-black">
-            Renown:
-            <span class="border-b-2 border-black px-2">{{ char.renownTier || 1 }}</span>
+            {{ usesLevels(char) ? 'Level' : 'Renown' }}:
+            <span class="border-b-2 border-black px-2">{{
+              usesLevels(char) ? getCharacterLevel(char) : char.renownTier || 1
+            }}</span>
           </div>
           <div class="font-label-md text-label-md text-black">
             Job:

@@ -1,5 +1,6 @@
 import * as DND_RULES from '@/data/rules'
-import { getEffectiveLevel } from '@/domain'
+import { getCharacterLevel, getCharacterTier, meetsProgressionGate } from '@/domain'
+import type { ProgressionState } from '@/domain'
 import type { FeatureChoice } from '@/types/rules'
 
 /**
@@ -13,36 +14,35 @@ import type { FeatureChoice } from '@/types/rules'
 
 /**
  * Returns the feature choices the character is eligible to make, given their
- * class and current Renown Tier. A choice is eligible when its `minTier` (if
- * any) is satisfied.
+ * class and progression (Renown Tier or level). A choice is eligible when its
+ * `minTier` / `minLevel` (if any) is satisfied.
  */
 export function eligibleFeatureChoices(
   charClass: string | null | undefined,
-  renownTier: number | null | undefined,
+  progress: ProgressionState | null | undefined,
 ): FeatureChoice[] {
   if (!charClass) return []
-  const tier = renownTier || 1
-  return (DND_RULES.CLASSES[charClass]?.featureChoices || []).filter(
-    (fc) => !fc.minTier || fc.minTier <= tier,
+  return (DND_RULES.CLASSES[charClass]?.featureChoices || []).filter((fc) =>
+    meetsProgressionGate(fc, progress),
   )
 }
 
 /**
  * Resolves the maximum number of options for a feature choice at the current
- * tier. Handles fixed counts, tier scaling (`scalesPerTier`), and level-keyed
+ * tier. Handles fixed counts, tier scaling (`scalesPerTier`, never below tier 1), and level-keyed
  * records (`count: Record<number, number>`).
  */
 export function effectiveMaxCountForChoice(
   fc: FeatureChoice,
-  renownTier: number | null | undefined,
+  progress: ProgressionState | null | undefined,
 ): number {
-  const tier = renownTier || 1
+  const tier = getCharacterTier(progress)
 
   if (typeof fc.count === 'number') {
-    return fc.scalesPerTier ? fc.count + (tier - 1) : fc.count
+    return fc.scalesPerTier ? fc.count + Math.max(0, tier - 1) : fc.count
   }
 
-  const level = getEffectiveLevel(tier)
+  const level = getCharacterLevel(progress)
   const levels = Object.keys(fc.count).map(Number).sort((a, b) => a - b)
   let max = levels[0] !== undefined ? (fc.count[levels[0]] ?? 0) : 0
   for (const lvl of levels) {
