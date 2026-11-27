@@ -32,7 +32,7 @@ const initial = computed(() => props.name.trim().charAt(0).toUpperCase())
     <img v-if="url" :src="url" alt="" loading="lazy" class="h-full w-full object-cover" />
     <div
       v-else-if="svg"
-      class="flex h-full w-full items-center justify-center [&>svg]:h-full [&>svg]:w-auto"
+      class="flex h-full w-full items-center justify-center [&>svg]:h-full [&>svg]:w-full"
       data-visual="emblem"
       v-html="svg"
     ></div>

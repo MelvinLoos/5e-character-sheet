@@ -459,9 +459,9 @@ export function buildOptionEmblemSvg(
     .replaceAll('url(#accentGrad)', `url(#accentGrad-${uid})`)
     .replaceAll('url(#metalGrad)', `url(#metalGrad-${uid})`)
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" class="h-full w-full" aria-hidden="true" focusable="false">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid meet" class="h-full w-full" aria-hidden="true" focusable="false">
   <defs>
-    <radialGradient id="bg-${uid}" cx="50%" cy="48%" r="65%">
+    <radialGradient id="bg-${uid}" gradientUnits="userSpaceOnUse" cx="100" cy="72" r="130" gradientTransform="translate(100 72) scale(1 0.75) translate(-100 -72)">
       <stop offset="0%" stop-color="${def.accentSoft}" stop-opacity="0.65" />
       <stop offset="100%" stop-color="#0f172a" stop-opacity="1" />
     </radialGradient>
@@ -475,7 +475,8 @@ export function buildOptionEmblemSvg(
       <stop offset="100%" stop-color="#475569" />
     </linearGradient>
   </defs>
-  <rect width="200" height="150" fill="url(#bg-${uid})" />
+  <!-- Oversized so the background fills any viewport; the 200x150 emblem stays centered and unstretched. -->
+  <rect x="-1000" y="-1000" width="2200" height="2150" fill="url(#bg-${uid})" />
   <circle cx="100" cy="75" r="58" fill="none" stroke="${def.accent}" stroke-opacity="0.16" stroke-width="1" />
   <circle cx="100" cy="75" r="52" fill="none" stroke="${def.accent}" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="3 5" />
   <g>${body}</g>

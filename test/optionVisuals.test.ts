@@ -23,6 +23,13 @@ describe('optionVisuals', () => {
     }
   })
 
+  it('keeps the emblem proportional while the background spans any width', () => {
+    const svg = getFallbackEmblemSvg('Wizard', 'class')!
+    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"')
+    expect(svg).toContain('gradientUnits="userSpaceOnUse"')
+    expect(svg).toMatch(/<rect x="-\d+" y="-\d+" width="\d{4,}"/)
+  })
+
   it('returns null for unknown classes', () => {
     expect(getFallbackEmblemSvg('Artificer', 'class')).toBeNull()
   })
