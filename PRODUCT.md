@@ -20,7 +20,7 @@ Create, manage, play and share 5e (2024) characters without an account. Characte
 
 What makes it different from D&D Beyond and other sheets:
 
-- **Guild-native:** guild homebrew spells and feats and Discord sign-in, built around Heroes Guild.
+- **Guild-native:** guild homebrew spells, feats and subclasses and Discord sign-in, built around Heroes Guild.
 - **Westmarches homebrew rules:** Renown replaces levelling (simpler progression for a massive, multiplayer, asynchronous campaign), and Supply and Influence are homebrew currencies that simplify resource tracking. They are core rules for every character, not guild content, and always shown.
 - **Agent and AI creation:** Gemini generates characters from a prompt, and a hosted MCP server lets external agents (Claude, ChatGPT and others) build, check and save characters in conversation. All of it is validated against the same creation rules.
 - **Free and local-first:** no account is required, characters stay on the device unless shared, and the code is open source (MIT).
@@ -32,7 +32,7 @@ What makes it different from D&D Beyond and other sheets:
 - Desktop or home: character creation, point buy, starting equipment, and choosing features, feats and spells.
 - Print: an A4 sheet with a share QR code (`docs/screenshots/printed-share-qr.png`).
 - Sharing: Supabase-backed `?id=` links, and Save to library from a shared link.
-- Data: JSON import and export validated against `public/character-schema.json`, plus 5e.tools spell and feat imports into the compendium.
+- Data: JSON import and export validated against `public/character-schema.json`, plus 5e.tools spell and feat imports and custom subclass imports (`public/subclass-schema.json`) into the compendium.
 - Guild: Discord sign-in, guild selector, synced guild homebrew content, and an OAuth consent page (`/oauth/consent`) for agents.
 - Feedback: an in-app widget that posts to a Discord forum channel.
 
@@ -55,7 +55,7 @@ What makes it different from D&D Beyond and other sheets:
 
 ## Evidence on Hand
 
-- JSON schemas in `public/`: `character-schema.json`, `llm-character-schema.json`, `schema.json`, `gemini-schema.json`.
+- JSON schemas in `public/`: `character-schema.json`, `llm-character-schema.json`, `schema.json`, `gemini-schema.json`, `subclass-schema.json`.
 - A printed share sheet with QR code: `docs/screenshots/printed-share-qr.png`.
 - None of these exist, and none should be made up: testimonials, user or character counts, community metrics, endorsements from the guild or Wizards of the Coast.
 
@@ -63,7 +63,7 @@ What makes it different from D&D Beyond and other sheets:
 
 1. **Rules-correct by construction.** Every path into a character (manual, AI, MCP agent, import) is checked against the same creation rules.
 2. **Playable at the table.** In-play use on a phone, and on paper, comes before builder polish.
-3. **Guild-first, never guild-only.** Guild content (homebrew spells, feats, Discord sign-in) adds on top of the base product, and the base product works for any 5e player without an account.
+3. **Guild-first, never guild-only.** Guild content (homebrew spells, feats, subclasses, Discord sign-in) adds on top of the base product, and the base product works for any 5e player without an account.
 4. **Your character is yours.** It's local-first, accounts are optional, and import and export are open and schema-validated.
 
 ## Accessibility & Inclusion

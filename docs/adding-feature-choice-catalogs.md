@@ -101,6 +101,15 @@ The pipeline works as follows:
 
 No UI changes are needed if the choice catalog uses the standard `featureChoices` pattern — the system handles trait rendering through the existing `FeaturesList` component.
 
+#### Imported and guild subclasses
+
+Players and guild admins can add subclasses at runtime (see `public/subclass-schema.json`). These are not written into `CLASSES`. Instead, `src/domain/customSubclasses.ts` merges them into the class's subclass choice as extra options (ids `custom-<class>-<name>`):
+
+- Read a class's choices through **`classFeatureChoices(className)`** (or `allClassFeatureChoices()` when you need every class), never `DND_RULES.CLASSES[x].featureChoices` directly, so custom options are included. `eligibleFeatureChoices`, `applyFeatureChoice(s)`, `featureGroup` and the MCP catalog already do.
+- The app registers the rules store as the source with `setCustomSubclassSource(...)` in `src/main.ts`. The MCP server has no Pinia, so it scopes guild subclasses per request with `withCustomSubclasses(list, fn)` (`fn` must be synchronous).
+- A feature's `level` maps to `minLevel`, and to the highest `minTier` whose level it reaches (`tierForLevel`), matching the built-in subclass data.
+- New subclass choice ids must be added to `SUBCLASS_CHOICE_IDS` in the same file for imports to attach to them.
+
 ### 7. Testing
 
 Add unit tests in `test/feature-choices-mutation.test.ts`:

@@ -109,7 +109,7 @@ When the Supabase variables are unset the app still runs; online sharing is disa
 
 - **Share** publishes the character through a Supabase-backed link.
 - **Export JSON** and **Import Character** round-trip characters through schema validation; imports are migrated and saved to the library.
-- **Import Data** adds 5e.tools spell and feat JSON to the rules compendium.
+- **Import Data** adds 5e.tools spell and feat JSON, and custom subclasses ([`subclass-schema.json`](public/subclass-schema.json)), to the rules compendium. An imported subclass appears as an extra option on its class's subclass choice, with its features unlocking by level (or by the matching Renown tier).
 - Changes are auto-saved to browser storage.
 
 ### JSON schemas and LLM authoring
@@ -121,8 +121,11 @@ The app ships these schemas in `public/`:
 | `character-schema.json` | Full persisted character shape. Accepts derived fields so exported characters round-trip losslessly. Used to validate imports. |
 | `llm-character-schema.json` | Self-contained authoring schema with exhaustive enums. Provide it to an LLM to generate valid character JSON. |
 | `schema.json`, `gemini-schema.json` | Sparse input schemas used by the built-in AI generator. |
+| `subclass-schema.json` | Authoring schema for custom subclasses (`parentClass` plus features by level). Used by **Import Data → Subclasses** and the guild management **Subclasses** tab. |
 
 To author a character with an LLM, provide it with `public/llm-character-schema.json` and a prompt such as *"Create a level-3 elven wizard named Elara using this schema."* Save the returned JSON and load it via **Import Character**.
+
+Custom subclasses work the same way: give an LLM `public/subclass-schema.json` and a prompt such as *"Write a Fighter subclass called Blade Dancer with features at levels 3, 7, 10 and 15 using this schema."* Load the result via **Import Data → Subclasses**. Parent classes must be one of the 12 core classes, and the subclass name and feature names must not reuse built-in ones.
 
 ## Create characters with an AI agent (MCP)
 
@@ -140,9 +143,9 @@ Claude and ChatGPT: add it as a custom connector with the same URL.
 | `get_option_details` | Features, skill choices, sub-choices and starting equipment for one option. |
 | `validate_character` | Check a draft against `llm-character-schema.json` and the creation rules (27-point buy, background +2/+1, skill limits, sub-choices, feature choices) without saving. |
 | `create_character` | Validate, save, and return a share link (`?id=`). Open it and use **More actions → Save to library**. |
-| `list_guilds`, `search_guild_spells`, `search_guild_feats` | Homebrew spells and feats from the owner's guilds (`MCP_OWNER_GUILD_IDS`). |
+| `list_guilds`, `search_guild_spells`, `search_guild_feats`, `search_guild_subclasses` | Homebrew spells, feats and subclasses from the owner's guilds (`MCP_OWNER_GUILD_IDS`). |
 
-**Guild content.** The three guild tools read homebrew spells and feats only for the guild ids in `MCP_OWNER_GUILD_IDS`; with that list empty they return nothing. Characters saved on a device never leave it.
+**Guild content.** The guild tools read homebrew spells, feats and subclasses only for the guild ids in `MCP_OWNER_GUILD_IDS`; with that list empty they return nothing. Guild subclasses also appear as options on the class's subclass choice in `get_option_details`, and `validate_character`/`create_character` accept their `custom-<class>-<name>` ids. Subclasses imported locally in the browser are not visible to the MCP server. Characters saved on a device never leave it.
 
 Spells on a character are free-form and not checked against a catalog. The server uses a server-side Supabase client (`SUPABASE_SERVICE_ROLE_KEY`) and saves characters into the same `characters` table as the share button, with `user_id` set to `MCP_OWNER_USER_ID`. The handler is prebuilt from `src/mcp/` by `npm run build:mcp` (part of `npm run build`); to try it locally, run `npm run build:mcp && npm run netlify`.
 
