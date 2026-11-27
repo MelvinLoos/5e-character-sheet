@@ -44,3 +44,4 @@ export type SessionKey = typeof SESSION_KEYS[keyof typeof SESSION_KEYS];
  */
 export const GUILD_SPELLS_CACHE_PREFIX = 'guild_spells_cache';
 export const GUILD_FEATS_CACHE_PREFIX = 'guild_feats_cache';
+export const GUILD_SUBCLASSES_CACHE_PREFIX = 'guild_subclasses_cache';

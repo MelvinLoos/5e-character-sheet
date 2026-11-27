@@ -390,6 +390,79 @@ describe('guildContentSyncStore', () => {
     })
   })
 
+  describe('guild subclasses', () => {
+    const subclassData = {
+      name: 'Blade Dancer',
+      parentClass: 'fighter',
+      features: [{ name: 'Whirl', level: 3, description: 'Spin.' }],
+    }
+    const subclassRow = (data: unknown, id = 'sub-1') => ({
+      id,
+      guild_id: 'guild-123',
+      created_by: 'user-1',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-01-01T00:00:00Z',
+      data,
+    })
+
+    it('fetches, canonicalises and caches valid subclasses, dropping invalid rows', async () => {
+      hoisted.mockSupabaseEq
+        .mockResolvedValueOnce({ data: [], error: null })
+        .mockResolvedValueOnce({ data: [], error: null })
+        .mockResolvedValueOnce({
+          data: [
+            subclassRow(subclassData),
+            subclassRow({ ...subclassData, name: 'Champion' }, 'sub-2'), // built-in name
+            subclassRow(null, 'sub-3'),
+          ],
+          error: null,
+        })
+
+      const store = useGuildContentSyncStore()
+      const rulesStore = useRulesStore()
+      await store.syncGuildContent('guild-123')
+
+      expect(hoisted.mockSupabaseFrom).toHaveBeenCalledWith('guild_subclasses')
+      expect(rulesStore.guildSubclasses).toHaveLength(1)
+      expect(rulesStore.guildSubclasses[0]).toMatchObject({
+        name: 'Blade Dancer',
+        parentClass: 'Fighter',
+        _id: 'sub-1',
+        _guild_id: 'guild-123',
+      })
+      const cached = hoisted.mockSet.mock.calls.find(
+        (c: unknown[]) => c[0] === 'guild_subclasses_cache:guild-123',
+      )?.[1]
+      expect(cached).toHaveLength(1)
+    })
+
+    it('falls back to the cache on failure and re-validates cached entries', async () => {
+      hoisted.mockSupabaseEq.mockRejectedValue(new Error('Network error'))
+      hoisted.mockGet.mockImplementation(async (key: string) =>
+        key === 'guild_subclasses_cache:guild-123'
+          ? [{ ...subclassData, parentClass: 'Fighter' }, { name: 'Broken' }]
+          : [],
+      )
+
+      const store = useGuildContentSyncStore()
+      const rulesStore = useRulesStore()
+      await store.syncGuildContent('guild-123')
+
+      expect(rulesStore.guildSubclasses.map((s) => s.name)).toEqual(['Blade Dancer'])
+    })
+
+    it('stripGuildContent clears guild subclasses but not the base layer', () => {
+      const rulesStore = useRulesStore()
+      rulesStore.baseSubclasses = [subclassData as never]
+      rulesStore.guildSubclasses = [subclassData as never]
+
+      useGuildContentSyncStore().stripGuildContent()
+
+      expect(rulesStore.guildSubclasses).toEqual([])
+      expect(rulesStore.baseSubclasses).toHaveLength(1)
+    })
+  })
+
   describe('stripGuildContent', () => {
     it('clears guild content from rulesStore', () => {
       const rulesStore = useRulesStore()

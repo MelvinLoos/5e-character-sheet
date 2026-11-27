@@ -11,12 +11,16 @@ import {
   normalizeGuildSpell,
   isValidGuildFeat,
   normalizeGuildFeat,
+  isValidGuildSubclass,
+  normalizeGuildSubclass,
 } from '@/utils/guildContentValidator'
 import {
   GUILD_SPELLS_CACHE_PREFIX,
   GUILD_FEATS_CACHE_PREFIX,
+  GUILD_SUBCLASSES_CACHE_PREFIX,
 } from '@/constants/storage-keys'
-import type { GuildSpell, GuildFeat } from '@/types/supabase'
+import type { GuildSpell, GuildFeat, GuildSubclass } from '@/types/supabase'
+import type { SubclassImport } from '@/types/rules'
 
 function makeCacheKey(prefix: string, guildId: string): string {
   return `${prefix}:${guildId}`
@@ -128,6 +132,53 @@ export const useGuildContentSyncStore = defineStore('guildContentSync', () => {
   }
 
   /**
+   * Fetch guild subclasses from Supabase, validate, and normalize.
+   * Falls back to the IndexedDB cache (re-validated) on failure.
+   */
+  async function fetchAndProcessGuildSubclasses(guildId: string): Promise<SubclassImport[]> {
+    const fromCache = async () =>
+      (await loadFromCache(GUILD_SUBCLASSES_CACHE_PREFIX, guildId)).filter(
+        isValidGuildSubclass,
+      ) as SubclassImport[]
+    const client = getSupabaseClient()
+
+    if (!client) {
+      logger.warn('Supabase client unavailable — cannot fetch guild subclasses')
+      return fromCache()
+    }
+
+    try {
+      const { data, error: queryError } = await client
+        .from('guild_subclasses')
+        .select('data,id,guild_id,created_by,created_at,updated_at')
+        .eq('guild_id', guildId)
+
+      if (queryError) {
+        logger.error('Failed to fetch guild subclasses:', queryError.message)
+        return fromCache()
+      }
+
+      const validated: SubclassImport[] = []
+      for (const row of (data || []) as GuildSubclass[]) {
+        if (isValidGuildSubclass(row.data)) {
+          validated.push({
+            ...normalizeGuildSubclass(row.data),
+            _id: row.id,
+            _guild_id: row.guild_id,
+          } as SubclassImport)
+        }
+      }
+
+      await set(makeCacheKey(GUILD_SUBCLASSES_CACHE_PREFIX, guildId), validated)
+
+      return validated
+    } catch (e) {
+      logger.warn('Error fetching guild subclasses, falling back to cache:', (e as Error).message)
+      return fromCache()
+    }
+  }
+
+  /**
    * Attempt to load guild content from IndexedDB cache.
    * Returns an empty array if nothing is cached.
    */
@@ -144,7 +195,7 @@ export const useGuildContentSyncStore = defineStore('guildContentSync', () => {
   }
 
   /**
-   * Full sync: fetch spells and feats for the given guild, inject into rulesStore.
+   * Full sync: fetch spells, feats and subclasses for the given guild, inject into rulesStore.
    * Handles both data fetching, validation, injection, and caching.
    */
   async function syncGuildContent(guildId: string): Promise<void> {
@@ -152,13 +203,15 @@ export const useGuildContentSyncStore = defineStore('guildContentSync', () => {
     error.value = null
 
     try {
-      const [spells, feats] = await Promise.all([
+      const [spells, feats, subclasses] = await Promise.all([
         fetchAndProcessGuildSpells(guildId),
         fetchAndProcessGuildFeats(guildId),
+        fetchAndProcessGuildSubclasses(guildId),
       ])
 
       rulesStore.injectGuildSpells(spells)
       rulesStore.injectGuildFeats(feats)
+      rulesStore.injectGuildSubclasses(subclasses)
 
       lastSyncedGuildId.value = guildId
     } catch (e) {
