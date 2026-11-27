@@ -8,6 +8,7 @@
 import type { CharacterSpell, CharacterFeature } from '@/types/character'
 import type { SubclassImport } from '@/types/rules'
 import { parseSubclass } from '@/utils/subclassParser'
+import { sanitizeAbilityIncrease, parseFiveToolsAbility } from '@/domain/abilityIncreases'
 import { logger } from '@/utils/logger'
 import { legacyHtmlToMarkdown } from '@/utils/markdown'
 
@@ -94,7 +95,18 @@ export function normalizeGuildFeat(raw: Record<string, unknown>): CharacterFeatu
     prerequisite: typeof raw.prerequisite === 'string' ? raw.prerequisite : undefined,
     grantsSpells: typeof raw.grantsSpells === 'boolean' ? raw.grantsSpells : undefined,
     grantedSpellLevels: Array.isArray(raw.grantedSpellLevels) ? raw.grantedSpellLevels as number[] : undefined,
+    abilityModifiers: normalizeAbilityModifiers(raw.abilityModifiers),
+    // Structured form wins; a raw 5e.tools `ability` array is accepted for single-add JSON.
+    abilityIncrease: sanitizeAbilityIncrease(raw.abilityIncrease) ?? parseFiveToolsAbility(raw.ability),
   }
+}
+
+function normalizeAbilityModifiers(raw: unknown): Record<string, number> | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const out = Object.fromEntries(
+    Object.entries(raw).filter(([, v]) => typeof v === 'number' && Number.isFinite(v)),
+  ) as Record<string, number>
+  return Object.keys(out).length ? out : undefined
 }
 
 /**

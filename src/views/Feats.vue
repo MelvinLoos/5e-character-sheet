@@ -8,11 +8,14 @@ import { useRulesStore } from '@/stores/rulesStore'
 import { useCharacterCompletion } from '@/composables/useCharacterCompletion'
 import FeatureEditorModal from '@/components/modals/FeatureEditorModal.vue'
 import FeatureChoiceModal from '@/components/modals/FeatureChoiceModal.vue'
+import AbilityIncreaseModal from '@/components/modals/AbilityIncreaseModal.vue'
+import { applyBackgroundBonuses } from '@/utils/characterMutations'
+import { needsAbilityChoice, describeAbilityIncrease } from '@/domain/abilityIncreases'
 import ActionBadge from '@/components/ui/ActionBadge.vue'
 import ExpandableText from '@/components/ui/ExpandableText.vue'
 import LibraryModal from '@/components/ui/LibraryModal.vue'
 import PressableButton from '@/components/ui/PressableButton.vue'
-import type { CharacterFeature } from '@/types/character'
+import type { AbilityChoice, CharacterFeature } from '@/types/character'
 import { featureGroup, type FeatureGroup } from '@/domain/creationRules'
 import type { FeatureChoice } from '@/types/rules'
 import {
@@ -71,6 +74,49 @@ function handleFeatureChoiceSelect(optionIds: string[]) {
   if (activeFeatureChoice.value) {
     store.applyFeatureChoice(activeFeatureChoice.value.id, optionIds)
   }
+}
+
+// --- Ability score increase picker ---
+const abilityFeature = ref<CharacterFeature | null>(null)
+
+/** Scores as they'd be without the feature being edited, so the preview doesn't double-count its old picks. */
+const abilityPreviewBase = computed<Record<string, number>>(() => {
+  const data = store.currentCharacterData
+  if (!data) return {}
+  const target = abilityFeature.value
+  const features = (data.features ?? []).filter((f) => f !== target)
+  return applyBackgroundBonuses({ ...data, features }).abilityScores
+})
+
+/** The feature's own spec, or (for feats added before import carried it) the library entry's. */
+function abilitySpec(feat: CharacterFeature): CharacterFeature['abilityIncrease'] {
+  if (feat.abilityIncrease?.length) return feat.abilityIncrease
+  const lib = (rulesStore.allFeats as CharacterFeature[]).find(
+    (f) => f.title === feat.title && (!feat.source || !f.source || f.source === feat.source),
+  )
+  return lib?.abilityIncrease
+}
+
+function abilityBadge(feat: CharacterFeature): { label: string; pending: boolean } | null {
+  const spec = abilitySpec(feat)
+  if (!spec) return null
+  const view = { abilityIncrease: spec, abilityChoice: feat.abilityChoice }
+  return needsAbilityChoice(view)
+    ? { label: 'Choose ability increase', pending: true }
+    : { label: describeAbilityIncrease(view), pending: false }
+}
+
+function openAbilityPicker(feat: CharacterFeature) {
+  const spec = abilitySpec(feat)
+  if (!spec) return
+  feat.abilityIncrease = JSON.parse(JSON.stringify(spec))
+  abilityFeature.value = feat
+}
+
+function handleAbilitySelect(choice: AbilityChoice) {
+  if (abilityFeature.value) abilityFeature.value.abilityChoice = choice
+  abilityFeature.value = null
+  progression.recalculateAbilityScores()
 }
 
 // --- Available feats from rulesStore ---
@@ -165,12 +211,19 @@ function addFeatFromLibrary(feat: LocalFeat) {
   const newFeat = {
     ...feat,
     key: false,
+    // Detach from the library entry so each taken feat keeps its own picks.
+    ...(feat.abilityIncrease ? { abilityIncrease: JSON.parse(JSON.stringify(feat.abilityIncrease)) } : {}),
   }
 
-  store.currentCharacterData.features.push(
-    newFeat as unknown as (typeof store.currentCharacterData.features)[number],
-  )
+  const features = store.currentCharacterData.features
+  features.push(newFeat as unknown as (typeof features)[number])
   progression.recalculateAbilityScores()
+
+  const added = features[features.length - 1]
+  if (added && needsAbilityChoice(added)) {
+    showFeatLibrary.value = false
+    abilityFeature.value = added
+  }
 }
 
 // --- Remove feat ---
@@ -391,6 +444,20 @@ function setActiveCategory(cat: string) {
             >
               {{ feat.source }}
             </div>
+            <template v-if="abilityBadge(feat)">
+              <component
+                :is="store.isEditing || abilityBadge(feat)!.pending ? 'button' : 'div'"
+                :type="store.isEditing || abilityBadge(feat)!.pending ? 'button' : undefined"
+                data-test="ability-increase-badge"
+                class="inline-block border px-2 py-0.5 rounded font-label-md text-[12px]"
+                :class="abilityBadge(feat)!.pending
+                  ? 'bg-error/10 border-error/40 text-error'
+                  : 'bg-tertiary/10 border-tertiary/30 text-tertiary'"
+                @click.stop="(store.isEditing || abilityBadge(feat)!.pending) && openAbilityPicker(feat)"
+              >
+                {{ abilityBadge(feat)!.label }}
+              </component>
+            </template>
 
             <!-- Resource usage display -->
             <div
@@ -602,6 +669,14 @@ function setActiveCategory(cat: string) {
       :effective-max-count="activeFeatureChoice ? effectiveMaxCountForChoice(activeFeatureChoice) : 0"
       @select="handleFeatureChoiceSelect"
       @close="isFeatureChoiceOpen = false"
+    />
+
+    <AbilityIncreaseModal
+      :is-open="!!abilityFeature"
+      :feature="abilityFeature"
+      :ability-scores="abilityPreviewBase"
+      @select="handleAbilitySelect"
+      @close="abilityFeature = null"
     />
 
     <!-- Feature Editor Modal (for custom/manual entries) -->

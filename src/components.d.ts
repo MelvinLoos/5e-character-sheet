@@ -12,6 +12,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AbilityIncreaseModal: typeof import('./components/modals/AbilityIncreaseModal.vue')['default']
     AbilityScores: typeof import('./components/sheet/AbilityScores.vue')['default']
     ActionBadge: typeof import('./components/ui/ActionBadge.vue')['default']
     AttacksList: typeof import('./components/sheet/AttacksList.vue')['default']
@@ -80,6 +81,7 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const AbilityIncreaseModal: typeof import('./components/modals/AbilityIncreaseModal.vue')['default']
   const AbilityScores: typeof import('./components/sheet/AbilityScores.vue')['default']
   const ActionBadge: typeof import('./components/ui/ActionBadge.vue')['default']
   const AttacksList: typeof import('./components/sheet/AttacksList.vue')['default']

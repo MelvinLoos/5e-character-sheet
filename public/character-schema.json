@@ -206,6 +206,34 @@
           "grantsSpells": { "type": "boolean" },
           "grantedSpellLevels": { "type": "array", "items": { "type": "number" } },
           "abilityModifiers": { "type": "object", "additionalProperties": { "type": "number" } },
+          "abilityIncrease": {
+            "type": "array",
+            "description": "Capped ability increases a feat offers; alternatives, the player picks one via abilityChoice.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fixed": { "type": "object", "additionalProperties": { "type": "number" } },
+                "choose": {
+                  "type": "object",
+                  "properties": {
+                    "from": { "type": "array", "items": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] } },
+                    "count": { "type": "integer", "minimum": 1 },
+                    "amount": { "type": "integer", "minimum": 1 }
+                  },
+                  "required": ["from", "count", "amount"]
+                },
+                "max": { "type": "number" }
+              }
+            }
+          },
+          "abilityChoice": {
+            "type": "object",
+            "properties": {
+              "option": { "type": "integer", "minimum": 0 },
+              "picks": { "type": "array", "items": { "type": "string", "enum": ["str", "dex", "con", "int", "wis", "cha"] } }
+            },
+            "required": ["option", "picks"]
+          },
           "prerequisite": { "type": "string" },
           "minTier": { "type": "number" }
         },

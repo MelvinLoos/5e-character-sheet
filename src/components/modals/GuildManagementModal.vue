@@ -192,7 +192,7 @@ async function handleDeleteSpell(id: string) {
 // ---------------------------------------------------------------------------
 
 function openAddFeat() {
-  featJsonText.value = JSON.stringify({ name: '', description: '', prerequisite: null }, null, 2)
+  featJsonText.value = JSON.stringify({ title: '', desc: '', prerequisite: null, abilityIncrease: [] }, null, 2)
   editingFeatId.value = null
   showAddFeatForm.value = true
   actionError.value = null

@@ -272,6 +272,11 @@ const cardState = (on: boolean) =>
   on
     ? 'border-tertiary bg-tertiary/10'
     : 'border-outline-variant bg-surface-container hover:border-tertiary/60'
+
+/** Whatever the final score gained from feats/features beyond base + background. */
+function featBonusFor(k: string): number {
+  return (char.value.abilityScores[k] ?? 0) - (char.value.pointBuyBaseScores[k] ?? 8) - backgroundBonusFor(k, selections.value)
+}
 </script>
 
 <template>
@@ -484,7 +489,7 @@ const cardState = (on: boolean) =>
             <template v-else>Next point costs {{ pointBuyNextCost(char.pointBuyBaseScores[k] ?? 8) }}</template>
           </span>
           <span class="col-start-2 row-start-1 justify-self-end font-body-md text-body-md text-on-surface sm:col-start-auto sm:row-start-auto">
-            <span class="text-on-surface-variant">{{ char.pointBuyBaseScores[k] }} + {{ backgroundBonusFor(k, selections) }} =</span>
+            <span class="text-on-surface-variant">{{ char.pointBuyBaseScores[k] }} + {{ backgroundBonusFor(k, selections) }}<template v-if="featBonusFor(k)"> + {{ featBonusFor(k) }}</template> =</span>
             <strong class="ml-1">{{ char.abilityScores[k] }}</strong>
             <span class="ml-1 text-on-surface-variant">({{ formatMod(progression.abilityMods[k] ?? 0) }})</span>
           </span>
